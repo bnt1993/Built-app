@@ -1,0 +1,253 @@
+index
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Material Management System</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, Arial, sans-serif; font-size: 12px; }
+        body { background-color: #f0f0f0; color: #000; display: flex; flex-direction: column; height: 100vh; padding: 5px; }
+
+        /* Toolbar Header */
+        .toolbar { background: #e1e1e1; border: 1px solid #adadad; padding: 4px 8px; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+        .toolbar label { display: flex; align-items: center; gap: 3px; cursor: pointer; }
+        .toolbar input[type="text"] { padding: 2px 5px; border: 1px solid #7f9db9; width: 180px; }
+        .btn { background: #f0f0f0; border: 1px solid #707070; padding: 2px 10px; cursor: pointer; border-radius: 2px; }
+        .btn:hover { background: #e5f1fb; border-color: #0078d7; }
+        .user-info { margin-left: auto; font-weight: bold; color: #333; }
+
+        /* Sub-toolbar search options */
+        .sub-toolbar { background: #f8f8f8; border: 1px solid #dcdcdc; padding: 4px 8px; display: flex; align-items: center; gap: 15px; margin-bottom: 5px; }
+        .sub-toolbar .radio-group { display: flex; gap: 10px; align-items: center; }
+
+        /* Main Workspace Layout */
+        .workspace { display: flex; flex: 1; gap: 5px; overflow: hidden; }
+
+        /* Table Container (Left) */
+        .table-container { flex: 1; background: #fff; border: 1px solid #7f9db9; overflow-y: auto; position: relative; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #f0f0f0; border-bottom: 1px solid #adadad; border-right: 1px solid #d3d3d3; padding: 5px; position: sticky; top: 0; z-index: 2; font-weight: normal; }
+        td { padding: 4px 6px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        tr:hover { background: #d8eec4; cursor: pointer; }
+        tr.selected { background: #3399ff !important; color: #fff; }
+
+        /* Right Detail Panel */
+        .detail-panel { width: 320px; background: #fff; border: 1px solid #7f9db9; display: flex; flex-direction: column; padding: 6px; gap: 8px; }
+        .image-viewer { border: 1px solid #adadad; height: 160px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; position: relative; }
+        .image-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: #28a745; color: white; border: none; padding: 4px 8px; cursor: pointer; font-weight: bold; }
+        .carousel-btn.left { left: 2px; }
+        .carousel-btn.right { right: 2px; }
+        .detail-form { display: flex; flex-direction: column; gap: 6px; }
+        .form-row { display: flex; flex-direction: column; gap: 2px; }
+        .form-row label { color: #333; font-weight: bold; }
+        .form-row input { padding: 3px; border: 1px solid #7f9db9; background: #fff; }
+
+        /* Footer Status Bar */
+        .footer { background: #f0f0f0; border: 1px solid #adadad; padding: 4px 8px; display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+        .footer-left { display: flex; gap: 20px; }
+        .footer-right { display: flex; gap: 5px; }
+    </style>
+</head>
+<body>
+
+    <!-- Toolbar trên -->
+    <div class="toolbar">
+        <label><input type="checkbox" id="chkMultiSearch"> Multi search</label>
+        <button class="btn" onclick="handleSearch()">🔍 Search</button>
+        <button class="btn" onclick="handleClear()">❌ Clear</button>
+        <button class="btn">🟢 Filter</button>
+        <select id="materialCategory" style="padding: 2px; border: 1px solid #7f9db9;">
+            <option>All Materials</option>
+        </select>
+        <div class="user-info">User: BT02400021 | Last update: 26/10/2026</div>
+    </div>
+
+    <!-- Sub-toolbar chọn tiêu chí tìm kiếm -->
+    <div class="sub-toolbar">
+        <div class="radio-group">
+            <label><input type="radio" name="searchField" value="sap" checked> Sap</label>
+            <label><input type="radio" name="searchField" value="description"> Description</label>
+            <label><input type="radio" name="searchField" value="partNo"> Part no</label>
+            <label><input type="radio" name="searchField" value="bmNo"> BM No</label>
+        </div>
+        <input type="text" id="searchInput" placeholder="Nhập từ khóa tìm kiếm..." onkeyup="handleSearch()">
+        <label><input type="checkbox" id="chkQtyZero" onchange="handleSearch()"> Quantity > 0</label>
+    </div>
+
+    <!-- Khu vực chính: Bảng dữ liệu + Khung chi tiết bên phải -->
+    <div class="workspace">
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">SAP</th>
+                        <th>Description</th>
+                        <th style="width: 120px;">Part Number</th>
+                        <th style="width: 80px;">Location</th>
+                        <th style="width: 70px; text-align: right;">Quantity</th>
+                        <th style="width: 50px;">Unit</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Dữ liệu được nạp tự động từ data.js -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Khung chi tiết bên phải -->
+        <div class="detail-panel">
+            <div class="image-viewer">
+                <button class="carousel-btn left" onclick="prevImage()">◀</button>
+                <div id="imageDisplay" style="color: #888; text-align: center;">[ Hình ảnh vật tư ]</div>
+                <button class="carousel-btn right" onclick="nextImage()">▶</button>
+            </div>
+            <div class="detail-form">
+                <div class="form-row"><label>Sap</label><input type="text" id="detSap" readonly></div>
+                <div class="form-row"><label>Location</label><input type="text" id="detLocation" readonly></div>
+                <div class="form-row"><label>Stock</label><input type="text" id="detStock" readonly></div>
+                <div class="form-row"><label>Price</label><input type="text" id="detPrice" readonly></div>
+                <div class="form-row"><label>Type order</label><input type="text" id="detTypeOrder" readonly></div>
+                <div class="form-row"><label>Reorder point</label><input type="text" id="detReorderPoint" readonly></div>
+                <div class="form-row"><label>Min lot size</label><input type="text" id="detMinLotSize" readonly></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chân trang (Footer) -->
+    <div class="footer">
+        <div class="footer-left">
+            <span>Records Found: <strong id="recordsFound">0</strong></span>
+            <span>Total Records: <strong id="totalRecords">0</strong></span>
+            <span>BM No: <span id="bmNoDisplay"></span></span>
+        </div>
+        <div class="footer-right">
+            <button class="btn" onclick="exportData()">Export</button>
+            <button class="btn" onclick="window.close()">Close</button>
+        </div>
+    </div>
+
+    <!-- Load file data.js do VBA xuất ra -->
+    <script src="data.js"></script>
+    <script>
+        // Dữ liệu mẫu dự phòng nếu chưa có file data.js
+        if (typeof window.appData === 'undefined') {
+            window.appData = [
+                { sap: "100119041", description: "Push-in connector QS-4", partNumber: "153031", location: "070804", quantity: 7, unit: "PC", price: "12.50", typeOrder: "Standard", reorderPoint: "5", minLotSize: "10" },
+                { sap: "100119196", description: "Push-in L-connector QS-8H-6", partNumber: "153042", location: "080801", quantity: 9, unit: "PC", price: "15.00", typeOrder: "Standard", reorderPoint: "2", minLotSize: "5" },
+                { sap: "100119383", description: "connector Y QSY-6-4", partNumber: "QSY-6-4", location: "041305", quantity: 5, unit: "PC", price: "8.20", typeOrder: "Batch", reorderPoint: "10", minLotSize: "20" },
+                { sap: "100120072", description: "Manual tensioner VERTIKALSPAN...", partNumber: "202-U", location: "051002", quantity: 0, unit: "PC", price: "150.00", typeOrder: "Special", reorderPoint: "1", minLotSize: "1" }
+            ];
+        }
+
+        let currentFilteredData = [...window.appData];
+        let selectedIndex = -1;
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                if (index === selectedIndex) tr.className = 'selected';
+                tr.innerHTML = `
+                    <td style="width: 100px;">${item.sap || ''}</td>
+                    <td>${item.description || ''}</td>
+                    <td style="width: 120px;">${item.partNumber || ''}</td>
+                    <td style="width: 80px;">${item.location || ''}</td>
+                    <td style="width: 70px; text-align: right;">${item.quantity ?? ''}</td>
+                    <td style="width: 50px;">${item.unit || 'PC'}</td>
+                `;
+                tr.onclick = () => selectRow(index, data);
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('recordsFound').innerText = data.length.toLocaleString('de-DE');
+            document.getElementById('totalRecords').innerText = window.appData.length.toLocaleString('de-DE');
+        }
+
+        function selectRow(index, data) {
+            selectedIndex = index;
+            renderTable(data);
+            
+            const item = data[index];
+            if (item) {
+                document.getElementById('detSap').value = item.sap || '';
+                document.getElementById('detLocation').value = item.location || '';
+                document.getElementById('detStock').value = item.quantity ?? '';
+                document.getElementById('detPrice').value = item.price || '';
+                document.getElementById('detTypeOrder').value = item.typeOrder || '';
+                document.getElementById('detReorderPoint').value = item.reorderPoint || '';
+                document.getElementById('detMinLotSize').value = item.minLotSize || '';
+            }
+        }
+
+        function handleSearch() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchField = document.querySelector('input[name="searchField"]:checked').value;
+            const qtyZeroOnly = document.getElementById('chkQtyZero').checked;
+
+            currentFilteredData = window.appData.filter(item => {
+                // Lọc theo Quantity > 0
+                if (qtyZeroOnly && Number(item.quantity) <= 0) return false;
+
+                // Lọc theo từ khóa ô nhập
+                if (!keyword) return true;
+
+                let targetValue = "";
+                if (searchField === 'sap') targetValue = item.sap;
+                else if (searchField === 'description') targetValue = item.description;
+                else if (searchField === 'partNo') targetValue = item.partNumber;
+                else if (searchField === 'bmNo') targetValue = item.bmNo;
+
+                return String(targetValue || '').toLowerCase().includes(keyword);
+            });
+
+            selectedIndex = currentFilteredData.length > 0 ? 0 : -1;
+            renderTable(currentFilteredData);
+            if (selectedIndex >= 0) selectRow(selectedIndex, currentFilteredData);
+        }
+
+        function handleClear() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('chkQtyZero').checked = false;
+            document.getElementById('chkMultiSearch').checked = false;
+            currentFilteredData = [...window.appData];
+            selectedIndex = currentFilteredData.length > 0 ? 0 : -1;
+            renderTable(currentFilteredData);
+            if (selectedIndex >= 0) selectRow(selectedIndex, currentFilteredData);
+        }
+
+        function prevImage() {
+            alert('Chức năng chuyển ảnh trước.');
+        }
+
+        function nextImage() {
+            alert('Chức năng chuyển ảnh tiếp theo.');
+        }
+
+        function exportData() {
+            let csvContent = "data:text/csv;charset=utf-8,SAP,Description,Part Number,Location,Quantity,Unit\n";
+            currentFilteredData.forEach(row => {
+                csvContent += `"${row.sap}","${row.description}","${row.partNumber}","${row.location}","${row.quantity}","${row.unit}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "exported_materials.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Khởi chạy lần đầu khi mở trang
+        window.onload = () => {
+            if (window.appData && window.appData.length > 0) {
+                currentFilteredData = [...window.appData];
+                selectRow(0, currentFilteredData);
+            }
+        };
+    </script>
+</body>
+</html>
