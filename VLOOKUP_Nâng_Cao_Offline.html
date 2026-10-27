@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Công Cụ VLOOKUP Nâng Cao Offline</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+              400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+              800: '#1e40af', 900: '#1e3a8a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SheetJS cho xử lý Excel/CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .dark ::-webkit-scrollbar-thumb { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+  <!-- Header Header Header -->
+  <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <i class="fa-solid font-bold text-xl fa-table-cells-large"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">VLOOKUP Nâng Cao</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Xử lý ghép dữ liệu Excel & CSV siêu tốc trên trình duyệt</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- Chế độ tối / sáng -->
+        <button id="themeToggleBtn" onclick="toggleDarkMode()" class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+          <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+          <i class="fa-solid fa-sun hidden dark:block text-lg text-amber-400"></i>
+        </button>
+
+        <a href="#helpModal" onclick="toggleHelpModal(true)" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+          <i class="fa-solid fa-circle-question mr-1"></i> Hướng dẫn
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+
+    <!-- Progress Stepper Navigation -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <!-- Step 1 -->
+        <button onclick="switchStep(1)" id="stepBtn-1" class="step-btn active flex items-center gap-3 w-full sm:w-auto p-2 rounded-xl transition text-left">
+          <div class="step-icon w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm bg-primary-600 text-white shadow-sm">1</div>
+          <div>
+            <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Bước 1</div>
+            <div class="text-sm font-bold text-slate-800 dark:text-slate-100">Chọn Tệp Nguồn & Đích</div>
+          </div>
+        </button>
+        
+        <div class="hidden sm:block h-0.5 flex-1 bg-slate-200 dark:bg-slate-700 mx-2"></div>
+
+        <!-- Step 2 -->
+        <button onclick="switchStep(2)" id="stepBtn-2" class="step-btn opacity-60 flex items-center gap-3 w-full sm:w-auto p-2 rounded-xl transition text-left" disabled>
+          <div class="step-icon w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">2</div>
+          <div>
+            <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Bước 2</div>
+            <div class="text-sm font-bold text-slate-800 dark:text-slate-100">Cấu Hình VLOOKUP</div>
+          </div>
+        </button>
+
+        <div class="hidden sm:block h-0.5 flex-1 bg-slate-200 dark:bg-slate-700 mx-2"></div>
+
+        <!-- Step 3 -->
+        <button onclick="switchStep(3)" id="stepBtn-3" class="step-btn opacity-60 flex items-center gap-3 w-full sm:w-auto p-2 rounded-xl transition text-left" disabled>
+          <div class="step-icon w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">3</div>
+          <div>
+            <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Bước 3</div>
+            <div class="text-sm font-bold text-slate-800 dark:text-slate-100">Xem Trước & Tải Về</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 1: File Upload Panel -->
+    <div id="stepContent-1" class="step-content flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Target File (File Đích - File cần điền thêm thông tin) -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                <i class="fa-solid fa-bullseye"></i> File Đích (Target)
+              </span>
+              <span id="targetStatus" class="text-xs text-slate-400">Chưa tải file</span>
+            </div>
+            <h3 class="text-lg font-bold mb-1">Tệp Cần Điền Thêm Dữ Liệu</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Đây là file dữ liệu gốc mà bạn muốn nối thêm các cột mới vào.</p>
+            
+            <!-- Drag & Drop Zone -->
+            <div id="targetDropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary-500 dark:hover:border-primary-400 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/50 dark:bg-slate-800/50 flex flex-col items-center justify-center min-h-[160px]">
+              <i class="fa-solid fa-file-excel text-3xl text-emerald-600 dark:text-emerald-400 mb-2"></i>
+              <p class="text-sm font-semibold mb-1">Kéo thả file vào đây hoặc <span class="text-primary-600 dark:text-primary-400">duyệt tìm file</span></p>
+              <p class="text-xs text-slate-400">Hỗ trợ .xlsx, .xls, .csv</p>
+              <input type="file" id="targetFileInput" accept=".xlsx, .xls, .csv" class="hidden">
+            </div>
+
+            <!-- Sheet Selection -->
+            <div id="targetSheetContainer" class="mt-4 hidden">
+              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Chọn Sheet Dữ Liệu:</label>
+              <select id="targetSheetSelect" onchange="onSheetChange('target')" class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+              </select>
+            </div>
+          </div>
+
+          <!-- File Info Footer -->
+          <div id="targetFileInfo" class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50 text-xs text-slate-500 hidden">
+            <i class="fa-solid fa-paperclip mr-1"></i> <span id="targetFileName" class="font-medium text-slate-700 dark:text-slate-300"></span> (<span id="targetRowCount">0</span> dòng)
+          </div>
+        </div>
+
+        <!-- Source File (File Nguồn - Chứa dữ liệu tra cứu) -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                <i class="fa-solid fa-database"></i> File Nguồn (Source)
+              </span>
+              <span id="sourceStatus" class="text-xs text-slate-400">Chưa tải file</span>
+            </div>
+            <h3 class="text-lg font-bold mb-1">Tệp Chứa Dữ Liệu Tra Cứu</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Đây là file chứa các cột thông tin tham chiếu mà bạn muốn tra cứu lấy sang.</p>
+            
+            <!-- Drag & Drop Zone -->
+            <div id="sourceDropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary-500 dark:hover:border-primary-400 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/50 dark:bg-slate-800/50 flex flex-col items-center justify-center min-h-[160px]">
+              <i class="fa-solid fa-file-csv text-3xl text-blue-600 dark:text-blue-400 mb-2"></i>
+              <p class="text-sm font-semibold mb-1">Kéo thả file vào đây hoặc <span class="text-primary-600 dark:text-primary-400">duyệt tìm file</span></p>
+              <p class="text-xs text-slate-400">Hỗ trợ .xlsx, .xls, .csv</p>
+              <input type="file" id="sourceFileInput" accept=".xlsx, .xls, .csv" class="hidden">
+            </div>
+
+            <!-- Sheet Selection -->
+            <div id="sourceSheetContainer" class="mt-4 hidden">
+              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Chọn Sheet Dữ Liệu:</label>
+              <select id="sourceSheetSelect" onchange="onSheetChange('source')" class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+              </select>
+            </div>
+          </div>
+
+          <!-- File Info Footer -->
+          <div id="sourceFileInfo" class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50 text-xs text-slate-500 hidden">
+            <i class="fa-solid fa-paperclip mr-1"></i> <span id="sourceFileName" class="font-medium text-slate-700 dark:text-slate-300"></span> (<span id="sourceRowCount">0</span> dòng)
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Button -->
+      <div class="flex justify-end">
+        <button id="goToStep2Btn" onclick="switchStep(2)" disabled class="px-6 py-3 bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed font-semibold rounded-xl shadow transition flex items-center gap-2">
+          Tiếp tục Cấu Hình VLOOKUP <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Configuration Panel -->
+    <div id="stepContent-2" class="step-content hidden flex-col gap-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Column 1: Key Matching Settings -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+          <div class="flex items-center gap-2 text-slate-800 dark:text-slate-100 font-bold border-b border-slate-100 dark:border-slate-700 pb-3">
+            <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 flex items-center justify-center text-sm">1</div>
+            Khóa Khớp Dữ Liệu (Primary Key)
+          </div>
+
+          <!-- Target Key Columns -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+              Cột Khóa ở File Đích (Target):
+            </label>
+            <div id="targetKeyContainer" class="space-y-2">
+              <select class="target-key-select w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+              </select>
+            </div>
+          </div>
+
+          <!-- Composite Key Switch -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-700">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Cột Khóa ở File Nguồn (Source):</label>
+            </div>
+            <div id="sourceKeyContainer" class="space-y-2">
+              <select class="source-key-select w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+              </select>
+            </div>
+          </div>
+
+          <!-- Multi-column Key Toggle -->
+          <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
+            <button id="addCompositeKeyBtn" onclick="toggleCompositeKey()" class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
+              <i class="fa-solid fa-plus-circle"></i> Kết hợp ghép nhiều cột (Composite Key)
+            </button>
+            <p class="text-[11px] text-slate-400 mt-1">Dùng khi cần ghép khớp nối bằng tổ hợp nhiều cột cùng lúc (ví dụ: Họ + Tên).</p>
+          </div>
+        </div>
+
+        <!-- Column 2: Select Fetch Columns -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+          <div class="flex items-center gap-2 text-slate-800 dark:text-slate-100 font-bold border-b border-slate-100 dark:border-slate-700 pb-3">
+            <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 flex items-center justify-center text-sm">2</div>
+            Chọn Cột Cần Trích Xuất (Source)
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Danh sách cột từ File Nguồn:</span>
+            <div class="space-x-2">
+              <button onclick="selectAllColumns(true)" class="text-[11px] text-primary-600 dark:text-primary-400 hover:underline">Chọn tất cả</button>
+              <span class="text-slate-300">|</span>
+              <button onclick="selectAllColumns(false)" class="text-[11px] text-slate-500 hover:underline">Bỏ chọn</button>
+            </div>
+          </div>
+
+          <!-- Column Checkbox List -->
+          <div id="fetchColumnsList" class="flex-1 max-h-56 overflow-y-auto space-y-1.5 p-2 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+            <!-- Dynamic Checkboxes -->
+          </div>
+
+          <!-- Prefix customization -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-700">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Tiền tố tên cột mới (Prefix):</label>
+            <input type="text" id="columnPrefix" placeholder="VD: Nguon_ hoặc để trống" class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Column 3: Advanced Options -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+          <div class="flex items-center gap-2 text-slate-800 dark:text-slate-100 font-bold border-b border-slate-100 dark:border-slate-700 pb-3">
+            <div class="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 flex items-center justify-center text-sm">3</div>
+            Tùy Chọn Ghép Khớp Nâng Cao
+          </div>
+
+          <!-- Case Sensitivity & Trim -->
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+              <input type="checkbox" id="optTrimWhitespace" checked class="w-4 h-4 rounded text-primary-600 focus:ring-primary-500 border-slate-300">
+              <span>Xóa khoảng trắng thừa (Trim Whitespace)</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+              <input type="checkbox" id="optIgnoreCase" checked class="w-4 h-4 rounded text-primary-600 focus:ring-primary-500 border-slate-300">
+              <span>Không phân biệt chữ Hoa / chữ Thường</span>
+            </label>
+          </div>
+
+          <!-- Default Unmatched Value -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-700">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Giá trị khi không tìm thấy dữ liệu:</label>
+            <input type="text" id="optDefaultValue" value="N/A" class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+          </div>
+
+          <!-- Duplicate Key Handling -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-700">
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Xử lý nếu File Nguồn bị trùng Khóa:</label>
+            <select id="optDuplicateHandling" class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+              <option value="first">Lấy kết quả trùng ĐẦU TIÊN (Mặc định)</option>
+              <option value="last">Lấy kết quả trùng CUỐI CÙNG</option>
+              <option value="concat">Gộp tất cả kết quả trùng (Nối bằng dấu phẩy)</option>
+            </select>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Action Navigation Buttons -->
+      <div class="flex justify-between items-center pt-2">
+        <button onclick="switchStep(1)" class="px-5 py-2.5 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-arrow-left"></i> Quay lại
+        </button>
+        <button onclick="executeVlookup()" class="px-7 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 transition flex items-center gap-2">
+          <i class="fa-solid fa-bolt"></i> Chạy VLOOKUP & Xem Kết Quả
+        </button>
+      </div>
+
+    </div>
+
+    <!-- STEP 3: Preview & Download Panel -->
+    <div id="stepContent-3" class="step-content hidden flex-col gap-6">
+      
+      <!-- Stats summary bar -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+          <div class="p-3 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-xl">
+            <i class="fa-solid fa-list-ol text-xl"></i>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">Tổng số dòng</div>
+            <div id="statTotalRows" class="text-lg font-bold">0</div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+          <div class="p-3 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 rounded-xl">
+            <i class="fa-solid fa-check-double text-xl"></i>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">Khớp thành công</div>
+            <div id="statMatchedRows" class="text-lg font-bold text-emerald-600 dark:text-emerald-400">0</div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+          <div class="p-3 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-300 rounded-xl">
+            <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">Không tìm thấy</div>
+            <div id="statUnmatchedRows" class="text-lg font-bold text-rose-600 dark:text-rose-400">0</div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+          <div class="p-3 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 rounded-xl">
+            <i class="fa-solid fa-[#000] fa-percent text-xl"></i>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">Tỷ lệ khớp thành công</div>
+            <div id="statMatchRate" class="text-lg font-bold text-purple-600 dark:text-purple-400">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Table Container -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden">
+        
+        <!-- Table Header Control -->
+        <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-800/50">
+          <div>
+            <h3 class="font-bold text-base flex items-center gap-2">
+              <i class="fa-solid fa-eye text-primary-500"></i> Xem Trước Kết Quả
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Hiển thị tối đa 50 dòng đầu tiên của tệp dữ liệu đã ghép</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Filter Options -->
+            <select id="previewFilterSelect" onchange="renderPreviewTable()" class="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs font-medium focus:ring-2 focus:ring-primary-500 outline-none">
+              <option value="all">Tất cả bản ghi</option>
+              <option value="matched">Chỉ hiện bản ghi KHỚP</option>
+              <option value="unmatched">Chỉ hiện bản ghi KHÔNG KHỚP</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table Scroll Area -->
+        <div class="overflow-x-auto max-h-[420px] w-full">
+          <table class="w-full text-left text-xs border-collapse" id="previewTable">
+            <thead class="bg-slate-100 dark:bg-slate-700/80 sticky top-0 z-10 font-semibold text-slate-700 dark:text-slate-200">
+              <tr id="previewTableHead"></tr>
+            </thead>
+            <tbody id="previewTableBody" class="divide-y divide-slate-200 dark:divide-slate-700/60">
+              <!-- Render Table Dynamic -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Export & Action Buttons -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+        <button onclick="switchStep(2)" class="px-5 py-2.5 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-arrow-left"></i> Điều chỉnh tham số
+        </button>
+
+        <div class="flex items-center gap-3">
+          <button onclick="exportData('csv')" class="px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-xl shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-file-csv"></i> Tải về CSV
+          </button>
+          <button onclick="exportData('xlsx')" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-2">
+            <i class="fa-solid fa-file-excel"></i> Tải về File Excel (.xlsx)
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Notification Toast Modal -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="flex items-center gap-3 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-2xl">
+      <i id="toastIcon" class="fa-solid fa-circle-info text-primary-400"></i>
+      <span id="toastMessage" class="text-sm font-medium">Thông báo hệ thống</span>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="helpModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-slate-700 pb-3">
+        <h3 class="text-lg font-bold flex items-center gap-2">
+          <i class="fa-solid fa-circle-question text-primary-500"></i> Hướng Dẫn Sử Dụng
+        </h3>
+        <button onclick="toggleHelpModal(false)" class="text-slate-400 hover:text-slate-600 text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        <p><strong>VLOOKUP Nâng Cao</strong> giúp bạn ghép nối thông tin từ 2 bảng dữ liệu dễ dàng mà không cần dùng công thức Excel phức tạp.</p>
+        <ol class="list-decimal list-inside space-y-2">
+          <li><strong>Bước 1 - Tải File:</strong>
+            <ul class="list-disc list-inside pl-4 mt-1 space-y-1 text-slate-500 dark:text-slate-400">
+              <li><strong>File Đích (Target):</strong> Bảng chứa danh sách gốc bạn muốn chèn thêm thông tin vào.</li>
+              <li><strong>File Nguồn (Source):</strong> Bảng chứa kho dữ liệu cần dò tìm để trích xuất sang.</li>
+            </ul>
+          </li>
+          <li><strong>Bước 2 - Cấu Hình:</strong>
+            <ul class="list-disc list-inside pl-4 mt-1 space-y-1 text-slate-500 dark:text-slate-400">
+              <li>Chọn cột khóa làm căn cứ ghép nối (Ví dụ: Mã NV, Mã SP, Email...).</li>
+              <li>Sử dụng tính năng <em>Composite Key</em> nếu cần ghép đồng thời 2-3 cột (VD: Họ + Tên).</li>
+              <li>Tích chọn các cột thông tin cần lấy từ File Nguồn.</li>
+            </ul>
+          </li>
+          <li><strong>Bước 3 - Xem & Tải Về:</strong> Kiểm tra tỷ lệ khớp dữ liệu và tải về file kết quả hoàn chỉnh dưới dạng Excel hoặc CSV.</li>
+        </ol>
+        <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
+          <i class="fa-solid fa-shield-halved mr-1"></i> <strong>Bảo mật tuyệt đối:</strong> Tất cả dữ liệu của bạn được xử lý trực tiếp trên trình duyệt máy tính của bạn và KHÔNG bao giờ được tải lên bất kỳ máy chủ nào. Công cụ hoàn toàn hoạt động khi ngắt kết nối Internet.
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button onclick="toggleHelpModal(false)" class="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium text-xs">Đã hiểu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Code logic -->
+  <script>
+    // State application storage
+    const state = {
+      targetFile: { file: null, workbook: null, sheetName: '', data: [], headers: [] },
+      sourceFile: { file: null, workbook: null, sheetName: '', data: [], headers: [] },
+      compositeKeys: 1, // Quantity of key columns used
+      resultData: [],
+      resultHeaders: [],
+      stats: { total: 0, matched: 0, unmatched: 0 }
+    };
+
+    // Dark Mode Toggle
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    // Modal Help Toggle
+    function toggleHelpModal(show) {
+      const modal = document.getElementById('helpModal');
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    }
+
+    // Toast Notification helper
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = message;
+      if (type === 'error') {
+        toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-500';
+      } else if (type === 'success') {
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-500';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-info text-blue-500';
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    // Drag and Drop File Handlers Setup
+    function setupDragAndDrop(dropZoneId, fileInputId, fileType) {
+      const dropZone = document.getElementById(dropZoneId);
+      const fileInput = document.getElementById(fileInputId);
+
+      dropZone.addEventListener('click', () => fileInput.click());
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          dropZone.classList.add('border-primary-500', 'bg-primary-50/20');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          dropZone.classList.remove('border-primary-500', 'bg-primary-50/20');
+        }, false);
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) {
+          fileInput.files = files;
+          handleFileUpload(files[0], fileType);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+          handleFileUpload(e.target.files[0], fileType);
+        }
+      });
+    }
+
+    // File Processing Core
+    function handleFileUpload(file, fileType) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          if (fileType === 'target') {
+            state.targetFile.file = file;
+            state.targetFile.workbook = workbook;
+            populateSheetSelect('target', workbook.SheetNames);
+            document.getElementById('targetFileName').textContent = file.name;
+            document.getElementById('targetStatus').textContent = 'Đã tải thành công';
+            document.getElementById('targetStatus').className = 'text-xs text-emerald-600 font-semibold';
+            document.getElementById('targetSheetContainer').classList.remove('hidden');
+            document.getElementById('targetFileInfo').classList.remove('hidden');
+            onSheetChange('target');
+          } else {
+            state.sourceFile.file = file;
+            state.sourceFile.workbook = workbook;
+            populateSheetSelect('source', workbook.SheetNames);
+            document.getElementById('sourceFileName').textContent = file.name;
+            document.getElementById('sourceStatus').textContent = 'Đã tải thành công';
+            document.getElementById('sourceStatus').className = 'text-xs text-emerald-600 font-semibold';
+            document.getElementById('sourceSheetContainer').classList.remove('hidden');
+            document.getElementById('sourceFileInfo').classList.remove('hidden');
+            onSheetChange('source');
+          }
+
+          checkStep1Completion();
+          showToast(`Đã đọc file ${file.name} thành công`, 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('Lỗi đọc file. Vui lòng kiểm tra lại định dạng file!', 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Populate Sheet dropdown options
+    function populateSheetSelect(type, sheetNames) {
+      const select = document.getElementById(`${type}SheetSelect`);
+      select.innerHTML = '';
+      sheetNames.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+    }
+
+    // On Sheet Select Change
+    function onSheetChange(type) {
+      const targetObj = state[`${type}File`];
+      const select = document.getElementById(`${type}SheetSelect`);
+      targetObj.sheetName = select.value;
+
+      const worksheet = targetObj.workbook.Sheets[targetObj.sheetName];
+      // Convert sheet to json array of objects
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+      targetObj.data = jsonData;
+
+      if (jsonData.length > 0) {
+        // Extract original headers
+        targetObj.headers = Object.keys(jsonData[0]);
+      } else {
+        targetObj.headers = [];
+      }
+
+      document.getElementById(`${type}RowCount`).textContent = jsonData.length;
+
+      // Update Column dropdowns if step 2 is active or ready
+      updateKeyDropdowns();
+      renderFetchColumnsList();
+    }
+
+    // Validate step 1 completion
+    function checkStep1Completion() {
+      const isValid = state.targetFile.data.length > 0 && state.sourceFile.data.length > 0;
+      const btn = document.getElementById('goToStep2Btn');
+      const step2Btn = document.getElementById('stepBtn-2');
+
+      if (isValid) {
+        btn.disabled = false;
+        btn.className = "px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 transition flex items-center gap-2 cursor-pointer";
+        step2Btn.disabled = false;
+        step2Btn.classList.remove('opacity-60');
+      } else {
+        btn.disabled = true;
+        btn.className = "px-6 py-3 bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed font-semibold rounded-xl shadow transition flex items-center gap-2";
+        step2Btn.disabled = true;
+        step2Btn.classList.add('opacity-60');
+      }
+    }
+
+    // Step Switching logic
+    function switchStep(stepNum) {
+      // Hide all content
+      document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.step-content').forEach(el => el.classList.remove('flex'));
+
+      // Show current step content
+      const activeContent = document.getElementById(`stepContent-${stepNum}`);
+      activeContent.classList.remove('hidden');
+      activeContent.classList.add('flex');
+
+      // Update Stepper active state
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`stepBtn-${i}`);
+        const icon = btn.querySelector('.step-icon');
+        if (i === stepNum) {
+          icon.className = "step-icon w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm bg-primary-600 text-white shadow-sm";
+          btn.classList.remove('opacity-60');
+        } else {
+          icon.className = "step-icon w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300";
+        }
+      }
+
+      if (stepNum === 2) {
+        updateKeyDropdowns();
+        renderFetchColumnsList();
+      }
+    }
+
+    // Populate Key Dropdowns in Step 2
+    function updateKeyDropdowns() {
+      const targetSelects = document.querySelectorAll('.target-key-select');
+      const sourceSelects = document.querySelectorAll('.source-key-select');
+
+      targetSelects.forEach(select => {
+        const currentVal = select.value;
+        select.innerHTML = '';
+        state.targetFile.headers.forEach(h => {
+          const opt = document.createElement('option');
+          opt.value = h;
+          opt.textContent = h;
+          select.appendChild(opt);
+        });
+        if (currentVal && state.targetFile.headers.includes(currentVal)) select.value = currentVal;
+      });
+
+      sourceSelects.forEach(select => {
+        const currentVal = select.value;
+        select.innerHTML = '';
+        state.sourceFile.headers.forEach(h => {
+          const opt = document.createElement('option');
+          opt.value = h;
+          opt.textContent = h;
+          select.appendChild(opt);
+        });
+        if (currentVal && state.sourceFile.headers.includes(currentVal)) select.value = currentVal;
+      });
+    }
+
+    // Toggle Composite Key (Add extra matching key pairs)
+    function toggleCompositeKey() {
+      state.compositeKeys++;
+      
+      // Target Key Select append
+      const targetContainer = document.getElementById('targetKeyContainer');
+      const targetSel = document.createElement('select');
+      targetSel.className = 'target-key-select w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none mt-1';
+      targetContainer.appendChild(targetSel);
+
+      // Source Key Select append
+      const sourceContainer = document.getElementById('sourceKeyContainer');
+      const sourceSel = document.createElement('select');
+      sourceSel.className = 'source-key-select w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none mt-1';
+      sourceContainer.appendChild(sourceSel);
+
+      updateKeyDropdowns();
+      showToast('Đã thêm 1 cặp cột khóa ghép nối mới', 'info');
+    }
+
+    // Render Source Columns Checkbox List for Fetching
+    function renderFetchColumnsList() {
+      const container = document.getElementById('fetchColumnsList');
+      container.innerHTML = '';
+
+      if (!state.sourceFile.headers.length) return;
+
+      state.sourceFile.headers.forEach((col, idx) => {
+        const label = document.createElement('label');
+        label.className = 'flex items-center gap-2 text-xs p-1.5 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded cursor-pointer transition';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = col;
+        checkbox.checked = true; // Check all by default
+        checkbox.className = 'fetch-col-cb w-4 h-4 rounded text-primary-600 focus:ring-primary-500 border-slate-300';
+
+        const span = document.createElement('span');
+        span.textContent = col;
+        span.className = 'truncate font-medium';
+
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        container.appendChild(label);
+      });
+    }
+
+    // Select or Deselect All Fetch Columns
+    function selectAllColumns(checked) {
+      document.querySelectorAll('.fetch-col-cb').forEach(cb => cb.checked = checked);
+    }
+
+    // Core VLOOKUP Execution Algorithm
+    function executeVlookup() {
+      // Get Target & Source key columns
+      const targetKeyElems = document.querySelectorAll('.target-key-select');
+      const sourceKeyElems = document.querySelectorAll('.source-key-select');
+
+      const targetKeys = Array.from(targetKeyElems).map(el => el.value);
+      const sourceKeys = Array.from(sourceKeyElems).map(el => el.value);
+
+      // Get Selected fetch columns
+      const fetchCols = Array.from(document.querySelectorAll('.fetch-col-cb:checked')).map(el => el.value);
+
+      if (fetchCols.length === 0) {
+        showToast('Vui lòng chọn ít nhất 1 cột từ File Nguồn để trích xuất!', 'error');
+        return;
+      }
+
+      // Options
+      const trimSpace = document.getElementById('optTrimWhitespace').checked;
+      const ignoreCase = document.getElementById('optIgnoreCase').checked;
+      const defaultValue = document.getElementById('optDefaultValue').value;
+      const duplicateHandling = document.getElementById('optDuplicateHandling').value;
+      const prefix = document.getElementById('columnPrefix').value.trim();
+
+      // Normalization helper
+      const normalize = (val) => {
+        if (val === null || val === undefined) val = '';
+        val = String(val);
+        if (trimSpace) val = val.trim();
+        if (ignoreCase) val = val.toLowerCase();
+        return val;
+      };
+
+      // Build Map Index for Source Data
+      // Key: Composite Key String -> Value: Row Object or Array of Row Objects
+      const sourceMap = new Map();
+
+      state.sourceFile.data.forEach(row => {
+        const keyParts = sourceKeys.map(k => normalize(row[k]));
+        const compositeKeyStr = keyParts.join('___');
+
+        if (!sourceMap.has(compositeKeyStr)) {
+          sourceMap.set(compositeKeyStr, []);
+        }
+        sourceMap.get(compositeKeyStr).push(row);
+      });
+
+      // Prepare Headers for Final Result
+      const addedHeaders = fetchCols.map(col => `${prefix}${col}`);
+      state.resultHeaders = [...state.targetFile.headers, ...addedHeaders];
+
+      // Perform Matching over Target File Rows
+      let matchedCount = 0;
+      let unmatchedCount = 0;
+
+      state.resultData = state.targetFile.data.map(targetRow => {
+        // Build Target Search Key
+        const targetKeyStr = targetKeys.map(k => normalize(targetRow[k])).join('___');
+        
+        const matchedSourceRows = sourceMap.get(targetKeyStr);
+
+        const newRow = { ...targetRow };
+
+        if (matchedSourceRows && matchedSourceRows.length > 0) {
+          matchedCount++;
+
+          fetchCols.forEach(col => {
+            const targetColName = `${prefix}${col}`;
+
+            if (duplicateHandling === 'first') {
+              newRow[targetColName] = matchedSourceRows[0][col] ?? defaultValue;
+            } else if (duplicateHandling === 'last') {
+              newRow[targetColName] = matchedSourceRows[matchedSourceRows.length - 1][col] ?? defaultValue;
+            } else if (duplicateHandling === 'concat') {
+              const allVals = matchedSourceRows.map(r => r[col]).filter(v => v !== undefined && v !== '');
+              newRow[targetColName] = allVals.length > 0 ? allVals.join(', ') : defaultValue;
+            }
+          });
+          newRow._isMatched = true;
+        } else {
+          unmatchedCount++;
+          fetchCols.forEach(col => {
+            const targetColName = `${prefix}${col}`;
+            newRow[targetColName] = defaultValue;
+          });
+          newRow._isMatched = false;
+        }
+
+        return newRow;
+      });
+
+      // Update Statistics
+      state.stats.total = state.targetFile.data.length;
+      state.stats.matched = matchedCount;
+      state.stats.unmatched = unmatchedCount;
+
+      document.getElementById('statTotalRows').textContent = state.stats.total.toLocaleString();
+      document.getElementById('statMatchedRows').textContent = state.stats.matched.toLocaleString();
+      document.getElementById('statUnmatchedRows').textContent = state.stats.unmatched.toLocaleString();
+      
+      const rate = state.stats.total > 0 ? ((matchedCount / state.stats.total) * 100).toFixed(1) : 0;
+      document.getElementById('statMatchRate').textContent = `${rate}%`;
+
+      // Enable Step 3 & Switch
+      const step3Btn = document.getElementById('stepBtn-3');
+      step3Btn.disabled = false;
+      step3Btn.classList.remove('opacity-60');
+      
+      switchStep(3);
+      renderPreviewTable();
+      showToast('Hoàn tất ghép VLOOKUP thành công!', 'success');
+    }
+
+    // Render Preview Data Table
+    function renderPreviewTable() {
+      const thead = document.getElementById('previewTableHead');
+      const tbody = document.getElementById('previewTableBody');
+      const filter = document.getElementById('previewFilterSelect').value;
+
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      if (!state.resultData.length) return;
+
+      // Render Headers
+      state.resultHeaders.forEach(h => {
+        const th = document.createElement('th');
+        th.className = 'px-4 py-3 whitespace-nowrap border-b border-slate-200 dark:border-slate-700';
+        th.textContent = h;
+        thead.appendChild(th);
+      });
+
+      // Filter rows for preview (limit 50 rows for performant preview)
+      let displayData = state.resultData;
+      if (filter === 'matched') {
+        displayData = displayData.filter(r => r._isMatched);
+      } else if (filter === 'unmatched') {
+        displayData = displayData.filter(r => !r._isMatched);
+      }
+
+      const previewRows = displayData.slice(0, 50);
+
+      if (previewRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${state.resultHeaders.length}" class="text-center py-6 text-slate-400">Không tìm thấy bản ghi nào phù hợp bộ lọc</td></tr>`;
+        return;
+      }
+
+      // Render Rows
+      previewRows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = row._isMatched 
+          ? 'hover:bg-slate-50 dark:hover:bg-slate-700/40' 
+          : 'bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 dark:hover:bg-rose-950/40';
+
+        state.resultHeaders.forEach(header => {
+          const td = document.createElement('td');
+          td.className = 'px-4 py-2.5 whitespace-nowrap border-b border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-300';
+          td.textContent = row[header] ?? '';
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Export Result File
+    function exportData(format) {
+      if (!state.resultData.length) {
+        showToast('Không có dữ liệu để xuất!', 'error');
+        return;
+      }
+
+      // Clean internal meta property `_isMatched`
+      const cleanData = state.resultData.map(row => {
+        const copy = { ...row };
+        delete copy._isMatched;
+        return copy;
+      });
+
+      const fileName = `VLOOKUP_Result_${new Date().toISOString().slice(0,10)}`;
+
+      if (format === 'csv') {
+        const worksheet = XLSX.utils.json_to_sheet(cleanData, { header: state.resultHeaders });
+        const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
+        
+        // Trigger download via Blob
+        const blob = new Blob(["\ufeff" + csvOutput], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${fileName}.csv`;
+        link.click();
+        showToast('Đã tải xuống file CSV!', 'success');
+      } else if (format === 'xlsx') {
+        const worksheet = XLSX.utils.json_to_sheet(cleanData, { header: state.resultHeaders });
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "KetQua_Vlookup");
+        
+        XLSX.writeFile(workbook, `${fileName}.xlsx`);
+        showToast('Đã tải xuống file Excel (.xlsx)!', 'success');
+      }
+    }
+
+    // Initialize application events
+    window.addEventListener('DOMContentLoaded', () => {
+      setupDragAndDrop('targetDropZone', 'targetFileInput', 'target');
+      setupDragAndDrop('sourceDropZone', 'sourceFileInput', 'source');
+    });
+  </script>
+</body>
+</html>
