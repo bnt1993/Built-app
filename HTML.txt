@@ -1,0 +1,378 @@
+HTML
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>SAP Inventory & Part Management System</title>
+  <style>
+    :root {
+      -primary: #0078d4;
+      -bg-main: #f3f2f1;
+      -border: #edebe9;
+      -text: #323130;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-main); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* Thanh công cụ tìm kiếm trên cùng */
+    .toolbar {
+      background: #fff;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .search-box-group { display: flex; gap: 8px; flex: 1; min-width: 300px; }
+    .search-box-group input {
+      flex: 1; padding: 8px 12px; font-size: 15px; border: 1px solid #8a8886; border-radius: 4px; outline: none;
+    }
+    .search-box-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    
+    .radio-group, .checkbox-group { display: flex; gap: 12px; align-items: center; font-size: 14px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #106ebe; }
+    .btn-secondary { background: #f3f2f1; color: #323130; border: 1px solid #8a8886; }
+    .btn-secondary:hover { background: #edebe9; }
+
+    /* Khu vực chính chia đôi: Bảng bên trái, Chi tiết + Hình ảnh bên phải */
+    .main-container { display: flex; flex: 1; overflow: hidden; gap: 10px; padding: 10px; }
+    
+    .table-section {
+      flex: 2; background: #fff; border-radius: 6px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .table-wrapper { flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+    th { background: #faf9f8; position: sticky; top: 0; z-index: 2; font-weight: 600; color: #605e5c; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover { background: #f1fdfd; }
+    tbody tr.selected { background: #c7e0f4 !important; font-weight: 600; }
+
+    /* Bảng điều khiển chi tiết & hình ảnh bên phải (Mô phỏng UserForm) */
+    .detail-section {
+      flex: 1; background: #fff; border-radius: 6px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; padding: 15px; overflow-y: auto; min-width: 350px;
+    }
+    .detail-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
+    
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 13px; }
+    .detail-item { background: #faf9f8; padding: 8px; border-radius: 4px; border: 1px solid var(--border); }
+    .detail-item label { display: block; color: #605e5c; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
+    .detail-item span { font-weight: 600; color: #201f1e; }
+
+    /* Khu vực hiển thị ảnh SAP */
+    .image-viewer-box {
+      border: 1px solid #8a8886; border-radius: 6px; background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; height: 260px; margin-bottom: 15px; overflow: hidden;
+    }
+    .image-viewer-box img { max-width: 100%; max-height: 220px; object-fit: contain; cursor: zoom-in; }
+    .img-nav-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.5); color: #fff; border: none; font-size: 20px; padding: 8px 12px; cursor: pointer; border-radius: 4px;
+    }
+    .img-nav-btn:hover { background: rgba(0,0,0,0.8); }
+    .btn-prev { left: 10px; }
+    .btn-next { right: 10px; }
+    .img-counter {
+      position: absolute; bottom: 8px; right: 10px; background: rgba(0,0,0,0.6); color: #fff;
+      padding: 2px 8px; font-size: 12px; border-radius: 4px;
+    }
+
+    .meta-info { font-size: 12px; color: #605e5c; background: #faf9f8; padding: 10px; border-radius: 4px; border: 1px solid var(--border); margin-top: auto; }
+    
+    /* Footer trạng thái */
+    .footer-bar {
+      background: #fff; padding: 8px 20px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #605e5c;
+    }
+
+    /* Modal phóng to ảnh */
+    #lightbox {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999;
+      justify-content: center; align-items: center; flex-direction: column; cursor: zoom-out;
+    }
+    #lightbox img { max-width: 90%; max-height: 85vh; border: 2px solid #fff; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+  <!-- Thanh công cụ tìm kiếm và bộ lọc -->
+  <div class="toolbar">
+    <div class="search-box-group">
+      <input type="text" id="o-tim-kiem" placeholder="Nhập mã SAP, tên mô tả hoặc part no..." oninput="locDuLieu()">
+      <button class="btn btn-primary" onclick="locDuLieu()">Search</button>
+      <button class="btn btn-secondary" onclick="lamMoi()">Clear</button>
+    </div>
+
+    <div class="radio-group">
+      <label><input type="radio" name="truongTim" value="all" checked> All</label>
+      <label><input type="radio" name="truongTim" value="sap"> Sap</label>
+      <label><input type="radio" name="truongTim" value="desc"> Description</label>
+      <label><input type="radio" name="truongTim" value="part"> Part no</label>
+    </div>
+
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="chk-ton-kho" onchange="locDuLieu()"> Quantity > 0</label>
+    </div>
+
+    <button class="btn btn-secondary" onclick="xuatExcel()">Export Excel</button>
+  </div>
+
+  <!-- Nội dung chính: Bảng danh sách + Khung chi tiết & hình ảnh -->
+  <div class="main-container">
+    <div class="table-section">
+      <div class="table-wrapper">
+        <table id="bang-du-lieu">
+          <thead id="dau-bang"></thead>
+          <tbody id="than-bang"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Khung chi tiết tương tự UserForm trong hình -->
+    <div class="detail-section">
+      <div class="detail-title">Thông tin chi tiết mã SAP</div>
+      
+      <!-- Khung xem ảnh tích hợp bộ sưu tập _01, _02 -->
+      <div class="image-viewer-box" id="khung-anh">
+        <img id="anh-chinh" src="" alt="Chưa có hình ảnh" onclick="phongToAnh()">
+        <button class="img-nav-btn btn-prev" id="btn-anh-truoc" onclick="doiAnhChiTiet(-1, event)" style="display:none">&#10094;</button>
+        <button class="img-nav-btn btn-next" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" style="display:none">&#10095;</button>
+        <div class="img-counter" id="dem-anh">0/0 images</div>
+      </div>
+
+      <div class="detail-grid" id="luoi-chi-tiet">
+        <!-- Điền động bằng JavaScript -->
+      </div>
+
+      <div class="meta-info" id="thong-tin-meta">
+        User: -- <br>
+        Last update: Đang chờ kết nối...
+      </div>
+    </div>
+  </div>
+
+  <!-- Thanh trạng thái cuối màn hình -->
+  <div class="footer-bar">
+    <span id="trang-thai-ban-ghi">Records Found: 0 / 0</span>
+    <span id="trang-thai-cap-nhat">Cập nhật lúc: --</span>
+  </div>
+
+  <!-- Hộp thoại phóng to ảnh -->
+  <div id="lightbox" onclick="this.style.display='none'">
+    <img id="lightbox-img" src="">
+  </div>
+
+  <script>
+    // ================= CẤU HÌNH THƯ MỤC Ổ MẠNG =================
+    const duongDanOMang = "data.js";
+    const THU_MUC_HINH = "HinhAnh/"; // Thư mục chứa ảnh trên ổ mạng
+    const SO_ANH_TOI_DA = 10;        // Tự động quét từ _01 đến _10
+    // ==========================================================
+
+    let tatCaDuLieu = [];
+    let tieuDeCot = [];
+    let dongDangChonIndex = -1;
+    let danhSachAnhDangXem = [];
+    let viTriAnhDangXem = 0;
+    let mocCapNhatCu = "";
+
+    function taiDuLieu() {
+      const scriptCu = document.getElementById("script-data");
+      if (scriptCu) scriptCu.remove();
+
+      const s = document.createElement("script");
+      s.id = "script-data";
+      s.src = duongDanOMang + "?t=" + Date.now();
+
+      s.onload = function() {
+        if (window.thoiGianCapNhat !== mocCapNhatCu) {
+          mocCapNhatCu = window.thoiGianCapNhat;
+          tatCaDuLieu = window.duLieuCongTy || [];
+          if (tatCaDuLieu.length > 0) {
+            tieuDeCot = tatCaDuLieu[0];
+            veTieuDe();
+            locDuLieu();
+          }
+          document.getElementById("trang-thai-cap-nhat").textContent = "Cập nhật lúc: " + mocCapNhatCu;
+        }
+      };
+      document.body.appendChild(s);
+    }
+
+    function veTieuDe() {
+      document.getElementById("dau-bang").innerHTML = "<tr>" + tieuDeCot.map(c => `<th>${c}</th>`).join("") + "</tr>";
+    }
+
+    function locDuLieu() {
+      if (tatCaDuLieu.length < 2) return;
+      const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
+      const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
+      const chiTonKho = document.getElementById("chk-ton-kho").checked;
+
+      let html = "";
+      let soBanGhiTimThay = 0;
+
+      for (let i = 1; i < tatCaDuLieu.length; i++) {
+        const dong = tatCaDuLieu[i];
+        let khop = true;
+
+        // Lọc theo từ khóa và trường tìm kiếm
+        if (tuKhoa) {
+          if (cheDoTim === "all") {
+            khop = dong.some(cell => String(cell).toLowerCase().includes(tuKhoa));
+          } else {
+            // Xác định vị trí cột tương ứng (Ví dụ giả định: Cột 0 là Sap, Cột 1 là Description, Cột 2 là Part No...)
+            let colIndex = cheDoTim === "sap" ? 0 : (cheDoTim === "desc" ? 1 : 2);
+            let val = String(dong[colIndex] || "").toLowerCase();
+            khop = val.includes(tuKhoa);
+          }
+        }
+
+        // Lọc số lượng > 0 (giả định cột Stock/Quantity nằm ở vị trí thứ 3 hoặc 4, điều chỉnh theo file Excel của bạn)
+        if (khop && chiTonKho) {
+          let tonKhoVal = parseFloat(dong[3]) || 0; // Thay đổi số 3 nếu cột tồn kho khác vị trí
+          if (tonKhoVal <= 0) khop = false;
+        }
+
+        if (khop) {
+          soBanGhiTimThay++;
+          let selectedClass = (i === dongDangChonIndex) ? "selected" : "";
+          html += `<tr class="${selectedClass}" onclick="chonDong(${i}, this)">` + 
+                  dong.map(cell => `<td>${cell}</td>`).join("") + 
+                  `</tr>`;
+        }
+      }
+
+      document.getElementById("than-bang").innerHTML = html;
+      document.getElementById("trang-thai-ban-ghi").textContent = `Records Found: ${soBanGhiTimThay} / ${tatCaDuLieu.length - 1}`;
+    }
+
+    function chonDong(index, element) {
+      document.querySelectorAll("#than-bang tr").forEach(tr => tr.classList.remove("selected"));
+      element.classList.add("selected");
+      dongDangChonIndex = index;
+
+      const dongData = tatCaDuLieu[index];
+      const maSap = (dongData[0] || "").trim(); // Cột đầu tiên là Mã SAP
+
+      // Hiển thị thông tin chi tiết sang panel bên phải
+      let htmlChiTiet = "";
+      for (let c = 0; c < tieuDeCot.length; c++) {
+        htmlChiTiet += `<div class="detail-item"><label>${tieuDeCot[c]}</label><span>${dongData[c] || ""}</span></div>`;
+      }
+      document.getElementById("luoi-chi-tiet").innerHTML = htmlChiTiet;
+
+      // Tải hình ảnh tương ứng với Mã SAP
+      taiBoSuuTapAnh(maSap);
+
+      document.getElementById("thong-tin-meta").innerHTML = `User: Hệ thống nội bộ<br>Last update: ${mocCapNhatCu}`;
+    }
+
+    // Tải bộ sưu tập ảnh _01, _02...
+    function taiBoSuuTapAnh(maSap) {
+      danhSachAnhDangXem = [];
+      viTriAnhDangXem = 0;
+      capNhatGiaoDienAnh();
+
+      if (!maSap) return;
+
+      // Thử dò từ _01 đến _10
+      for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
+        const hauTo = k < 10 ? "0" + k : "" + k;
+        kiemTraVaThemAnh(`${maSap}_${hauTo}.jpg`, `${maSap}_${hauTo}.png`);
+      }
+      
+      // Kiểm tra thêm ảnh gốc không có hậu tố
+      kiemTraVaThemAnh(`${maSap}.jpg`, `${maSap}.png`);
+    }
+
+    function kiemTraVaThemAnh(tenJpg, tenPng) {
+      const imgTest = new Image();
+      const urlJpg = THU_MUC_HINH + encodeURIComponent(tenJpg);
+      
+      imgTest.onload = function() {
+        if (!danhSachAnhDangXem.includes(urlJpg)) {
+          danhSachAnhDangXem.push(urlJpg);
+          danhSachAnhDangXem.sort();
+          capNhatGiaoDienAnh();
+        }
+      };
+      imgTest.onerror = function() {
+        const imgPng = new Image();
+        const urlPng = THU_MUC_HINH + encodeURIComponent(tenPng);
+        imgPng.onload = function() {
+          if (!danhSachAnhDangXem.includes(urlPng)) {
+            danhSachAnhDangXem.push(urlPng);
+            danhSachAnhDangXem.sort();
+            capNhatGiaoDienAnh();
+          }
+        };
+        imgPng.src = urlPng;
+      };
+      imgTest.src = urlJpg;
+    }
+
+    function capNhatGiaoDienAnh() {
+      const imgEl = document.getElementById("anh-chinh");
+      const btnPrev = document.getElementById("btn-anh-truoc");
+      const btnNext = document.getElementById("btn-anh-sau");
+      const counterEl = document.getElementById("dem-anh");
+      const tong = danhSachAnhHienTai = danhSachAnhDangXem.length;
+
+      if (tong > 0) {
+        if (viTriAnhDangXem >= tong) viTriAnhHienTai = 0;
+        imgEl.src = danhSachAnhDangXem[viTriAnhHienTai];
+        counterEl.textContent = `${viTriAnhHienTai + 1} / ${tong} images`;
+        
+        const hienNut = tong > 1 ? "block" : "none";
+        btnPrev.style.display = hienNut;
+        btnNext.style.display = hienNut;
+      } else {
+        imgEl.src = "";
+        counterEl.textContent = "0/0 images";
+        btnPrev.style.display = "none";
+        btnNext.style.display = "none";
+      }
+    }
+
+    function doiAnhChiTiet(buoc, e) {
+      e.stopPropagation();
+      const tong = danhSachAnhDangXem.length;
+      if (tong <= 1) return;
+      viTriAnhHienTai = (viTriAnhHienTai + buoc + tong) % tong;
+      capNhatGiaoDienAnh();
+    }
+
+    function phongToAnh() {
+      const src = document.getElementById("anh-chinh").src;
+      if (src) {
+        document.getElementById("lightbox-img").src = src;
+        document.getElementById("lightbox").style.display = "flex";
+      }
+    }
+
+    function lamMoi() {
+      document.getElementById("o-tim-kiem").value = "";
+      document.querySelector('input[name="truongTim"][value="all"]').checked = true;
+      document.getElementById("chk-ton-kho").checked = false;
+      locDuLieu();
+    }
+
+    function xuatExcel() {
+      alert("Tính năng xuất dữ liệu đã sẵn sàng trên hệ thống mạng!");
+    }
+
+    // Tự động nạp dữ liệu và làm mới mỗi 5 giây
+    taiDuLieu();
+    setInterval(taiDuLieu, 5000);
+  </script>
+</body>
+</html>
