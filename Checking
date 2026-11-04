@@ -480,8 +480,9 @@
         const dangSapXep = cotSapXep === chiSo;
         const muiTen = dangSapXep ? (huongSapXep === 1 ? "▲" : "▼") : "↕";
         const ariaSort = dangSapXep ? (huongSapXep === 1 ? "ascending" : "descending") : "none";
-        return `<th class="sortable" onclick="sapXepTheoCot(${chiSo})" aria-sort="${ariaSort}" title="Sắp xếp theo ${c}">` +
-               `${c}<span class="sort-indicator">${muiTen}</span></th>`;
+        return '<th aria-sort="' + ariaSort + '"><button type="button" class="sort-trigger" ' +
+          'onclick="sapXepTheoCot(' + chiSo + ')" title="Sắp xếp theo ' + c + '">' +
+          c + '<span class="sort-indicator">' + muiTen + '</span></button></th>';
       }).join("") + "</tr>";
     }
 
@@ -657,18 +658,11 @@
     }
 
     function sapXepTheoCot(chiSoCot) {
-      if (cotSapXep === chiSoCot) {
-        huongSapXep *= -1;
-      } else {
-        cotSapXep = chiSoCot;
-        huongSapXep = 1;
-      }
-
+      if (cotSapXep === chiSoCot) huongSapXep *= -1;
+      else { cotSapXep = chiSoCot; huongSapXep = 1; }
       trangHienTai = 1;
-      sapXepKetQua();
       veTieuDe();
-      hienThiTrangHienTai();
-      document.querySelector(".table-wrapper").scrollTop = 0;
+      locDuLieu();
     }
 
     function sapXepKetQua() {
@@ -703,15 +697,24 @@
       const batDau = (trangHienTai - 1) * SO_DONG_MOI_TRANG;
       const mucTrenTrang = ketQuaLoc.slice(batDau, batDau + SO_DONG_MOI_TRANG);
       const html = mucTrenTrang.map(muc => {
-        const selectedClass = (muc.chiSo === dongDangChonIndex) ? "selected" : "";
-        return `<tr class="${selectedClass}" onclick="chonDong(${muc.chiSo}, this)">` +
-               COT_HIEN_THI.map(chiSoCot => `<td>${thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]))}</td>`).join("") +
-               `</tr>`;
+        const selectedClass = muc.chiSo === dongDangChonIndex ? "selected" : "";
+        const selectedAria = muc.chiSo === dongDangChonIndex ? "true" : "false";
+        const o = COT_HIEN_THI.map(chiSoCot => {
+          const giaTri = thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]));
+          if (chiSoCot === 0) return '<td><span class="sap-code">' + giaTri + '</span></td>';
+          if (chiSoCot === 3) return '<td><span class="stock-badge' +
+            (muc.coTonKho ? '' : ' empty') + '">' + giaTri + '</span></td>';
+          return '<td>' + giaTri + '</td>';
+        }).join("");
+        return '<tr class="' + selectedClass + '" data-row-index="' + muc.chiSo +
+          '" tabindex="0" aria-selected="' + selectedAria +
+          '" onclick="chonDong(' + muc.chiSo + ', this)">' + o + '</tr>';
       }).join("");
 
-      document.getElementById("than-bang").innerHTML = html;
+      document.getElementById("than-bang").innerHTML = html ||
+        '<tr><td colspan="6" class="empty-table">Không tìm thấy vật tư phù hợp. Hãy thử từ khóa hoặc bộ lọc khác.</td></tr>';
       document.getElementById("thong-tin-trang").textContent =
-        `Page ${trangHienTai} / ${tongSoTrang}`;
+        "Trang " + trangHienTai + " / " + tongSoTrang;
       document.getElementById("btn-trang-truoc").disabled = trangHienTai <= 1;
       document.getElementById("btn-trang-sau").disabled = trangHienTai >= tongSoTrang;
     }
@@ -723,14 +726,6 @@
       trangHienTai = trangMoi;
       hienThiTrangHienTai();
       document.querySelector(".table-wrapper").scrollTop = 0;
-    }
-
-    function xuLyCuonBang() {
-      const vungBang = document.querySelector(".table-wrapper");
-      if (!vungBang || trangHienTai >= Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG)) return;
-
-      const ganCuoi = vungBang.scrollTop + vungBang.clientHeight >= vungBang.scrollHeight - 24;
-      if (ganCuoi) doiTrang(1);
     }
 
     function chonDongBangPhim(buoc) {
@@ -748,7 +743,7 @@
 
       const mucMoi = ketQuaLoc[viTriMoi];
       const dongMoi = document.querySelector(
-        `#than-bang tr[onclick*="chonDong(${mucMoi.chiSo},"]`
+        '#than-bang tr[data-row-index="' + mucMoi.chiSo + '"]'
       );
       if (!dongMoi) return;
 
@@ -757,12 +752,18 @@
     }
 
     function chonDong(index, element) {
-      document.querySelectorAll("#than-bang tr").forEach(tr => tr.classList.remove("selected"));
+      document.querySelectorAll("#than-bang tr").forEach(tr => {
+        tr.classList.remove("selected");
+        tr.setAttribute("aria-selected", "false");
+      });
       element.classList.add("selected");
+      element.setAttribute("aria-selected", "true");
       dongDangChonIndex = index;
 
       const dongData = tatCaDuLieu[index];
       const maSap = chuanHoaMaSap(dongData[0]); // Cột đầu tiên là Mã SAP
+      document.getElementById("nhan-sap").textContent = "SAP: " + (maSap || "—");
+      document.getElementById("chi-tiet-trong").style.display = "none";
 
       // Hiển thị thông tin chi tiết sang panel bên phải
       let htmlChiTiet = "";
@@ -780,7 +781,9 @@
 
       // Tải hình ảnh tương ứng với Mã SAP
       taiBoSuuTapAnh(maSap);
-
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        document.querySelector(".detail-section").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
 
     let lanTaiAnh = 0;
@@ -970,7 +973,6 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
-    document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonBang, { passive: true });
     document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
     document.addEventListener("keydown", e => {
       const lightboxDangMo = document.getElementById("lightbox").style.display === "flex";
@@ -984,6 +986,20 @@
       }
 
       const dangNhapLieu = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName);
+      if (e.key === "/" && !dangNhapLieu) {
+        e.preventDefault();
+        document.getElementById("o-tim-kiem").focus();
+        return;
+      }
+      if (e.key === "Escape" && document.activeElement?.id === "o-tim-kiem") {
+        document.getElementById("o-tim-kiem").blur();
+        return;
+      }
+      if (e.key === "Enter" && document.activeElement?.dataset?.rowIndex) {
+        e.preventDefault();
+        chonDong(Number(document.activeElement.dataset.rowIndex), document.activeElement);
+        return;
+      }
       if (dangNhapLieu) return;
       if (e.key === "ArrowUp" || e.key === "ArrowDown") {
         e.preventDefault();
@@ -991,9 +1007,12 @@
       }
     });
 
-    // Tự động nạp dữ liệu và kiểm tra cập nhật mỗi 30 giây
+    // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) taiDuLieu();
+    });
   </script>
 </body>
 </html>
