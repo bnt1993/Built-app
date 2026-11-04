@@ -787,74 +787,131 @@
     }
 
     let lanTaiAnh = 0;
+    let dangQuetAnh = false;
     const boNhoAnh = new Map();
+    const dangKiemTraAnh = new Map();
+    const boNhoBoSuuTap = new Map();
 
-    // Tải bộ sưu tập ảnh với tối đa 3 request đồng thời.
-    function taiBoSuuTapAnh(maSap) {
+    // HEAD kiểm tra tên tệp mà không tải toàn bộ ảnh. Fallback Image() nếu
+    // chạy file://, ổ mạng, hoặc server không hỗ trợ HEAD.
+    function kiemTraAnh(url) {
+      const daLuu = boNhoAnh.get(url);
+      if (daLuu && daLuu.hetHan > Date.now()) return Promise.resolve(daLuu.coAnh);
+      if (dangKiemTraAnh.has(url)) return dangKiemTraAnh.get(url);
+
+      const tacVu = (async function() {
+        let coAnh;
+        if (location.protocol === "http:" || location.protocol === "https:") {
+          const controller = new AbortController();
+          const gioiHan = setTimeout(() => controller.abort(), 3000);
+          try {
+            const response = await fetch(url, {
+              method: "HEAD", cache: "force-cache", signal: controller.signal
+            });
+            if (response.status === 404) {
+              coAnh = false;
+            } else if (response.ok) {
+              const loai = (response.headers.get("content-type") || "").toLowerCase();
+              coAnh = !loai || loai.startsWith("image/") || loai.includes("octet-stream");
+            }
+          } catch (e) {
+            // Trình duyệt hoặc server không hỗ trợ HEAD: thử Image().
+          } finally {
+            clearTimeout(gioiHan);
+          }
+        }
+
+        if (coAnh === undefined) {
+          coAnh = await new Promise(resolve => {
+            const img = new Image();
+            let xong = false;
+            const gioiHan = setTimeout(() => ketThuc(false), 5000);
+            function ketThuc(ok) {
+              if (xong) return;
+              xong = true;
+              clearTimeout(gioiHan);
+              img.onload = null;
+              img.onerror = null;
+              resolve(ok);
+            }
+            img.onload = () => ketThuc(true);
+            img.onerror = () => ketThuc(false);
+            img.src = url;
+          });
+        }
+
+        boNhoAnh.set(url, {
+          coAnh: coAnh, hetHan: Date.now() + (coAnh ? 600000 : 60000)
+        });
+        if (boNhoAnh.size > 600) boNhoAnh.delete(boNhoAnh.keys().next().value);
+        return coAnh;
+      })();
+
+      dangKiemTraAnh.set(url, tacVu);
+      return tacVu.finally(() => dangKiemTraAnh.delete(url));
+    }
+
+    // Chỉ 4 tác vụ kiểm tra đồng thời, giữ dữ liệu từ SAP đã xem gần đây.
+    async function taiBoSuuTapAnh(maSap) {
       const lanHienTai = ++lanTaiAnh;
       maSapDangXem = chuanHoaMaSap(maSap);
-
       danhSachAnhDangXem = [];
       viTriAnhDangXem = 0;
+      dangQuetAnh = Boolean(maSapDangXem);
       capNhatGiaoDienAnh();
-
       if (!maSapDangXem) return;
 
-      const danhSachTen = [];
-
-      for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
-        const hauTo = String(k).padStart(2, "0");
-        danhSachTen.push(`${maSapDangXem}_${hauTo}.jpg`);
-        danhSachTen.push(`${maSapDangXem}_${hauTo}.png`);
+      const boDaCo = boNhoBoSuuTap.get(maSapDangXem);
+      if (boDaCo && boDaCo.hetHan > Date.now()) {
+        danhSachAnhDangXem = boDaCo.urls.slice();
+        dangQuetAnh = false;
+        capNhatGiaoDienAnh();
+        return;
       }
 
-      danhSachTen.push(`${maSapDangXem}.jpg`, `${maSapDangXem}.png`);
+      const danhSachTen = [];
+      for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
+        const hauTo = String(k).padStart(2, "0");
+        danhSachTen.push(maSapDangXem + "_" + hauTo + ".jpg");
+        danhSachTen.push(maSapDangXem + "_" + hauTo + ".png");
+      }
+      danhSachTen.push(maSapDangXem + ".jpg", maSapDangXem + ".png");
 
       const hangDoi = [...new Set(danhSachTen)];
       let viTri = 0;
-
       async function congNhan() {
         while (viTri < hangDoi.length && lanHienTai === lanTaiAnh) {
-          const tenAnh = hangDoi[viTri++];
-          const url = THU_MUC_HINH + encodeURIComponent(tenAnh);
+          const url = THU_MUC_HINH + encodeURIComponent(hangDoi[viTri++]);
           const tonTai = await kiemTraAnh(url);
-
-          if (tonTai && lanHienTai === lanTaiAnh) {
-            if (!danhSachAnhDangXem.includes(url)) {
-              const anhHienTai = danhSachAnhDangXem[viTriAnhDangXem];
-              danhSachAnhDangXem.push(url);
-              danhSachAnhDangXem.sort();
-              viTriAnhDangXem = Math.max(0, danhSachAnhDangXem.indexOf(anhHienTai));
-              capNhatGiaoDienAnh();
-            }
+          if (tonTai && lanHienTai === lanTaiAnh && !danhSachAnhDangXem.includes(url)) {
+            const anhDangChon = danhSachAnhDangXem[viTriAnhDangXem];
+            danhSachAnhDangXem.push(url);
+            danhSachAnhDangXem.sort();
+            viTriAnhDangXem = anhDangChon
+              ? danhSachAnhDangXem.indexOf(anhDangChon) : 0;
+            capNhatGiaoDienAnh();
           }
         }
       }
 
-      Promise.all([congNhan(), congNhan(), congNhan()]);
+      await Promise.all([congNhan(), congNhan(), congNhan(), congNhan()]);
+      if (lanHienTai !== lanTaiAnh) return;
+      dangQuetAnh = false;
+      boNhoBoSuuTap.set(maSapDangXem, {
+        urls: danhSachAnhDangXem.slice(),
+        hetHan: Date.now() + (danhSachAnhDangXem.length ? 300000 : 60000)
+      });
+      if (boNhoBoSuuTap.size > 80) boNhoBoSuuTap.delete(boNhoBoSuuTap.keys().next().value);
+      capNhatGiaoDienAnh();
     }
 
-    function kiemTraAnh(url) {
-      if (boNhoAnh.has(url)) {
-        return Promise.resolve(boNhoAnh.get(url));
-      }
-
-      return new Promise(resolve => {
-        const img = new Image();
-        let daKetThuc = false;
-
-        const ketThuc = ketQua => {
-          if (daKetThuc) return;
-          daKetThuc = true;
-          if (ketQua) boNhoAnh.set(url, true); // Cho phép thử lại ảnh tải lỗi.
-          resolve(ketQua);
-        };
-
-        img.onload = () => ketThuc(true);
-        img.onerror = () => ketThuc(false);
-        setTimeout(() => ketThuc(false), 5000);
-        img.src = url;
-      });
+    // Chuẩn bị ảnh tiếp theo sau khi chuyển ảnh để thao tác mượt hơn.
+    function napTruocAnhKeTiep() {
+      if (danhSachAnhDangXem.length < 2) return;
+      const url = danhSachAnhDangXem[(viTriAnhDangXem + 1) % danhSachAnhDangXem.length];
+      const anh = new Image();
+      anh.decoding = "async";
+      anh.src = url;
     }
 
     function capNhatGiaoDienAnh() {
@@ -862,26 +919,31 @@
       const btnPrev = document.getElementById("btn-anh-truoc");
       const btnNext = document.getElementById("btn-anh-sau");
       const counterEl = document.getElementById("dem-anh");
+      const khuVucTrong = document.getElementById("anh-trong");
+      const thongBaoAnh = khuVucTrong.querySelector("span:last-child");
       const tong = danhSachAnhDangXem.length;
 
+      khuVucTrong.style.display = tong > 0 ? "none" : "grid";
       if (tong > 0) {
         if (viTriAnhDangXem >= tong) viTriAnhDangXem = 0;
         const src = danhSachAnhDangXem[viTriAnhDangXem];
-        imgEl.src = src;
+        if (imgEl.getAttribute("src") !== src) imgEl.src = src;
         const lightboxImg = document.getElementById("lightbox-img");
-        if (document.getElementById("lightbox").style.display === "flex") {
+        if (document.getElementById("lightbox").style.display === "flex" &&
+            lightboxImg.getAttribute("src") !== src) {
           lightboxImg.src = src;
           datLaiZoom();
         }
-        counterEl.textContent = `${viTriAnhDangXem + 1} / ${tong} images`;
-        
-        const hienNut = tong > 1 ? "block" : "none";
-        btnPrev.style.display = hienNut;
-        btnNext.style.display = hienNut;
+        counterEl.textContent = (viTriAnhDangXem + 1) + " / " + tong +
+          " ảnh" + (dangQuetAnh ? " · Đang tải" : "");
+        btnPrev.style.display = tong > 1 ? "block" : "none";
+        btnNext.style.display = tong > 1 ? "block" : "none";
       } else {
         imgEl.removeAttribute("src");
         document.getElementById("lightbox-img").removeAttribute("src");
-        counterEl.textContent = "0/0 images";
+        thongBaoAnh.textContent = dangQuetAnh ? "Đang tìm hình ảnh..." :
+          (maSapDangXem ? "Chưa có ảnh cho mã SAP này" : "Chọn một mã SAP để xem hình ảnh");
+        counterEl.textContent = dangQuetAnh ? "Đang tìm ảnh" : "0/0 ảnh";
         btnPrev.style.display = "none";
         btnNext.style.display = "none";
       }
@@ -893,6 +955,7 @@
       if (tong <= 1) return;
       viTriAnhDangXem = (viTriAnhDangXem + buoc + tong) % tong;
       capNhatGiaoDienAnh();
+      napTruocAnhKeTiep();
     }
 
     function phongToAnh() {
