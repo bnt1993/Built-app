@@ -372,7 +372,7 @@
     const duongDanOMang = "data.js";
     const THU_MUC_HINH = "Material/"; // Thư mục chứa ảnh
     const SO_ANH_TOI_DA = 10;        // Tự động quét từ _01 đến _10
-    const SO_DONG_MOI_TRANG = 200;
+    const SO_DONG_MOI_TRANG = 75;
     // Chỉ hiển thị các cột Excel 1, 2, 6, 4, 5, 3 trong bảng.
     const COT_HIEN_THI = [0, 1, 5, 3, 4, 2];
     // ==========================================================
@@ -393,49 +393,74 @@
     let mucZoom = 1;
 
     let lanTaiDuLieu = 0;
+    let dangTaiScript = false;
+
+    function datTrangThaiDuLieu(noiDung, loai) {
+      const el = document.getElementById("tinh-trang-du-lieu");
+      el.textContent = noiDung;
+      el.className = "online-pill" + (loai ? " " + loai : "");
+    }
 
     function taiDuLieu() {
+      if (document.hidden || dangTaiScript) return;
+      dangTaiScript = true;
       const lanHienTai = ++lanTaiDuLieu;
       const scriptCu = document.getElementById("script-data");
       if (scriptCu) scriptCu.remove();
 
       const s = document.createElement("script");
       s.id = "script-data";
+      s.async = true;
       s.src = duongDanOMang + "?t=" + Date.now();
+      datTrangThaiDuLieu("Đang đồng bộ", "loading");
+
+      let daHetGio = false;
+      const gioiHan = setTimeout(function() {
+        if (lanHienTai !== lanTaiDuLieu || !dangTaiScript) return;
+        daHetGio = true;
+        dangTaiScript = false;
+        s.remove();
+        datTrangThaiDuLieu("Mất kết nối", "error");
+        document.getElementById("trang-thai-cap-nhat").textContent =
+          "Hết thời gian chờ tải dữ liệu (giữ dữ liệu hiện có)";
+      }, 15000);
 
       s.onload = function() {
-        if (lanHienTai !== lanTaiDuLieu) return;
-
+        if (lanHienTai !== lanTaiDuLieu || daHetGio) return;
+        clearTimeout(gioiHan);
+        dangTaiScript = false;
         const duLieuMoi = window.duLieuCongTy;
         const thoiGianCapNhat = window.thoiGianCapNhat;
         const coMocCapNhat = thoiGianCapNhat !== undefined
           && thoiGianCapNhat !== null && thoiGianCapNhat !== "";
 
         if (!Array.isArray(duLieuMoi) || !duLieuMoi.length || !Array.isArray(duLieuMoi[0])) {
+          datTrangThaiDuLieu("Dữ liệu không hợp lệ", "error");
           document.getElementById("trang-thai-cap-nhat").textContent =
             "Lỗi: data.js không chứa bảng dữ liệu hợp lệ";
           return;
         }
-
         if (!coMocCapNhat || thoiGianCapNhat !== mocCapNhatCu || !tatCaDuLieu.length) {
           mocCapNhatCu = coMocCapNhat ? thoiGianCapNhat : "";
           tatCaDuLieu = duLieuMoi;
           tieuDeCot = tatCaDuLieu[0];
-          taoChiMucTimKiem();
+          chiMucSanSang = false;
+          soLanLocDuLieu++;
           veTieuDe();
-          locDuLieu();
+          taoChiMucTimKiem();
         }
-
+        datTrangThaiDuLieu("Đã kết nối");
         document.getElementById("trang-thai-cap-nhat").textContent =
-          "Cập nhật lúc: " + (coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString("vi-VN"));
+          "Cập nhật: " + (coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString("vi-VN"));
       };
-
       s.onerror = function() {
-        if (lanHienTai !== lanTaiDuLieu) return;
+        if (lanHienTai !== lanTaiDuLieu || daHetGio) return;
+        clearTimeout(gioiHan);
+        dangTaiScript = false;
+        datTrangThaiDuLieu("Mất kết nối", "error");
         document.getElementById("trang-thai-cap-nhat").textContent =
           "Không thể tải " + duongDanOMang + " (giữ dữ liệu hiện có)";
       };
-
       document.body.appendChild(s);
     }
 
@@ -533,53 +558,102 @@
       }
     }
 
+    let chiMucSanSang = false;
+    let lanLapChiMuc = 0;
+    let soCoTonKho = 0;
+    const dinhDangSoLuong = new Intl.NumberFormat("vi-VN");
+
+    // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
+      const lanHienTai = ++lanLapChiMuc;
       const chiSoBmNo = timCotTheoTen("BM No");
-      duLieuTimKiem = tatCaDuLieu.slice(1).map((dong, viTri) => {
-        const giaTri = dong.map(cell => String(cell ?? "").toLocaleLowerCase());
-        return {
-          chiSo: viTri + 1,
-          dong,
-          all: giaTri.join("\u0001"),
-          sap: giaTri[0] || "",
-          desc: giaTri[1] || "",
-          part: giaTri[2] || "",
-          bmno: chiSoBmNo >= 0 ? giaTri[chiSoBmNo] || "" : "",
-          coTonKho: (parseFloat(dong[3]) || 0) > 0
-        };
-      });
+      duLieuTimKiem = [];
+      soCoTonKho = 0;
+      chiMucSanSang = false;
+      let viTri = 1;
+      const tong = Math.max(0, tatCaDuLieu.length - 1);
+      document.getElementById("metric-total").textContent = dinhDangSoLuong.format(tong);
+      document.getElementById("metric-instock").textContent = "…";
+      document.getElementById("metric-results").textContent = "…";
+      document.getElementById("trang-thai-ban-ghi").textContent = "Đang xử lý dữ liệu...";
+      document.getElementById("than-bang").innerHTML =
+        '<tr><td colspan="6" class="empty-table">Đang chuẩn bị dữ liệu...</td></tr>';
+
+      function xuLyNhom() {
+        if (lanHienTai !== lanLapChiMuc) return;
+        const gioiHan = Math.min(viTri + 1000, tatCaDuLieu.length);
+        for (; viTri < gioiHan; viTri++) {
+          const dong = tatCaDuLieu[viTri];
+          if (!Array.isArray(dong)) continue;
+          const giaTri = dong.map(ten => String(ten ?? "").toLowerCase());
+          const coTonKho = chuyenThanhSo(dong[3]) > 0;
+          if (coTonKho) soCoTonKho++;
+          duLieuTimKiem.push({
+            chiSo: viTri,
+            dong: dong,
+            all: giaTri.join("\u0001"),
+            sap: giaTri[0] || "",
+            desc: giaTri[1] || "",
+            part: giaTri[2] || "",
+            bmno: chiSoBmNo >= 0 ? giaTri[chiSoBmNo] || "" : "",
+            coTonKho: coTonKho
+          });
+        }
+        if (viTri < tatCaDuLieu.length) {
+          setTimeout(xuLyNhom, 0);
+        } else {
+          chiMucSanSang = true;
+          document.getElementById("metric-instock").textContent = dinhDangSoLuong.format(soCoTonKho);
+          locDuLieu();
+        }
+      }
+      xuLyNhom();
     }
 
     let boTriHoanTimKiem = null;
-
     function yeuCauLocDuLieu() {
       clearTimeout(boTriHoanTimKiem);
+      ++soLanLocDuLieu;
       trangHienTai = 1;
-      boTriHoanTimKiem = setTimeout(locDuLieu, 120);
+      boTriHoanTimKiem = setTimeout(locDuLieu, 170);
     }
 
+    // Lọc theo từng nhịp animation frame và hủy các truy vấn đã lỗi thời.
     function locDuLieu() {
-      if (!tieuDeCot.length) return;
+      clearTimeout(boTriHoanTimKiem);
+      if (!chiMucSanSang) return;
       const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
-      const lanLocHienTai = ++soLanLocDuLieu;
-
       const truongTim = cheDoTim === "all" ? "all" : cheDoTim;
+      const lanLocHienTai = ++soLanLocDuLieu;
+      const moi = [];
+      let viTri = 0;
+      const tong = duLieuTimKiem.length;
+      document.getElementById("trang-thai-ban-ghi").textContent = "Đang tìm kiếm...";
 
-      ketQuaLoc = [];
-      for (const muc of duLieuTimKiem) {
-        const khop = (!tuKhoa || muc[truongTim].includes(tuKhoa))
-          && (!chiTonKho || muc.coTonKho);
-        if (khop) ketQuaLoc.push(muc);
+      function xuLyNhom() {
+        if (lanLocHienTai !== soLanLocDuLieu) return;
+        const gioiHan = Math.min(viTri + 2500, tong);
+        for (; viTri < gioiHan; viTri++) {
+          const muc = duLieuTimKiem[viTri];
+          if ((!tuKhoa || muc[truongTim].includes(tuKhoa)) && (!chiTonKho || muc.coTonKho)) {
+            moi.push(muc);
+          }
+        }
+        if (viTri < tong) {
+          requestAnimationFrame(xuLyNhom);
+          return;
+        }
+        ketQuaLoc = moi;
+        sapXepKetQua();
+        hienThiTrangHienTai();
+        document.querySelector(".table-wrapper").scrollTop = 0;
+        document.getElementById("trang-thai-ban-ghi").textContent =
+          dinhDangSoLuong.format(ketQuaLoc.length) + " / " + dinhDangSoLuong.format(tong) + " vật tư";
+        document.getElementById("metric-results").textContent = dinhDangSoLuong.format(ketQuaLoc.length);
       }
-
-      if (lanLocHienTai !== soLanLocDuLieu) return;
-      sapXepKetQua();
-      hienThiTrangHienTai();
-      document.querySelector(".table-wrapper").scrollTop = 0;
-      document.getElementById("trang-thai-ban-ghi").textContent =
-        `Records Found: ${ketQuaLoc.length} / ${tatCaDuLieu.length - 1}`;
+      xuLyNhom();
     }
 
     function sapXepTheoCot(chiSoCot) {
