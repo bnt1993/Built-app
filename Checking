@@ -243,7 +243,6 @@
       *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
   </style>
-  </style>
 </head>
 <body>
   <div class="app-shell">
