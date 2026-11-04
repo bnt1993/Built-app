@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>SAP Inventory & Part Management System</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg-main: #f6f8fc;
+      --border: #e5eaf2;
+      --text: #172033;
+      --muted: #718096;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --shadow: 0 10px 30px rgba(37, 55, 85, 0.07);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-main); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* Thanh công cụ tìm kiếm trên cùng */
+    .toolbar {
+      background: #fff;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .search-box-group { display: flex; gap: 8px; flex: 1; min-width: 300px; }
+    .search-box-group input {
+      flex: 1; padding: 8px 12px; font-size: 15px; border: 1px solid #8a8886; border-radius: 4px; outline: none;
+    }
+    .search-box-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    
+    .radio-group, .checkbox-group { display: flex; gap: 12px; align-items: center; font-size: 14px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #106ebe; }
+    .btn-secondary { background: #f3f2f1; color: #323130; border: 1px solid #8a8886; }
+    .btn-secondary:hover { background: #edebe9; }
+
+    /* Khu vực chính chia đôi: Bảng bên trái, Chi tiết + Hình ảnh bên phải */
+    .main-container { display: flex; flex: 1; overflow: hidden; gap: 10px; padding: 10px; }
+    
+    .table-section {
+      flex: 2; background: #fff; border-radius: 6px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .table-wrapper { flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+    th { background: #faf9f8; position: sticky; top: 0; z-index: 2; font-weight: 600; color: #605e5c; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover { background: #f1fdfd; }
+    tbody tr.selected { background: #c7e0f4 !important; font-weight: 600; }
+
+    /* Bảng điều khiển chi tiết & hình ảnh bên phải (Mô phỏng UserForm) */
+    .detail-section {
+      flex: 1; background: #fff; border-radius: 6px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; padding: 15px; overflow-y: auto; min-width: 350px;
+    }
+    .detail-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
+    
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 13px; }
+    .detail-item { background: #faf9f8; padding: 8px; border-radius: 4px; border: 1px solid var(--border); }
+    .detail-item label { display: block; color: #605e5c; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
+    .detail-item span { font-weight: 600; color: #201f1e; }
+
+    /* Khu vực hiển thị ảnh SAP */
+    .image-viewer-box {
+      border: 1px solid #8a8886; border-radius: 6px; background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; height: 260px; margin-bottom: 15px; overflow: hidden;
+    }
+    .image-viewer-box img { max-width: 100%; max-height: 220px; object-fit: contain; cursor: zoom-in; }
+    .img-nav-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.5); color: #fff; border: none; font-size: 20px; padding: 8px 12px; cursor: pointer; border-radius: 4px;
+    }
+    .img-nav-btn:hover { background: rgba(0,0,0,0.8); }
+    .btn-prev { left: 10px; }
+    .btn-next { right: 10px; }
+    .img-counter {
+      position: absolute; bottom: 8px; right: 10px; background: rgba(0,0,0,0.6); color: #fff;
+      padding: 2px 8px; font-size: 12px; border-radius: 4px;
+    }
+
+    .meta-info { font-size: 12px; color: #605e5c; background: #faf9f8; padding: 10px; border-radius: 4px; border: 1px solid var(--border); margin-top: auto; }
+    
+    /* Footer trạng thái */
+    .footer-bar {
+      background: #fff; padding: 8px 20px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #605e5c;
+    }
+    .pagination {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .pagination .btn {
+      min-height: 32px;
+      padding: 5px 10px;
+    }
+    .pagination .btn:disabled {
+      cursor: not-allowed;
+      opacity: .5;
+      transform: none;
+    }
+
+    /* Modal phóng to ảnh */
+    #lightbox {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999;
+      justify-content: center; align-items: center; flex-direction: column; cursor: zoom-out;
+    }
+    #lightbox img { max-width: 90%; max-height: 85vh; border: 2px solid #fff; border-radius: 6px; transform-origin: center; transition: transform .2s; cursor: grab; }
+    .lightbox-controls { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+    .lightbox-btn {
+      min-width: 42px; min-height: 38px; padding: 7px 12px; border: 1px solid rgba(255,255,255,.35);F
+      border-radius: 9px; color: #fff; background: rgba(255,255,255,.16); cursor: pointer; font-size: 15px;
+      backdrop-filter: blur(8px); transition: background .2s, transform .2s;
+    }
+    .lightbox-btn:hover { background: var(--primary); transform: translateY(-1px); }
+    .lightbox-close { position: absolute; top: 20px; right: 24px; font-size: 24px; line-height: 1; }
+    #lightbox-zoom-level { min-width: 52px; color: #fff; text-align: center; font-size: 12px; }
+    
+    /* Modern web app layer */
+    body {
+      background: var(--bg-main);
+      color: var(--text);
+      letter-spacing: 0.01em;
+    }
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 14px 22px;
+      gap: 12px 18px;
+      background: rgba(255,255,255,0.92);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 18px rgba(37, 55, 85, 0.05);
+      backdrop-filter: blur(14px);
+    }
+    .search-box-group { min-width: 320px; max-width: 610px; }
+    .search-box-group input {
+      min-height: 40px;
+      padding: 9px 14px;
+      border: 1px solid #d5dce8;
+      border-radius: 10px;
+      color: var(--text);
+      background: var(--surface-soft);
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .search-box-group input:hover { background: var(--surface); }
+    .search-box-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+      background: var(--surface);
+    }
+    .radio-group, .checkbox-group { gap: 7px; color: var(--muted); font-size: 12px; }
+    .radio-group label, .checkbox-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 32px;
+      padding: 0 9px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .radio-group label:hover, .checkbox-group label:hover { color: var(--primary); background: #eff5ff; }
+    input[type="radio"], input[type="checkbox"] { accent-color: var(--primary); }
+    .btn {
+      min-height: 40px;
+      padding: 9px 15px;
+      border-radius: 10px;
+      font-size: 12px;
+      transition: transform .2s, box-shadow .2s, background .2s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); box-shadow: 0 5px 12px rgba(37,99,235,.18); }
+    .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 7px 16px rgba(37,99,235,.24); }
+    .btn-secondary { background: var(--surface-soft); color: var(--text); border-color: #d5dce8; }
+    .btn-secondary:hover { background: #eef3fb; }
+    .main-container { gap: 16px; padding: 18px 22px; }
+    .table-section, .detail-section {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+    }
+    .table-section { background: var(--surface); }
+    .table-wrapper { scrollbar-color: #cbd5e1 transparent; }
+    table { font-size: 12px; }
+    th, td { padding: 12px 14px; border-color: #edf0f5; }
+    th {
+      padding-top: 13px;
+      padding-bottom: 13px;
+      color: #64748b;
+      background: #f8fafc;
+      font-size: 11px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    th.sortable { cursor: pointer; user-select: none; transition: background .16s, color .16s; }
+    th.sortable:hover { color: var(--primary); background: #eef5ff; }
+    th .sort-indicator { display: inline-block; width: 14px; margin-left: 4px; color: var(--primary); font-size: 12px; }
+    tbody tr { transition: background .16s, box-shadow .16s; }
+    tbody tr:hover { background: #f4f8ff; }
+    tbody tr.selected { color: #1e40af; background: #eaf2ff !important; box-shadow: inset 3px 0 var(--primary); }
+    .detail-section {
+      flex: .78;
+      min-width: 300px;
+      padding: 20px;
+      background: linear-gradient(160deg, #ffffff 0%, #f5f9ff 58%, #eef5ff 100%);
+      border-color: #cfe0fb;
+      box-shadow: 0 14px 32px rgba(37,99,235,.12), inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .detail-title {
+      margin: -20px -20px 18px;
+      padding: 18px 20px;
+      border-bottom: 1px solid #cfe0fb;
+      color: #1e3a8a;
+      background: linear-gradient(105deg, #dbeafe 0%, #eff6ff 55%, #ffffff 100%);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .01em;
+      box-shadow: 0 4px 12px rgba(37,99,235,.08);
+    }
+    .detail-title::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 10px; border-radius: 50%; background: #2563eb; box-shadow: 0 0 0 4px #bfdbfe; vertical-align: 1px; }
+    .detail-grid { gap: 8px; }
+    .detail-item {
+      padding: 11px 12px;
+      border: 1px solid #dbeafe;
+      border-left: 3px solid #60a5fa;
+      border-radius: 10px;
+      background: rgba(255,255,255,.82);
+      box-shadow: 0 3px 10px rgba(30,64,175,.06);
+      transition: transform .18s, box-shadow .18s, border-color .18s;
+    }
+    .detail-item:hover {
+      transform: translateY(-2px);
+      border-color: #93c5fd;
+      box-shadow: 0 7px 16px rgba(30,64,175,.12);
+    }
+    .detail-item label { color: #5b7bb5; font-size: 10px; font-weight: 700; letter-spacing: .07em; }
+    .detail-item span { display: block; margin-top: 3px; color: #172554; font-size: 13px; font-weight: 600; }
+    .bm-no-card {
+      display: none;
+      grid-column: 1 / -1;
+      margin-bottom: 12px;
+      padding: 12px;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #eff6ff, #ffffff);
+      box-shadow: 0 4px 12px rgba(37,99,235,.08);
+    }
+    .bm-no-card.visible { display: block; }
+    .bm-no-card-title {
+      margin-bottom: 8px;
+      color: #1e3a8a;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .bm-no-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .bm-no-value {
+      padding: 4px 8px;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      color: #1e40af;
+      background: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .image-viewer-box {
+      height: 380px;
+      margin-bottom: 16px;
+      border: 1px solid #dbeafe;
+      border-radius: 14px;
+      background: linear-gradient(145deg, #f8fbff 0%, #eaf3ff 52%, #dbeafe 100%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.8), 0 8px 20px rgba(59,130,246,.1);
+    }
+    .image-viewer-box img { max-height: 340px; }
+    .img-nav-btn { border-radius: 9px; color: #2563eb; background: rgba(255,255,255,.78); box-shadow: 0 3px 10px rgba(37,99,235,.14); backdrop-filter: blur(8px); transition: .2s; }
+    .img-nav-btn:hover { background: var(--primary); }
+    .img-counter { right: 12px; bottom: 12px; padding: 4px 9px; border-radius: 6px; color: #1e3a8a; background: rgba(255,255,255,.82); font-size: 10px; box-shadow: 0 2px 8px rgba(37,99,235,.12); }
+    .meta-info { padding: 12px; border-color: #edf0f5; border-radius: 9px; color: var(--muted); background: var(--surface-soft); line-height: 1.7; }
+    .footer-bar { padding: 10px 22px; border-top-color: var(--border); color: var(--muted); background: #fff; font-size: 11px; }
+    #lightbox { background: rgba(15,23,42,.88); backdrop-filter: blur(7px); }
+    #lightbox img { max-width: min(90%, 1100px); max-height: 82vh; border: 8px solid #fff; box-shadow: 0 24px 60px rgba(0,0,0,.3); }
+    @media (max-width: 1080px) {
+      .toolbar { align-items: stretch; }
+      .search-box-group { flex-basis: 100%; max-width: none; }
+      .main-container { flex-direction: column; overflow-y: auto; }
+      .table-section { min-height: 390px; }
+      .detail-section { min-width: 0; }
+    }
+    @media (max-width: 640px) {
+      body { overflow: auto; height: auto; min-height: 100vh; }
+      .toolbar { padding: 12px; }
+      .search-box-group { display: grid; grid-template-columns: 1fr auto auto; min-width: 0; }
+      .radio-group { flex-wrap: wrap; gap: 3px; }
+      .checkbox-group { margin-top: 2px; }
+      .main-container { padding: 12px; gap: 12px; overflow: visible; }
+      .table-section { min-height: 320px; }
+      .table-wrapper { overflow-x: auto; }
+      .detail-section { min-width: 0; }
+      .image-viewer-box { height: 320px; }
+      .image-viewer-box img { max-height: 280px; }
+      .footer-bar { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Thanh công cụ tìm kiếm và bộ lọc -->
+  <div class="toolbar">
+    <div class="search-box-group">
+      <input type="text" id="o-tim-kiem" placeholder="Nhập mã SAP, tên mô tả hoặc part no..." oninput="yeuCauLocDuLieu()">
+      <button class="btn btn-primary" onclick="locDuLieu()">Search</button>
+      <button class="btn btn-secondary" onclick="lamMoi()">Clear</button>
+    </div>
+
+    <div class="radio-group">
+      <label><input type="radio" name="truongTim" value="all" onchange="yeuCauLocDuLieu()" checked> All</label>
+      <label><input type="radio" name="truongTim" value="sap" onchange="yeuCauLocDuLieu()"> Sap</label>
+      <label><input type="radio" name="truongTim" value="desc" onchange="yeuCauLocDuLieu()"> Description</label>
+      <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"> Part no</label>
+      <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"> BM No</label>
+    </div>
+
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="chk-ton-kho" onchange="yeuCauLocDuLieu()"> Quantity > 0</label>
+    </div>
+
+    <button class="btn btn-secondary" onclick="xuatExcel()">Export Excel</button>
+  </div>
+
+  <!-- Nội dung chính: Bảng danh sách + Khung chi tiết & hình ảnh -->
+  <div class="main-container">
+    <div class="table-section">
+      <div class="table-wrapper">
+        <table id="bang-du-lieu">
+          <thead id="dau-bang"></thead>
+          <tbody id="than-bang"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Khung chi tiết tương tự UserForm trong hình -->
+    <div class="detail-section">
+      <div class="detail-title">Thông tin chi tiết mã SAP</div>
+      
+      <!-- Khung xem ảnh tích hợp bộ sưu tập _01, _02 -->
+      <div class="image-viewer-box" id="khung-anh">
+        <img id="anh-chinh" src="" alt="Chưa có hình ảnh" onclick="phongToAnh()">
+        <button class="img-nav-btn btn-prev" id="btn-anh-truoc" onclick="doiAnhChiTiet(-1, event)" style="display:none">&#10094;</button>
+        <button class="img-nav-btn btn-next" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" style="display:none">&#10095;</button>
+        <div class="img-counter" id="dem-anh">0/0 images</div>
+      </div>
+
+      <div class="detail-grid" id="luoi-chi-tiet">
+        <!-- Điền động bằng JavaScript -->
+      </div>
+
+      <div class="bm-no-card" id="bm-no-card">
+        <div class="bm-no-card-title">BM No</div>
+        <div class="bm-no-list" id="bm-no-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Thanh trạng thái cuối màn hình -->
+  <div class="footer-bar">
+    <span id="trang-thai-ban-ghi">Records Found: 0 / 0</span>
+    <div class="pagination" aria-label="Pagination">
+      <button class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)">Previous</button>
+      <span id="thong-tin-trang">Page 1 / 1</span>
+      <button class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)">Next</button>
+    </div>
+    <span id="trang-thai-cap-nhat">Cập nhật lúc: --</span>
+  </div>
+
+  <!-- Hộp thoại phóng to ảnh -->
+  <div id="lightbox" onclick="dongLightbox(event)">
+    <button class="lightbox-btn lightbox-close" onclick="dongLightbox(event)" aria-label="Đóng">&#10005;</button>
+    <button class="lightbox-btn img-nav-btn btn-prev" onclick="doiAnhLightbox(-1, event)" aria-label="Ảnh trước">&#10094;</button>
+    <img id="lightbox-img" src="" onclick="event.stopPropagation()">
+    <button class="lightbox-btn img-nav-btn btn-next" onclick="doiAnhLightbox(1, event)" aria-label="Ảnh sau">&#10095;</button>
+    <div class="lightbox-controls" onclick="event.stopPropagation()">
+      <button class="lightbox-btn" onclick="thayDoiZoom(-0.2)">−</button>
+      <span id="lightbox-zoom-level">100%</span>
+      <button class="lightbox-btn" onclick="thayDoiZoom(0.2)">+</button>
+      <button class="lightbox-btn" onclick="datLaiZoom()">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    // ================= CẤU HÌNH THƯ MỤC Ổ MẠNG =================
+    const duongDanOMang = "data.js";
+    const THU_MUC_HINH = "Material/"; // Thư mục chứa ảnh
+    const SO_ANH_TOI_DA = 10;        // Tự động quét từ _01 đến _10
+    const SO_DONG_MOI_TRANG = 200;
+    // Chỉ hiển thị các cột Excel 1, 2, 6, 4, 5, 3 trong bảng.
+    const COT_HIEN_THI = [0, 1, 5, 3, 4, 2];
+    // ==========================================================
+
+    let tatCaDuLieu = [];
+    let tieuDeCot = [];
+    let dongDangChonIndex = -1;
+    let danhSachAnhDangXem = [];
+    let viTriAnhDangXem = 0;
+    let maSapDangXem = "";
+    let mocCapNhatCu = "";
+    let duLieuTimKiem = [];
+    let soLanLocDuLieu = 0;
+    let ketQuaLoc = [];
+    let trangHienTai = 1;
+    let cotSapXep = -1;
+    let huongSapXep = 1;
+    let mucZoom = 1;
+
+    function taiDuLieu() {
+      const scriptCu = document.getElementById("script-data");
+      if (scriptCu) scriptCu.remove();
+
+      const s = document.createElement("script");
+      s.id = "script-data";
+      s.src = duongDanOMang + "?t=" + Date.now();
+
+      s.onload = function() {
+        if (window.thoiGianCapNhat !== mocCapNhatCu) {
+          mocCapNhatCu = window.thoiGianCapNhat;
+          tatCaDuLieu = window.duLieuCongTy || [];
+          if (tatCaDuLieu.length > 0) {
+            tieuDeCot = tatCaDuLieu[0];
+            taoChiMucTimKiem();
+            veTieuDe();
+            locDuLieu();
+          }
+          document.getElementById("trang-thai-cap-nhat").textContent = "Cập nhật lúc: " + mocCapNhatCu;
+        }
+      };
+      document.body.appendChild(s);
+    }
+
+    function veTieuDe() {
+      document.getElementById("dau-bang").innerHTML = "<tr>" + COT_HIEN_THI.map(chiSo => {
+        const c = tieuDeCot[chiSo];
+        const dangSapXep = cotSapXep === chiSo;
+        const muiTen = dangSapXep ? (huongSapXep === 1 ? "▲" : "▼") : "↕";
+        const ariaSort = dangSapXep ? (huongSapXep === 1 ? "ascending" : "descending") : "none";
+        return `<th class="sortable" onclick="sapXepTheoCot(${chiSo})" aria-sort="${ariaSort}" title="Sắp xếp theo ${c}">` +
+               `${c}<span class="sort-indicator">${muiTen}</span></th>`;
+      }).join("") + "</tr>";
+    }
+
+    function laCotPrice(chiSoCot) {
+      return String(tieuDeCot[chiSoCot] ?? "").trim().toLowerCase() === "price";
+    }
+
+    function hienThiGiaTri(chiSoCot, giaTri) {
+      if (!laCotPrice(chiSoCot) || giaTri === null || giaTri === undefined || giaTri === "") {
+        return giaTri ?? "";
+      }
+
+      const soTien = Number(String(giaTri).replace(/,/g, "").trim());
+      if (!Number.isFinite(soTien)) return giaTri;
+
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+        maximumFractionDigits: 0
+      }).format(soTien);
+    }
+
+    function timCotTheoTen(tenCot) {
+      const tenCanTim = tenCot.trim().toLowerCase();
+      return tieuDeCot.findIndex(cot =>
+        String(cot ?? "").trim().toLowerCase() === tenCanTim
+      );
+    }
+
+    function chuanHoaMaSap(giaTri) {
+      const ma = String(giaTri ?? "").trim();
+      return /^\d+\.0+$/.test(ma) ? ma.replace(/\.0+$/, "") : ma;
+    }
+
+    function capNhatCardBmNo(dongData) {
+      const card = document.getElementById("bm-no-card");
+      const danhSach = document.getElementById("bm-no-list");
+      const chiSoBmNo = timCotTheoTen("BM No");
+      const giaTri = chiSoBmNo >= 0 ? String(dongData[chiSoBmNo] ?? "").trim() : "";
+      const maBmNo = giaTri.split(/[,\n;|]+/).map(value => value.trim()).filter(Boolean);
+
+      danhSach.innerHTML = maBmNo.map(value => `<span class="bm-no-value">${value}</span>`).join("");
+      card.classList.toggle("visible", maBmNo.length > 0);
+
+      const luoiChiTiet = document.getElementById("luoi-chi-tiet");
+      const thePrice = [...luoiChiTiet.querySelectorAll(".detail-item")].find(item =>
+        item.querySelector("label")?.textContent.trim().toLowerCase() === "price"
+      );
+
+      if (thePrice) {
+        thePrice.after(card);
+      } else {
+        luoiChiTiet.appendChild(card);
+      }
+    }
+
+    function taoChiMucTimKiem() {
+      const chiSoBmNo = timCotTheoTen("BM No");
+      duLieuTimKiem = tatCaDuLieu.slice(1).map((dong, viTri) => {
+        const giaTri = dong.map(cell => String(cell ?? "").toLocaleLowerCase());
+        return {
+          chiSo: viTri + 1,
+          dong,
+          all: giaTri.join("\u0001"),
+          sap: giaTri[0] || "",
+          desc: giaTri[1] || "",
+          part: giaTri[2] || "",
+          bmno: chiSoBmNo >= 0 ? giaTri[chiSoBmNo] || "" : "",
+          coTonKho: (parseFloat(dong[3]) || 0) > 0
+        };
+      });
+    }
+
+    let boTriHoanTimKiem = null;
+
+    function yeuCauLocDuLieu() {
+      clearTimeout(boTriHoanTimKiem);
+      trangHienTai = 1;
+      boTriHoanTimKiem = setTimeout(locDuLieu, 120);
+    }
+
+    function locDuLieu() {
+      if (tatCaDuLieu.length < 2) return;
+      const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
+      const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
+      const chiTonKho = document.getElementById("chk-ton-kho").checked;
+      const lanLocHienTai = ++soLanLocDuLieu;
+
+      const truongTim = cheDoTim === "all" ? "all" : cheDoTim;
+
+      ketQuaLoc = [];
+      for (const muc of duLieuTimKiem) {
+        const khop = (!tuKhoa || muc[truongTim].includes(tuKhoa))
+          && (!chiTonKho || muc.coTonKho);
+        if (khop) ketQuaLoc.push(muc);
+      }
+
+      if (lanLocHienTai !== soLanLocDuLieu) return;
+      sapXepKetQua();
+      hienThiTrangHienTai();
+      document.querySelector(".table-wrapper").scrollTop = 0;
+      document.getElementById("trang-thai-ban-ghi").textContent =
+        `Records Found: ${ketQuaLoc.length} / ${tatCaDuLieu.length - 1}`;
+    }
+
+    function sapXepTheoCot(chiSoCot) {
+      if (cotSapXep === chiSoCot) {
+        huongSapXep *= -1;
+      } else {
+        cotSapXep = chiSoCot;
+        huongSapXep = 1;
+      }
+
+      trangHienTai = 1;
+      sapXepKetQua();
+      veTieuDe();
+      hienThiTrangHienTai();
+      document.querySelector(".table-wrapper").scrollTop = 0;
+    }
+
+    function sapXepKetQua() {
+      if (cotSapXep < 0) return;
+      ketQuaLoc.sort((a, b) => {
+        const giaTriA = String(a.dong[cotSapXep] ?? "").trim();
+        const giaTriB = String(b.dong[cotSapXep] ?? "").trim();
+        const soA = Number(giaTriA.replace(/,/g, ""));
+        const soB = Number(giaTriB.replace(/,/g, ""));
+        let ketQua;
+
+        if (giaTriA === "" && giaTriB !== "") {
+          ketQua = 1;
+        } else if (giaTriA !== "" && giaTriB === "") {
+          ketQua = -1;
+        } else if (Number.isFinite(soA) && Number.isFinite(soB)) {
+          ketQua = soA - soB;
+        } else {
+          ketQua = giaTriA.localeCompare(giaTriB, "vi", {
+            numeric: true,
+            sensitivity: "base"
+          });
+        }
+
+        return ketQua * huongSapXep;
+      });
+    }
+
+    function hienThiTrangHienTai() {
+      const tongSoTrang = Math.max(1, Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG));
+      if (trangHienTai > tongSoTrang) trangHienTai = tongSoTrang;
+      const batDau = (trangHienTai - 1) * SO_DONG_MOI_TRANG;
+      const mucTrenTrang = ketQuaLoc.slice(batDau, batDau + SO_DONG_MOI_TRANG);
+      const html = mucTrenTrang.map(muc => {
+        const selectedClass = (muc.chiSo === dongDangChonIndex) ? "selected" : "";
+        return `<tr class="${selectedClass}" onclick="chonDong(${muc.chiSo}, this)">` +
+               COT_HIEN_THI.map(chiSoCot => `<td>${hienThiGiaTri(chiSoCot, muc.dong[chiSoCot])}</td>`).join("") +
+               `</tr>`;
+      }).join("");
+
+      document.getElementById("than-bang").innerHTML = html;
+      document.getElementById("thong-tin-trang").textContent =
+        `Page ${trangHienTai} / ${tongSoTrang}`;
+      document.getElementById("btn-trang-truoc").disabled = trangHienTai <= 1;
+      document.getElementById("btn-trang-sau").disabled = trangHienTai >= tongSoTrang;
+    }
+
+    function doiTrang(buoc) {
+      const tongSoTrang = Math.max(1, Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG));
+      const trangMoi = trangHienTai + buoc;
+      if (trangMoi < 1 || trangMoi > tongSoTrang) return;
+      trangHienTai = trangMoi;
+      hienThiTrangHienTai();
+      document.querySelector(".table-wrapper").scrollTop = 0;
+    }
+
+    function xuLyCuonBang() {
+      const vungBang = document.querySelector(".table-wrapper");
+      if (!vungBang || trangHienTai >= Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG)) return;
+
+      const ganCuoi = vungBang.scrollTop + vungBang.clientHeight >= vungBang.scrollHeight - 24;
+      if (ganCuoi) doiTrang(1);
+    }
+
+    function chonDongBangPhim(buoc) {
+      if (ketQuaLoc.length === 0) return;
+
+      const viTriHienTai = ketQuaLoc.findIndex(muc => muc.chiSo === dongDangChonIndex);
+      let viTriMoi = viTriHienTai < 0
+        ? (buoc > 0 ? 0 : ketQuaLoc.length - 1)
+        : viTriHienTai + buoc;
+
+      if (viTriMoi < 0 || viTriMoi >= ketQuaLoc.length) return;
+
+      trangHienTai = Math.floor(viTriMoi / SO_DONG_MOI_TRANG) + 1;
+      hienThiTrangHienTai();
+
+      const mucMoi = ketQuaLoc[viTriMoi];
+      const dongMoi = document.querySelector(
+        `#than-bang tr[onclick*="chonDong(${mucMoi.chiSo},"]`
+      );
+      if (!dongMoi) return;
+
+      chonDong(mucMoi.chiSo, dongMoi);
+      dongMoi.scrollIntoView({ block: "nearest" });
+    }
+
+    function chonDong(index, element) {
+      document.querySelectorAll("#than-bang tr").forEach(tr => tr.classList.remove("selected"));
+      element.classList.add("selected");
+      dongDangChonIndex = index;
+
+      const dongData = tatCaDuLieu[index];
+      const maSap = chuanHoaMaSap(dongData[0]); // Cột đầu tiên là Mã SAP
+
+      // Hiển thị thông tin chi tiết sang panel bên phải
+      let htmlChiTiet = "";
+      for (let c = 0; c < tieuDeCot.length; c++) {
+        if (c === timCotTheoTen("BM No")) continue;
+        htmlChiTiet += `<div class="detail-item"><label>${tieuDeCot[c]}</label><span>${hienThiGiaTri(c, dongData[c])}</span></div>`;
+      }
+      document.getElementById("luoi-chi-tiet").innerHTML = htmlChiTiet;
+      capNhatCardBmNo(dongData);
+
+      // Tải hình ảnh tương ứng với Mã SAP
+      taiBoSuuTapAnh(maSap);
+
+    }
+
+    let lanTaiAnh = 0;
+    const boNhoAnh = new Map();
+
+    // Tải bộ sưu tập ảnh với tối đa 3 request đồng thời.
+    function taiBoSuuTapAnh(maSap) {
+      const lanHienTai = ++lanTaiAnh;
+      maSapDangXem = chuanHoaMaSap(maSap);
+
+      danhSachAnhDangXem = [];
+      viTriAnhDangXem = 0;
+      capNhatGiaoDienAnh();
+
+      if (!maSapDangXem) return;
+
+      const danhSachTen = [];
+
+      for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
+        const hauTo = String(k).padStart(2, "0");
+        danhSachTen.push(`${maSapDangXem}_${hauTo}.jpg`);
+        danhSachTen.push(`${maSapDangXem}_${hauTo}.png`);
+      }
+
+      danhSachTen.push(`${maSapDangXem}.jpg`, `${maSapDangXem}.png`);
+
+      const hangDoi = [...new Set(danhSachTen)];
+      let viTri = 0;
+
+      async function congNhan() {
+        while (viTri < hangDoi.length && lanHienTai === lanTaiAnh) {
+          const tenAnh = hangDoi[viTri++];
+          const url = THU_MUC_HINH + encodeURIComponent(tenAnh);
+          const tonTai = await kiemTraAnh(url);
+
+          if (tonTai && lanHienTai === lanTaiAnh) {
+            if (!danhSachAnhDangXem.includes(url)) {
+              danhSachAnhDangXem.push(url);
+              danhSachAnhDangXem.sort();
+              capNhatGiaoDienAnh();
+            }
+          }
+        }
+      }
+
+      Promise.all([congNhan(), congNhan(), congNhan()]);
+    }
+
+    function kiemTraAnh(url) {
+      if (boNhoAnh.has(url)) {
+        return Promise.resolve(boNhoAnh.get(url));
+      }
+
+      return new Promise(resolve => {
+        const img = new Image();
+        let daKetThuc = false;
+
+        const ketThuc = ketQua => {
+          if (daKetThuc) return;
+          daKetThuc = true;
+          boNhoAnh.set(url, ketQua);
+          resolve(ketQua);
+        };
+
+        img.onload = () => ketThuc(true);
+        img.onerror = () => ketThuc(false);
+        setTimeout(() => ketThuc(false), 5000);
+        img.src = url;
+      });
+    }
+
+    function capNhatGiaoDienAnh() {
+      const imgEl = document.getElementById("anh-chinh");
+      const btnPrev = document.getElementById("btn-anh-truoc");
+      const btnNext = document.getElementById("btn-anh-sau");
+      const counterEl = document.getElementById("dem-anh");
+      const tong = danhSachAnhDangXem.length;
+
+      if (tong > 0) {
+        if (viTriAnhDangXem >= tong) viTriAnhDangXem = 0;
+        const src = danhSachAnhDangXem[viTriAnhDangXem];
+        imgEl.src = src;
+        const lightboxImg = document.getElementById("lightbox-img");
+        if (document.getElementById("lightbox").style.display === "flex") {
+          lightboxImg.src = src;
+          datLaiZoom();
+        }
+        counterEl.textContent = `${viTriAnhDangXem + 1} / ${tong} images`;
+        
+        const hienNut = tong > 1 ? "block" : "none";
+        btnPrev.style.display = hienNut;
+        btnNext.style.display = hienNut;
+      } else {
+        imgEl.removeAttribute("src");
+        document.getElementById("lightbox-img").removeAttribute("src");
+        counterEl.textContent = "0/0 images";
+        btnPrev.style.display = "none";
+        btnNext.style.display = "none";
+      }
+    }
+
+    function doiAnhChiTiet(buoc, e) {
+      e.stopPropagation();
+      const tong = danhSachAnhDangXem.length;
+      if (tong <= 1) return;
+      viTriAnhDangXem = (viTriAnhDangXem + buoc + tong) % tong;
+      capNhatGiaoDienAnh();
+    }
+
+    function phongToAnh() {
+      const src = document.getElementById("anh-chinh").src;
+      if (!src) return;
+      document.getElementById("lightbox-img").src = src;
+      document.getElementById("lightbox").style.display = "flex";
+      datLaiZoom();
+    }
+
+    function dongLightbox(e) {
+      if (e) e.stopPropagation();
+      document.getElementById("lightbox").style.display = "none";
+      datLaiZoom();
+    }
+
+    function doiAnhLightbox(buoc, e) {
+      if (e) e.stopPropagation();
+      doiAnhChiTiet(buoc, { stopPropagation() {} });
+    }
+
+    function thayDoiZoom(buoc) {
+      mucZoom = Math.min(3, Math.max(.5, mucZoom + buoc));
+      capNhatZoom();
+    }
+
+    function datLaiZoom() {
+      mucZoom = 1;
+      capNhatZoom();
+    }
+
+    function capNhatZoom() {
+      const img = document.getElementById("lightbox-img");
+      const mucPhanTram = Math.round(mucZoom * 100);
+      img.style.transform = `scale(${mucZoom})`;
+      document.getElementById("lightbox-zoom-level").textContent = `${mucPhanTram}%`;
+    }
+
+    function xuLyZoomBangConLan(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      thayDoiZoom(e.deltaY < 0 ? 0.1 : -0.1);
+    }
+
+    function lamMoi() {
+      document.getElementById("o-tim-kiem").value = "";
+      document.querySelector('input[name="truongTim"][value="all"]').checked = true;
+      document.getElementById("chk-ton-kho").checked = false;
+      trangHienTai = 1;
+      locDuLieu();
+    }
+
+    function xuatExcel() {
+      alert("Tính năng xuất dữ liệu đã sẵn sàng trên hệ thống mạng!");
+    }
+
+    document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonBang, { passive: true });
+    document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
+    document.addEventListener("keydown", e => {
+      const lightboxDangMo = document.getElementById("lightbox").style.display === "flex";
+      if (lightboxDangMo) {
+        if (e.key === "Escape") dongLightbox(e);
+        if (e.key === "ArrowLeft") doiAnhLightbox(-1, e);
+        if (e.key === "ArrowRight") doiAnhLightbox(1, e);
+        if (e.key === "+" || e.key === "=") thayDoiZoom(.2);
+        if (e.key === "-") thayDoiZoom(-.2);
+        return;
+      }
+
+      const dangNhapLieu = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName);
+      if (dangNhapLieu) return;
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        chonDongBangPhim(e.key === "ArrowDown" ? 1 : -1);
+      }
+    });
+
+    // Tự động nạp dữ liệu và làm mới mỗi 5 giây
+    taiDuLieu();
+    setInterval(taiDuLieu, 30000);
+  </script>
+</body>
+</html>
