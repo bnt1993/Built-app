@@ -116,7 +116,7 @@
     #lightbox img { max-width: 90%; max-height: 85vh; border: 2px solid #fff; border-radius: 6px; transform-origin: center; transition: transform .2s; cursor: grab; }
     .lightbox-controls { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
     .lightbox-btn {
-      min-width: 42px; min-height: 38px; padding: 7px 12px; border: 1px solid rgba(255,255,255,.35);F
+      min-width: 42px; min-height: 38px; padding: 7px 12px; border: 1px solid rgba(255,255,255,.35);
       border-radius: 9px; color: #fff; background: rgba(255,255,255,.16); cursor: pointer; font-size: 15px;
       backdrop-filter: blur(8px); transition: background .2s, transform .2s;
     }
@@ -424,7 +424,10 @@
     let huongSapXep = 1;
     let mucZoom = 1;
 
+    let lanTaiDuLieu = 0;
+
     function taiDuLieu() {
+      const lanHienTai = ++lanTaiDuLieu;
       const scriptCu = document.getElementById("script-data");
       if (scriptCu) scriptCu.remove();
 
@@ -433,24 +436,54 @@
       s.src = duongDanOMang + "?t=" + Date.now();
 
       s.onload = function() {
-        if (window.thoiGianCapNhat !== mocCapNhatCu) {
-          mocCapNhatCu = window.thoiGianCapNhat;
-          tatCaDuLieu = window.duLieuCongTy || [];
-          if (tatCaDuLieu.length > 0) {
-            tieuDeCot = tatCaDuLieu[0];
-            taoChiMucTimKiem();
-            veTieuDe();
-            locDuLieu();
-          }
-          document.getElementById("trang-thai-cap-nhat").textContent = "Cập nhật lúc: " + mocCapNhatCu;
+        if (lanHienTai !== lanTaiDuLieu) return;
+
+        const duLieuMoi = window.duLieuCongTy;
+        const thoiGianCapNhat = window.thoiGianCapNhat;
+        const coMocCapNhat = thoiGianCapNhat !== undefined
+          && thoiGianCapNhat !== null && thoiGianCapNhat !== "";
+
+        if (!Array.isArray(duLieuMoi) || !duLieuMoi.length || !Array.isArray(duLieuMoi[0])) {
+          document.getElementById("trang-thai-cap-nhat").textContent =
+            "Lỗi: data.js không chứa bảng dữ liệu hợp lệ";
+          return;
         }
+
+        if (!coMocCapNhat || thoiGianCapNhat !== mocCapNhatCu || !tatCaDuLieu.length) {
+          mocCapNhatCu = coMocCapNhat ? thoiGianCapNhat : "";
+          tatCaDuLieu = duLieuMoi;
+          tieuDeCot = tatCaDuLieu[0];
+          taoChiMucTimKiem();
+          veTieuDe();
+          locDuLieu();
+        }
+
+        document.getElementById("trang-thai-cap-nhat").textContent =
+          "Cập nhật lúc: " + (coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString("vi-VN"));
       };
+
+      s.onerror = function() {
+        if (lanHienTai !== lanTaiDuLieu) return;
+        document.getElementById("trang-thai-cap-nhat").textContent =
+          "Không thể tải " + duongDanOMang + " (giữ dữ liệu hiện có)";
+      };
+
       document.body.appendChild(s);
+    }
+
+    function thoatHTML(giaTri) {
+      return String(giaTri ?? "").replace(/[&<>"']/g, kyTu => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[kyTu]);
     }
 
     function veTieuDe() {
       document.getElementById("dau-bang").innerHTML = "<tr>" + COT_HIEN_THI.map(chiSo => {
-        const c = tieuDeCot[chiSo];
+        const c = thoatHTML(tieuDeCot[chiSo]);
         const dangSapXep = cotSapXep === chiSo;
         const muiTen = dangSapXep ? (huongSapXep === 1 ? "▲" : "▼") : "↕";
         const ariaSort = dangSapXep ? (huongSapXep === 1 ? "ascending" : "descending") : "none";
@@ -463,12 +496,32 @@
       return String(tieuDeCot[chiSoCot] ?? "").trim().toLowerCase() === "price";
     }
 
+    function chuyenThanhSo(giaTri) {
+      const chuoi = String(giaTri ?? "").trim().replace(/\s/g, "");
+      if (!chuoi) return NaN;
+
+      let daChuanHoa = chuoi;
+      if (chuoi.includes(".") && chuoi.includes(",")) {
+        daChuanHoa = chuoi.lastIndexOf(",") > chuoi.lastIndexOf(".")
+          ? chuoi.replace(/\./g, "").replace(",", ".")
+          : chuoi.replace(/,/g, "");
+      } else if (/^-?\d{1,3}(?:\.\d{3})+$/.test(chuoi)) {
+        daChuanHoa = chuoi.replace(/\./g, "");
+      } else if (/^-?\d{1,3}(?:,\d{3})+$/.test(chuoi)) {
+        daChuanHoa = chuoi.replace(/,/g, "");
+      } else if (chuoi.includes(",")) {
+        daChuanHoa = chuoi.replace(",", ".");
+      }
+
+      return Number(daChuanHoa);
+    }
+
     function hienThiGiaTri(chiSoCot, giaTri) {
       if (!laCotPrice(chiSoCot) || giaTri === null || giaTri === undefined || giaTri === "") {
         return giaTri ?? "";
       }
 
-      const soTien = Number(String(giaTri).replace(/,/g, "").trim());
+      const soTien = chuyenThanhSo(giaTri);
       if (!Number.isFinite(soTien)) return giaTri;
 
       return new Intl.NumberFormat("vi-VN", {
@@ -497,7 +550,7 @@
       const giaTri = chiSoBmNo >= 0 ? String(dongData[chiSoBmNo] ?? "").trim() : "";
       const maBmNo = giaTri.split(/[,\n;|]+/).map(value => value.trim()).filter(Boolean);
 
-      danhSach.innerHTML = maBmNo.map(value => `<span class="bm-no-value">${value}</span>`).join("");
+      danhSach.innerHTML = maBmNo.map(value => `<span class="bm-no-value">${thoatHTML(value)}</span>`).join("");
       card.classList.toggle("visible", maBmNo.length > 0);
 
       const luoiChiTiet = document.getElementById("luoi-chi-tiet");
@@ -538,7 +591,7 @@
     }
 
     function locDuLieu() {
-      if (tatCaDuLieu.length < 2) return;
+      if (!tieuDeCot.length) return;
       const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
@@ -581,8 +634,8 @@
       ketQuaLoc.sort((a, b) => {
         const giaTriA = String(a.dong[cotSapXep] ?? "").trim();
         const giaTriB = String(b.dong[cotSapXep] ?? "").trim();
-        const soA = Number(giaTriA.replace(/,/g, ""));
-        const soB = Number(giaTriB.replace(/,/g, ""));
+        const soA = chuyenThanhSo(giaTriA);
+        const soB = chuyenThanhSo(giaTriB);
         let ketQua;
 
         if (giaTriA === "" && giaTriB !== "") {
@@ -610,7 +663,7 @@
       const html = mucTrenTrang.map(muc => {
         const selectedClass = (muc.chiSo === dongDangChonIndex) ? "selected" : "";
         return `<tr class="${selectedClass}" onclick="chonDong(${muc.chiSo}, this)">` +
-               COT_HIEN_THI.map(chiSoCot => `<td>${hienThiGiaTri(chiSoCot, muc.dong[chiSoCot])}</td>`).join("") +
+               COT_HIEN_THI.map(chiSoCot => `<td>${thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]))}</td>`).join("") +
                `</tr>`;
       }).join("");
 
@@ -673,9 +726,14 @@
       let htmlChiTiet = "";
       for (let c = 0; c < tieuDeCot.length; c++) {
         if (c === timCotTheoTen("BM No")) continue;
-        htmlChiTiet += `<div class="detail-item"><label>${tieuDeCot[c]}</label><span>${hienThiGiaTri(c, dongData[c])}</span></div>`;
+        htmlChiTiet += `<div class="detail-item"><label>${thoatHTML(tieuDeCot[c])}</label><span>${thoatHTML(hienThiGiaTri(c, dongData[c]))}</span></div>`;
       }
-      document.getElementById("luoi-chi-tiet").innerHTML = htmlChiTiet;
+      const luoiChiTiet = document.getElementById("luoi-chi-tiet");
+      const cardBmNo = document.getElementById("bm-no-card");
+      // Giữ lại phần tử BM No khi xây dựng lại lưới chi tiết cho dòng tiếp theo.
+      cardBmNo.remove();
+      luoiChiTiet.innerHTML = htmlChiTiet;
+      luoiChiTiet.appendChild(cardBmNo);
       capNhatCardBmNo(dongData);
 
       // Tải hình ảnh tương ứng với Mã SAP
@@ -718,8 +776,10 @@
 
           if (tonTai && lanHienTai === lanTaiAnh) {
             if (!danhSachAnhDangXem.includes(url)) {
+              const anhHienTai = danhSachAnhDangXem[viTriAnhDangXem];
               danhSachAnhDangXem.push(url);
               danhSachAnhDangXem.sort();
+              viTriAnhDangXem = Math.max(0, danhSachAnhDangXem.indexOf(anhHienTai));
               capNhatGiaoDienAnh();
             }
           }
@@ -741,7 +801,7 @@
         const ketThuc = ketQua => {
           if (daKetThuc) return;
           daKetThuc = true;
-          boNhoAnh.set(url, ketQua);
+          if (ketQua) boNhoAnh.set(url, true); // Cho phép thử lại ảnh tải lỗi.
           resolve(ketQua);
         };
 
@@ -791,9 +851,9 @@
     }
 
     function phongToAnh() {
-      const src = document.getElementById("anh-chinh").src;
-      if (!src) return;
-      document.getElementById("lightbox-img").src = src;
+      const anh = document.getElementById("anh-chinh");
+      if (!danhSachAnhDangXem.length || !anh.hasAttribute("src")) return;
+      document.getElementById("lightbox-img").src = anh.src;
       document.getElementById("lightbox").style.display = "flex";
       datLaiZoom();
     }
@@ -841,7 +901,31 @@
     }
 
     function xuatExcel() {
-      alert("Tính năng xuất dữ liệu đã sẵn sàng trên hệ thống mạng!");
+      if (!tieuDeCot.length || !ketQuaLoc.length) {
+        alert("Không có dữ liệu để xuất.");
+        return;
+      }
+
+      // CSV UTF-8 có BOM, mở trực tiếp được bằng Excel và giữ thứ tự lọc/sắp xếp.
+      // Chặn công thức trong ô dữ liệu để tránh CSV formula injection.
+      const dinhDangO = giaTri => {
+        const chuoi = String(giaTri ?? "");
+        const anToan = /^[\s\u0000-\u001f]*[=+\-@]/.test(chuoi) ? "'" + chuoi : chuoi;
+        return '"' + anToan.replace(/"/g, '""') + '"';
+      };
+      const duLieuXuat = [tieuDeCot, ...ketQuaLoc.map(muc => muc.dong)];
+      const csv = "\uFEFF" + duLieuXuat.map(dong =>
+        dong.map(dinhDangO).join(",")
+      ).join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const lienKet = document.createElement("a");
+      lienKet.href = url;
+      lienKet.download = "SAP_Inventory_" + new Date().toLocaleDateString("sv-SE") + ".csv";
+      document.body.appendChild(lienKet);
+      lienKet.click();
+      lienKet.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonBang, { passive: true });
@@ -865,7 +949,7 @@
       }
     });
 
-    // Tự động nạp dữ liệu và làm mới mỗi 5 giây
+    // Tự động nạp dữ liệu và kiểm tra cập nhật mỗi 30 giây
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
   </script>
