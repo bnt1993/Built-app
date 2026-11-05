@@ -939,6 +939,7 @@
       });
       capNhatGiaoDienAnh();
       if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
+      capNhatChiSoBoLoc();
       kiemTraNhacBaoCao();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
     }
@@ -1252,6 +1253,52 @@
       return words.some(word => Math.abs(word.length-tuKhoa.length)<=1 && trungGanDung(word,tuKhoa));
     }
 
+
+    // One search box handles a phrase or many SAP codes separated by comma,
+    // semicolon, pipe, newline or spaces for code-like tokens.
+    function phanTichTimKiem(value, scope) {
+      const raw=String(value??"").trim();
+      if(!raw) return {terms:[],exactSap:null};
+      const explicitlySeparated=/[,;|\r\n]/.test(raw);
+      let parts=explicitlySeparated ? raw.split(/[,;|\r\n]+/) : [raw];
+      if(!explicitlySeparated) {
+        const words=raw.split(/\s+/).filter(Boolean);
+        const lookLikeCodes=words.length>1 && words.every(x=>
+          /^[a-z0-9._-]+$/i.test(x) && /\d/.test(x));
+        if(words.length>1 && (scope==="sap" || lookLikeCodes)) parts=words;
+      }
+      const terms=[...new Set(parts.map(x=>x.trim().toLowerCase()).filter(Boolean))].slice(0,2000);
+      // Multi-code searches use exact SAP matches. Other multi-keyword
+      // searches keep the existing substring/typo-tolerant OR semantics.
+      const sapList=terms.length>1 && (scope==="all"||scope==="sap") &&
+        terms.every(x=>/^[a-z0-9._-]+$/i.test(x)&&/\d/.test(x))
+        ? new Set(terms.map(x=>chuanHoaMaSap(x).toLowerCase())) : null;
+      return {terms,exactSap:sapList};
+    }
+
+    // Browsers have single-line search inputs: normalize a pasted SAP column.
+    function xuLyDanTimKiem(e) {
+      const paste=e.clipboardData?.getData("text/plain") || "";
+      if(!/[\r\n\t]/.test(paste))return;
+      e.preventDefault();
+      const field=e.target;
+      const start=field.selectionStart??field.value.length;
+      const end=field.selectionEnd??field.value.length;
+      field.setRangeText(paste.replace(/[\r\n\t]+/g,", "),start,end,"end");
+      yeuCauLocDuLieu();
+    }
+
+    function capNhatChiSoBoLoc() {
+      const scope=document.querySelector('input[name="truongTim"]:checked')?.value||"all";
+      const n=Number(scope!=="all")+
+        Number(document.getElementById("chk-ton-kho").checked)+
+        Number(document.getElementById("loc-canh-bao").value!=="all")+
+        Number(document.getElementById("tim-gan-dung").checked);
+      const marker=document.getElementById("active-filter-count");
+      marker.hidden=n===0;
+      marker.textContent=n>0?String(n):"";
+    }
+
     function layDanhSachLocDaLuu() {
       try {
         const mang=JSON.parse(docTuyChon("checking-filters-v2") || "[]");
@@ -1277,7 +1324,6 @@
         scope:document.querySelector('input[name="truongTim"]:checked').value,
         onlyStock:document.getElementById("chk-ton-kho").checked,
         status:document.getElementById("loc-canh-bao").value,
-        codes:document.getElementById("sap-batch").value.slice(0,12000),
         fuzzy:document.getElementById("tim-gan-dung").checked
       });
       ghiTuyChon("checking-filters-v2",JSON.stringify(records.slice(0,12)));
@@ -1289,13 +1335,16 @@
       const idx=Number(document.getElementById("loc-da-luu").value);
       if(document.getElementById("loc-da-luu").value===""||!Number.isInteger(idx))return;
       const data=layDanhSachLocDaLuu()[idx];if(!data)return;
-      document.getElementById("o-tim-kiem").value=data.keyword||"";
+      // Migrate old saved presets containing a separate SAP batch into
+      // the single visible search field; the SAP list is shown explicitly.
+      const legacyCodes=String(data.codes||"").split(/[,;|\r\n\t ]+/).filter(Boolean);
+      document.getElementById("o-tim-kiem").value=legacyCodes.length?
+        legacyCodes.join(", "):(data.keyword||"");
       const radio=document.querySelector('input[name="truongTim"][value="'+data.scope+'"]');
       document.querySelector('input[name="truongTim"][value="all"]').checked=true;
       if(radio)radio.checked=true;
       document.getElementById("chk-ton-kho").checked=Boolean(data.onlyStock);
       document.getElementById("loc-canh-bao").value=data.status||"all";
-      document.getElementById("sap-batch").value=data.codes||"";
       document.getElementById("tim-gan-dung").checked=Boolean(data.fuzzy);
       yeuCauLocDuLieu();
     }
@@ -1528,15 +1577,14 @@
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
       const locCanhBao=document.getElementById("loc-canh-bao").value;
-      const dsSap=new Set(document.getElementById("sap-batch").value.split(/[,;|\n\r\t ]+/)
-        .map(x=>chuanHoaMaSap(x).toLowerCase()).filter(Boolean));
-      const nhieuTuKhoa=tuKhoa.split(/[,;|\n\r]+/).map(x=>x.trim()).filter(Boolean);
+      const {terms:nhieuTuKhoa,exactSap:danhSachSap}=phanTichTimKiem(tuKhoa,cheDoTim);
       const ganDung=document.getElementById("tim-gan-dung").checked;
       const truongTim = cheDoTim === "all" ? "all" : cheDoTim;
       const lanLocHienTai = ++soLanLocDuLieu;
       const moi = [];
       let viTri = 0;
       const tong = duLieuTimKiem.length;
+      capNhatChiSoBoLoc();
       document.getElementById("trang-thai-ban-ghi").textContent = tuDien("searching");
 
       function xuLyNhom() {
@@ -1545,10 +1593,11 @@
         for (; viTri < gioiHan; viTri++) {
           const muc = duLieuTimKiem[viTri];
           const giaTri=muc[truongTim];
-          const hopTuKhoa=!tuKhoa || (nhieuTuKhoa.length?nhieuTuKhoa:[tuKhoa]).some(term=>
-            giaTri.includes(term) || (ganDung && coTuGanDung(giaTri,chuanHoaTimKiem(term))));
-          const hopSap=!dsSap.size||dsSap.has(chuanHoaMaSap(muc.dong[0]).toLowerCase());
-          if (hopTuKhoa && hopSap && (!chiTonKho || muc.coTonKho) &&
+          const hopTuKhoa=danhSachSap
+            ? danhSachSap.has(chuanHoaMaSap(muc.dong[0]).toLowerCase())
+            : !tuKhoa || nhieuTuKhoa.some(term=>
+                giaTri.includes(term) || (ganDung && coTuGanDung(giaTri,chuanHoaTimKiem(term))));
+          if (hopTuKhoa && (!chiTonKho || muc.coTonKho) &&
               (locCanhBao==="all" || muc.trangThaiTon===locCanhBao)) moi.push(muc);
         }
         if (viTri < tong) {
@@ -2011,7 +2060,6 @@
       document.querySelector('input[name="truongTim"][value="all"]').checked = true;
       document.getElementById("chk-ton-kho").checked = false;
       document.getElementById("loc-canh-bao").value="all";
-      document.getElementById("sap-batch").value="";
       document.getElementById("tim-gan-dung").checked=false;
       trangHienTai = 1;
       locDuLieu();
@@ -2230,7 +2278,6 @@
         [tuDien("reportUpdated"), option.updated || "—"],
         [tuDien("reportGenerated"), ngayBaoCao],
         [tuDien("reportStockStatus"),tuDien({all:"stockAny",healthy:"stockAbove",at:"stockEqual",below:"stockBelow",zero:"stockZero",unknown:"stockUnknown"}[option.status]||"stockAny")],
-        [tuDien("reportBatchSap"),option.codes?option.codes.slice(0,1000).replace(/[\n\r]+/g,", "):"—"],
         [tuDien("reportFuzzy"),option.fuzzy?tuDien("reportYes"):tuDien("reportNo")]
       ];
 
@@ -2437,7 +2484,6 @@
         scope: mode,
         onlyStock: document.getElementById("chk-ton-kho").checked,
         status:document.getElementById("loc-canh-bao").value,
-        codes:document.getElementById("sap-batch").value.trim(),
         fuzzy:document.getElementById("tim-gan-dung").checked,
         sortCol: cotSapXep, sortDir: huongSapXep, updated: mocCapNhatCu
       };
@@ -2472,6 +2518,19 @@
     }
 
     document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonCuoiBang, { passive: true });
+    // Close the filter dropdown when clicking outside it or pressing Escape.
+    document.addEventListener("click", e=>{
+      const popover=document.getElementById("inline-filter-panel");
+      if(popover.open && !popover.contains(e.target))popover.open=false;
+    });
+    document.addEventListener("keydown",e=>{
+      const popover=document.getElementById("inline-filter-panel");
+      if(e.key==="Escape"&&popover.open) {
+        popover.open=false;
+        e.stopPropagation();
+        document.getElementById("btn-bo-loc").focus();
+      }
+    });
     document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
     document.addEventListener("keydown", e => {
       const lightboxDangMo = document.getElementById("lightbox").style.display === "flex";
@@ -2508,6 +2567,7 @@
 
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     khoiTaoTuyChon();
+    capNhatChiSoBoLoc();
     veBoLocDaLuu();
     khoiTaoLichNhacBaoCao();
     taiDuLieu();
