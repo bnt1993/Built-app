@@ -1880,7 +1880,9 @@
       return new Blob([dongGoiZipXlsx(files)],{type:packType});
     }
 
-    function xuatExcel() {
+    let dangXuatExcel = false;
+    async function xuatExcel() {
+      if (dangXuatExcel) return;
       if (!chiMucSanSang || dangLocDuLieu) {
         alert(tuDien("exportBusy"));
         return;
@@ -1896,13 +1898,21 @@
         onlyStock: document.getElementById("chk-ton-kho").checked,
         sortCol: cotSapXep, sortDir: huongSapXep, updated: mocCapNhatCu
       };
+      const nutXuat = document.getElementById("btn-xuat-excel");
+      const nhanXuat = nutXuat.querySelector('[data-i18n="export"]');
+      dangXuatExcel = true;
+      nutXuat.disabled = true;
+      nutXuat.setAttribute("aria-busy", "true");
+      nhanXuat.textContent = tuDien("exportGenerating");
       try {
-        const blob = taoBaoCaoXlsx(ketQuaLoc,options);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const blob = await taoBaoCaoXlsx(ketQuaLoc,options);
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         const date = new Date().toLocaleDateString("sv-SE");
-        a.download = "SAP_Inventory_Report_" + date + ".xlsx";
+        const time = new Date().toTimeString().slice(0, 5).replace(":", "");
+        a.download = "SAP_Inventory_Report_" + date + "_" + time + ".xlsx";
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -1910,6 +1920,11 @@
       } catch(err) {
         console.error("XLSX export:",err);
         alert(tuDien(err.message === "XLSX_EXCEL_LIMIT" ? "exportTooMany" : "exportFailed"));
+      } finally {
+        dangXuatExcel = false;
+        nutXuat.disabled = false;
+        nutXuat.removeAttribute("aria-busy");
+        nhanXuat.textContent = tuDien("export");
       }
     }
 
