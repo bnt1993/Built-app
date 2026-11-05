@@ -508,37 +508,36 @@
     @media(max-width:620px){.insight-grid{grid-template-columns:1fr}.insight-grid .insight-box:last-child{grid-column:auto}.advanced-controls label{flex:1 1 125px}.advanced-controls textarea{max-width:100%}}
 
 
-    /* Compact, accessible filter popover immediately beside the Clear button. */
-    .toolbar-primary { gap:10px; }
-    .search-box-group { max-width:none; min-width:0; flex:1 1 610px; align-items:center; flex-wrap:wrap; }
-    .search-box-group > .search-input { flex:1 1 240px; }
-    .search-box-group > .btn { white-space:nowrap; flex:0 0 auto; }
-    .filter-popover { position:relative; flex:0 0 auto; }
-    .filter-popover > summary { list-style:none; cursor:pointer; min-height:41px; display:flex; align-items:center; gap:6px; white-space:nowrap; }
-    .filter-popover > summary::-webkit-details-marker { display:none; }
-    .filter-popover[open] > summary { border-color:var(--blue); background:var(--blue-soft); color:var(--blue); }
-    .active-filter-count { display:inline-grid; place-items:center; background:var(--blue); color:#fff;
-      min-width:18px; height:18px; padding:0 4px; border-radius:20px; font-size:10px; font-weight:800; }
-    .active-filter-count[hidden] { display:none; }
-    .filter-popover-content { position:absolute; z-index:40; top:calc(100% + 9px); right:0;
-      width:min(625px,calc(100vw - 40px)); max-height:min(72vh,690px); overflow-y:auto;
-      box-shadow:0 20px 55px rgba(18,36,65,.2); padding:16px; border:1px solid var(--line);
-      background:var(--app-panel); color:var(--ink); border-radius:14px; }
-    .filter-popover-heading { font-size:13px; font-weight:850; margin:0 0 12px; }
-    .filter-popover-content .toolbar-filters { padding:0 0 13px; border-top:0; border-bottom:1px solid var(--line); gap:10px; }
-    .filter-popover-content .checkbox-group { margin-left:0; }
-    .filter-popover-content .advanced-controls { padding-top:12px; }
-    .filter-popover-content .advanced-controls label { min-width:170px; }
-    .filter-popover-content .advanced-controls .check-row { align-self:center; min-width:130px; }
-    .filter-popover-content button { min-height:36px; }
-    @media(max-width:750px) {
-      .search-box-group { flex-basis:100%; }
-      .search-box-group .search-input { flex:1 1 100%; }
-      .filter-popover-content { position:fixed; left:12px; right:12px; top:auto; bottom:12px;
-        width:auto; max-height: min(76vh,640px); padding:14px; border-radius:16px; }
-      .toolbar-primary > #btn-xuat-excel { margin-left:0; }
+    /* All search filters remain visible. Scope selection sits below search as before. */
+    .toolbar { gap: 8px; overflow: visible; }
+    .toolbar-primary { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: flex-start; gap: 10px 14px; }
+    .search-box-group { display: flex; flex: 1 1 475px; min-width: 270px; max-width: none; align-items: center; gap: 8px; }
+    .search-box-group > .search-input { flex: 1 1 240px; }
+    .search-box-group > .btn { flex: 0 0 auto; white-space: nowrap; }
+    .quick-filters { display: flex; flex: 1 1 385px; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; min-width: 280px; }
+    .quick-stock-select { display: flex; flex-direction: column; gap: 4px; min-width: 178px; flex: 1 1 180px; font-size: 11px; font-weight: 750; color: var(--muted); }
+    .quick-stock-select select { width: 100%; min-height: 41px; padding: 0 32px 0 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--app-field); color: var(--ink); font-size: 12px; outline-offset: 2px; }
+    .quick-stock-select select:focus-visible { outline: 2px solid var(--blue); }
+    .quick-filters .checkbox-group { margin: 0 0 10px; white-space: nowrap; }
+    .quick-filters .checkbox-group label { font-size: 11px; gap: 5px; }
+    .quick-filters .checkbox-group input { width: 15px; height: 15px; }
+    .toolbar-primary > #btn-xuat-excel { align-self: flex-end; min-height: 41px; white-space: nowrap; }
+    .toolbar-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; border-top: 1px solid var(--line); padding-top: 9px; }
+    .toolbar-filters .filter-label { flex: 0 0 auto; }
+    .toolbar-filters .radio-group { flex: 1 1 auto; }
+    @media(max-width: 960px) {
+      .search-box-group { flex-basis: 100%; }
+      .quick-filters { flex-basis: 100%; }
     }
-
+    @media(max-width: 620px) {
+      .search-box-group { flex-wrap: wrap; min-width: 0; }
+      .search-box-group > .search-input { flex: 1 1 100%; }
+      .quick-filters { min-width: 0; align-items: center; gap: 8px 12px; }
+      .quick-stock-select { flex: 1 1 100%; }
+      .quick-filters .checkbox-group { margin: 0; }
+      .toolbar-primary > #btn-xuat-excel { width: 100%; justify-content: center; }
+      .toolbar-filters .filter-label { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -590,16 +589,41 @@
         <div class="toolbar-primary">
           <div class="search-box-group">
             <div class="search-input">
-              <input type="search" id="o-tim-kiem" autocomplete="off" data-i18n-aria="searchAria" aria-label="Tìm mã SAP, mô tả, part no" data-i18n-placeholder="searchPlaceholder" placeholder="Tìm một hoặc nhiều mã SAP, mô tả, Part No..." oninput="yeuCauLocDuLieu()" onpaste="xuLyDanTimKiem(event)">
+              <input type="search" id="o-tim-kiem" autocomplete="off" data-i18n-aria="searchAria"
+                aria-label="Tìm mã SAP, mô tả, Part No" data-i18n-placeholder="searchPlaceholder"
+                placeholder="Tìm SAP001, SAP002 hoặc mô tả, Part No..."
+                oninput="yeuCauLocDuLieu()" onpaste="xuLyDanTimKiem(event)">
               <span class="search-hint" aria-hidden="true">/</span>
             </div>
             <button type="button" class="btn btn-primary" onclick="locDuLieu()" data-i18n="search">Tìm kiếm</button>
             <button type="button" class="btn btn-secondary" onclick="lamMoi()" data-i18n="clear">Xóa</button>
-             <details class="filter-popover" id="inline-filter-panel">
-               <summary class="btn btn-secondary" id="btn-bo-loc"><span aria-hidden="true">☷</span> <span data-i18n="filterOptions">Bộ lọc</span><span class="active-filter-count" id="active-filter-count" hidden>0</span></summary>
-               <div class="filter-popover-content">
-                 <div class="filter-popover-heading" data-i18n="filterOptions">Bộ lọc tìm kiếm</div>
-                 <div class="toolbar-filters">
+          </div>
+
+          <div class="quick-filters" role="group" data-i18n-aria="stockStatus" aria-label="Tồn kho so với Reorder Point">
+            <label class="quick-stock-select">
+              <span data-i18n="stockStatus">Tồn kho so với Reorder Point</span>
+              <select id="loc-canh-bao" onchange="yeuCauLocDuLieu()">
+                <option value="all" data-i18n="stockAny">Tất cả trạng thái</option>
+                <option value="healthy" data-i18n="stockAbove">Trên định mức</option>
+                <option value="at" data-i18n="stockEqual">Bằng định mức</option>
+                <option value="below" data-i18n="stockBelow">Dưới định mức</option>
+                <option value="zero" data-i18n="stockZero">Hết hàng (= 0)</option>
+                <option value="unknown" data-i18n="stockUnknown">Chưa có định mức</option>
+              </select>
+            </label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" id="chk-ton-kho" onchange="yeuCauLocDuLieu()">
+                <span data-i18n="onlyStock">Chỉ hiển thị còn hàng</span></label>
+            </div>
+            <div class="checkbox-group">
+              <label><input type="checkbox" id="tim-gan-dung" onchange="yeuCauLocDuLieu()">
+                <span data-i18n="fuzzySearch">Tìm gần đúng</span></label>
+            </div>
+          </div>
+
+          <button type="button" id="btn-xuat-excel" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo Excel (.xlsx)</span></button>
+        </div>
+        <div class="toolbar-filters">
           <span class="filter-label" data-i18n="searchIn">Tìm trong</span>
           <div class="radio-group" role="group" data-i18n-aria="searchScopeAria" aria-label="Phạm vi tìm kiếm">
             <label><input type="radio" name="truongTim" value="all" onchange="yeuCauLocDuLieu()" checked><span data-i18n="searchAll">Tất cả</span></label>
@@ -608,31 +632,6 @@
             <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"><span data-i18n="searchPart">Part No</span></label>
             <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span data-i18n="searchBm">BM No</span></label>
           </div>
-          <div class="checkbox-group">
-            <label><input type="checkbox" id="chk-ton-kho" onchange="yeuCauLocDuLieu()"> <span data-i18n="onlyStock">Chỉ hiển thị còn hàng</span></label>
-          </div>
-        </div>
-                 <div class="advanced-controls">
-          <label><span data-i18n="stockStatus">Stock / Reorder Point</span>
-            <select id="loc-canh-bao" onchange="yeuCauLocDuLieu()">
-              <option value="all" data-i18n="stockAny">Tất cả</option>
-              <option value="healthy" data-i18n="stockAbove">Trên định mức</option>
-              <option value="at" data-i18n="stockEqual">Bằng định mức</option>
-              <option value="below" data-i18n="stockBelow">Dưới định mức</option>
-              <option value="zero" data-i18n="stockZero">Hết hàng (= 0)</option>
-              <option value="unknown" data-i18n="stockUnknown">Chưa có định mức</option>
-            </select></label>
-          
-          <label class="check-row"><input type="checkbox" id="tim-gan-dung" onchange="yeuCauLocDuLieu()"> <span data-i18n="fuzzySearch">Tìm gần đúng</span></label>
-          <label><span data-i18n="savedFilters">Bộ lọc đã lưu</span><select id="loc-da-luu" aria-label="Saved filters"><option value="">—</option></select></label>
-          <button class="btn btn-secondary" type="button" onclick="luuBoLoc()" data-i18n="saveFilter">Lưu</button>
-          <button class="btn btn-soft" type="button" onclick="apDungBoLoc()" data-i18n="applyFilter">Áp dụng</button>
-          <button class="btn btn-secondary" type="button" onclick="xoaBoLoc()" data-i18n="removeFilter">Xóa đã lưu</button>
-        </div>
-               </div>
-             </details>
-          </div>
-          <button type="button" id="btn-xuat-excel" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo Excel (.xlsx)</span></button>
         </div>
       </section>
 
