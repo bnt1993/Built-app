@@ -833,6 +833,18 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu Stock",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
+        dashboardHeading:"Dashboard phân tích kho",dashboardDesc:"Theo dõi giá trị tồn, phân nhóm ABC, top vật tư và trạng thái hàng tồn.",
+        historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu các giao dịch thực tế từ History.js, không suy diễn giao dịch từ tồn kho.",
+        stockDistribution:"Phân bố trạng thái tồn kho",stockDistributionTotal:"Mã vật tư", stockUnknownLabel:"Chưa có định mức",
+        historyRefresh:"Tải lại History.js",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
+        historyMatching:"Kết quả lọc",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
+        historyType:"Loại giao dịch",historyAny:"Tất cả",historyOther:"Khác / chưa rõ",historyFrom:"Từ ngày",historyTo:"Đến ngày",
+        historyClear:"Xóa lọc",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
+        historyIdle:"Chưa tải History.js",historyLoading:"Đang tải History.js...",historyNoSource:"Không tìm thấy History.js ở cùng thư mục ứng dụng.",
+        historyInvalid:"History.js không cung cấp mảng giao dịch hợp lệ.",historyEmpty:"History.js không có giao dịch.",
+        historyLoaded:"Đã tải {count} giao dịch từ History.js",historyPage:"Trang {current} / {total}",
+        historyNoResults:"Không tìm thấy giao dịch phù hợp với bộ lọc.",historyCount:"{count} / {total} giao dịch",
         brandSubtitle:"KHÔNG GIAN QUẢN LÝ", themeSettings:"Giao diện", themeToLight:"Chuyển sang giao diện sáng",
         themeToDark:"Chuyển sang giao diện tối", refresh:"Đồng bộ", refreshTitle:"Đồng bộ dữ liệu từ nguồn",
         breadcrumb:"Tổng quan vật tư", heroFirst:"Quản lý vật tư", heroAccent:"thông minh.",
@@ -898,6 +910,18 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"BM No", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        tabsAria:"Inventory workspaces",tabStock:"Stock lookup",tabDashboard:"Inventory dashboard",tabHistory:"In / Out history",
+        dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Explore inventory valuation, ABC classification, high-value materials and stock health.",
+        historyHeading:"Inbound / outbound history",historyDesc:"View actual transactions from History.js, without inferring movements from stock snapshots.",
+        stockDistribution:"Stock status distribution",stockDistributionTotal:"Materials",stockUnknownLabel:"No reorder point",
+        historyRefresh:"Reload History.js",historyTotal:"Total transactions",historyIn:"Inbound",historyOut:"Outbound",
+        historyMatching:"Matching transactions",historySearchLabel:"Search SAP, description, reference...",historySearchPlaceholder:"SAP, description, document number...",
+        historyType:"Movement type",historyAny:"All",historyOther:"Other / unknown",historyFrom:"From date",historyTo:"To date",
+        historyClear:"Clear filters",historyTable:"Transaction records",historyTableNote:"Shows all source columns in History.js; no fabricated transactions.",
+        historyIdle:"History.js has not been loaded",historyLoading:"Loading History.js...",historyNoSource:"History.js was not found beside the app.",
+        historyInvalid:"History.js does not expose a valid transaction array.",historyEmpty:"History.js contains no transactions.",
+        historyLoaded:"Loaded {count} transactions from History.js",historyPage:"Page {current} / {total}",
+        historyNoResults:"No matching transactions.",historyCount:"{count} / {total} transactions",
         brandSubtitle:"OPERATIONS WORKSPACE", themeSettings:"Appearance", themeToLight:"Switch to light mode",
         themeToDark:"Switch to dark mode", refresh:"Sync", refreshTitle:"Refresh source data",
         breadcrumb:"Inventory overview", heroFirst:"Smart inventory", heroAccent:"management.",
@@ -1042,8 +1066,69 @@
       });
       capNhatGiaoDienAnh();
       if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
+      chuyenTab(tabHienTai,{persist:false,skipHistory:true});
+      capNhatNgonNguHistory();
       kiemTraNhacBaoCao();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
+    }
+
+
+    // Tabs switch views without reloading or losing stock search/gallery state.
+    let tabHienTai="stock";
+    const CAC_TAB=["stock","dashboard","history"];
+    function chuyenTab(tab, opts={}) {
+      if(!CAC_TAB.includes(tab))return;
+      tabHienTai=tab;
+      for(const name of CAC_TAB){
+        const pane=document.getElementById("view-"+name);
+        const button=document.getElementById("tab-"+name);
+        const selected=name===tab;
+        pane.hidden=!selected;
+        button.setAttribute("aria-selected",String(selected));
+        button.setAttribute("tabindex",selected?"0":"-1");
+        button.classList.toggle("active",selected);
+      }
+      document.querySelector(".breadcrumbs .active").textContent=tuDien(
+        tab==="stock"?"tabStock":tab==="dashboard"?"tabDashboard":"tabHistory");
+      if(opts.persist!==false)ghiTuyChon("checking-active-tab",tab);
+      if(tab==="dashboard"&&analyticsReady)capNhatThongKeNangCao();
+      if(tab==="history"&&!opts.skipHistory)taiHistory(false);
+    }
+
+    function xuLyPhimTab(event) {
+      if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;
+      const index=CAC_TAB.indexOf(tabHienTai);
+      const next=event.key==="Home"?0:event.key==="End"?CAC_TAB.length-1:
+        (index+(event.key==="ArrowLeft"?CAC_TAB.length-1:1))%CAC_TAB.length;
+      event.preventDefault();
+      chuyenTab(CAC_TAB[next]);
+      document.getElementById("tab-"+CAC_TAB[next]).focus();
+    }
+
+    function vePhanBoTrangThai() {
+      const target=document.getElementById("insight-stock-distribution");
+      if(!analyticsReady){target.textContent=tuDien("noAnalytics");return}
+      const count={healthy:0,at:0,below:0,zero:0,unknown:0};
+      for(const record of duLieuTimKiem)count[record.trangThaiTon]=(count[record.trangThaiTon]||0)+1;
+      const total=duLieuTimKiem.length;
+      if(!total){target.textContent=tuDien("noAnalytics");return}
+      const shades={healthy:"#16a34a",at:"#facc15",below:"#fb923c",zero:"#e11d48",unknown:"#94a3b8"};
+      const names={healthy:"stockAbove",at:"stockEqual",below:"stockBelow",zero:"stockZero",unknown:"stockUnknown"};
+      let offset=0;
+      const sectors=[];
+      for(const key of ["healthy","at","below","zero","unknown"]){
+        const proportion=100*count[key]/total;
+        sectors.push(shades[key]+" "+offset.toFixed(4)+"% "+(offset+proportion).toFixed(4)+"%");
+        offset+=proportion;
+      }
+      const legend=Object.keys(names).map(key=>
+        '<div class="dist-row"><span class="dist-swatch" style="background:'+shades[key]+'"></span>'+
+        '<span>'+thoatHTML(tuDien(names[key]))+'</span><b>'+dinhDangSoLuong.format(count[key])+'</b></div>').join("");
+      target.innerHTML='<div class="stock-donut" role="img" aria-label="'+
+        thoatHTML(tuDien("stockDistribution"))+'" style="background:conic-gradient('+sectors.join(",")+')">'+
+        '<div class="stock-donut-inner"><strong>'+dinhDangSoLuong.format(total)+'</strong><span>'+
+        thoatHTML(tuDien("stockDistributionTotal"))+'</span></div></div>'+
+        '<div class="stock-distribution-list">'+legend+'</div>';
     }
 
     function doiNgonNgu(ngonNgu) {
@@ -1417,6 +1502,7 @@
         running+=rec.value;
       }
       hienThiThanhGiaTri(abc,"insight-abc",total,"money");
+      vePhanBoTrangThai();
       const top=sorted.slice(0,10).map(x=>({name:x.sap,value:x.value}));
       hienThiThanhGiaTri(top,"insight-top",total,"money");
       const groupMap=new Map();
@@ -1424,7 +1510,6 @@
       const groups=[...groupMap].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,value])=>({name,value}));
       hienThiThanhGiaTri(groups,"insight-groups",total,"money");
       veLichSuKho();
-      veLichSuGiaoDich();
       kiemTraNhacBaoCao();
     }
 
@@ -2583,6 +2668,8 @@
 
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     khoiTaoTuyChon();
+    document.querySelector(".view-tabs").addEventListener("keydown",xuLyPhimTab);
+    chuyenTab(docTuyChon("checking-active-tab")||"stock",{persist:false});
     khoiTaoLichNhacBaoCao();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
