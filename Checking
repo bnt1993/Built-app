@@ -498,7 +498,7 @@
             <button type="button" class="btn btn-primary" onclick="locDuLieu()" data-i18n="search">Tìm kiếm</button>
             <button type="button" class="btn btn-secondary" onclick="lamMoi()" data-i18n="clear">Xóa</button>
           </div>
-          <button type="button" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo Excel (.xlsx)</span></button>
+          <button type="button" id="btn-xuat-excel" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo Excel (.xlsx)</span></button>
         </div>
         <div class="toolbar-filters">
           <span class="filter-label" data-i18n="searchIn">Tìm trong</span>
@@ -616,6 +616,7 @@
         imagesNone:"Chưa có ảnh cho mã SAP này", imagesEmpty:"0/0 ảnh",
         noExport:"Không có dữ liệu phù hợp để xuất.",
         exportBusy:"Dữ liệu đang xử lý hoặc tìm kiếm. Vui lòng xuất khi kết quả đã cập nhật.",
+        exportGenerating:"Đang tạo báo cáo...",
         exportTooMany:"Báo cáo vượt quá giới hạn số dòng của Excel (.xlsx).",
         exportFailed:"Không thể tạo báo cáo Excel. Vui lòng thử lại.",
         reportTitle:"BÁO CÁO TỒN KHO SAP",
@@ -673,6 +674,7 @@
         imagesNone:"No images available for this SAP code", imagesEmpty:"0/0 images",
         noExport:"No matching data to export.",
         exportBusy:"Data is still loading or filtering. Please export after results are ready.",
+        exportGenerating:"Generating report...",
         exportTooMany:"The report exceeds Excel .xlsx worksheet row limits.",
         exportFailed:"Unable to create the Excel report. Please try again.",
         reportTitle:"SAP INVENTORY REPORT",
@@ -1660,7 +1662,7 @@
       return zip;
     }
 
-    function taoBaoCaoXlsx(danhSach, option = {}) {
+    async function taoBaoCaoXlsx(danhSach, option = {}) {
       const src = danhSach;
       const locale = ngonNguHienTai === "en" ? "en-US" : "vi-VN";
       const soCotNguon = tieuDeCot.length;
@@ -1671,7 +1673,10 @@
       const colPrice = timChiSo(["price","unit price","đơn giá","giá"]);
       const themThanhTien = colPrice >= 0;
       const cotCuoi = soCotNguon + (themThanhTien ? 1 : 0);
-      if (src.length + 6 > 1048576 || cotCuoi > 16384) throw new Error("XLSX_EXCEL_LIMIT");
+      const dongCuoi = 6 + src.length + (themThanhTien ? 2 : 0);
+      if (dongCuoi > 1048576 || cotCuoi > 16384 || cotCuoi < 1) throw new Error("XLSX_EXCEL_LIMIT");
+      const tenSheetTongQuan = ngonNguHienTai === "en" ? "Overview" : "Tong quan";
+      const tenSheetChiTiet = ngonNguHienTai === "en" ? "Details" : "Chi tiet";
 
       const tenCotCuoi = tenCotXlsx(cotCuoi - 1);
       const moTaLoc = option.keyword || tuDien("reportNone");
@@ -1723,6 +1728,7 @@
 
       let tonKho = 0, conHang = 0, giaTri = 0, dongGiaLoi = 0;
       for (let i = 0; i < src.length; i++) {
+        if (i > 0 && i % 1200 === 0) await new Promise(resolve => setTimeout(resolve, 0));
         const rec = src[i].dong;
         const row = i + 7;
         const qty = chuyenThanhSo(rec[colQty]);
@@ -1787,7 +1793,9 @@
         tenCotCuoi + lastDataRow + '"/>' +
         '<mergeCells count="'+merges.length+'">' +
         merges.map(x=>'<mergeCell ref="'+x+'"/>').join("") +
-        '</mergeCells></worksheet>';
+        '</mergeCells>' +
+         '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>' +
+         '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
 
       // Overview sheet with large title, 6 key metrics and report audit details.
       const s = [], mergeSummary = [];
@@ -1813,7 +1821,7 @@
         s.push(hangXlsx(r,[
           oChuXlsx(0,r,name,style===19?18:4),
           value===null ? oChuXlsx(3,r,"—",style) : oSoXlsx(3,r,value,style,
-            style===19 ? "SUM('Chi tiet'!"+tenCotCuoi+"7:"+tenCotCuoi+lastDataRow+")" : "")
+            style===19 ? "SUM('"+tenSheetChiTiet+"'!"+tenCotCuoi+"7:"+tenCotCuoi+lastDataRow+")" : "")
         ],29));
         mergeSummary.push("A"+r+":C"+r,"D"+r+":H"+r);
       }
@@ -1835,7 +1843,9 @@
         '<sheetFormatPr defaultRowHeight="22"/>'+sumCols+'<sheetData>' +
         s.join("") + '</sheetData><mergeCells count="'+mergeSummary.length+'">' +
         mergeSummary.map(x=>'<mergeCell ref="'+x+'"/>').join("") +
-        '</mergeCells></worksheet>';
+        '</mergeCells>' +
+         '<pageMargins left="0.35" right="0.35" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>' +
+         '<pageSetup orientation="portrait" fitToWidth="1" fitToHeight="1"/></worksheet>';
       const packType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       const files = [
         {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
@@ -1854,8 +1864,8 @@
         {name:"xl/workbook.xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
           '<workbook xmlns="'+sheetNs+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
           '<bookViews><workbookView/></bookViews><sheets>' +
-          '<sheet name="Tong quan" sheetId="1" r:id="rId1"/>' +
-          '<sheet name="Chi tiet" sheetId="2" r:id="rId2"/></sheets>' +
+          '<sheet name="'+tenSheetTongQuan+'" sheetId="1" r:id="rId1"/>' +
+          '<sheet name="'+tenSheetChiTiet+'" sheetId="2" r:id="rId2"/></sheets>' +
           '<calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>'},
         {name:"xl/_rels/workbook.xml.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
           '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
