@@ -365,6 +365,90 @@
       .panel-legend { font-size:9px; }
     }
 
+    /* Clearer table and panel headers in both light/dark themes. */
+    th { font-size: 11px; font-weight: 850; color: var(--ink); letter-spacing: .065em; }
+    .sort-trigger { font-size: 11px; font-weight: 850; color: var(--ink); }
+    .section-header h2, .detail-title strong { font-weight: 850; color: var(--ink); }
+    th[aria-sort="ascending"] .sort-trigger,
+    th[aria-sort="descending"] .sort-trigger { color: var(--blue); }
+
+    /* Compact vertical rhythm: leave more room for the inventory workspace. */
+    .app-header { height: 58px; }
+    .workspace { padding-top: 14px; padding-bottom: 18px; }
+    .breadcrumbs { font-size: 10px; }
+    .intro { margin: 5px 0 12px; }
+    .intro h1 { font-size: clamp(23px, 2.45vw, 31px); line-height: 1.18; margin-bottom: 4px; }
+    .intro p { font-size: 12px; }
+    .metric-grid { gap: 10px; margin-bottom: 12px; }
+    .metric-card { min-height: 82px; padding: 12px 15px; }
+    .metric-text { gap: 5px; }
+    .metric-label { font-size: 11px; }
+    .metric-value { font-size: clamp(22px, 2.1vw, 29px); }
+    .metric-icon { width: 33px; height: 33px; font-size: 17px; }
+    .toolbar { padding: 11px 15px; gap: 8px; margin-bottom: 13px; }
+    .toolbar-primary, .toolbar-filters { gap: 8px; }
+    .toolbar-filters { padding-top: 9px; }
+    .search-input input { height: 41px; }
+    .section-header { padding: 12px 16px; }
+    .section-header h2 { font-size: 15px; }
+    .table-bottom { padding: 9px 13px; }
+    .detail-title { padding: 14px 0 11px; margin-bottom: 11px; }
+    .image-viewer-box { height: clamp(215px, 27vh, 310px); margin-bottom: 11px; }
+    .detail-grid { gap: 8px; }
+    .detail-item { padding: 9px 10px; }
+    .detail-item label { margin-bottom: 3px; }
+    .footer-bar { padding-top: 12px; }
+
+    /*
+     * Match the inventory table and detail card to a single grid track.
+     * The detail card grows naturally to show every field, without an inner scrollbar.
+     * Only the inventory table scrolls (and continues to auto-paginate at its bottom).
+     */
+    .main-container {
+      align-items: stretch;
+      grid-template-rows: minmax(clamp(740px, 86vh, 1120px), auto);
+      gap: 14px;
+    }
+    .table-section { height: 100%; min-height: 0; display: flex; flex-direction: column; }
+    .table-wrapper { flex: 1 1 0; height: 0; min-height: 0; overflow: auto; }
+    .detail-section {
+      height: auto; min-height: 0; max-height: none;
+      overflow: visible; overscroll-behavior: auto;
+      align-self: stretch; position: static; top: auto;
+      padding: 0 16px 14px;
+    }
+
+    @media (max-width: 1150px) {
+      .workspace { padding-top: 12px; }
+      .main-container { gap: 12px; }
+      .detail-section { padding: 0 14px 13px; }
+    }
+    @media (max-width: 900px) {
+      .main-container { grid-template-rows: auto; gap: 12px; }
+      .table-section { height: clamp(520px, 76vh, 850px); min-height: 0; }
+      .table-wrapper { flex: 1 1 0; height: 0; min-height: 0; }
+      .detail-section { height: auto; max-height: none; overflow: visible; }
+      .image-viewer-box { height: clamp(225px, 32vh, 340px); }
+    }
+    @media (max-width: 620px) {
+      .app-header { height: auto; min-height: 56px; }
+      .workspace { padding-top: 10px; padding-bottom: 12px; }
+      .breadcrumbs { font-size: 9px; }
+      .intro { margin: 5px 0 10px; }
+      .intro h1 { font-size: 23px; }
+      .intro p { font-size: 11px; }
+      .metric-grid { gap: 6px; margin-bottom: 10px; }
+      .metric-card { min-height: 79px; padding: 10px 9px; }
+      .metric-value { font-size: 21px; }
+      .metric-note { font-size: 9px; }
+      .toolbar { padding: 10px; margin-bottom: 11px; gap: 8px; }
+      .section-header { padding: 11px 12px; }
+      .table-section { height: clamp(520px, 75vh, 740px); }
+      .table-wrapper { flex: 1 1 0; height: 0; min-height: 0; }
+      .detail-section { overflow: visible; height: auto; }
+      .image-viewer-box { height: 240px; }
+    }
+
   </style>
 </head>
 <body>
@@ -444,7 +528,7 @@
             <span data-i18n="keyboardHint">↑ ↓ để chọn dòng · / để tìm kiếm</span>
             <div class="pagination" data-i18n-aria="paginationAria" aria-label="Chuyển trang">
               <button type="button" class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)" disabled>← <span data-i18n="prev">Trước</span></button>
-              <span id="thong-tin-trang">Trang 1 / 1</span>
+              <span id="thong-tin-trang" aria-live="polite">Trang 1 / 1</span>
               <button type="button" class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)" disabled><span data-i18n="next">Sau</span> →</button>
             </div>
           </div>
@@ -509,7 +593,7 @@
         searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
         materialsList:"Danh sách vật tư", rowHint:"Nhấn vào một dòng để xem chi tiết và hình ảnh",
         outOfStock:"Hết hàng", loadingData:"Đang kết nối dữ liệu...", tableAria:"Bảng vật tư, có thể cuộn ngang",
-        keyboardHint:"↑ ↓ để chọn dòng · / để tìm kiếm", paginationAria:"Chuyển trang",
+        keyboardHint:"Cuộn cuối bảng để sang trang tiếp · ↑ ↓ chọn dòng · / tìm kiếm", paginationAria:"Chuyển trang",
         prev:"Trước", next:"Sau", detailsAria:"Chi tiết vật tư", details:"Thông tin chi tiết",
         noSelectedSap:"Chưa chọn mã SAP", selectSapImage:"Chọn một mã SAP để xem hình ảnh",
         imageAlt:"Hình ảnh vật tư", prevImage:"Ảnh trước", nextImage:"Ảnh sau",
@@ -549,7 +633,7 @@
         searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
         materialsList:"Material list", rowHint:"Select a row to view details and images",
         outOfStock:"Out of stock", loadingData:"Connecting to data...", tableAria:"Scrollable material table",
-        keyboardHint:"↑ ↓ select a row · / search", paginationAria:"Pagination",
+        keyboardHint:"Scroll to the bottom for the next page · ↑ ↓ select · / search", paginationAria:"Pagination",
         prev:"Previous", next:"Next", detailsAria:"Material details", details:"Material details",
         noSelectedSap:"No SAP code selected", selectSapImage:"Select an SAP code to view images",
         imageAlt:"Material image", prevImage:"Previous image", nextImage:"Next image",
@@ -1055,6 +1139,30 @@
       document.querySelector(".table-wrapper").scrollTop = 0;
     }
 
+    // Bottom-of-table auto-pagination. A small cooldown prevents one touch
+    // gesture or a programmatic scroll reset from skipping several pages.
+    let viTriCuonBangCu = 0;
+    let mocChuyenTrangTuDong = 0;
+
+    function xuLyCuonCuoiBang() {
+      const vungBang = document.querySelector(".table-wrapper");
+      if (!vungBang) return;
+      const viTriHienTai = vungBang.scrollTop;
+      const dangCuonXuong = viTriHienTai > viTriCuonBangCu + 1;
+      viTriCuonBangCu = viTriHienTai;
+      if (!dangCuonXuong || Date.now() < mocChuyenTrangTuDong) return;
+
+      // Do not turn pages when the table is shorter than the scroll region.
+      if (vungBang.scrollHeight <= vungBang.clientHeight + 24) return;
+      const tongTrang = Math.max(1, Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG));
+      if (trangHienTai >= tongTrang) return;
+      if (viTriHienTai + vungBang.clientHeight < vungBang.scrollHeight - 24) return;
+
+      mocChuyenTrangTuDong = Date.now() + 650;
+      doiTrang(1);  // Preserves the existing Next/Previous button behavior.
+      viTriCuonBangCu = 0;
+    }
+
     function chonDongBangPhim(buoc) {
       if (ketQuaLoc.length === 0) return;
 
@@ -1369,6 +1477,7 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
+    document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonCuoiBang, { passive: true });
     document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
     document.addEventListener("keydown", e => {
       const lightboxDangMo = document.getElementById("lightbox").style.display === "flex";
