@@ -599,6 +599,28 @@
       #view-dashboard .insight-grid{grid-template-columns:1fr}.pane-heading{flex-wrap:wrap}
       .history-stats{gap:7px}.history-stat{padding:11px}.history-stat strong{font-size:21px}.history-toolbar label{flex:1 1 145px}
       .history-toolbar label:first-child{flex-basis:100%}}
+
+    /* Always-visible In / Out movement filters. */
+    .history-kind-group { display:flex; flex-direction:column; gap:4px; min-width:255px; }
+    .history-kind-label { font-size:11px; font-weight:700; color:var(--muted); }
+    .history-kind-buttons { display:flex; flex-wrap:wrap; align-items:center; gap:4px;
+      padding:3px; min-height:40px; border:1px solid var(--line); border-radius:10px; background:var(--app-field); }
+    .history-kind-filter { background:transparent; color:var(--muted); border:1px solid transparent; border-radius:7px;
+      min-height:32px; padding:5px 11px; font-size:12px; font-weight:800; }
+    .history-kind-filter:hover { color:var(--ink); background:var(--app-hover); }
+    .history-kind-filter.selected { color:var(--blue); border-color:var(--line);
+      background:var(--app-panel); box-shadow:0 2px 7px rgba(0,0,0,.05); }
+    .history-kind-filter:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+    .history-table td { font-variant-numeric:tabular-nums; }
+    .history-table td:first-child { position:sticky; left:0; background:var(--app-panel); z-index:1; }
+    .history-table th:first-child { position:sticky; left:0; z-index:4; }
+    .history-table tbody tr:hover td:first-child { background:var(--app-hover); }
+    @media(max-width:620px){ .history-kind-group { width:100%; }
+      .history-kind-buttons { justify-content:space-between; }
+      .history-kind-filter { flex:1 1 0; padding:5px 6px; }
+    }
+    .history-quantity.in { color:var(--green); font-weight:750; }
+    .history-quantity.out { color:var(--red); font-weight:750; }
   </style>
 </head>
 <body>
@@ -792,9 +814,16 @@
         </div>
         <div class="history-toolbar">
           <label><span data-i18n="historySearchLabel">Tìm mã SAP, mô tả, chứng từ...</span><input type="search" id="history-search" oninput="locHistory()" data-i18n-placeholder="historySearchPlaceholder" placeholder="SAP, mô tả, số chứng từ..."></label>
-          <label><span data-i18n="historyType">Loại giao dịch</span>
-            <select id="history-type" onchange="locHistory()"><option value="all" data-i18n="historyAny">Tất cả</option><option value="in" data-i18n="historyIn">Nhập</option><option value="out" data-i18n="historyOut">Xuất</option><option value="unknown" data-i18n="historyOther">Khác / chưa xác định</option></select>
-          </label>
+          <div class="history-kind-group" role="group" data-i18n-aria="historyType" aria-label="Loại giao dịch">
+            <span class="history-kind-label" data-i18n="historyType">Loại giao dịch</span>
+            <input type="hidden" id="history-type" value="all">
+            <div class="history-kind-buttons">
+              <button type="button" class="history-kind-filter selected" data-history-kind="all" aria-pressed="true" onclick="chonLoaiHistory('all')" data-i18n="historyAny">Tất cả</button>
+              <button type="button" class="history-kind-filter" data-history-kind="in" aria-pressed="false" onclick="chonLoaiHistory('in')" data-i18n="historyInShort">Nhập</button>
+              <button type="button" class="history-kind-filter" data-history-kind="out" aria-pressed="false" onclick="chonLoaiHistory('out')" data-i18n="historyOutShort">Xuất</button>
+              <button type="button" class="history-kind-filter" data-history-kind="unknown" aria-pressed="false" onclick="chonLoaiHistory('unknown')" data-i18n="historyOtherShort">Khác</button>
+            </div>
+          </div>
           <label><span data-i18n="historyFrom">Từ ngày</span><input type="date" id="history-from" onchange="locHistory()"></label>
           <label><span data-i18n="historyTo">Đến ngày</span><input type="date" id="history-to" onchange="locHistory()"></label>
           <button class="btn btn-secondary" type="button" onclick="xoaLocHistory()" data-i18n="historyClear">Xóa lọc</button>
@@ -838,12 +867,12 @@
         historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu các giao dịch thực tế từ History.js, không suy diễn giao dịch từ tồn kho.",
         stockDistribution:"Phân bố trạng thái tồn kho",stockDistributionTotal:"Mã vật tư", stockUnknownLabel:"Chưa có định mức",
         historyRefresh:"Tải lại History.js",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
-        historyMatching:"Kết quả lọc",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
+        historyMatching:"Kết quả lọc",historyInShort:"Nhập",historyOutShort:"Xuất",historyOtherShort:"Khác",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
         historyType:"Loại giao dịch",historyAny:"Tất cả",historyOther:"Khác / chưa rõ",historyFrom:"Từ ngày",historyTo:"Đến ngày",
-        historyClear:"Xóa lọc",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
+        historyClear:"Xóa lọc",historyDirection:"Phân loại",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
         historyIdle:"Chưa tải History.js",historyLoading:"Đang tải History.js...",historyNoSource:"Không thể tải History.js (giữ dữ liệu lịch sử trước đó nếu có).",
-        historyInvalid:"History.js không cung cấp mảng giao dịch hợp lệ.",historyEmpty:"History.js không có giao dịch.",
-        historyLoaded:"Đã tải {count} giao dịch từ History.js",historyLoadedExisting:"Đã đọc {count} giao dịch từ dữ liệu SAP đã có",historyPage:"Trang {current} / {total}",
+        historyInvalid:"History.js không có cấu trúc bảng giao dịch hợp lệ.",historyEmpty:"History.js không có giao dịch.",
+        historyLoaded:"Đã tải {count} giao dịch từ History.js",historyLoadedAt:"Đã tải {count} giao dịch từ History.js · Nguồn cập nhật: {time}",historyLoadedExisting:"Đã đọc {count} giao dịch từ dữ liệu SAP đã có",historyPage:"Trang {current} / {total}",
         historyNoResults:"Không tìm thấy giao dịch phù hợp với bộ lọc.",historyCount:"{count} / {total} giao dịch",
         brandSubtitle:"KHÔNG GIAN QUẢN LÝ", themeSettings:"Giao diện", themeToLight:"Chuyển sang giao diện sáng",
         themeToDark:"Chuyển sang giao diện tối", refresh:"Đồng bộ", refreshTitle:"Đồng bộ dữ liệu từ nguồn",
@@ -915,12 +944,12 @@
         historyHeading:"Inbound / outbound history",historyDesc:"View actual transactions from History.js, without inferring movements from stock snapshots.",
         stockDistribution:"Stock status distribution",stockDistributionTotal:"Materials",stockUnknownLabel:"No reorder point",
         historyRefresh:"Reload History.js",historyTotal:"Total transactions",historyIn:"Inbound",historyOut:"Outbound",
-        historyMatching:"Matching transactions",historySearchLabel:"Search SAP, description, reference...",historySearchPlaceholder:"SAP, description, document number...",
+        historyMatching:"Matching transactions",historyInShort:"Inbound",historyOutShort:"Outbound",historyOtherShort:"Other",historySearchLabel:"Search SAP, description, reference...",historySearchPlaceholder:"SAP, description, document number...",
         historyType:"Movement type",historyAny:"All",historyOther:"Other / unknown",historyFrom:"From date",historyTo:"To date",
-        historyClear:"Clear filters",historyTable:"Transaction records",historyTableNote:"Shows all source columns in History.js; no fabricated transactions.",
+        historyClear:"Clear filters",historyDirection:"Direction",historyTable:"Transaction records",historyTableNote:"Shows all source columns in History.js; no fabricated transactions.",
         historyIdle:"History.js has not been loaded",historyLoading:"Loading History.js...",historyNoSource:"History.js could not be loaded (previous history is preserved if available).",
         historyInvalid:"History.js does not expose a valid transaction array.",historyEmpty:"History.js contains no transactions.",
-        historyLoaded:"Loaded {count} transactions from History.js",historyLoadedExisting:"Read {count} transactions from the existing SAP feed",historyPage:"Page {current} / {total}",
+        historyLoaded:"Loaded {count} transactions from History.js",historyLoadedAt:"Loaded {count} transactions from History.js · Source updated: {time}",historyLoadedExisting:"Read {count} transactions from the existing SAP feed",historyPage:"Page {current} / {total}",
         historyNoResults:"No matching transactions.",historyCount:"{count} / {total} transactions",
         brandSubtitle:"OPERATIONS WORKSPACE", themeSettings:"Appearance", themeToLight:"Switch to light mode",
         themeToDark:"Switch to dark mode", refresh:"Sync", refreshTitle:"Refresh source data",
@@ -1601,21 +1630,32 @@
       return "";
     }
 
+    // History.js actual movement values: INPUT, OUTPUT, SCRAP and SAP codes.
+    // SAP reversal movements (102, 202, 502, 552) have the opposite effect
+    // from their originating transaction. Transfer movements may have both
+    // a positive receiving leg and a negative issuing leg.
     function loaiHistory(raw,row) {
       const kind=tenHistoryChuan(raw);
-      const incoming=new Set(["in","inbound","import","receive","receipt","goodsreceipt","gr",
-        "nhap","nhapkho","101","102","tang","plus"]);
-      const outgoing=new Set(["out","outbound","export","issue","goodsissue","gi","xuat",
-        "xuatkho","201","202","giam","minus"]);
+      const incoming=new Set([
+        "in","input","inbound","import","receive","receipt","goodsreceipt","gr",
+        "nhap","nhapkho","101","202","501","552","tang","plus"
+      ]);
+      const outgoing=new Set([
+        "out","output","outbound","export","issue","goodsissue","gi","scrap",
+        "xuat","xuatkho","201","102","502","551","giam","minus"
+      ]);
       if(incoming.has(kind))return "in";
       if(outgoing.has(kind))return "out";
       const incomingValue=historyInColumn>=0?chuyenThanhSo(row[historyInColumn]):NaN;
       const outgoingValue=historyOutColumn>=0?chuyenThanhSo(row[historyOutColumn]):NaN;
       const hasIn=Number.isFinite(incomingValue)&&incomingValue>0;
       const hasOut=Number.isFinite(outgoingValue)&&outgoingValue>0;
-      if(hasIn&&!hasOut)return "in";
-      if(hasOut&&!hasIn)return "out";
-      return "unknown"; // Never assume a positive quantity is always inbound.
+      if(hasIn!==hasOut)return hasIn?"in":"out";
+      // For transfer (301/302/311/312) and other SAP movement codes, an
+      // explicit signed movement quantity indicates the direction of each leg.
+      const qty=historyQuantityColumn>=0?chuyenThanhSo(row[historyQuantityColumn]):NaN;
+      if(Number.isFinite(qty)&&qty!==0)return qty>0?"in":"out";
+      return "unknown";
     }
 
     function bienDoiHistory(source) {
@@ -1631,7 +1671,7 @@
         if(!Array.isArray(headers)) {headers=inputRows[0];inputRows=inputRows.slice(1);}
         const maxLength=Math.max(headers.length,...inputRows.slice(0,100).map(r=>Array.isArray(r)?r.length:0));
         const names=Array.from({length:maxLength},(_,i)=>String(headers[i]??("Column "+(i+1))));
-        const rows=inputRows.filter(Array.isArray).map(row=>names.map((_,i)=>row[i]??""));
+        const rows=inputRows.filter(Array.isArray);
         return {headers:names,rows};
       }
       if(inputRows[0] && typeof inputRows[0]==="object" && !Array.isArray(inputRows[0])) {
@@ -1658,79 +1698,165 @@
       status.classList.toggle("error",["historyNoSource","historyInvalid"].includes(key));
     }
 
-    function apDungNguonHistory(source,origin="file") {
+    // Parse the actual 6 MB History.js as *data* rather than executing it.
+    // It assigns window.duLieuCongTy, the same global used by data.js for Stock.
+    // Parsing protects the live stock source from being overwritten.
+    function docHistoryTuVanBan(source) {
+      const assignment=/window\.(?:duLieuCongTy|duLieuLichSu|duLieuHistory|lichSuNhapXuat|inventoryTransactions|historyData)\s*=\s*\[/.exec(source);
+      if(!assignment)throw Error("HISTORY_BAD_FORMAT");
+      const from=assignment.index+assignment[0].length-1;
+      const to=source.lastIndexOf("]");
+      if(to<=from)throw Error("HISTORY_BAD_FORMAT");
+      const data=JSON.parse(source.slice(from,to+1));
+      const time=/window\.thoiGianCapNhat\s*=\s*("(?:\\.|[^"\\])*")/.exec(source);
+      return {data,updated:time?JSON.parse(time[1]):""};
+    }
+
+    async function apDungNguonHistory(source,origin="file",updated="",sequence=historySeq) {
       let parsed;
-      try {parsed=bienDoiHistory(source);}catch(err){
+      try { parsed=bienDoiHistory(source); }
+      catch(err){capNhatTrangThaiHistory("historyInvalid");return false;}
+      const columns=parsed.headers;
+      const dateColumn=cotHistoryTheoTen(columns,[
+        "Date","Posting Date","Document Date","Transaction Date","Datetime",
+        "Created At","Ngay","Ngày","Ngày giao dịch","Ngày hạch toán","PostingDate"]);
+      const typeColumn=cotHistoryTheoTen(columns,[
+        "Type","Movement Type","Movement","IN/OUT","Transaction Type",
+        "Loai","Loại","Loại giao dịch","Nhập/Xuất","Action"]);
+      const qtyColumn=cotHistoryTheoTen(columns,[
+        "Quantity","Qty","Movement Qty","Qty in unit of entry","Số lượng",
+        "So luong","Amount Qty","Quantity Change"]);
+      const inColumn=cotHistoryTheoTen(columns,["In","Inbound","Qty In","Nhap","Nhập","Số lượng nhập"]);
+      const outColumn=cotHistoryTheoTen(columns,["Out","Outbound","Qty Out","Xuat","Xuất","Số lượng xuất"]);
+      if(!columns.length || (typeColumn<0 && inColumn<0 && outColumn<0)) {
         capNhatTrangThaiHistory("historyInvalid");return false;
       }
-      historyColumns=parsed.headers;
-      historyDateColumn=cotHistoryTheoTen(historyColumns,
-        ["Date","Posting Date","Document Date","Transaction Date","Datetime","Created At","Ngay","Ngày","Ngày giao dịch","Ngày hạch toán","PostingDate"]);
-      historyTypeColumn=cotHistoryTheoTen(historyColumns,
-        ["Type","Movement Type","Movement","IN/OUT","Transaction Type","Loai","Loại","Loại giao dịch","Nhập/Xuất","Action"]);
-      historyQuantityColumn=cotHistoryTheoTen(historyColumns,
-        ["Quantity","Qty","Movement Qty","Số lượng","So luong","Amount Qty","Quantity Change"]);
-      historyInColumn=cotHistoryTheoTen(historyColumns,["In","Inbound","Qty In","Nhap","Nhập","Số lượng nhập"]);
-      historyOutColumn=cotHistoryTheoTen(historyColumns,["Out","Outbound","Qty Out","Xuat","Xuất","Số lượng xuất"]);
-      historyAll=parsed.rows.map((row,i)=>{
+      // Set source index hints before classification.
+      historyDateColumn=dateColumn;
+      historyTypeColumn=typeColumn;
+      historyQuantityColumn=qtyColumn;
+      historyInColumn=inColumn;
+      historyOutColumn=outColumn;
+      const indexed=[];
+      let countIn=0,countOut=0;
+      for(let i=0;i<parsed.rows.length;i++) {
+        if(sequence!==historySeq)return false;
+        const row=parsed.rows[i];
         const cells=row.map(v=>v!==null&&typeof v==="object"?JSON.stringify(v):String(v??""));
-        return {
-          cells,number:i,
-          date:historyDateColumn>=0?ngayHistoryISO(row[historyDateColumn]):"",
-          type:loaiHistory(historyTypeColumn>=0?row[historyTypeColumn]:"",row),
-          search:chuanHoaTimKiem(cells.join("\u0001"))
-        };
-      });
-      historyAll.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
+        const kind=loaiHistory(typeColumn>=0?row[typeColumn]:"",row);
+        if(kind==="in")countIn++;
+        if(kind==="out")countOut++;
+        indexed.push({
+          cells,number:i, date:dateColumn>=0?ngayHistoryISO(row[dateColumn]):"",
+          type:kind,search:chuanHoaTimKiem(cells.join("\u0001"))
+        });
+        // Keep 60k+ movement records responsive on mobile browsers.
+        if(i>0 && i%1600===0)await new Promise(resolve=>setTimeout(resolve,0));
+      }
+      if(sequence!==historySeq)return false;
+      indexed.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
+      historyColumns=columns;
+      historyAll=indexed;
       historyLoaded=true;
       historyPage=1;
-      const total=historyAll.length;
+      const total=indexed.length;
       document.getElementById("history-total").textContent=dinhDangSoLuong.format(total);
-      document.getElementById("history-in").textContent=dinhDangSoLuong.format(historyAll.filter(x=>x.type==="in").length);
-      document.getElementById("history-out").textContent=dinhDangSoLuong.format(historyAll.filter(x=>x.type==="out").length);
-      capNhatTrangThaiHistory(total?(origin==="existing"?"historyLoadedExisting":"historyLoaded"):"historyEmpty",
-        {count:dinhDangSoLuong.format(total)});
+      document.getElementById("history-in").textContent=dinhDangSoLuong.format(countIn);
+      document.getElementById("history-out").textContent=dinhDangSoLuong.format(countOut);
+      const status=total?(origin==="existing"?"historyLoadedExisting":updated?"historyLoadedAt":"historyLoaded"):"historyEmpty";
+      capNhatTrangThaiHistory(status,{count:dinhDangSoLuong.format(total),time:updated});
+      capNhatNutLoaiHistory();
       locHistory();
       return true;
     }
 
-    // Load actual History.js beside Checking, not a guessed hardcoded transaction list.
-    function taiHistory(force=false) {
+    // Only the known array assignment is read; no eval/new Function on History.js.
+    // Local file:// environments cannot fetch JS text, so they use a temporary
+    // script, snapshot both shared globals, then restore Stock immediately.
+    function taiHistoryBangScript() {
+      return new Promise((resolve,reject)=>{
+        const hasStock=Object.prototype.hasOwnProperty.call(window,"duLieuCongTy");
+        const hasTime=Object.prototype.hasOwnProperty.call(window,"thoiGianCapNhat");
+        const oldStock=window.duLieuCongTy;
+        const oldTime=window.thoiGianCapNhat;
+        const oldScript=document.getElementById("script-history-data");
+        if(oldScript)oldScript.remove();
+        const script=document.createElement("script");
+        script.id="script-history-data";
+        script.async=true;
+        script.src=DUONG_DAN_HISTORY+"?t="+Date.now();
+        let finished=false;
+        const timer=setTimeout(()=>finish(null,Error("HISTORY_TIMEOUT")),18000);
+        function restore() {
+          if(hasStock)window.duLieuCongTy=oldStock;
+          else delete window.duLieuCongTy;
+          if(hasTime)window.thoiGianCapNhat=oldTime;
+          else delete window.thoiGianCapNhat;
+        }
+        function finish(data,err) {
+          if(finished)return;
+          finished=true;
+          clearTimeout(timer);
+          restore();
+          script.remove();
+          if(err)reject(err);
+          else resolve(data);
+        }
+        script.onload=()=>{
+          const data=window.duLieuCongTy!==oldStock
+            ? window.duLieuCongTy:timNguonHistory();
+          finish({data,updated:window.thoiGianCapNhat||""},null);
+        };
+        script.onerror=()=>finish(null,Error("HISTORY_MISSING"));
+        document.body.appendChild(script);
+      });
+    }
+
+    async function taiHistory(force=false) {
       if(historyLoading || (historyLoaded && !force))return;
       historyLoading=true;
       const sequence=++historySeq;
-      const reloadBtn=document.getElementById("btn-refresh-history");
-      reloadBtn.disabled=true;
+      const button=document.getElementById("btn-refresh-history");
+      button.disabled=true;
       capNhatTrangThaiHistory("historyLoading");
-      const old=document.getElementById("script-history-data");
-      if(old)old.remove();
-      const script=document.createElement("script");
-      script.id="script-history-data";
-      script.async=true;
-      script.src=DUONG_DAN_HISTORY+"?t="+Date.now();
-      let finished=false;
-      const timeout=setTimeout(()=>end(false),12000);
-      function end(ok) {
-        if(finished || sequence!==historySeq)return;
-        finished=true;
-        clearTimeout(timeout);
-        historyLoading=false;
-        reloadBtn.disabled=false;
-        if(!ok){
-          script.remove();
-          // A data.js integration may already provide real movement records.
-          const fallback=timNguonHistory();
-          if(fallback)apDungNguonHistory(fallback,"existing");
-          else capNhatTrangThaiHistory("historyNoSource");
-          return;
+      try{
+        let source;
+        if(typeof fetch==="function" && location.protocol!=="file:") {
+          const response=await fetch(DUONG_DAN_HISTORY+"?t="+Date.now(),{cache:"no-store"});
+          if(!response.ok)throw Error("HISTORY_MISSING");
+          source=docHistoryTuVanBan(await response.text());
+        } else source=await taiHistoryBangScript();
+        if(!source.data)throw Error("HISTORY_BAD_FORMAT");
+        const ok=await apDungNguonHistory(source.data,"file",source.updated,sequence);
+        if(!ok && historyStatusKey==="historyLoading")
+          capNhatTrangThaiHistory("historyInvalid");
+      }catch(err){
+        console.warn("History.js:",err);
+        // Preserve the last good History result when a reload fails.
+        capNhatTrangThaiHistory(err.message==="HISTORY_BAD_FORMAT"||err instanceof SyntaxError
+          ?"historyInvalid":"historyNoSource");
+      }finally{
+        if(sequence===historySeq) {
+          historyLoading=false;
+          button.disabled=false;
         }
-        const source=timNguonHistory();
-        if(!source)capNhatTrangThaiHistory("historyInvalid");
-        else apDungNguonHistory(source,"file");
       }
-      script.onload=()=>end(true);
-      script.onerror=()=>end(false);
-      document.body.appendChild(script);
+    }
+
+    function capNhatNutLoaiHistory() {
+      const selected=document.getElementById("history-type").value;
+      document.querySelectorAll("[data-history-kind]").forEach(button=>{
+        const active=button.dataset.historyKind===selected;
+        button.classList.toggle("selected",active);
+        button.setAttribute("aria-pressed",String(active));
+      });
+    }
+
+    function chonLoaiHistory(kind) {
+      if(!["all","in","out","unknown"].includes(kind))return;
+      document.getElementById("history-type").value=kind;
+      capNhatNutLoaiHistory();
+      locHistory();
     }
 
     let historyPendingFilter=0;
@@ -1767,22 +1893,22 @@
     function veTrangHistory() {
       if(!historyLoaded)return;
       const headers=document.getElementById("history-head");
-      headers.innerHTML='<tr>'+historyColumns.map(name=>
-        '<th scope="col">'+thoatHTML(tenCotDaDich(name))+'</th>').join("")+'</tr>';
+      headers.innerHTML='<tr><th scope="col">'+thoatHTML(tuDien("historyDirection"))+'</th>'+
+        historyColumns.map(name=>'<th scope="col">'+thoatHTML(tenCotDaDich(name))+'</th>').join("")+'</tr>';
       const pages=Math.max(1,Math.ceil(historyFiltered.length/SO_DONG_HISTORY_MOI_TRANG));
       historyPage=Math.min(Math.max(1,historyPage),pages);
       const start=(historyPage-1)*SO_DONG_HISTORY_MOI_TRANG;
       const data=historyFiltered.slice(start,start+SO_DONG_HISTORY_MOI_TRANG);
-      document.getElementById("history-body").innerHTML=data.map(rec=>
-        '<tr>'+rec.cells.map((val,j)=>{
-          if(j===historyTypeColumn) {
-            const label=rec.type==="in"?tuDien("historyIn"):
-              rec.type==="out"?tuDien("historyOut"):String(val);
-            return '<td><span class="history-kind '+rec.type+'">'+thoatHTML(label)+'</span></td>';
-          }
-          return '<td title="'+thoatHTML(val)+'">'+thoatHTML(val)+'</td>';
-        }).join("")+'</tr>').join("") ||
-        '<tr><td class="empty-table" colspan="'+Math.max(1,historyColumns.length)+'">'+
+      document.getElementById("history-body").innerHTML=data.map(rec=>{
+        const label=rec.type==="in"?tuDien("historyInShort"):
+          rec.type==="out"?tuDien("historyOutShort"):tuDien("historyOtherShort");
+        return '<tr><td><span class="history-kind '+rec.type+'">'+thoatHTML(label)+'</span></td>'+
+          rec.cells.map((val,j)=>{
+            const accent=j===historyQuantityColumn?' class="history-quantity '+rec.type+'"':"";
+            return '<td'+accent+' title="'+thoatHTML(val)+'">'+thoatHTML(val)+'</td>';
+          }).join("")+'</tr>';
+      }).join("") ||
+        '<tr><td class="empty-table" colspan="'+Math.max(1,historyColumns.length+1)+'">'+
         thoatHTML(tuDien("historyNoResults"))+'</td></tr>';
       document.getElementById("history-matching").textContent=
         dinhDangSoLuong.format(historyFiltered.length);
@@ -1804,11 +1930,11 @@
     function xoaLocHistory(){
       for(const id of ["history-search","history-from","history-to"])
         document.getElementById(id).value="";
-      document.getElementById("history-type").value="all";
-      locHistory();
+      chonLoaiHistory("all");
     }
 
     function capNhatNgonNguHistory(){
+      capNhatNutLoaiHistory();
       if(historyLoaded) {
         capNhatTrangThaiHistory(historyStatusKey,{
           ...historyStatusArgs,count:dinhDangSoLuong.format(historyAll.length)});
