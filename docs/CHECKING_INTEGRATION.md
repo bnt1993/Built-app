@@ -56,31 +56,37 @@ Nếu không có manifest hoặc mã SAP không nằm trong đó, app dùng cơ 
 2. **Dashboard phân tích kho:** bốn KPI, biểu đồ ABC, top mã có giá trị cao, giá trị theo nhóm, biểu đồ vòng tình trạng Stock, lịch sử ảnh chụp tổng hợp trên thiết bị và nhắc xuất báo cáo XLSX.
 3. **Lịch sử nhập/xuất:** danh sách giao dịch thực từ file **`History.js`**, lọc SAP/chứng từ/từ khóa, Nhập/Xuất, khoảng ngày, phân trang 100 dòng và đầy đủ cột dữ liệu nguồn.
 
-### Cách đặt file History.js
-Đặt file **`History.js` cùng thư mục chạy ứng dụng `Checking`** (cùng cấp với `data.js`). Tab Lịch sử sẽ tải file này theo yêu cầu khi mở tab; nhấn "Tải lại History.js" để cập nhật thủ công. Tên file và chữ hoa/thường phải chính xác nếu web server phân biệt chữ hoa/thường.
+### File History.js thực tế trong repository
+Đã kiểm tra **`History.js` ở thư mục gốc repository**. Phiên bản nguồn ghi thời điểm `05/11/2026 12:36:10`, dung lượng khoảng **6,38 MB** và có **62.801 giao dịch** (+1 hàng tiêu đề).
 
-Hiện repository **chưa có `History.js` thực tế**. Sau khi merge PR, cần đưa file thật từ hệ thống nội bộ vào đúng đường dẫn thì tab mới hiển thị dữ liệu. Nếu thiếu hoặc sai định dạng, ứng dụng hiển thị thông báo rõ ràng và không tự tạo giao dịch giả.
-
-### Hai định dạng được hỗ trợ
-Cách 1 — mảng hàng/cột (đầu tiên là tên cột):
+File dùng đúng cấu trúc:
 ```javascript
-window.duLieuLichSu = [
-  ["Posting Date", "SAP", "Movement Type", "Quantity", "Document", "Warehouse"]
-  // Nối các dòng nhập/xuất thực của bạn tại đây
+window.thoiGianCapNhat = "05/11/2026 12:36:10";
+window.duLieuCongTy = [
+  ["Posting Date","Movement Type","Material","Material Description",
+   "Purchase order","Qty in unit of entry","Unit of Entry",
+   "Amt.in loc.cur.","Cost Center"]
+  // 62.801 dòng giao dịch thực, không sao chép vào tài liệu.
 ];
 ```
+**Lưu ý quan trọng:** Cả `data.js` (Stock) và `History.js` đều dùng `window.duLieuCongTy` cùng `window.thoiGianCapNhat`. Trực tiếp chạy script lịch sử trong cửa sổ chính sẽ ghi đè dữ liệu tồn kho. Tab Lịch sử mới ưu tiên dùng `fetch` để đọc văn bản `History.js`, trích bảng bằng `JSON.parse`, **không thực thi History.js**. Nếu mở ứng dụng bằng `file://` và không đọc được bằng fetch, nó chạy script dự phòng nhưng sao lưu và **khôi phục ngay hai biến Stock**, sau đó tạo bản riêng trong bộ nhớ tab Lịch sử.
 
-Cách 2 — mảng đối tượng:
-```javascript
-window.duLieuLichSu = [
-  // {date: "...", sap: "...", type: "IN" | "OUT", quantity: 0, document: "..."}
-];
-```
-Đây là **mẫu cấu trúc rỗng**, không phải dữ liệu lịch sử đã được xác nhận. Hãy dùng dữ liệu SAP thật. Ngoài `window.duLieuLichSu`, mã cũng nhận các biến `window.duLieuHistory`, `window.lichSuNhapXuat`, `window.inventoryTransactions`, `window.historyData`, `window.HistoryData`, v.v. Có thể truyền `{headers,rows}` hoặc `{data:[...]}`.
+### Phân loại Nhập / Xuất từ nguồn thực
+Các loại giao dịch hiện thấy trong file gồm `INPUT`, `OUTPUT`, `SCRAP` và mã `102`, `202`, `301`, `302`, `311`, `312`, `501`, `502`, `552`. Bộ lọc phân loại:
+- **Nhập:** `INPUT`, `202` (hoàn nhập xuất), `501`, `552` (đảo scrap), hoặc nhánh chuyển kho có `Qty in unit of entry > 0`.
+- **Xuất:** `OUTPUT`, `SCRAP`, `102` (đảo nhập), `502`, hoặc nhánh chuyển kho có `Qty in unit of entry < 0`.
+- **Khác:** không có đủ thông tin để xác định chiều (ví dụ số lượng bằng 0 và mã không nhận biết).
 
-Cột ngày hỗ trợ các tên như `Date`, `Posting Date`, `Transaction Date`, `Ngày`. Loại giao dịch hỗ trợ `Type`, `Movement Type`, `Loại`, với các giá trị thông dụng `IN`, `OUT`, `Nhập`, `Xuất`, `101`, `201`. Nếu không xác định được loại, app gán **Khác/chưa rõ**; không tự coi số lượng dương là nhập kho.
+Bộ lọc **Tất cả / Nhập / Xuất / Khác** là các nút hiển thị trực tiếp, tự áp dụng khi chọn. Bảng có thêm cột **Phân loại** ở đầu, đồng thời **giữ nguyên cột `Movement Type` gốc** để kiểm tra. Cột `Qty in unit of entry` được tô màu theo chiều giao dịch. Hỗ trợ tìm theo Material/mô tả/Purchase order/Cost Center, lọc từ ngày-đến ngày theo `Posting Date` (`dd/mm/yyyy`), phân trang 100 giao dịch.
 
-**Bảo mật:** Không đưa lịch sử nhạy cảm lên GitHub công khai. Chỉ triển khai `History.js` trong hệ thống nội bộ có kiểm soát quyền truy cập. Trình duyệt có quyền truy cập file sẽ đọc được nội dung.
+Theo phiên bản file đã kiểm tra: **27.816 dòng Nhập và 34.985 dòng Xuất**, không có dòng Khác; tổng **62.801**. Số liệu sẽ được tính lại khi bạn cập nhật History.js. Đây là **số dòng giao dịch**, không phải tổng số lượng xuất/nhập quy đổi (vì có nhiều đơn vị PC, EA, M...).
+
+### Đường dẫn và định dạng hỗ trợ
+Giữ file **`History.js` cùng thư mục ứng dụng `Checking` và `data.js`** trong môi trường chạy. Tên file đúng chữ hoa/chữ thường nếu máy chủ phân biệt. Chuyển sang tab Lịch sử sẽ tải theo yêu cầu; có nút **Tải lại History.js**. Nếu file không tải được hoặc lỗi, app thông báo rõ ràng và giữ dữ liệu lịch sử đã tải trước đó.
+
+Ngoài cấu trúc gốc `window.duLieuCongTy` vừa xác thực, bộ đọc cũng nhận một số tên biến lịch sử độc lập như `window.duLieuLichSu` hoặc `window.historyData` nếu dữ liệu được xuất dạng mảng JSON hợp lệ. Khi không có đủ dữ liệu thực, **không tự tạo giao dịch giả**.
+
+**Bảo mật:** History.js có thông tin vật tư, giá trị giao dịch, số đơn mua và Cost Center. Kiểm tra quyền truy cập repository và môi trường triển khai trước khi chia sẻ công khai.
 
 ### Lịch sử tổng hợp khác với lịch sử nhập/xuất
 Dashboard lưu tối đa 60 ảnh chụp tổng hợp theo ngày trên chính trình duyệt, dùng để theo dõi xu hướng tồn kho cục bộ. **Ảnh chụp tổng hợp không phải nhật ký giao dịch**; chênh lệch số lượng giữa hai ngày không thể dùng để tự kết luận lượng nhập/xuất.
