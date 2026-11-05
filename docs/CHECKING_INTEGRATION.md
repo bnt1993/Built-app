@@ -1,7 +1,7 @@
 # SAP Inventory — Hướng dẫn nâng cấp thống nhất
 
 ## Phạm vi của Pull Request
-Nâng cấp trong một nhánh: trạng thái Stock theo **Reorder Point**, tìm nhiều mã SAP, tìm gần đúng, bộ lọc yêu thích, ABC / Top 10 / phân nhóm, ảnh thumbnail, `Material/manifest.json`, ảnh chụp tổng hợp theo ngày, báo cáo XLSX và nhắc báo cáo khi ứng dụng đang mở. Giữ Light/Dark, VI/EN và dữ liệu hiện có.
+Nâng cấp trong một nhánh: trạng thái Stock theo **Reorder Point**, tìm nhiều mã SAP, tìm gần đúng, bộ lọc yêu thích, biểu đồ trạng thái tồn / mức đáp ứng ROP / xếp hạng giá trị và chi phí bổ sung, ảnh thumbnail, `Material/manifest.json`, ảnh chụp tổng hợp theo ngày, báo cáo XLSX và nhắc báo cáo khi ứng dụng đang mở. Giữ Light/Dark, VI/EN và dữ liệu hiện có.
 
 ## 1. Quy tắc màu Stock
 Nguồn là cột `Stock` hoặc `Quantity` (fallback là cột thứ tư) và cột `Reorder Point`.
@@ -53,7 +53,7 @@ Nếu không có manifest hoặc mã SAP không nằm trong đó, app dùng cơ 
 ## 4. Ba tab chuyên biệt và tích hợp `History.js`
 Ứng dụng `Checking` hiện có ba tab, không cần tải lại `data.js` khi chuyển:
 1. **Tra cứu Stock:** thanh tìm kiếm/ROP, bảng vật tư, chi tiết SAP và ảnh.
-2. **Dashboard phân tích kho:** bốn KPI, biểu đồ ABC, top mã có giá trị cao, giá trị theo nhóm, biểu đồ vòng tình trạng Stock, lịch sử ảnh chụp tổng hợp trên thiết bị và nhắc xuất báo cáo XLSX.
+2. **Dashboard phân tích kho:** bốn KPI, biểu đồ mức tồn so với ROP, top mã có giá trị cao, chi phí bổ sung đến ROP, biểu đồ vòng tình trạng Stock, lịch sử ảnh chụp tổng hợp trên thiết bị và nhắc xuất báo cáo XLSX.
 3. **Lịch sử nhập/xuất:** danh sách giao dịch thực từ file **`History.js`**, lọc SAP/chứng từ/từ khóa, Nhập/Xuất, khoảng ngày, phân trang 100 dòng và đầy đủ cột dữ liệu nguồn.
 
 ### File History.js thực tế trong repository
@@ -131,3 +131,14 @@ Nhấn đúp dòng Stock (hoặc Shift+Enter) mở cửa sổ lịch sử cho đ
 Đã bỏ card Số lượng xuất trong chi tiết vật tư và bỏ tải lịch sử khi chỉ nhấn đơn. Các card nguồn cùng BM No dùng lưới hai cột, chiều cao đồng đều theo nội dung dài nhất, padding và khoảng cách thống nhất; nội dung dài xuống dòng.
 
 Kiểm thử: `python tests/test_material_images.py`; `node tests/checking_logic.cjs`; `node tests/checking_browser.cjs` (cần Playwright và Chromium).
+
+## 8. Dashboard: biểu đồ và bộ lọc riêng
+Đã bỏ phân nhóm ABC và giá trị theo nhóm vật tư. Dashboard có bốn biểu đồ đồng đều theo lưới hai cột (một cột trên mobile): trạng thái tồn, mức Stock/ROP, top giá trị tồn theo SAP và chi phí ước tính bổ sung đến ROP theo SAP. Danh sách dài cuộn trong card, hỗ trợ bàn phím.
+
+Bộ lọc gồm từ khóa, trạng thái tồn và Top 5/10/20. Từ khóa tìm không dấu trong dữ liệu vật tư. KPI và biểu đồ dùng cùng tập dòng đã lọc, độc lập ô tìm kiếm Stock. Top N chỉ giới hạn danh sách xếp hạng; mẫu số tỷ trọng vẫn là toàn bộ tập lọc. Số vật tư trong KPI/donut là số dòng, không phải số mã SAP duy nhất; các biểu đồ xếp hạng gộp tiền theo SAP.
+
+Mức đáp ứng ROP dùng Stock/ROP khi Stock không âm và ROP > 0; dữ liệu khác được đưa vào nhóm không đủ dữ liệu. Chi phí bổ sung = max(0, ROP - Stock) × đơn giá hợp lệ (>= 0). Thiếu giá/ROP hoặc số không hợp lệ được báo rõ; không cộng lẫn số lượng khác đơn vị. Chi phí là ước tính theo giá hiện tại, không gồm chi phí mua hàng khác.
+
+Lịch sử đồng bộ cục bộ vẫn là toàn kho, không áp dụng bộ lọc Dashboard. Nút XLSX hiện ghi rõ xuất kết quả tra Stock.
+
+Kiểm tra: `node tests/dashboard_logic.cjs`; `node tests/dashboard_browser.cjs` (Playwright + Chromium). Đã kiểm tra browser desktop 1440px, mobile 390px, VI/EN, sáng/tối, lọc, Top N, kết quả rỗng, kích thước card và tràn ngang bằng dữ liệu kiểm thử.
