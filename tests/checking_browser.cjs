@@ -23,37 +23,46 @@ const manifest={version:2,complete:true,materials:{"00123":[{original:"00123.jpg
  });
  await page.goto('http://checking.test/');
  await page.locator('#than-bang tr[data-row-index="0"]').click();
- await page.waitForFunction(()=>document.querySelector('#detail-issued span')?.textContent.includes('6 PC'));
- assert.match(await page.locator('#detail-issued span').innerText(),/1,5 M/);
- assert.match(await page.locator('#detail-issued small').innerText(),/thiếu số lượng/);
- assert.equal(await page.locator('.detail-price-stack > .detail-item').count(),2);
+ assert.equal(await page.locator('#detail-issued').count(),0);
+ assert.equal(requests.filter(x=>x.path==='/History.js').length,0);
  assert.match(await page.locator('#anh-chinh').getAttribute('src'),/preview.webp/);
  assert.equal(requests.filter(x=>x.method==='HEAD').length,0);
- assert(!requests.some(x=>x.path==='/Material/00123.jpg'));
- await page.locator('#anh-chinh').click();
- assert.match(await page.locator('#lightbox-img').getAttribute('src'),/00123.jpg$/);
+ await page.locator('#than-bang tr[data-row-index="0"]').dblclick();
+ await page.waitForFunction(()=>document.querySelector('#material-history-count').textContent.includes('5'));
+ assert(await page.locator('#material-history-dialog').evaluate(el=>el.open));
+ assert.equal(await page.locator('#view-stock').evaluate(el=>el.hidden),false);
+ assert.equal(await page.locator('#history-search').inputValue(),'');
+ await page.locator('#material-history-kind').selectOption('out');
+ assert.equal(await page.locator('#material-history-body tr').count(),4);
  await page.keyboard.press('Escape');
- await page.locator('#than-bang tr[data-row-index="1"]').click();
- assert.equal(await page.locator('#detail-issued span').innerText(),'9 EA');
- assert.equal(await page.locator('#anh-chinh').getAttribute('src'),null);
+ assert.equal(await page.locator('#material-history-dialog').evaluate(el=>el.open),false);
+ assert.equal(await page.evaluate(()=>document.activeElement.dataset.rowIndex),'0');
+ await page.locator('#than-bang tr[data-row-index="1"]').dblclick();
+ await page.waitForFunction(()=>document.querySelector('#material-history-count').textContent.includes('1'));
+ assert.match(await page.locator('#material-history-body').innerText(),/00456/);
+ await page.locator('#material-history-dialog [autofocus]').click();
  await page.locator('#lang-en').click();
- assert.equal(await page.locator('#detail-issued label').innerText(),'Issued quantity');
- await page.locator('#than-bang tr[data-row-index="2"]').click();
- assert.equal(await page.locator('#detail-issued span').innerText(),'0');
+ await page.locator('#than-bang tr[data-row-index="2"]').focus();
+ await page.keyboard.press('Shift+Enter');
+ assert.equal(await page.locator('#material-history-title').innerText(),'Material usage history');
  assert.equal(requests.filter(x=>x.path==='/History.js').length,1);
+ await page.keyboard.press('Escape');
+ const heights=await page.locator('#luoi-chi-tiet .detail-item').evaluateAll(items=>items.map(el=>el.getBoundingClientRect().height));
+ assert(Math.max(...heights)-Math.min(...heights)<1);
  // Same parser and indexing against the real repository source.
  const actual=fs.readFileSync(path.join(root,'History.js'),'utf8');
  const totals=await page.evaluate(async text=>{
  const source=docHistoryTuVanBan(text);
  await apDungNguonHistory(source.data);
- return {rows:historyAll.length,ready:issuedSchemaReady,materials:issuedBySap.size,
+ return {rows:historyAll.length,
  stock:window.duLieuCongTy[1][0]};
  },actual);
- assert.equal(totals.rows,62801);assert(totals.ready);assert(totals.materials>0);assert.equal(totals.stock,'00123');
+ assert.equal(totals.rows,62801);assert.equal(totals.stock,'00123');
  await page.setViewportSize({width:390,height:844});
  await page.screenshot({path:'/tmp/checking-mobile.png',fullPage:true});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  assert.deepEqual(errors,[]);
- console.log('PASS HTTP: variants, full-size lightbox, no HEAD probes, exact SAP, units, returns, missing quantities, language, one history load, 62,801 real records, mobile overflow.');
+ console.log('PASS HTTP: modal, exact SAP, movement filters, close/focus, Shift+Enter, removed card, equal card heights, real history, mobile overflow.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});
+

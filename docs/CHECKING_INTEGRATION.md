@@ -125,14 +125,9 @@ Công cụ tự sinh `Material/manifest.json`, `Material/manifest.js` và `Mater
 - Ảnh chính được ưu tiên tải trước thumbnail. Preview/thumbnail lỗi sẽ thử ảnh gốc.
 - Lightbox luôn dùng ảnh gốc. Không tải trước toàn kho; chỉ nạp trước preview kế tiếp khi điều hướng.
 
-### Card Số lượng xuất
-Card nằm ngay dưới giá trong phần chi tiết mã SAP; khi không có cột giá, card nằm cuối phần chi tiết.
-- Nguồn: toàn bộ History.js, độc lập bộ lọc tab Lịch sử.
-- Dùng cùng phân loại Xuất với tab Lịch sử (gồm OUTPUT, SCRAP và các giao dịch xuất/đảo nhập/chuyển kho được xác định là Xuất).
-- Tổng trị tuyệt đối lượng xuất, **chưa trừ hoàn nhập**, không phải lượng xuất ròng.
-- Tách riêng từng đơn vị; không cộng PC, M, EA thành một số chung.
-- Hiển thị cảnh báo khi thiếu lượng hợp lệ, thiếu cấu trúc, tải lỗi; chỉ hiện 0 khi dữ liệu đã tải và không có giao dịch Xuất cho mã đó.
-- Tải lịch sử một lần khi xem vật tư đầu tiên; tái sử dụng chỉ mục theo mã SAP. Nút Tải lại History.js cập nhật cả card.
-- Giữ nguyên dữ liệu Stock khi đọc History.js; đổi mã đang chọn trong khi tải không làm hiển thị kết quả của mã cũ.
+### Cửa sổ lịch sử vật tư và card thông tin
+Nhấn đúp dòng Stock (hoặc Shift+Enter) mở cửa sổ lịch sử cho đúng mã SAP, giữ nguyên tab Stock, dòng đang chọn và bộ lọc của tab Lịch sử. Cửa sổ có bộ lọc Tất cả / Nhập / Xuất / Khác, phân trang 50 dòng, nút tải lại và đóng bằng Đóng hoặc Escape. Sau khi đóng, tiêu điểm trở về dòng vật tư. Lịch sử chỉ tải khi cần và được dùng chung với tab Lịch sử; dữ liệu lỗi/thiếu được thông báo rõ, không tự tạo giao dịch.
 
-Kiểm thử: `python tests/test_material_images.py`; `node tests/checking_browser.cjs` (cần Playwright và Chromium).
+Đã bỏ card Số lượng xuất trong chi tiết vật tư và bỏ tải lịch sử khi chỉ nhấn đơn. Các card nguồn cùng BM No dùng lưới hai cột, chiều cao đồng đều theo nội dung dài nhất, padding và khoảng cách thống nhất; nội dung dài xuống dòng.
+
+Kiểm thử: `python tests/test_material_images.py`; `node tests/checking_logic.cjs`; `node tests/checking_browser.cjs` (cần Playwright và Chromium).

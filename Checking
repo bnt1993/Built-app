@@ -175,8 +175,6 @@
     .detail-item label { display: block; margin-bottom: 5px; color: #7b8ba3; font-weight: 750; text-transform: uppercase;
       font-size: 9px; letter-spacing: .08em; }
     .detail-item span { display: block; overflow-wrap: anywhere; color: #203756; font-size: 12px; font-weight: 750; }
-    .detail-price-stack { display:flex; flex-direction:column; gap:9px; min-width:0; }
-    .detail-outgoing small { display:block; color:var(--muted); font-size:10px; margin-top:7px; }
     .detail-placeholder { margin: 5px 0 6px; padding: 20px 6px; text-align: center; font-size: 12px; color: #8492a7; }
     .bm-no-card { display: none; grid-column: 1 / -1; background: #f2f7ff; border: 1px solid #d9e7ff;
       border-radius: 11px; padding: 12px; }
@@ -631,6 +629,35 @@
     }
     .history-quantity.in { color:var(--green); font-weight:750; }
     .history-quantity.out { color:var(--red); font-weight:750; }
+
+    #luoi-chi-tiet { grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:1fr; gap:10px; }
+    #luoi-chi-tiet .detail-item, #luoi-chi-tiet .bm-no-card {
+      min-height:88px; padding:12px; margin:0; border-radius:11px;
+      display:flex; flex-direction:column; justify-content:flex-start; gap:6px;
+    }
+    #luoi-chi-tiet .detail-item label { margin:0; }
+    #luoi-chi-tiet .bm-no-card { grid-column:auto; }
+    #luoi-chi-tiet .bm-no-card:not(.visible) { display:none; }
+    #luoi-chi-tiet .bm-no-card-title { margin:0; }
+    #luoi-chi-tiet .bm-no-value { overflow-wrap:anywhere; min-width:0; }
+    .material-history-dialog { width:min(1180px,calc(100vw - 32px)); max-height:90vh; padding:0;
+      border:1px solid var(--line); border-radius:18px; background:var(--app-panel); color:var(--ink); box-shadow:var(--shadow); }
+    .material-history-dialog::backdrop { background:rgba(9,20,41,.65); }
+    .material-history-dialog[open] { display:flex; flex-direction:column; }
+    .material-history-header { padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); }
+    .material-history-header h2 { margin:0; font-size:18px; }
+    .material-history-header p { margin:4px 0 0; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+    .material-history-controls { padding:12px 20px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+    .material-history-controls label { display:flex; align-items:center; gap:8px; font-size:12px; }
+    .material-history-controls select { padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--app-field); color:var(--ink); }
+    #material-history-status { margin:0; padding:0 20px 12px; color:var(--muted); font-size:12px; }
+    .material-history-table { min-height:120px; overflow:auto; flex:1; }
+    .material-history-table tbody tr { cursor:default; }
+    .material-history-dialog .table-bottom { flex:none; border-top:1px solid var(--line); }
+    @media(max-width:620px) {
+      .material-history-dialog { width:calc(100vw - 16px); max-height:92vh; border-radius:12px; }
+      .material-history-header, .material-history-controls { padding:12px; }
+    }
   </style>
 </head>
 <body>
@@ -716,7 +743,7 @@
       <div class="main-container">
         <section class="table-section" aria-labelledby="ten-bang">
           <div class="section-header">
-            <div><h2 id="ten-bang" data-i18n="materialsList">Danh sách vật tư</h2><div class="section-caption" data-i18n="rowHint">Nhấn một lần để xem chi tiết; nhấn đúp để xem lịch sử mã SAP</div></div>
+            <div><h2 id="ten-bang" data-i18n="materialsList">Danh sách vật tư</h2><div class="section-caption" data-i18n="rowHint">Nhấn một lần để xem chi tiết; nhấn đúp để mở cửa sổ lịch sử</div></div>
             <div class="table-header-actions"><div class="reorder-legend">
 <span><b class="legend-green"></b><span data-i18n="stockAbove">Trên định mức</span></span>
 <span><b class="legend-yellow"></b><span data-i18n="stockEqual">Bằng định mức</span></span>
@@ -872,13 +899,42 @@
     </div>
   </div>
 
+
+  <dialog id="material-history-dialog" class="material-history-dialog" aria-labelledby="material-history-title" aria-describedby="material-history-sap">
+    <div class="material-history-header">
+      <div><h2 id="material-history-title" data-i18n="materialHistoryTitle">Lịch sử sử dụng vật tư</h2><p id="material-history-sap"></p></div>
+      <button type="button" class="btn btn-secondary" onclick="dongLichSuVatTu()" data-i18n="materialHistoryClose" autofocus>Đóng</button>
+    </div>
+    <div class="material-history-controls">
+      <label><span data-i18n="historyType">Loại giao dịch</span><select id="material-history-kind" onchange="locLichSuVatTu()">
+        <option value="all" data-i18n="historyAny">Tất cả</option>
+        <option value="out" data-i18n="historyOutShort">Xuất</option>
+        <option value="in" data-i18n="historyInShort">Nhập</option>
+        <option value="unknown" data-i18n="historyOtherShort">Khác</option>
+      </select></label>
+      <button type="button" class="btn btn-soft" id="material-history-refresh" onclick="taiHistory(true)" data-i18n="historyRefresh">Tải lại History.js</button>
+    </div>
+    <p id="material-history-status" role="status" aria-live="polite"></p>
+    <div class="material-history-table" tabindex="0" role="region" data-i18n-aria="materialHistoryTitle" aria-label="Lịch sử sử dụng vật tư">
+      <table><thead id="material-history-head"></thead><tbody id="material-history-body"></tbody></table>
+    </div>
+    <div class="table-bottom">
+      <span id="material-history-count"></span>
+      <div class="pagination">
+        <button type="button" id="material-history-prev" class="btn btn-secondary" onclick="doiTrangLichSuVatTu(-1)" data-i18n="materialHistoryPrev">Trước</button>
+        <span id="material-history-page"></span>
+        <button type="button" id="material-history-next" class="btn btn-secondary" onclick="doiTrangLichSuVatTu(1)" data-i18n="materialHistoryNext">Sau</button>
+      </div>
+    </div>
+  </dialog>
+
   <script>
 
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
         tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu Stock",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
-        historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng Reorder Point",otherGroups:"Nhóm khác",abcNote:"A: đến 80% · B: đến 95% · C: phần còn lại. Chỉ tính dòng có giá trị tồn dương; dòng vượt mốc thuộc nhóm trước.",allInventoryNote:"Toàn bộ kho · Không phụ thuộc bộ lọc tra cứu Stock. Biểu đồ giá trị dùng các dòng có tồn và giá hợp lệ.",rowsLabel:"dòng",dashboardHeading:"Dashboard phân tích kho",dashboardDesc:"Theo dõi giá trị tồn, phân nhóm ABC, top vật tư và trạng thái hàng tồn.",
+        materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Trước",materialHistoryNext:"Sau",materialHistoryCount:"{count} giao dịch",materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng Reorder Point",otherGroups:"Nhóm khác",abcNote:"A: đến 80% · B: đến 95% · C: phần còn lại. Chỉ tính dòng có giá trị tồn dương; dòng vượt mốc thuộc nhóm trước.",allInventoryNote:"Toàn bộ kho · Không phụ thuộc bộ lọc tra cứu Stock. Biểu đồ giá trị dùng các dòng có tồn và giá hợp lệ.",rowsLabel:"dòng",dashboardHeading:"Dashboard phân tích kho",dashboardDesc:"Theo dõi giá trị tồn, phân nhóm ABC, top vật tư và trạng thái hàng tồn.",
         historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu các giao dịch thực tế từ History.js, không suy diễn giao dịch từ tồn kho.",
         stockDistribution:"Phân bố trạng thái tồn kho",stockDistributionTotal:"Mã vật tư", stockUnknownLabel:"Chưa có định mức",
         historyRefresh:"Tải lại History.js",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
@@ -907,7 +963,7 @@
         inventoryInsights:"Phân tích giá trị kho, ABC và lịch sử đồng bộ",abcTitle:"Phân nhóm ABC theo giá trị",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",groupValue:"Phân bổ giá trị theo nhóm vật tư",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất XLSX ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi app đang mở",scheduleDue:"Đến lịch xuất báo cáo Excel. Bấm Xuất XLSX ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
         searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
         searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
-        materialsList:"Danh sách vật tư", rowHint:"Nhấn một lần để xem chi tiết; nhấn đúp để xem lịch sử mã SAP",
+        materialsList:"Danh sách vật tư", rowHint:"Nhấn một lần để xem chi tiết; nhấn đúp để mở cửa sổ lịch sử",
         outOfStock:"Hết hàng", loadingData:"Đang kết nối dữ liệu...", tableAria:"Bảng vật tư, có thể cuộn ngang",
         keyboardHint:"Cuộn cuối bảng để sang trang tiếp · ↑ ↓ chọn dòng · / tìm kiếm", paginationAria:"Chuyển trang",
         prev:"Trước", next:"Sau", detailsAria:"Chi tiết vật tư", details:"Thông tin chi tiết",
@@ -955,7 +1011,7 @@
       },
       en: {
         tabsAria:"Inventory workspaces",tabStock:"Stock lookup",tabDashboard:"Inventory dashboard",tabHistory:"In / Out history",
-        historyExactSap:"History for exact SAP: {code}",issuedTitle:"Issued quantity",issuedScope:"All history · selected SAP · gross issues, before returns",issuedMissing:"Missing material / quantity columns",issuedPartial:"Some movements have invalid quantities",issuedUnitUnknown:"Unknown unit",issuedStale:"Previous data; refresh failed",attentionTitle:"Materials needing attention",attentionNote:"Zero stock, below or at Reorder Point",otherGroups:"Other groups",abcNote:"A: up to 80% · B: up to 95% · C: remainder. Positive-value rows only; a boundary-crossing row stays in the earlier group.",allInventoryNote:"Entire inventory · Independent of Stock lookup filters. Value charts use stocked rows with valid prices.",rowsLabel:"rows",dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Explore inventory valuation, ABC classification, high-value materials and stock health.",
+        materialHistoryTitle:"Material usage history",materialHistoryClose:"Close",materialHistoryPrev:"Previous",materialHistoryNext:"Next",materialHistoryCount:"{count} transactions",materialHistoryMissing:"No SAP material column in history data.",materialHistoryStale:"Showing previously loaded data.",historyExactSap:"History for exact SAP: {code}",issuedTitle:"Issued quantity",issuedScope:"All history · selected SAP · gross issues, before returns",issuedMissing:"Missing material / quantity columns",issuedPartial:"Some movements have invalid quantities",issuedUnitUnknown:"Unknown unit",issuedStale:"Previous data; refresh failed",attentionTitle:"Materials needing attention",attentionNote:"Zero stock, below or at Reorder Point",otherGroups:"Other groups",abcNote:"A: up to 80% · B: up to 95% · C: remainder. Positive-value rows only; a boundary-crossing row stays in the earlier group.",allInventoryNote:"Entire inventory · Independent of Stock lookup filters. Value charts use stocked rows with valid prices.",rowsLabel:"rows",dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Explore inventory valuation, ABC classification, high-value materials and stock health.",
         historyHeading:"Inbound / outbound history",historyDesc:"View actual transactions from History.js, without inferring movements from stock snapshots.",
         stockDistribution:"Stock status distribution",stockDistributionTotal:"Materials",stockUnknownLabel:"No reorder point",
         historyRefresh:"Reload History.js",historyTotal:"Total transactions",historyIn:"Inbound",historyOut:"Outbound",
@@ -984,7 +1040,7 @@
         inventoryInsights:"Inventory analytics, ABC and sync snapshots",abcTitle:"ABC classification by value",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",groupValue:"Value by material group",transactionHistory:"SAP inbound/outbound transactions",transactionUnavailable:"No SAP transaction feed is connected",scheduleTitle:"Report reminder while the app is open",scheduleOff:"Off",scheduleDaily:"Daily after 9:00",scheduleWeekly:"Mondays after 9:00",scheduleDownload:"Export XLSX now",scheduleWaiting:"Reminders only run while this app is open",scheduleDue:"Your Excel report reminder is due. Click Export XLSX now.",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
         searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
         searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
-        materialsList:"Material list", rowHint:"Click to view details; double-click to view SAP history",
+        materialsList:"Material list", rowHint:"Click to view details; double-click to open material history",
         outOfStock:"Out of stock", loadingData:"Connecting to data...", tableAria:"Scrollable material table",
         keyboardHint:"Scroll to the bottom for the next page · ↑ ↓ select · / search", paginationAria:"Pagination",
         prev:"Previous", next:"Next", detailsAria:"Material details", details:"Material details",
@@ -1611,9 +1667,6 @@
     let historyQuantityColumn=-1;
     let historyInColumn=-1;
     let historyOutColumn=-1;
-    let issuedBySap=new Map();
-    let issuedSchemaReady=false;
-    let issuedRequested=false;
 
     function taoThongKeXuat(rows,columns) {
       const sapCol=cotHistoryTheoTen(columns,["Material","SAP","SAP Code","Material Number","Mã SAP","Mã vật tư"]);
@@ -1634,22 +1687,6 @@
         entry.units.set(unit,(entry.units.get(unit)||0)+Math.abs(qty));
       }
       return {map,ready};
-    }
-
-    function capNhatCardXuat() {
-      const card=document.getElementById("detail-issued");
-      if(!card)return;
-      const value=card.querySelector("span"),note=card.querySelector("small");
-      note.textContent=tuDien("issuedScope");
-      if(historyLoading){value.textContent=tuDien("historyLoading");return;}
-      if(!historyLoaded){value.textContent=tuDien(historyStatusKey==="historyIdle"?"historyLoading":historyStatusKey);return;}
-      if(!issuedSchemaReady){value.textContent=tuDien("issuedMissing");return;}
-      if(!card.dataset.sap){value.textContent=tuDien("issuedMissing");return;}
-      const entry=issuedBySap.get(card.dataset.sap);
-      value.textContent=entry ? [...entry.units].map(([unit,qty])=>
-        dinhDangSoLuong.format(qty)+" "+(unit||tuDien("issuedUnitUnknown"))).join(" · ")||"—" : "0";
-      if(entry?.invalid)note.textContent+=" · "+tuDien("issuedPartial");
-      if(["historyNoSource","historyInvalid"].includes(historyStatusKey))note.textContent+=" · "+tuDien("issuedStale");
     }
 
     function timNguonHistory() {
@@ -1818,8 +1855,6 @@
       indexed.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
       historyColumns=columns;
       historyAll=indexed;
-      const issued=taoThongKeXuat(indexed,columns);
-      issuedBySap=issued.map;issuedSchemaReady=issued.ready;
       historyLoaded=true;
       historyPage=1;
       const total=indexed.length;
@@ -1882,7 +1917,7 @@
       const button=document.getElementById("btn-refresh-history");
       button.disabled=true;
       capNhatTrangThaiHistory("historyLoading");
-      capNhatCardXuat();
+      locLichSuVatTu();
       try{
         let source;
         if(typeof fetch==="function" && location.protocol!=="file:") {
@@ -1903,7 +1938,7 @@
         if(sequence===historySeq) {
           historyLoading=false;
           button.disabled=false;
-          capNhatCardXuat();
+          locLichSuVatTu();
         }
       }
     }
@@ -1934,23 +1969,77 @@
       historyExactSap="";
       capNhatPhamViSapHistory();
     }
+    let materialHistorySap="";
+    let materialHistoryRows=[];
+    let materialHistoryPage=1;
+    let materialHistoryReturnFocus=null;
+    const MATERIAL_HISTORY_PAGE_SIZE=50;
+
     function moLichSuVatTu(index) {
       const row=tatCaDuLieu[index];
       const sap=row?chuanHoaMaSap(row[0]):"";
       if(!sap)return;
-      historyExactSap=sap;
-      document.getElementById("history-search").value=sap;
-      document.getElementById("history-type").value="all";
-      document.getElementById("history-from").value="";
-      document.getElementById("history-to").value="";
-      historyPage=1;
-      capNhatPhamViSapHistory();
-      capNhatNutLoaiHistory();
-      chuyenTab("history");
-      // If loading, apDungNguonHistory will apply this same scope on completion.
-      locHistory();
-      document.querySelector(".history-table-wrapper").scrollTop=0;
-      document.getElementById("tab-history").focus();
+      const dialog=document.getElementById("material-history-dialog");
+      materialHistorySap=sap;
+      materialHistoryPage=1;
+      document.getElementById("material-history-kind").value="all";
+      document.getElementById("material-history-sap").textContent=tuDien("sapCode",{code:sap})+
+        (row[1]?" · "+String(row[1]):"");
+      if(!dialog.open) {
+        materialHistoryReturnFocus=document.querySelector('#than-bang tr[data-row-index="'+index+'"]')||document.activeElement;
+        dialog.showModal();
+      }
+      locLichSuVatTu();
+      taiHistory(false);
+    }
+
+    function dongLichSuVatTu() {
+      document.getElementById("material-history-dialog").close();
+    }
+
+    function locLichSuVatTu() {
+      const dialog=document.getElementById("material-history-dialog");
+      if(!dialog.open)return;
+      const status=document.getElementById("material-history-status");
+      const kind=document.getElementById("material-history-kind").value;
+      document.getElementById("material-history-refresh").disabled=historyLoading;
+      const sapCol=cotHistoryTheoTen(historyColumns,
+        ["Material","SAP","SAP Code","Material Number","Mã SAP","Mã vật tư"]);
+      materialHistoryRows=historyLoaded&&sapCol>=0?historyAll.filter(row=>
+        chuanHoaMaSap(row.cells[sapCol]).toLowerCase()===materialHistorySap.toLowerCase()&&
+        (kind==="all"||row.type===kind)):[];
+      const failed=["historyNoSource","historyInvalid"].includes(historyStatusKey);
+      status.textContent=historyLoading?tuDien("historyLoading"):failed?
+        tuDien(historyStatusKey)+(historyLoaded?" "+tuDien("materialHistoryStale"):""):
+        !historyLoaded?tuDien("historyIdle"):sapCol<0?tuDien("materialHistoryMissing"):"";
+      materialHistoryPage=1;
+      veLichSuVatTu();
+      document.querySelector(".material-history-table").scrollTop=0;
+    }
+
+    function veLichSuVatTu() {
+      const total=materialHistoryRows.length;
+      const pages=Math.max(1,Math.ceil(total/MATERIAL_HISTORY_PAGE_SIZE));
+      materialHistoryPage=Math.max(1,Math.min(pages,materialHistoryPage));
+      document.getElementById("material-history-head").innerHTML=historyColumns.length?
+        "<tr><th>"+thoatHTML(tuDien("historyDirection"))+"</th>"+
+        historyColumns.map(c=>"<th>"+thoatHTML(c)+"</th>").join("")+"</tr>":"";
+      const start=(materialHistoryPage-1)*MATERIAL_HISTORY_PAGE_SIZE;
+      document.getElementById("material-history-body").innerHTML=materialHistoryRows.slice(start,start+MATERIAL_HISTORY_PAGE_SIZE).map(row=>
+        "<tr><td>"+thoatHTML(tuDien({in:"historyInShort",out:"historyOutShort",unknown:"historyOtherShort"}[row.type]||"historyOtherShort"))+
+        "</td>"+historyColumns.map((_,i)=>"<td>"+thoatHTML(row.cells[i]??"")+"</td>").join("")+"</tr>").join("")||
+        '<tr><td class="empty-table" colspan="'+Math.max(1,historyColumns.length+1)+'">'+
+        thoatHTML(tuDien(historyLoading?"historyLoading":historyLoaded?"noResults":historyStatusKey))+"</td></tr>";
+      document.getElementById("material-history-count").textContent=tuDien("materialHistoryCount",{count:dinhDangSoLuong.format(total)});
+      document.getElementById("material-history-page").textContent=tuDien("page",{current:materialHistoryPage,total:pages});
+      document.getElementById("material-history-prev").disabled=materialHistoryPage<=1;
+      document.getElementById("material-history-next").disabled=materialHistoryPage>=pages;
+    }
+
+    function doiTrangLichSuVatTu(step) {
+      materialHistoryPage+=step;
+      veLichSuVatTu();
+      document.querySelector(".material-history-table").scrollTop=0;
     }
     let historyPendingFilter=0;
     function locHistory() {
@@ -2033,6 +2122,7 @@
     }
 
     function capNhatNgonNguHistory(){
+      locLichSuVatTu();
       capNhatPhamViSapHistory();
       capNhatNutLoaiHistory();
       if(historyLoaded) {
@@ -2336,32 +2426,18 @@
     function hienThiChiTiet(dongData) {
       let htmlChiTiet = "";
       const chiSoBm = timCotTheoTen("BM No");
-      const sap=chuanHoaMaSap(dongData[0]).toLowerCase();
-      const cardXuat='<div class="detail-item detail-outgoing" id="detail-issued" data-sap="'+thoatHTML(sap)+'"><label>'+
-        thoatHTML(tuDien("issuedTitle"))+'</label><span aria-live="polite">…</span><small></small></div>';
-      let hasPrice=false;
       for (let c = 0; c < tieuDeCot.length; c++) {
-        if (c === chiSoBm) continue;
-        const isPrice=["price","unit price","đơn giá","giá"].includes(String(tieuDeCot[c]).trim().toLowerCase())&&!hasPrice;
-        const item='<div class="detail-item" data-col-index="' + c + '"><label>' +
-          thoatHTML(tenCotDaDich(tieuDeCot[c])) + '</label><span>' +
-          thoatHTML(hienThiGiaTri(c, dongData[c])) + '</span></div>';
-        htmlChiTiet+=isPrice?'<div class="detail-price-stack">'+item+cardXuat+'</div>':item;
-        if(isPrice)hasPrice=true;
+        if(c===chiSoBm)continue;
+        htmlChiTiet+='<div class="detail-item" data-col-index="'+c+'"><label>'+
+          thoatHTML(tenCotDaDich(tieuDeCot[c]))+'</label><span>'+
+          thoatHTML(hienThiGiaTri(c,dongData[c]))+'</span></div>';
       }
-      if(!hasPrice)htmlChiTiet+=cardXuat;
       const luoiChiTiet = document.getElementById("luoi-chi-tiet");
       const cardBmNo = document.getElementById("bm-no-card");
       cardBmNo.remove();
       luoiChiTiet.innerHTML = htmlChiTiet;
       luoiChiTiet.appendChild(cardBmNo);
       capNhatCardBmNo(dongData);
-      capNhatCardXuat();
-      if(!issuedRequested&&!historyLoaded&&!historyLoading) {
-        issuedRequested=true;
-        // Let the selected material image start before downloading the history.
-        setTimeout(()=>taiHistory(),150);
-      }
     }
 
     function chonDong(index, element) {
@@ -3167,7 +3243,12 @@
 
     document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonCuoiBang, { passive: true });
     document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
+    document.getElementById("material-history-dialog").addEventListener("close",()=>{
+      if(materialHistoryReturnFocus?.isConnected)materialHistoryReturnFocus.focus();
+    });
     document.addEventListener("keydown", e => {
+      // Native dialog owns Escape/Tab; prevent Stock shortcuts behind the modal.
+      if(document.getElementById("material-history-dialog").open)return;
       const lightboxDangMo = document.getElementById("lightbox").style.display === "flex";
       if (lightboxDangMo) {
         if (e.key === "Escape") dongLightbox(e);
@@ -3216,5 +3297,6 @@
   </script>
 </body>
 </html>
+
 
 
