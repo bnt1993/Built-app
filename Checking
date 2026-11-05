@@ -944,7 +944,7 @@
         reportNoSort:"Theo dữ liệu gốc",reportLineValue:"Thành tiền (VND)",
         reportNote:"Giá trị kho = số lượng tồn dương × đơn giá hợp lệ; bỏ qua dòng không có giá hợp lệ.",
         reportDisclaimer:"Nguồn: dữ liệu SAP nội bộ · Chỉ bao gồm các mã phù hợp với bộ lọc hiện tại.",
-        colSap:"Mã SAP", colDescription:"Mô tả", colPart:"Part No",
+        colSap:"Mã BM", colDescription:"Mô tả", colPart:"Part No",
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"BM No", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
@@ -1021,7 +1021,7 @@
         reportNoSort:"Source order",reportLineValue:"Line value (VND)",
         reportNote:"Inventory value = positive stock quantity × valid unit price; invalid prices are excluded.",
         reportDisclaimer:"Source: internal SAP data · Includes only records matching the current filters.",
-        colSap:"SAP code", colDescription:"Description", colPart:"Part No",
+        colSap:"BM No", colDescription:"Description", colPart:"Part No",
         colQuantity:"Quantity", colPrice:"Price", colBm:"BM No", colUnit:"Unit", colGroup:"Group"
       }
     };
