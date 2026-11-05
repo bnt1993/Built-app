@@ -129,7 +129,7 @@
       font-size: inherit; font-weight: 750; text-transform: inherit; letter-spacing: inherit; display: inline-flex; gap: 4px; align-items: center; cursor: pointer; }
     .sort-trigger:hover { color: var(--blue); }
     .sort-indicator { font-size: 11px; color: #b3c0d0; }
-    .sort-trigger[aria-label] .sort-indicator { color: var(--blue); }
+    th[aria-sort="ascending"] .sort-indicator, th[aria-sort="descending"] .sort-indicator { color: var(--blue); }
     tbody tr { cursor: pointer; transition: background .12s ease; }
     tbody tr:hover { background: #f3f7ff; }
     tbody tr.selected { background: #eaf1ff; box-shadow: inset 3px 0 0 var(--blue); }
