@@ -31,9 +31,10 @@ window.thoiGianCapNhat = "2026-11-05 09:00";
 ## 2. Tìm kiếm và báo cáo
 - **Một ô tìm kiếm duy nhất ở trên cùng**: nhập một mã SAP, mô tả hoặc Part No như trước; hoặc nhập nhiều mã SAP cách nhau bằng dấu phẩy, chấm phẩy, dấu gạch đứng hay khoảng trắng. Ví dụ `SAP001, SAP002, SAP003` hoặc `SAP001 SAP002`. Khi dán danh sách nhiều dòng từ Excel, các dòng được gộp thành dấu phẩy. Với danh sách mã giống mã SAP, ứng dụng so khớp chính xác từng mã và giữ cả số 0 đầu.
 - Có thể tìm nhiều cụm mô tả, ngăn cách bởi dấu phẩy/dấu chấm phẩy (OR). Chuỗi mô tả có khoảng trắng vẫn được tìm như một cụm, ví dụ `Blue bolt`.
-- Nhấn nút **Bộ lọc** ở ngay sau nút **Xóa** để mở phạm vi tìm kiếm, chỉ còn hàng, lọc Reorder Point, tìm gần đúng và các bộ lọc lưu sẵn. Menu hiển thị số bộ lọc đang áp dụng.
+- **"Tìm trong" luôn hiển thị dưới ô tìm kiếm**, gồm Tất cả, Mã SAP, Mô tả, Part No và BM No. Bấm một tùy chọn sẽ tự cập nhật kết quả.
+- **Các trạng thái lọc nằm ngay cạnh ô tìm kiếm**: chọn trạng thái Stock so với Reorder Point (trên/bằng/dưới định mức, hết hàng, thiếu định mức), tùy chọn chỉ còn hàng và tìm gần đúng. Không có menu Bộ lọc ẩn.
 - **Tìm gần đúng** cho phép tối đa một sai khác ký tự trên mỗi từ độ dài 4–48; khi bật có thể cần nhiều tài nguyên hơn trên tập dữ liệu rất lớn.
-- Bộ lọc yêu thích lưu tối đa 12 mục bằng `localStorage` trên **thiết bị/trình duyệt hiện tại**.
+- **Không có chức năng lưu/áp dụng/xóa bộ lọc yêu thích.** Các tùy chọn lọc áp dụng ngay khi chọn; nút **Xóa** đặt lại từ khóa và các điều kiện lọc hiện tại.
 - File **XLSX** gồm Tổng quan và Chi tiết, giữ mọi cột SAP; có màu Stock theo Reorder Point và mô tả bộ lọc nâng cao. Bản ghi xuất là toàn bộ kết quả lọc, không chỉ một trang.
 
 ## 3. Ảnh SAP — manifest tùy chọn
