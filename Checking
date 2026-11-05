@@ -658,6 +658,33 @@
       .material-history-dialog { width:calc(100vw - 16px); max-height:92vh; border-radius:12px; }
       .material-history-header, .material-history-controls { padding:12px; }
     }
+
+    #view-dashboard .dashboard-filters { display:flex; flex-wrap:wrap; gap:14px; align-items:end; padding:16px; margin-bottom:16px; background:var(--app-panel); border:1px solid var(--line); border-radius:16px; }
+    .dashboard-filters label { display:flex; flex-direction:column; gap:6px; font-size:11px; color:var(--muted); font-weight:650; min-width:140px; }
+    .dashboard-filters .dashboard-search { flex:1; min-width:220px; }
+    .dashboard-filters input,.dashboard-filters select { min-height:42px; width:100%; border:1px solid var(--line); border-radius:10px; background:var(--app-field); color:var(--ink); padding:9px 12px; font:inherit; font-size:12px; }
+    #view-dashboard .metric-grid { grid-template-columns:repeat(4,minmax(0,1fr)); align-items:stretch; gap:14px; }
+    #view-dashboard .metric-card { min-height:138px; padding:18px; }
+    #view-dashboard .metric-text { min-width:0; }
+    #view-dashboard .metric-value { overflow-wrap:anywhere; }
+    #view-dashboard .metric-money { font-size:clamp(18px,1.8vw,28px); white-space:normal; }
+    #view-dashboard .insight-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:stretch; }
+    #view-dashboard .dashboard-chart { height:390px; display:flex; flex-direction:column; padding:20px; grid-column:auto; background:var(--app-panel); border-radius:16px; }
+    #view-dashboard .dashboard-chart h3 { font-size:14px; margin:0 0 8px; }
+    #view-dashboard .dashboard-chart > .insight-note { margin:0 0 12px; }
+    #view-dashboard .dashboard-chart-body { flex:1; min-height:0; overflow:auto; scrollbar-width:thin; scrollbar-color:var(--muted) var(--line); }
+    #view-dashboard .stock-distribution { align-content:center; }
+    .coverage-row { padding:7px 0; }
+    .dashboard-utilities { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px; }
+    .dashboard-utilities .insight-box { height:210px; overflow:auto; }
+    @media(max-width:1100px) { #view-dashboard .metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:700px) {
+      #view-dashboard .insight-grid,.dashboard-utilities { grid-template-columns:1fr; }
+      #view-dashboard .dashboard-chart { height:370px; padding:16px; }
+      .dashboard-filters label,.dashboard-filters .dashboard-search { flex:1 1 100%; min-width:0; }
+      #view-dashboard .metric-card { min-height:125px; padding:13px; }
+      #view-dashboard .metric-icon { display:none; }
+    }
   </style>
 </head>
 <body>
@@ -790,9 +817,19 @@
 
       <section id="view-dashboard" class="view-pane" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
         <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Dashboard phân tích kho</h1><p data-i18n="dashboardDesc">Giá trị tồn kho, cơ cấu vật tư, tình trạng tồn và biểu đồ tổng hợp.</p></div></div>
+      <div class="dashboard-filters" role="search" data-i18n-aria="dashFilters" aria-label="Bộ lọc phân tích kho">
+        <label class="dashboard-search"><span data-i18n="dashSearch">Tìm vật tư</span><input id="dashboard-search" type="search" data-i18n-placeholder="dashSearchPlaceholder" placeholder="Mã SAP, mô tả, Part No..." oninput="yeuCauLocDashboard()"></label>
+        <label><span data-i18n="stockStatus">Stock so với Reorder Point</span><select id="dashboard-status" onchange="capNhatThongKeNangCao()">
+          <option value="all" data-i18n="stockAny">Tất cả trạng thái</option><option value="healthy" data-i18n="stockAbove">Trên định mức</option>
+          <option value="at" data-i18n="stockEqual">Bằng định mức</option><option value="below" data-i18n="stockBelow">Dưới định mức</option>
+          <option value="zero" data-i18n="stockZero">Hết hàng (= 0)</option><option value="unknown" data-i18n="stockUnknown">Chưa có định mức</option>
+        </select></label>
+        <label><span data-i18n="dashRankLimit">Số mã trên biểu đồ</span><select id="dashboard-limit" onchange="capNhatThongKeNangCao()"><option value="5">Top 5</option><option value="10" selected>Top 10</option><option value="20">Top 20</option></select></label>
+        <span id="dashboard-filter-summary" class="record-count" role="status"></span>
+      </div>
       <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
         <div class="metric-card">
-          <div class="metric-text"><div class="metric-label" data-i18n="totalMaterials">Tổng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="totalNote">Mã SAP trong hệ thống</span></div>
+          <div class="metric-text"><div class="metric-label" data-i18n="dashTotalRows">Tổng dòng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="dashKpiNote">Theo bộ lọc Dashboard</span></div>
           <div class="metric-icon" aria-hidden="true">▦</div>
         </div>
         <div class="metric-card">
@@ -805,7 +842,7 @@
         </div>
         <div class="metric-card metric-card-value">
           <div class="metric-text">
-            <div class="metric-label" data-i18n="inventoryValue">Tổng giá trị tồn kho</div>
+            <div class="metric-label" data-i18n="dashFilteredValue">Giá trị tồn trong phạm vi lọc</div>
             <strong class="metric-value metric-money" id="metric-inventory-value" aria-live="polite">—</strong>
             <span class="metric-note" id="metric-value-note" data-i18n="inventoryValueNote">Tổng (Số lượng tồn × Đơn giá)</span>
           </div>
@@ -814,14 +851,16 @@
       </section>
 
       <section class="insights-panel" id="insights-panel" aria-labelledby="dashboard-charts-heading">
-        <h2 class="dashboard-charts-title" id="dashboard-charts-heading" data-i18n="inventoryInsights">Phân tích giá trị kho, ABC và lịch sử đồng bộ</h2>
+        <h2 class="dashboard-charts-title" id="dashboard-charts-heading" data-i18n="inventoryInsights">Tình trạng tồn và nhu cầu bổ sung</h2>
         <p class="insight-note" data-i18n="allInventoryNote"></p>
         <div class="insight-grid">
-          <div class="insight-box"><h3 data-i18n="stockDistribution">Phân bố trạng thái tồn kho</h3><div id="insight-stock-distribution" class="stock-distribution"></div></div>
-          <div class="insight-box"><h3 data-i18n="abcTitle">ABC theo giá trị</h3><div id="insight-abc"></div><p class="insight-note" data-i18n="abcNote"></p></div>
-          <div class="insight-box"><h3 data-i18n="topTen">Top 10 giá trị cao</h3><div id="insight-top"></div></div>
-          <div class="insight-box"><h3 data-i18n="groupValue">Giá trị theo nhóm</h3><div id="insight-groups"></div></div>
-          <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><div id="insight-history" class="history-grid"></div></div>
+          <div class="insight-box dashboard-chart"><h3 data-i18n="stockDistribution">Phân bố trạng thái tồn kho</h3><div id="insight-stock-distribution" class="stock-distribution dashboard-chart-body"></div></div>
+          <div class="insight-box dashboard-chart"><h3 data-i18n="dashCoverage">Mức tồn so với Reorder Point</h3><p class="insight-note" data-i18n="dashCoverageNote">Tỷ lệ Stock / ROP; chỉ tính ROP lớn hơn 0 và Stock không âm.</p><div id="insight-coverage" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashCoverage"></div></div>
+          <div class="insight-box dashboard-chart"><h3 data-i18n="dashTopValue">Vật tư có giá trị tồn cao nhất</h3><p class="insight-note" data-i18n="dashValueNote">Gộp theo mã SAP; tỷ trọng so với tổng giá trị trong phạm vi lọc.</p><div id="insight-top" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashTopValue"></div></div>
+          <div class="insight-box dashboard-chart"><h3 data-i18n="dashReplenishment">Ước tính bổ sung đến Reorder Point</h3><p class="insight-note" data-i18n="dashReplenishmentNote">Phần thiếu đến ROP × đơn giá; gộp theo mã SAP.</p><div id="insight-replenishment" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashReplenishment"></div><p id="dashboard-replenishment-note" class="insight-note"></p></div>
+        </div>
+        <div class="dashboard-utilities">
+          <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><p class="insight-note" data-i18n="dashSnapshotNote">Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc Dashboard.</p><div id="insight-history" class="history-grid"></div></div>
           <div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
             <div class="advanced-controls" style="padding-top:0">
               <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
@@ -829,7 +868,7 @@
                 <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
                 <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
               </select>
-              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="scheduleDownload">Xuất XLSX ngay</button>
+              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="dashStockExport">Xuất kết quả tra Stock</button>
             </div>
             <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
           </div>
@@ -934,9 +973,9 @@
     const NGON_NGU = {
       vi: {
         tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu Stock",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
-        materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Trước",materialHistoryNext:"Sau",materialHistoryCount:"{count} giao dịch",materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng Reorder Point",otherGroups:"Nhóm khác",abcNote:"A: đến 80% · B: đến 95% · C: phần còn lại. Chỉ tính dòng có giá trị tồn dương; dòng vượt mốc thuộc nhóm trước.",allInventoryNote:"Toàn bộ kho · Không phụ thuộc bộ lọc tra cứu Stock. Biểu đồ giá trị dùng các dòng có tồn và giá hợp lệ.",rowsLabel:"dòng",dashboardHeading:"Dashboard phân tích kho",dashboardDesc:"Theo dõi giá trị tồn, phân nhóm ABC, top vật tư và trạng thái hàng tồn.",
+        materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Trước",materialHistoryNext:"Sau",materialHistoryCount:"{count} giao dịch",materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng Reorder Point",allInventoryNote:"Các chỉ số và 4 biểu đồ áp dụng bộ lọc Dashboard, độc lập tra cứu Stock. Top 5/10/20 chỉ giới hạn danh sách xếp hạng.",rowsLabel:"dòng",dashFilters:"Bộ lọc phân tích kho",dashSearch:"Tìm vật tư",dashSearchPlaceholder:"Mã SAP, mô tả, Part No...",dashRankLimit:"Số mã trên biểu đồ",dashTotalRows:"Tổng dòng vật tư",dashKpiNote:"Theo bộ lọc Dashboard",dashFilteredValue:"Giá trị tồn trong phạm vi lọc",dashCoverage:"Mức tồn so với Reorder Point",dashCoverageNote:"Tỷ lệ Stock / ROP; chỉ tính ROP lớn hơn 0 và Stock không âm.",dashReplenishment:"Ước tính bổ sung đến Reorder Point",dashReplenishmentNote:"Phần thiếu đến ROP × đơn giá; gộp theo mã SAP. Đây là ước tính, chưa gồm chi phí mua hàng khác.",dashTopValue:"Vật tư có giá trị tồn cao nhất",dashValueNote:"Gộp theo mã SAP; tỷ trọng so với tổng giá trị trong phạm vi lọc.",dashSnapshotNote:"Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc Dashboard.",dashStockExport:"Xuất kết quả tra Stock",dashMatch:"{count} / {total} dòng",dashCoverageUnknown:"Không đủ dữ liệu tính tỷ lệ",dashCoverageZero:"Hết hàng (0%)",dashCoverageLow:"Trên 0% đến dưới 50%",dashCoverageMid:"Từ 50% đến dưới 100%",dashCoverageAt:"Đúng 100%",dashCoverageHigh:"Trên 100%",dashEstimateSummary:"Chi phí tính được: {value} · {count} dòng không đủ dữ liệu tính chi phí.",dashNoValue:"Không có giá trị dương trong phạm vi lọc.",dashNoNeed:"Không có chi phí bổ sung dương tính được trong phạm vi lọc.",dashboardHeading:"Dashboard phân tích kho",dashboardDesc:"Theo dõi tình trạng tồn, mức đáp ứng Reorder Point và chi phí bổ sung ước tính.",
         historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu các giao dịch thực tế từ History.js, không suy diễn giao dịch từ tồn kho.",
-        stockDistribution:"Phân bố trạng thái tồn kho",stockDistributionTotal:"Mã vật tư", stockUnknownLabel:"Chưa có định mức",
+        stockDistribution:"Phân bố trạng thái tồn kho",stockDistributionTotal:"Dòng vật tư", stockUnknownLabel:"Chưa có định mức",
         historyRefresh:"Tải lại History.js",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
         historyMatching:"Kết quả lọc",historyInShort:"Nhập",historyOutShort:"Xuất",historyOtherShort:"Khác",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
         historyType:"Loại giao dịch",historyAny:"Tất cả",historyOther:"Khác / chưa rõ",historyFrom:"Từ ngày",historyTo:"Đến ngày",
@@ -960,7 +999,7 @@
         stockStatus:"Tồn kho so với Reorder Point",
         stockAny:"Tất cả trạng thái",stockAbove:"Trên định mức",stockEqual:"Bằng định mức",stockBelow:"Dưới định mức",stockZero:"Hết hàng (= 0)",stockUnknown:"Chưa có định mức",
         fuzzySearch:"Tìm gần đúng",
-        inventoryInsights:"Phân tích giá trị kho, ABC và lịch sử đồng bộ",abcTitle:"Phân nhóm ABC theo giá trị",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",groupValue:"Phân bổ giá trị theo nhóm vật tư",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất XLSX ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi app đang mở",scheduleDue:"Đến lịch xuất báo cáo Excel. Bấm Xuất XLSX ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
+        inventoryInsights:"Tình trạng tồn và nhu cầu bổ sung",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất XLSX ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi app đang mở",scheduleDue:"Đến lịch xuất báo cáo Excel. Bấm Xuất XLSX ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
         searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
         searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
         materialsList:"Danh sách vật tư", rowHint:"Nhấn một lần để xem chi tiết; nhấn đúp để mở cửa sổ lịch sử",
@@ -1011,9 +1050,9 @@
       },
       en: {
         tabsAria:"Inventory workspaces",tabStock:"Stock lookup",tabDashboard:"Inventory dashboard",tabHistory:"In / Out history",
-        materialHistoryTitle:"Material usage history",materialHistoryClose:"Close",materialHistoryPrev:"Previous",materialHistoryNext:"Next",materialHistoryCount:"{count} transactions",materialHistoryMissing:"No SAP material column in history data.",materialHistoryStale:"Showing previously loaded data.",historyExactSap:"History for exact SAP: {code}",issuedTitle:"Issued quantity",issuedScope:"All history · selected SAP · gross issues, before returns",issuedMissing:"Missing material / quantity columns",issuedPartial:"Some movements have invalid quantities",issuedUnitUnknown:"Unknown unit",issuedStale:"Previous data; refresh failed",attentionTitle:"Materials needing attention",attentionNote:"Zero stock, below or at Reorder Point",otherGroups:"Other groups",abcNote:"A: up to 80% · B: up to 95% · C: remainder. Positive-value rows only; a boundary-crossing row stays in the earlier group.",allInventoryNote:"Entire inventory · Independent of Stock lookup filters. Value charts use stocked rows with valid prices.",rowsLabel:"rows",dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Explore inventory valuation, ABC classification, high-value materials and stock health.",
+        materialHistoryTitle:"Material usage history",materialHistoryClose:"Close",materialHistoryPrev:"Previous",materialHistoryNext:"Next",materialHistoryCount:"{count} transactions",materialHistoryMissing:"No SAP material column in history data.",materialHistoryStale:"Showing previously loaded data.",historyExactSap:"History for exact SAP: {code}",issuedTitle:"Issued quantity",issuedScope:"All history · selected SAP · gross issues, before returns",issuedMissing:"Missing material / quantity columns",issuedPartial:"Some movements have invalid quantities",issuedUnitUnknown:"Unknown unit",issuedStale:"Previous data; refresh failed",attentionTitle:"Materials needing attention",attentionNote:"Zero stock, below or at Reorder Point",allInventoryNote:"KPIs and all four charts use Dashboard filters independently of Stock search. Top 5/10/20 only limits ranking lists.",rowsLabel:"rows",dashFilters:"Inventory dashboard filters",dashSearch:"Find materials",dashSearchPlaceholder:"SAP, description, part number...",dashRankLimit:"Chart ranking size",dashTotalRows:"Material rows",dashKpiNote:"Dashboard filter scope",dashFilteredValue:"Inventory value in scope",dashCoverage:"Stock coverage against Reorder Point",dashCoverageNote:"Stock / ROP; requires ROP above zero and non-negative stock.",dashReplenishment:"Estimated cost to reach Reorder Point",dashReplenishmentNote:"Shortfall to ROP × unit price, grouped by SAP. Estimate excludes other purchasing costs.",dashTopValue:"Highest inventory value materials",dashValueNote:"Grouped by SAP; share of total inventory value in the filter scope.",dashSnapshotNote:"Entire inventory on this device; Dashboard filters do not apply.",dashStockExport:"Export Stock search results",dashMatch:"{count} / {total} rows",dashCoverageUnknown:"Insufficient data for ratio",dashCoverageZero:"Out of stock (0%)",dashCoverageLow:"Above 0%, below 50%",dashCoverageMid:"50% to below 100%",dashCoverageAt:"Exactly 100%",dashCoverageHigh:"Above 100%",dashEstimateSummary:"Calculated cost: {value} · {count} rows lack data for cost estimation.",dashNoValue:"No positive inventory value in this scope.",dashNoNeed:"No calculable positive replenishment cost in this scope.",dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Explore stock health, Reorder Point coverage and estimated replenishment cost.",
         historyHeading:"Inbound / outbound history",historyDesc:"View actual transactions from History.js, without inferring movements from stock snapshots.",
-        stockDistribution:"Stock status distribution",stockDistributionTotal:"Materials",stockUnknownLabel:"No reorder point",
+        stockDistribution:"Stock status distribution",stockDistributionTotal:"Material rows",stockUnknownLabel:"No reorder point",
         historyRefresh:"Reload History.js",historyTotal:"Total transactions",historyIn:"Inbound",historyOut:"Outbound",
         historyMatching:"Matching transactions",historyInShort:"Inbound",historyOutShort:"Outbound",historyOtherShort:"Other",historySearchLabel:"Search SAP, description, reference...",historySearchPlaceholder:"SAP, description, document number...",
         historyType:"Movement type",historyAny:"All",historyOther:"Other / unknown",historyFrom:"From date",historyTo:"To date",
@@ -1037,7 +1076,7 @@
         search:"Search", clear:"Clear", export:"Export Excel report (.xlsx)", searchIn:"Search by",
         stockStatus:"Stock vs Reorder Point",stockAny:"All statuses",stockAbove:"Above reorder point",stockEqual:"At reorder point",stockBelow:"Below reorder point",stockZero:"Out of stock (= 0)",stockUnknown:"No reorder point",
         fuzzySearch:"Fuzzy search",
-        inventoryInsights:"Inventory analytics, ABC and sync snapshots",abcTitle:"ABC classification by value",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",groupValue:"Value by material group",transactionHistory:"SAP inbound/outbound transactions",transactionUnavailable:"No SAP transaction feed is connected",scheduleTitle:"Report reminder while the app is open",scheduleOff:"Off",scheduleDaily:"Daily after 9:00",scheduleWeekly:"Mondays after 9:00",scheduleDownload:"Export XLSX now",scheduleWaiting:"Reminders only run while this app is open",scheduleDue:"Your Excel report reminder is due. Click Export XLSX now.",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
+        inventoryInsights:"Stock health and replenishment needs",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",transactionHistory:"SAP inbound/outbound transactions",transactionUnavailable:"No SAP transaction feed is connected",scheduleTitle:"Report reminder while the app is open",scheduleOff:"Off",scheduleDaily:"Daily after 9:00",scheduleWeekly:"Mondays after 9:00",scheduleDownload:"Export XLSX now",scheduleWaiting:"Reminders only run while this app is open",scheduleDue:"Your Excel report reminder is due. Click Export XLSX now.",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
         searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
         searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
         materialsList:"Material list", rowHint:"Click to view details; double-click to open material history",
@@ -1205,12 +1244,12 @@
       document.getElementById("tab-"+CAC_TAB[next]).focus();
     }
 
-    function vePhanBoTrangThai() {
+    function vePhanBoTrangThai(rows=duLieuTimKiem) {
       const target=document.getElementById("insight-stock-distribution");
       if(!analyticsReady){target.textContent=tuDien("noAnalytics");return}
       const count={healthy:0,at:0,below:0,zero:0,unknown:0};
-      for(const record of duLieuTimKiem)count[record.trangThaiTon]=(count[record.trangThaiTon]||0)+1;
-      const total=duLieuTimKiem.length;
+      for(const record of rows)count[record.trangThaiTon]=(count[record.trangThaiTon]||0)+1;
+      const total=rows.length;
       if(!total){target.textContent=tuDien("noAnalytics");return}
       const shades={healthy:"#16a34a",at:"#facc15",below:"#fb923c",zero:"#e11d48",unknown:"#94a3b8"};
       const names={healthy:"stockAbove",at:"stockEqual",below:"stockBelow",zero:"stockZero",unknown:"stockUnknown"};
@@ -1489,7 +1528,6 @@
     // Reorder Point is sourced from SAP data, not a fixed global threshold.
     let chiSoReorderPoint = -1;
     let chiSoSoLuong = 3;
-    let danhSachGiaTri = [];
     let analyticsReady = false;
 
     function cotReorderPoint() {
@@ -1590,31 +1628,82 @@
       }).join("");
     }
 
-    function capNhatThongKeNangCao() {
-      if (!analyticsReady) return;
-      document.getElementById("metric-attention").textContent=dinhDangSoLuong.format(
-        duLieuTimKiem.filter(x=>["zero","below","at"].includes(x.trangThaiTon)).length);
-      const sorted=danhSachGiaTri.slice().sort((a,b)=>b.value-a.value);
-      const total=sorted.reduce((sum,x)=>sum+x.value,0);
-      const abc=[{name:"A",value:0,count:0},{name:"B",value:0,count:0},{name:"C",value:0,count:0}];
-      let running=0;
-      for(const rec of sorted) {
-        const idx=total===0?2:(running/total < .80?0:running/total < .95?1:2);
-        abc[idx].value+=rec.value;abc[idx].count++;
-        running+=rec.value;
+    let dashboardFilterTimer=null;
+    function yeuCauLocDashboard() {
+      clearTimeout(dashboardFilterTimer);
+      dashboardFilterTimer=setTimeout(capNhatThongKeNangCao,150);
+    }
+
+    function tinhPhanTichDashboard(rows,headers) {
+      const priceCol=headers.findIndex(x=>["price","unit price","đơn giá","giá"].includes(String(x??"").trim().toLowerCase()));
+      const coverage=[0,0,0,0,0,0],valueBySap=new Map(),needBySap=new Map();
+      let total=0,missingPrice=0,needTotal=0,needUnknown=0,inStock=0,attention=0;
+      for(const rec of rows) {
+        const qty=rec.soLuong,rop=rec.reorderPoint;
+        const price=priceCol>=0?chuyenThanhSo(rec.dong[priceCol]):NaN;
+        const validPrice=Number.isFinite(price)&&price>=0;
+        const sap=chuanHoaMaSap(rec.dong[0])||"—";
+        if(Number.isFinite(qty)&&qty>0) {
+          inStock++;
+          const value=qty*price;
+          if(validPrice&&Number.isFinite(value)){total+=value;if(value>0)valueBySap.set(sap,(valueBySap.get(sap)||0)+value);}
+          else missingPrice++;
+        }
+        if(["zero","below","at"].includes(rec.trangThaiTon))attention++;
+        if(!Number.isFinite(qty)||qty<0||!Number.isFinite(rop)||rop<=0)coverage[5]++;
+        else {
+          const ratio=qty/rop;
+          coverage[ratio===0?0:ratio<.5?1:ratio<1?2:ratio===1?3:4]++;
+        }
+        if(!Number.isFinite(qty)||!Number.isFinite(rop)||rop<0){needUnknown++;continue;}
+        const gap=Math.max(0,rop-qty);
+        if(gap>0) {
+          const value=gap*price;
+          if(!validPrice||!Number.isFinite(value)){needUnknown++;continue;}
+          needTotal+=value;
+          if(value>0)needBySap.set(sap,(needBySap.get(sap)||0)+value);
+        }
       }
-      hienThiThanhGiaTri(abc,"insight-abc",total,"money");
-      vePhanBoTrangThai();
-      const sapValues=new Map();
-      for(const rec of sorted)sapValues.set(rec.sap,(sapValues.get(rec.sap)||0)+rec.value);
-      const top=[...sapValues].sort((a,b)=>b[1]-a[1]).slice(0,10).map(([name,value])=>({name,value}));
-      hienThiThanhGiaTri(top,"insight-top",total,"money");
-      const groupMap=new Map();
-      for(const rec of sorted) groupMap.set(rec.group||"—",(groupMap.get(rec.group||"—")||0)+rec.value);
-      const rankedGroups=[...groupMap].sort((a,b)=>b[1]-a[1]);
-      const groups=rankedGroups.slice(0,8).map(([name,value])=>({name,value}));
-      if(rankedGroups.length>8)groups.push({name:tuDien("otherGroups"),value:rankedGroups.slice(8).reduce((sum,x)=>sum+x[1],0)});
-      hienThiThanhGiaTri(groups,"insight-groups",total,"money");
+      const rank=map=>[...map].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value||a.name.localeCompare(b.name));
+      return {count:rows.length,inStock,attention,total:priceCol<0?null:total,missingPrice,coverage,
+        values:rank(valueBySap),needs:rank(needBySap),needTotal,needUnknown};
+    }
+
+    function veBieuDoMucTon(counts,total) {
+      const keys=["dashCoverageZero","dashCoverageLow","dashCoverageMid","dashCoverageAt","dashCoverageHigh","dashCoverageUnknown"];
+      const colors=["#e11d48","#f97316","#f59e0b","#ca8a04","#16a34a","#94a3b8"];
+      document.getElementById("insight-coverage").innerHTML=total?counts.map((count,i)=>
+        '<div class="coverage-row"><div class="value-row-heading"><span>'+thoatHTML(tuDien(keys[i]))+'</span><strong>'+
+        dinhDangSoLuong.format(count)+' · '+(100*count/total).toFixed(1)+'%</strong></div>'+
+        '<div class="insight-track"><div class="insight-bar" style="background:'+colors[i]+';width:'+
+        (100*count/total).toFixed(2)+'%"></div></div></div>').join(""):thoatHTML(tuDien("noResults"));
+    }
+
+    function capNhatThongKeNangCao() {
+      if(!analyticsReady)return;
+      const term=chuanHoaTimKiem(document.getElementById("dashboard-search").value.trim());
+      const status=document.getElementById("dashboard-status").value;
+      const limit=Number(document.getElementById("dashboard-limit").value)||10;
+      const rows=duLieuTimKiem.filter(x=>(status==="all"||x.trangThaiTon===status)&&
+        (!term||chuanHoaTimKiem(x.dong.join(" ")).includes(term)));
+      const stats=tinhPhanTichDashboard(rows,tieuDeCot);
+      for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
+        document.getElementById(id).textContent=dinhDangSoLuong.format(value);
+      const money=document.getElementById("metric-inventory-value");
+      money.textContent=stats.total===null?"—":dinhDangGiaTriKho(stats.total);money.title=money.textContent;
+      document.getElementById("metric-value-note").textContent=stats.total===null?tuDien("inventoryValueNoPrice"):
+        stats.missingPrice?tuDien("inventoryValuePartial",{count:stats.missingPrice}):tuDien("inventoryValueNote");
+      document.getElementById("dashboard-filter-summary").textContent=tuDien("dashMatch",{
+        count:dinhDangSoLuong.format(rows.length),total:dinhDangSoLuong.format(duLieuTimKiem.length)});
+      vePhanBoTrangThai(rows);
+      veBieuDoMucTon(stats.coverage,rows.length);
+      hienThiThanhGiaTri(stats.values.slice(0,limit),"insight-top",stats.total,"money");
+      if(!stats.values.length)document.getElementById("insight-top").textContent=tuDien(stats.total===null?"inventoryValueNoPrice":"dashNoValue");
+      hienThiThanhGiaTri(stats.needs.slice(0,limit),"insight-replenishment",stats.needTotal,"money");
+      if(!stats.needs.length)document.getElementById("insight-replenishment").textContent=tuDien("dashNoNeed");
+      document.getElementById("dashboard-replenishment-note").textContent=tuDien("dashEstimateSummary",{
+        value:dinhDangGiaTriKho(stats.needTotal),
+        count:dinhDangSoLuong.format(stats.needUnknown)});
       veLichSuKho();
       kiemTraNhacBaoCao();
     }
@@ -2165,7 +2254,6 @@
         ["quantity", "qty", "số lượng", "stock", "stock qty", "on hand", "tồn kho"].includes(String(x ?? "").trim().toLowerCase()));
       chiSoSoLuong = cotSoLuong >= 0 ? cotSoLuong : 3;
       chiSoReorderPoint = cotReorderPoint();
-      danhSachGiaTri = [];
       analyticsReady = false;
       const chiSoGia = tieuDeCot.findIndex(x =>
         ["price", "unit price", "đơn giá", "giá"].includes(String(x ?? "").trim().toLowerCase()));
@@ -2188,7 +2276,6 @@
       document.getElementById("than-bang").innerHTML =
         '<tr><td colspan="6" class="empty-table">' + tuDien("preparing") + '</td></tr>';
 
-      const groupColumn=tieuDeCot.findIndex(h=>["material group","materialgroup","matl group","group","nhóm vật tư","nhóm"].includes(String(h??"").trim().toLowerCase()));
       function xuLyNhom() {
         if (lanHienTai !== lanLapChiMuc) return;
         const gioiHan = Math.min(viTri + 1000, tatCaDuLieu.length);
@@ -2210,7 +2297,6 @@
             if (Number.isFinite(donGia) && donGia >= 0 && Number.isFinite(thanhTien)) {
               giaTriDaTinh += thanhTien;
               giaTriDong = thanhTien;
-              if (thanhTien > 0) danhSachGiaTri.push({sap:String(dong[0]??""),value:thanhTien,group:groupColumn>=0?String(dong[groupColumn]??""):"—"});
             } else {
               soDongGiaKhongHopLe++;
             }
@@ -3297,6 +3383,7 @@
   </script>
 </body>
 </html>
+
 
 
 
