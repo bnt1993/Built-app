@@ -1698,6 +1698,32 @@
       return tacVu.finally(() => dangKiemTraAnh.delete(url));
     }
 
+    // Optional Material/manifest.json: {"SAP001":["SAP001_01.jpg","SAP001_02.png"]}.
+    // A manifest avoids up to 22 HEAD requests per SAP; missing files fall back to scanning.
+    let promiseManifestAnh = null;
+    function taiManifestAnh() {
+      if (window.MaterialImageManifest && typeof window.MaterialImageManifest === "object") {
+        return Promise.resolve(window.MaterialImageManifest);
+      }
+      if (!/^https?:$/.test(location.protocol) || typeof fetch !== "function") return Promise.resolve(null);
+      if (!promiseManifestAnh) {
+        promiseManifestAnh = fetch(THU_MUC_HINH+"manifest.json",{cache:"force-cache"})
+          .then(resp=>resp.ok?resp.json():null)
+          .then(data=>data&&typeof data==="object"&&!Array.isArray(data)?data:null)
+          .catch(()=>null);
+      }
+      return promiseManifestAnh;
+    }
+
+    function hinhAnhTuManifest(manifest,sap) {
+      if (!manifest || !Object.prototype.hasOwnProperty.call(manifest,sap)) return null;
+      const names=manifest[sap];
+      if (!Array.isArray(names)) return null;
+      return [...new Set(names.filter(name=>
+        typeof name==="string" && /^[a-zA-Z0-9_. -]+\.(?:jpg|jpeg|png|webp)$/i.test(name))
+        .map(name=>THU_MUC_HINH+encodeURIComponent(name)))].sort();
+    }
+
     // Chỉ 4 tác vụ kiểm tra đồng thời, giữ dữ liệu từ SAP đã xem gần đây.
     async function taiBoSuuTapAnh(maSap) {
       const lanHienTai = ++lanTaiAnh;
@@ -1716,6 +1742,16 @@
         return;
       }
 
+      const manifest=await taiManifestAnh();
+      if(lanHienTai!==lanTaiAnh)return;
+      const daBiet=hinhAnhTuManifest(manifest,maSapDangXem);
+      if(daBiet!==null) {
+        danhSachAnhDangXem=daBiet;
+        dangQuetAnh=false;
+        boNhoBoSuuTap.set(maSapDangXem,{urls:daBiet.slice(),hetHan:Date.now()+300000});
+        capNhatGiaoDienAnh();
+        return;
+      }
       const danhSachTen = [];
       for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
         const hauTo = String(k).padStart(2, "0");
@@ -1761,6 +1797,31 @@
       anh.src = url;
     }
 
+    function capNhatAnhThuNho() {
+      const holder=document.getElementById("image-thumbnails");
+      const key=danhSachAnhDangXem.join("\u0001");
+      if(holder.dataset.galleryKey!==key) {
+        holder.dataset.galleryKey=key;
+        holder.innerHTML="";
+        danhSachAnhDangXem.forEach((src,index)=>{
+          const btn=document.createElement("button");
+          btn.type="button";
+          btn.className="image-thumb";
+          btn.setAttribute("aria-label", (index+1)+" / "+danhSachAnhDangXem.length);
+          const img=document.createElement("img");
+          img.src=src;img.alt="";img.loading="lazy";img.decoding="async";
+          btn.appendChild(img);
+          btn.addEventListener("click",()=>{
+            viTriAnhDangXem=index;
+            capNhatGiaoDienAnh();napTruocAnhKeTiep();
+          });
+          holder.appendChild(btn);
+        });
+      }
+      [...holder.children].forEach((btn,index)=>
+        btn.setAttribute("aria-pressed",String(index===viTriAnhDangXem)));
+    }
+
     function capNhatGiaoDienAnh() {
       const imgEl = document.getElementById("anh-chinh");
       const btnPrev = document.getElementById("btn-anh-truoc");
@@ -1769,6 +1830,7 @@
       const khuVucTrong = document.getElementById("anh-trong");
       const thongBaoAnh = khuVucTrong.querySelector("span:last-child");
       const tong = danhSachAnhDangXem.length;
+      capNhatAnhThuNho();
 
       khuVucTrong.style.display = tong > 0 ? "none" : "grid";
       if (tong > 0) {
