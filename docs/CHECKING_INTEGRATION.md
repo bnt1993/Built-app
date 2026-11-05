@@ -50,18 +50,40 @@ Khi có `Material/manifest.json`, app dùng danh sách ảnh, tránh yêu cầu 
 
 Nếu không có manifest hoặc mã SAP không nằm trong đó, app dùng cơ chế HEAD/Image() hiện tại. Mỗi entry chỉ chấp nhận basename ảnh JPG/JPEG/PNG/WEBP; không chấp nhận đường dẫn tùy ý.
 
-## 4. Lịch sử tồn kho và nhập/xuất
-- **Ảnh chụp giá trị tổng hợp**: app lưu tối đa 60 ngày trên thiết bị với số mã, tổng giá trị và số mã cần chú ý. Đây không phải báo cáo lịch sử giao dịch; xóa dữ liệu trình duyệt sẽ làm mất lịch sử này.
-- **Nhật ký nhập/xuất**: muốn hiển thị giao dịch thật, hệ thống tích hợp cần đưa danh sách vào `window.lichSuNhapXuat` (hoặc `window.inventoryTransactions`) trước/sau khi tải `data.js`, với dạng:
+## 4. Ba tab chuyên biệt và tích hợp `History.js`
+Ứng dụng `Checking` hiện có ba tab, không cần tải lại `data.js` khi chuyển:
+1. **Tra cứu Stock:** thanh tìm kiếm/ROP, bảng vật tư, chi tiết SAP và ảnh.
+2. **Dashboard phân tích kho:** bốn KPI, biểu đồ ABC, top mã có giá trị cao, giá trị theo nhóm, biểu đồ vòng tình trạng Stock, lịch sử ảnh chụp tổng hợp trên thiết bị và nhắc xuất báo cáo XLSX.
+3. **Lịch sử nhập/xuất:** danh sách giao dịch thực từ file **`History.js`**, lọc SAP/chứng từ/từ khóa, Nhập/Xuất, khoảng ngày, phân trang 100 dòng và đầy đủ cột dữ liệu nguồn.
 
+### Cách đặt file History.js
+Đặt file **`History.js` cùng thư mục chạy ứng dụng `Checking`** (cùng cấp với `data.js`). Tab Lịch sử sẽ tải file này theo yêu cầu khi mở tab; nhấn "Tải lại History.js" để cập nhật thủ công. Tên file và chữ hoa/thường phải chính xác nếu web server phân biệt chữ hoa/thường.
+
+Hiện repository **chưa có `History.js` thực tế**. Sau khi merge PR, cần đưa file thật từ hệ thống nội bộ vào đúng đường dẫn thì tab mới hiển thị dữ liệu. Nếu thiếu hoặc sai định dạng, ứng dụng hiển thị thông báo rõ ràng và không tự tạo giao dịch giả.
+
+### Hai định dạng được hỗ trợ
+Cách 1 — mảng hàng/cột (đầu tiên là tên cột):
 ```javascript
-window.lichSuNhapXuat = [
-  { date: "2026-11-05T08:30:00", sap: "SAP001", type: "IN", quantity: 5 },
-  { date: "2026-11-05T08:45:00", sap: "SAP002", type: "OUT", quantity: 2 }
+window.duLieuLichSu = [
+  ["Posting Date", "SAP", "Movement Type", "Quantity", "Document", "Warehouse"]
+  // Nối các dòng nhập/xuất thực của bạn tại đây
 ];
 ```
 
-App chỉ hiển thị 15 giao dịch gần nhất từ feed. **Không được suy đoán số lần nhập/xuất chỉ từ hai snapshot tồn kho**, vì điều chỉnh, chuyển kho và đồng bộ muộn có thể làm kết quả sai.
+Cách 2 — mảng đối tượng:
+```javascript
+window.duLieuLichSu = [
+  // {date: "...", sap: "...", type: "IN" | "OUT", quantity: 0, document: "..."}
+];
+```
+Đây là **mẫu cấu trúc rỗng**, không phải dữ liệu lịch sử đã được xác nhận. Hãy dùng dữ liệu SAP thật. Ngoài `window.duLieuLichSu`, mã cũng nhận các biến `window.duLieuHistory`, `window.lichSuNhapXuat`, `window.inventoryTransactions`, `window.historyData`, `window.HistoryData`, v.v. Có thể truyền `{headers,rows}` hoặc `{data:[...]}`.
+
+Cột ngày hỗ trợ các tên như `Date`, `Posting Date`, `Transaction Date`, `Ngày`. Loại giao dịch hỗ trợ `Type`, `Movement Type`, `Loại`, với các giá trị thông dụng `IN`, `OUT`, `Nhập`, `Xuất`, `101`, `201`. Nếu không xác định được loại, app gán **Khác/chưa rõ**; không tự coi số lượng dương là nhập kho.
+
+**Bảo mật:** Không đưa lịch sử nhạy cảm lên GitHub công khai. Chỉ triển khai `History.js` trong hệ thống nội bộ có kiểm soát quyền truy cập. Trình duyệt có quyền truy cập file sẽ đọc được nội dung.
+
+### Lịch sử tổng hợp khác với lịch sử nhập/xuất
+Dashboard lưu tối đa 60 ảnh chụp tổng hợp theo ngày trên chính trình duyệt, dùng để theo dõi xu hướng tồn kho cục bộ. **Ảnh chụp tổng hợp không phải nhật ký giao dịch**; chênh lệch số lượng giữa hai ngày không thể dùng để tự kết luận lượng nhập/xuất.
 
 ## 5. Phân quyền, nhật ký kiểm toán và báo cáo tự động
 Repo hiện là một ứng dụng HTML đọc `data.js`, **không có backend xác thực/ủy quyền và không có dịch vụ lập lịch**. Vì vậy:
@@ -72,4 +94,4 @@ Repo hiện là một ứng dụng HTML đọc `data.js`, **không có backend x
 Những phần này **chưa thể được xác nhận là hoàn tất** nếu chưa có backend và thông tin truy cập. Không sử dụng localStorage như hệ thống phân quyền hoặc audit chính thức.
 
 ## 6. Kiểm thử triển khai
-Kiểm tra Stock trên/bằng/dưới/0; dòng có Reorder Point không hợp lệ; VI/EN và sáng/tối; danh sách SAP nhiều mã; tìm gần đúng; bảng phân trang; mở bộ ảnh; XLSX có công thức và màu; manifest có/không có; dùng thử khi mất mạng. Nên thử trên môi trường nội bộ có `data.js` và thư mục `Material/` thật trước khi merge.
+Kiểm tra chuyển qua 3 tab, tải History.js thật hoặc hiển thị lỗi khi thiếu file; lọc ngày và loại giao dịch, phân trang lịch sử; Stock trên/bằng/dưới/0; dòng có Reorder Point không hợp lệ; VI/EN và sáng/tối; danh sách SAP nhiều mã; tìm gần đúng; bảng phân trang; mở bộ ảnh; XLSX có công thức và màu; manifest có/không có; dùng thử khi mất mạng. Nên thử trên môi trường nội bộ có `data.js` và thư mục `Material/` thật trước khi merge.
