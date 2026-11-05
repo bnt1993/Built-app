@@ -841,9 +841,9 @@
         historyMatching:"Kết quả lọc",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
         historyType:"Loại giao dịch",historyAny:"Tất cả",historyOther:"Khác / chưa rõ",historyFrom:"Từ ngày",historyTo:"Đến ngày",
         historyClear:"Xóa lọc",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
-        historyIdle:"Chưa tải History.js",historyLoading:"Đang tải History.js...",historyNoSource:"Không tìm thấy History.js ở cùng thư mục ứng dụng.",
+        historyIdle:"Chưa tải History.js",historyLoading:"Đang tải History.js...",historyNoSource:"Không thể tải History.js (giữ dữ liệu lịch sử trước đó nếu có).",
         historyInvalid:"History.js không cung cấp mảng giao dịch hợp lệ.",historyEmpty:"History.js không có giao dịch.",
-        historyLoaded:"Đã tải {count} giao dịch từ History.js",historyPage:"Trang {current} / {total}",
+        historyLoaded:"Đã tải {count} giao dịch từ History.js",historyLoadedExisting:"Đã đọc {count} giao dịch từ dữ liệu SAP đã có",historyPage:"Trang {current} / {total}",
         historyNoResults:"Không tìm thấy giao dịch phù hợp với bộ lọc.",historyCount:"{count} / {total} giao dịch",
         brandSubtitle:"KHÔNG GIAN QUẢN LÝ", themeSettings:"Giao diện", themeToLight:"Chuyển sang giao diện sáng",
         themeToDark:"Chuyển sang giao diện tối", refresh:"Đồng bộ", refreshTitle:"Đồng bộ dữ liệu từ nguồn",
@@ -918,9 +918,9 @@
         historyMatching:"Matching transactions",historySearchLabel:"Search SAP, description, reference...",historySearchPlaceholder:"SAP, description, document number...",
         historyType:"Movement type",historyAny:"All",historyOther:"Other / unknown",historyFrom:"From date",historyTo:"To date",
         historyClear:"Clear filters",historyTable:"Transaction records",historyTableNote:"Shows all source columns in History.js; no fabricated transactions.",
-        historyIdle:"History.js has not been loaded",historyLoading:"Loading History.js...",historyNoSource:"History.js was not found beside the app.",
+        historyIdle:"History.js has not been loaded",historyLoading:"Loading History.js...",historyNoSource:"History.js could not be loaded (previous history is preserved if available).",
         historyInvalid:"History.js does not expose a valid transaction array.",historyEmpty:"History.js contains no transactions.",
-        historyLoaded:"Loaded {count} transactions from History.js",historyPage:"Page {current} / {total}",
+        historyLoaded:"Loaded {count} transactions from History.js",historyLoadedExisting:"Read {count} transactions from the existing SAP feed",historyPage:"Page {current} / {total}",
         historyNoResults:"No matching transactions.",historyCount:"{count} / {total} transactions",
         brandSubtitle:"OPERATIONS WORKSPACE", themeSettings:"Appearance", themeToLight:"Switch to light mode",
         themeToDark:"Switch to dark mode", refresh:"Sync", refreshTitle:"Refresh source data",
@@ -1688,7 +1688,8 @@
       document.getElementById("history-total").textContent=dinhDangSoLuong.format(total);
       document.getElementById("history-in").textContent=dinhDangSoLuong.format(historyAll.filter(x=>x.type==="in").length);
       document.getElementById("history-out").textContent=dinhDangSoLuong.format(historyAll.filter(x=>x.type==="out").length);
-      capNhatTrangThaiHistory(total?"historyLoaded":"historyEmpty",{count:dinhDangSoLuong.format(total)});
+      capNhatTrangThaiHistory(total?(origin==="existing"?"historyLoadedExisting":"historyLoaded"):"historyEmpty",
+        {count:dinhDangSoLuong.format(total)});
       locHistory();
       return true;
     }
