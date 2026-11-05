@@ -534,7 +534,8 @@
     @media(max-width:750px) {
       .search-box-group { flex-basis:100%; }
       .search-box-group .search-input { flex:1 1 100%; }
-      .filter-popover-content { width:min(440px,calc(100vw - 26px)); padding:12px; }
+      .filter-popover-content { position:fixed; left:12px; right:12px; top:auto; bottom:12px;
+        width:auto; max-height: min(76vh,640px); padding:14px; border-radius:16px; }
       .toolbar-primary > #btn-xuat-excel { margin-left:0; }
     }
 
