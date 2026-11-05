@@ -609,6 +609,18 @@
           <div class="insight-box"><h3 data-i18n="topTen">Top 10 giá trị cao</h3><div id="insight-top"></div></div>
           <div class="insight-box"><h3 data-i18n="groupValue">Giá trị theo nhóm</h3><div id="insight-groups"></div></div>
           <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><div id="insight-history" class="history-grid"></div></div>
+          <div class="insight-box"><h3 data-i18n="transactionHistory">Lịch sử nhập/xuất từ SAP</h3><div id="insight-transactions" class="history-grid"></div></div>
+          <div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
+            <div class="advanced-controls" style="padding-top:0">
+              <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
+                <option value="off" data-i18n="scheduleOff">Tắt</option>
+                <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
+                <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
+              </select>
+              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="scheduleDownload">Xuất XLSX ngay</button>
+            </div>
+            <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
+          </div>
         </div>
         <div class="insight-note" data-i18n="insightNote">Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất.</div>
       </details>
@@ -698,7 +710,7 @@
         advancedSearch:"Tìm kiếm nâng cao và bộ lọc yêu thích",stockStatus:"Tồn kho so với Reorder Point",
         stockAny:"Tất cả trạng thái",stockAbove:"Trên định mức",stockEqual:"Bằng định mức",stockBelow:"Dưới định mức",stockZero:"Hết hàng (= 0)",stockUnknown:"Chưa có định mức",
         batchSapLabel:"Nhiều mã SAP",batchSapPlaceholder:"SAP001, SAP002 hoặc dán nhiều dòng",fuzzySearch:"Tìm gần đúng",savedFilters:"Bộ lọc đã lưu",saveFilter:"Lưu bộ lọc",applyFilter:"Áp dụng",removeFilter:"Xóa bộ lọc",filterName:"Tên bộ lọc",
-        inventoryInsights:"Phân tích giá trị kho, ABC và lịch sử đồng bộ",abcTitle:"Phân nhóm ABC theo giá trị",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",groupValue:"Phân bổ giá trị theo nhóm vật tư",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
+        inventoryInsights:"Phân tích giá trị kho, ABC và lịch sử đồng bộ",abcTitle:"Phân nhóm ABC theo giá trị",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",groupValue:"Phân bổ giá trị theo nhóm vật tư",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất XLSX ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi app đang mở",scheduleDue:"Đến lịch xuất báo cáo Excel. Bấm Xuất XLSX ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
         searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
         searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
         materialsList:"Danh sách vật tư", rowHint:"Nhấn vào một dòng để xem chi tiết và hình ảnh",
@@ -763,7 +775,7 @@
         search:"Search", clear:"Clear", export:"Export Excel report (.xlsx)", searchIn:"Search by",
         advancedSearch:"Advanced search and saved filters",stockStatus:"Stock vs Reorder Point",stockAny:"All statuses",stockAbove:"Above reorder point",stockEqual:"At reorder point",stockBelow:"Below reorder point",stockZero:"Out of stock (= 0)",stockUnknown:"No reorder point",
         batchSapLabel:"Multiple SAP codes",batchSapPlaceholder:"SAP001, SAP002 or one per line",fuzzySearch:"Fuzzy search",savedFilters:"Saved filters",saveFilter:"Save filter",applyFilter:"Apply",removeFilter:"Delete saved filter",filterName:"Filter name",
-        inventoryInsights:"Inventory analytics, ABC and sync snapshots",abcTitle:"ABC classification by value",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",groupValue:"Value by material group",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
+        inventoryInsights:"Inventory analytics, ABC and sync snapshots",abcTitle:"ABC classification by value",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",groupValue:"Value by material group",transactionHistory:"SAP inbound/outbound transactions",transactionUnavailable:"No SAP transaction feed is connected",scheduleTitle:"Report reminder while the app is open",scheduleOff:"Off",scheduleDaily:"Daily after 9:00",scheduleWeekly:"Mondays after 9:00",scheduleDownload:"Export XLSX now",scheduleWaiting:"Reminders only run while this app is open",scheduleDue:"Your Excel report reminder is due. Click Export XLSX now.",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
         searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
         searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
         materialsList:"Material list", rowHint:"Select a row to view details and images",
@@ -892,6 +904,7 @@
       });
       capNhatGiaoDienAnh();
       if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
+      kiemTraNhacBaoCao();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
     }
 
@@ -1297,6 +1310,8 @@
       const groups=[...groupMap].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,value])=>({name,value}));
       hienThiThanhGiaTri(groups,"insight-groups",total,"money");
       veLichSuKho();
+      veLichSuGiaoDich();
+      kiemTraNhacBaoCao();
     }
 
     function layAnhChupKho() {
@@ -1325,6 +1340,51 @@
         '<div class="insight-row"><span class="name">'+thoatHTML(rec.date)+'</span>'+
         '<strong style="min-width:96px" title="'+thoatHTML(rec.hasPrice===false?"—":dinhDangGiaTriKho(rec.value))+'">'+
         thoatHTML(rec.hasPrice===false?"—":dinhDangGiaTriKho(rec.value))+'</strong></div>').join("");
+    }
+
+
+    // Optional read-only transaction feed supplied by the SAP integration.
+    // Example: window.lichSuNhapXuat = [{date:"2026-11-05",sap:"SAP001",type:"IN",quantity:5}].
+    function veLichSuGiaoDich() {
+      const container=document.getElementById("insight-transactions");
+      const data=window.lichSuNhapXuat || window.inventoryTransactions;
+      if (!Array.isArray(data) || !data.length) {
+        container.textContent=tuDien("transactionUnavailable");return;
+      }
+      container.innerHTML=data.slice(-15).reverse().map(item=>{
+        if(!item || typeof item!=="object")return "";
+        const date=String(item.date??item.ngay??"—");
+        const sap=String(item.sap??item.material??"—");
+        const type=String(item.type??item.loai??"—");
+        const qty=String(item.quantity??item.qty??"—");
+        return '<div class="insight-row"><span class="name" title="'+thoatHTML(sap)+'">'+
+          thoatHTML(sap)+'</span><span>'+thoatHTML(type)+'</span><strong>'+
+          thoatHTML(qty)+'</strong><span>'+thoatHTML(date)+'</span></div>';
+      }).join("");
+    }
+
+    function caiDatNhacBaoCao() {
+      ghiTuyChon("checking-report-reminder",document.getElementById("bao-cao-nhac-lich").value);
+      kiemTraNhacBaoCao();
+    }
+
+    function kiemTraNhacBaoCao() {
+      const choice=document.getElementById("bao-cao-nhac-lich");
+      const message=document.getElementById("bao-cao-nhac-tin");
+      if (!choice || !message) return;
+      const mode=choice.value;
+      if (mode==="off" || document.hidden || !chiMucSanSang) {
+        message.textContent=tuDien("scheduleWaiting");return;
+      }
+      const date=new Date(),due=date.getHours()>=9 && (mode==="daily" || date.getDay()===1);
+      message.textContent=due?tuDien("scheduleDue"):tuDien("scheduleWaiting");
+    }
+
+    function khoiTaoLichNhacBaoCao() {
+      const mode=docTuyChon("checking-report-reminder");
+      document.getElementById("bao-cao-nhac-lich").value=
+        mode==="daily" || mode==="weekly" ? mode : "off";
+      kiemTraNhacBaoCao();
     }
 
     // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
@@ -2414,10 +2474,12 @@
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     khoiTaoTuyChon();
     veBoLocDaLuu();
+    khoiTaoLichNhacBaoCao();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
+    setInterval(kiemTraNhacBaoCao, 60000);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) taiDuLieu();
+      if (!document.hidden) {taiDuLieu();kiemTraNhacBaoCao();}
     });
   </script>
 </body>
