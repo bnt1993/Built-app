@@ -538,6 +538,67 @@
       .toolbar-primary > #btn-xuat-excel { width: 100%; justify-content: center; }
       .toolbar-filters .filter-label { width: 100%; }
     }
+
+    /* Three focused workspaces: stock lookup, analytics, transaction history. */
+    .view-pane[hidden] { display:none !important; }
+    .view-tabs { display:flex; align-items:center; gap:5px; flex-wrap:wrap; padding:4px; margin:9px 0 15px;
+      border:1px solid var(--line); background:var(--app-field); border-radius:13px; width:fit-content; max-width:100%; }
+    .view-tab { display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:8px 17px; font-size:13px; font-weight:750;
+      color:var(--muted); border:1px solid transparent; border-radius:9px; background:transparent; }
+    .view-tab[aria-selected="true"] { color:var(--blue); border-color:var(--line); background:var(--app-panel); box-shadow:0 2px 8px rgba(0,0,0,.07); }
+    .view-tab:hover:not([aria-selected="true"]) { background:var(--app-hover); color:var(--ink); }
+    .view-tab:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+    .pane-heading { display:flex; justify-content:space-between; align-items:center; gap:14px; margin:5px 0 15px; }
+    .pane-heading h1 { color:var(--ink); font-size:clamp(21px,2.2vw,29px); letter-spacing:-.03em; margin:0 0 4px; font-weight:850; }
+    .pane-heading p { margin:0; color:var(--muted); font-size:12px; }
+    #view-stock .intro { margin-top:3px; }
+    #view-dashboard .metric-grid { margin-bottom:13px; }
+    #view-dashboard .insights-panel { display:block; padding:14px; }
+    .dashboard-charts-title { font-size:15px; font-weight:850; margin:0 0 4px; }
+    #view-dashboard .insight-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .stock-distribution { display:flex; align-items:center; flex-wrap:wrap; gap:14px; }
+    .stock-donut { flex:0 0 124px; width:124px; height:124px; border-radius:50%; display:grid; place-items:center; }
+    .stock-donut-inner { width:83px; height:83px; border-radius:50%; background:var(--app-panel); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+    .stock-donut-inner strong { font-size:18px; } .stock-donut-inner span { font-size:9px; color:var(--muted); }
+    .stock-distribution-list { display:grid; gap:6px; flex:1 1 120px; }
+    .stock-distribution-list .dist-row { display:flex; gap:7px; align-items:center; font-size:11px; }
+    .stock-distribution-list .dist-row b { margin-left:auto; }
+    .stock-distribution-list .dist-swatch { width:10px; height:10px; border-radius:3px; }
+    .history-status { border:1px solid var(--line); border-radius:9px; color:var(--muted); font-size:12px;
+      padding:10px 12px; background:var(--app-field); margin-bottom:12px; }
+    .history-status.error { background:var(--app-stock-out); color:var(--app-stock-out-ink); }
+    .history-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:12px; }
+    .history-stat { display:flex; flex-direction:column; padding:12px 15px; gap:3px; background:var(--app-panel);
+      border:1px solid var(--line); border-radius:13px; }
+    .history-stat span { font-size:11px; color:var(--muted); }
+    .history-stat strong { font-size:25px; line-height:1.15; font-variant-numeric:tabular-nums; }
+    .history-toolbar { display:flex; align-items:flex-end; flex-wrap:wrap; gap:10px; border:1px solid var(--line);
+      border-radius:13px; padding:12px; margin-bottom:12px; background:var(--app-panel); }
+    .history-toolbar label { display:flex; flex-direction:column; gap:4px; min-width:150px; font-size:11px;
+      font-weight:700; color:var(--muted); }
+    .history-toolbar label:first-child { flex:1 1 260px; }
+    .history-toolbar input,.history-toolbar select { width:100%; height:40px; padding:0 10px; color:var(--ink);
+      background:var(--app-field); border:1px solid var(--line); border-radius:9px; font-size:12px; }
+    .history-table-panel { border:1px solid var(--line); border-radius:13px; overflow:hidden; background:var(--app-panel); }
+    .history-table-wrapper { max-height:min(70vh,780px); min-height:200px; overflow:auto; }
+    .history-table { border-collapse:separate; border-spacing:0; width:100%; font-size:12px; }
+    .history-table thead th { position:sticky; top:0; z-index:2; font-weight:850; text-align:left; white-space:nowrap;
+      padding:11px 13px; background:var(--app-th); border-bottom:1px solid var(--line); }
+    .history-table tbody td { padding:9px 13px; border-bottom:1px solid var(--app-border-soft); white-space:nowrap; }
+    .history-table tbody tr:hover { background:var(--app-hover); }
+    .history-kind { display:inline-block; min-width:50px; text-align:center; padding:4px 8px; border-radius:6px; font-weight:800; }
+    .history-kind.in { color:#0b8060; background:#e0f6ec; }
+    .history-kind.out { color:#ae4522; background:#fff0e3; }
+    .history-kind.unknown { color:var(--muted); background:var(--app-chip); }
+    html[data-theme="dark"] .history-kind.in { color:#9cf7cf; background:#164b3b; }
+    html[data-theme="dark"] .history-kind.out { color:#fdba74; background:#55311e; }
+    .history-footer { display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding:10px 13px; color:var(--muted); font-size:12px; flex-wrap:wrap; }
+    @media(max-width:900px){#view-dashboard .insight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.history-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:620px){.view-tabs{width:100%;gap:2px}.view-tab{flex:1 1 0;justify-content:center;padding:9px 5px;font-size:11px;gap:4px}
+      #view-dashboard .insight-grid{grid-template-columns:1fr}.pane-heading{flex-wrap:wrap}
+      .history-stats{gap:7px}.history-stat{padding:11px}.history-stat strong{font-size:21px}.history-toolbar label{flex:1 1 145px}
+      .history-toolbar label:first-child{flex-basis:100%}}
   </style>
 </head>
 <body>
@@ -557,33 +618,17 @@
 
     <main class="workspace">
       <div class="breadcrumbs"><span>Workspace</span><span>/</span><span class="active" data-i18n="breadcrumb">Tổng quan vật tư</span></div>
+      <nav class="view-tabs" aria-label="Inventory workspace tabs" data-i18n-aria="tabsAria" role="tablist">
+        <button type="button" id="tab-stock" class="view-tab active" role="tab" aria-selected="true" aria-controls="view-stock" tabindex="0" onclick="chuyenTab('stock')"><span aria-hidden="true">▤</span><span data-i18n="tabStock">Tra cứu Stock</span></button>
+        <button type="button" id="tab-dashboard" class="view-tab" role="tab" aria-selected="false" aria-controls="view-dashboard" tabindex="-1" onclick="chuyenTab('dashboard')"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Phân tích kho</span></button>
+        <button type="button" id="tab-history" class="view-tab" role="tab" aria-selected="false" aria-controls="view-history" tabindex="-1" onclick="chuyenTab('history')"><span aria-hidden="true">▦</span><span data-i18n="tabHistory">Lịch sử nhập/xuất</span></button>
+      </nav>
+
+      <section id="view-stock" class="view-pane" role="tabpanel" aria-labelledby="tab-stock">
       <div class="intro">
         <h1><span data-i18n="heroFirst">Quản lý vật tư</span> <span data-i18n="heroAccent">thông minh.</span></h1>
         <p data-i18n="heroDesc">Tra cứu mã SAP, theo dõi tồn kho và xem hình ảnh vật tư trong cùng một không gian làm việc.</p>
       </div>
-
-      <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
-        <div class="metric-card">
-          <div class="metric-text"><div class="metric-label" data-i18n="totalMaterials">Tổng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="totalNote">Mã SAP trong hệ thống</span></div>
-          <div class="metric-icon" aria-hidden="true">▦</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-text"><div class="metric-label" data-i18n="inStock">Còn hàng</div><strong class="metric-value" id="metric-instock">—</strong><span class="metric-note" data-i18n="stockNote">Số dòng có tồn kho &gt; 0</span></div>
-          <div class="metric-icon" aria-hidden="true">✓</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-text"><div class="metric-label" data-i18n="filteredResults">Kết quả lọc</div><strong class="metric-value" id="metric-results">—</strong><span class="metric-note" data-i18n="resultNote">Theo tìm kiếm hiện tại</span></div>
-          <div class="metric-icon" aria-hidden="true">⌕</div>
-        </div>
-        <div class="metric-card metric-card-value">
-          <div class="metric-text">
-            <div class="metric-label" data-i18n="inventoryValue">Tổng giá trị tồn kho</div>
-            <strong class="metric-value metric-money" id="metric-inventory-value" aria-live="polite">—</strong>
-            <span class="metric-note" id="metric-value-note" data-i18n="inventoryValueNote">Tổng (Số lượng tồn × Đơn giá)</span>
-          </div>
-          <div class="metric-icon" aria-hidden="true">₫</div>
-        </div>
-      </section>
 
       <section class="toolbar" data-i18n-aria="searchFilters" aria-label="Tìm kiếm và bộ lọc">
         <div class="toolbar-primary">
@@ -636,28 +681,6 @@
       </section>
 
 
-      <details class="insights-panel" id="insights-panel">
-        <summary data-i18n="inventoryInsights">Phân tích giá trị kho, ABC và lịch sử đồng bộ</summary>
-        <div class="insight-grid">
-          <div class="insight-box"><h3 data-i18n="abcTitle">ABC theo giá trị</h3><div id="insight-abc"></div></div>
-          <div class="insight-box"><h3 data-i18n="topTen">Top 10 giá trị cao</h3><div id="insight-top"></div></div>
-          <div class="insight-box"><h3 data-i18n="groupValue">Giá trị theo nhóm</h3><div id="insight-groups"></div></div>
-          <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><div id="insight-history" class="history-grid"></div></div>
-          <div class="insight-box"><h3 data-i18n="transactionHistory">Lịch sử nhập/xuất từ SAP</h3><div id="insight-transactions" class="history-grid"></div></div>
-          <div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
-            <div class="advanced-controls" style="padding-top:0">
-              <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
-                <option value="off" data-i18n="scheduleOff">Tắt</option>
-                <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
-                <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
-              </select>
-              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="scheduleDownload">Xuất XLSX ngay</button>
-            </div>
-            <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
-          </div>
-        </div>
-        <div class="insight-note" data-i18n="insightNote">Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất.</div>
-      </details>
       <div class="main-container">
         <section class="table-section" aria-labelledby="ten-bang">
           <div class="section-header">
@@ -703,6 +726,87 @@
           </div>
         </aside>
       </div>
+
+      </section>
+
+      <section id="view-dashboard" class="view-pane" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
+        <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Dashboard phân tích kho</h1><p data-i18n="dashboardDesc">Giá trị tồn kho, cơ cấu vật tư, tình trạng tồn và biểu đồ tổng hợp.</p></div></div>
+      <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
+        <div class="metric-card">
+          <div class="metric-text"><div class="metric-label" data-i18n="totalMaterials">Tổng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="totalNote">Mã SAP trong hệ thống</span></div>
+          <div class="metric-icon" aria-hidden="true">▦</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-text"><div class="metric-label" data-i18n="inStock">Còn hàng</div><strong class="metric-value" id="metric-instock">—</strong><span class="metric-note" data-i18n="stockNote">Số dòng có tồn kho &gt; 0</span></div>
+          <div class="metric-icon" aria-hidden="true">✓</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-text"><div class="metric-label" data-i18n="filteredResults">Kết quả lọc</div><strong class="metric-value" id="metric-results">—</strong><span class="metric-note" data-i18n="resultNote">Theo tìm kiếm hiện tại</span></div>
+          <div class="metric-icon" aria-hidden="true">⌕</div>
+        </div>
+        <div class="metric-card metric-card-value">
+          <div class="metric-text">
+            <div class="metric-label" data-i18n="inventoryValue">Tổng giá trị tồn kho</div>
+            <strong class="metric-value metric-money" id="metric-inventory-value" aria-live="polite">—</strong>
+            <span class="metric-note" id="metric-value-note" data-i18n="inventoryValueNote">Tổng (Số lượng tồn × Đơn giá)</span>
+          </div>
+          <div class="metric-icon" aria-hidden="true">₫</div>
+        </div>
+      </section>
+
+      <section class="insights-panel" id="insights-panel" aria-labelledby="dashboard-charts-heading">
+        <h2 class="dashboard-charts-title" id="dashboard-charts-heading" data-i18n="inventoryInsights">Phân tích giá trị kho, ABC và lịch sử đồng bộ</h2>
+        <div class="insight-grid">
+          <div class="insight-box"><h3 data-i18n="stockDistribution">Phân bố trạng thái tồn kho</h3><div id="insight-stock-distribution" class="stock-distribution"></div></div>
+          <div class="insight-box"><h3 data-i18n="abcTitle">ABC theo giá trị</h3><div id="insight-abc"></div></div>
+          <div class="insight-box"><h3 data-i18n="topTen">Top 10 giá trị cao</h3><div id="insight-top"></div></div>
+          <div class="insight-box"><h3 data-i18n="groupValue">Giá trị theo nhóm</h3><div id="insight-groups"></div></div>
+          <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><div id="insight-history" class="history-grid"></div></div>
+          <div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
+            <div class="advanced-controls" style="padding-top:0">
+              <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
+                <option value="off" data-i18n="scheduleOff">Tắt</option>
+                <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
+                <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
+              </select>
+              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="scheduleDownload">Xuất XLSX ngay</button>
+            </div>
+            <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
+          </div>
+        </div>
+        <div class="insight-note" data-i18n="insightNote">Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất.</div>
+      </section>
+      </section>
+
+      <section id="view-history" class="view-pane" role="tabpanel" aria-labelledby="tab-history" hidden>
+        <div class="pane-heading">
+          <div><h1 data-i18n="historyHeading">Lịch sử nhập / xuất kho</h1><p data-i18n="historyDesc">Tra cứu giao dịch thực tế từ file History.js; không sử dụng dữ liệu tồn kho để suy đoán giao dịch.</p></div>
+          <button class="btn btn-secondary" type="button" id="btn-refresh-history" onclick="taiHistory(true)">↻ <span data-i18n="historyRefresh">Tải lại History.js</span></button>
+        </div>
+        <div class="history-status" id="history-status" role="status" aria-live="polite" data-history-status="idle">Chưa tải History.js</div>
+        <div class="history-stats" aria-label="Transaction summary">
+          <div class="history-stat"><span data-i18n="historyTotal">Tổng giao dịch</span><strong id="history-total">—</strong></div>
+          <div class="history-stat"><span data-i18n="historyIn">Giao dịch nhập</span><strong id="history-in">—</strong></div>
+          <div class="history-stat"><span data-i18n="historyOut">Giao dịch xuất</span><strong id="history-out">—</strong></div>
+          <div class="history-stat"><span data-i18n="historyMatching">Kết quả lọc</span><strong id="history-matching">—</strong></div>
+        </div>
+        <div class="history-toolbar">
+          <label><span data-i18n="historySearchLabel">Tìm mã SAP, mô tả, chứng từ...</span><input type="search" id="history-search" oninput="locHistory()" data-i18n-placeholder="historySearchPlaceholder" placeholder="SAP, mô tả, số chứng từ..."></label>
+          <label><span data-i18n="historyType">Loại giao dịch</span>
+            <select id="history-type" onchange="locHistory()"><option value="all" data-i18n="historyAny">Tất cả</option><option value="in" data-i18n="historyIn">Nhập</option><option value="out" data-i18n="historyOut">Xuất</option><option value="unknown" data-i18n="historyOther">Khác / chưa xác định</option></select>
+          </label>
+          <label><span data-i18n="historyFrom">Từ ngày</span><input type="date" id="history-from" onchange="locHistory()"></label>
+          <label><span data-i18n="historyTo">Đến ngày</span><input type="date" id="history-to" onchange="locHistory()"></label>
+          <button class="btn btn-secondary" type="button" onclick="xoaLocHistory()" data-i18n="historyClear">Xóa lọc</button>
+        </div>
+        <section class="history-table-panel" aria-labelledby="historyTableTitle">
+          <div class="section-header"><div><h2 id="historyTableTitle" data-i18n="historyTable">Danh sách giao dịch</h2><div class="section-caption" data-i18n="historyTableNote">Hiển thị dữ liệu có trong History.js, không tự tạo số liệu.</div></div><span id="history-count" class="record-count">—</span></div>
+          <div class="history-table-wrapper" tabindex="0" role="region" data-i18n-aria="historyTable" aria-label="Danh sách giao dịch">
+            <table class="history-table"><thead id="history-head"></thead><tbody id="history-body"><tr><td class="empty-table" data-i18n="historyNoSource">Chưa có dữ liệu History.js</td></tr></tbody></table>
+          </div>
+          <div class="history-footer"><span id="history-page" aria-live="polite">—</span><div class="pagination"><button class="btn btn-secondary" type="button" id="history-prev" onclick="doiTrangHistory(-1)" disabled>← <span data-i18n="prev">Trước</span></button><button class="btn btn-secondary" type="button" id="history-next" onclick="doiTrangHistory(1)" disabled><span data-i18n="next">Sau</span> →</button></div></div>
+        </section>
+      </section>
 
       <footer class="footer-bar">
         <span data-i18n="footer">SAP Inventory · Giao diện tối ưu cho tra cứu và quản lý tồn kho</span>
