@@ -741,9 +741,9 @@
         resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
         searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP001, SAP002 hoặc mô tả, Part No...",
         search:"Tìm kiếm", clear:"Xóa", export:"Xuất báo cáo Excel (.xlsx)", searchIn:"Tìm trong",
-        filterOptions:"Bộ lọc",advancedSearch:"Tìm kiếm nâng cao và bộ lọc yêu thích",stockStatus:"Tồn kho so với Reorder Point",
+        stockStatus:"Tồn kho so với Reorder Point",
         stockAny:"Tất cả trạng thái",stockAbove:"Trên định mức",stockEqual:"Bằng định mức",stockBelow:"Dưới định mức",stockZero:"Hết hàng (= 0)",stockUnknown:"Chưa có định mức",
-        batchSapLabel:"Nhiều mã SAP",batchSapPlaceholder:"SAP001, SAP002 hoặc dán nhiều dòng",fuzzySearch:"Tìm gần đúng",savedFilters:"Bộ lọc đã lưu",saveFilter:"Lưu bộ lọc",applyFilter:"Áp dụng",removeFilter:"Xóa bộ lọc",filterName:"Tên bộ lọc",
+        fuzzySearch:"Tìm gần đúng",
         inventoryInsights:"Phân tích giá trị kho, ABC và lịch sử đồng bộ",abcTitle:"Phân nhóm ABC theo giá trị",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",groupValue:"Phân bổ giá trị theo nhóm vật tư",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất XLSX ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi app đang mở",scheduleDue:"Đến lịch xuất báo cáo Excel. Bấm Xuất XLSX ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
         searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
         searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
@@ -807,8 +807,8 @@
         searchAria:"Search SAP code, description or part number",
         searchPlaceholder:"Search SAP001, SAP002, description or Part No...",
         search:"Search", clear:"Clear", export:"Export Excel report (.xlsx)", searchIn:"Search by",
-        filterOptions:"Filters",advancedSearch:"Advanced search and saved filters",stockStatus:"Stock vs Reorder Point",stockAny:"All statuses",stockAbove:"Above reorder point",stockEqual:"At reorder point",stockBelow:"Below reorder point",stockZero:"Out of stock (= 0)",stockUnknown:"No reorder point",
-        batchSapLabel:"Multiple SAP codes",batchSapPlaceholder:"SAP001, SAP002 or one per line",fuzzySearch:"Fuzzy search",savedFilters:"Saved filters",saveFilter:"Save filter",applyFilter:"Apply",removeFilter:"Delete saved filter",filterName:"Filter name",
+        stockStatus:"Stock vs Reorder Point",stockAny:"All statuses",stockAbove:"Above reorder point",stockEqual:"At reorder point",stockBelow:"Below reorder point",stockZero:"Out of stock (= 0)",stockUnknown:"No reorder point",
+        fuzzySearch:"Fuzzy search",
         inventoryInsights:"Inventory analytics, ABC and sync snapshots",abcTitle:"ABC classification by value",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",groupValue:"Value by material group",transactionHistory:"SAP inbound/outbound transactions",transactionUnavailable:"No SAP transaction feed is connected",scheduleTitle:"Report reminder while the app is open",scheduleOff:"Off",scheduleDaily:"Daily after 9:00",scheduleWeekly:"Mondays after 9:00",scheduleDownload:"Export XLSX now",scheduleWaiting:"Reminders only run while this app is open",scheduleDue:"Your Excel report reminder is due. Click Export XLSX now.",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
         searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
         searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
@@ -938,7 +938,6 @@
       });
       capNhatGiaoDienAnh();
       if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
-      capNhatChiSoBoLoc();
       kiemTraNhacBaoCao();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
     }
@@ -1287,78 +1286,6 @@
       yeuCauLocDuLieu();
     }
 
-    function capNhatChiSoBoLoc() {
-      const scope=document.querySelector('input[name="truongTim"]:checked')?.value||"all";
-      const n=Number(scope!=="all")+
-        Number(document.getElementById("chk-ton-kho").checked)+
-        Number(document.getElementById("loc-canh-bao").value!=="all")+
-        Number(document.getElementById("tim-gan-dung").checked);
-      const marker=document.getElementById("active-filter-count");
-      marker.hidden=n===0;
-      marker.textContent=n>0?String(n):"";
-    }
-
-    function layDanhSachLocDaLuu() {
-      try {
-        const mang=JSON.parse(docTuyChon("checking-filters-v2") || "[]");
-        return Array.isArray(mang) ? mang.filter(x=>x&&typeof x.name==="string").slice(0,12):[];
-      } catch { return []; }
-    }
-
-    function veBoLocDaLuu() {
-      const sel=document.getElementById("loc-da-luu");
-      const selected=sel.value;
-      sel.innerHTML='<option value="">—</option>'+layDanhSachLocDaLuu().map((x,i)=>
-        '<option value="'+i+'">'+thoatHTML(x.name)+'</option>').join("");
-      if([...sel.options].some(x=>x.value===selected))sel.value=selected;
-    }
-
-    function luuBoLoc() {
-      const name=prompt(tuDien("filterName"));
-      if (!name || !name.trim()) return;
-      const records=layDanhSachLocDaLuu().filter(x=>x.name!==name.trim());
-      records.unshift({
-        name:name.trim().slice(0,70),
-        keyword:document.getElementById("o-tim-kiem").value,
-        scope:document.querySelector('input[name="truongTim"]:checked').value,
-        onlyStock:document.getElementById("chk-ton-kho").checked,
-        status:document.getElementById("loc-canh-bao").value,
-        fuzzy:document.getElementById("tim-gan-dung").checked
-      });
-      ghiTuyChon("checking-filters-v2",JSON.stringify(records.slice(0,12)));
-      veBoLocDaLuu();
-      document.getElementById("loc-da-luu").value="0";
-    }
-
-    function apDungBoLoc() {
-      const idx=Number(document.getElementById("loc-da-luu").value);
-      if(document.getElementById("loc-da-luu").value===""||!Number.isInteger(idx))return;
-      const data=layDanhSachLocDaLuu()[idx];if(!data)return;
-      // Migrate old saved presets containing a separate SAP batch into
-      // the single visible search field; the SAP list is shown explicitly.
-      const legacyCodes=String(data.codes||"").split(/[,;|\r\n\t ]+/).filter(Boolean);
-      document.getElementById("o-tim-kiem").value=legacyCodes.length?
-        legacyCodes.join(", "):(data.keyword||"");
-      const radio=document.querySelector('input[name="truongTim"][value="'+data.scope+'"]');
-      document.querySelector('input[name="truongTim"][value="all"]').checked=true;
-      if(radio)radio.checked=true;
-      document.getElementById("chk-ton-kho").checked=Boolean(data.onlyStock);
-      document.getElementById("loc-canh-bao").value=data.status||"all";
-      document.getElementById("tim-gan-dung").checked=Boolean(data.fuzzy);
-      yeuCauLocDuLieu();
-    }
-
-    function xoaBoLoc() {
-      const sel=document.getElementById("loc-da-luu");
-      if(sel.value==="")return;
-      const idx=Number(sel.value), list=layDanhSachLocDaLuu();
-      if(!Number.isInteger(idx)||idx<0||idx>=list.length)return;
-      list.splice(idx,1);
-      ghiTuyChon("checking-filters-v2",JSON.stringify(list));
-      veBoLocDaLuu();sel.value="";
-    }
-
-
     function hienThiThanhGiaTri(danhSach,containerId,tong,loai) {
       const target=document.getElementById(containerId);
       if (!danhSach.length || !tong) {
@@ -1583,7 +1510,6 @@
       const moi = [];
       let viTri = 0;
       const tong = duLieuTimKiem.length;
-      capNhatChiSoBoLoc();
       document.getElementById("trang-thai-ban-ghi").textContent = tuDien("searching");
 
       function xuLyNhom() {
@@ -2517,19 +2443,6 @@
     }
 
     document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonCuoiBang, { passive: true });
-    // Close the filter dropdown when clicking outside it or pressing Escape.
-    document.addEventListener("click", e=>{
-      const popover=document.getElementById("inline-filter-panel");
-      if(popover.open && !popover.contains(e.target))popover.open=false;
-    });
-    document.addEventListener("keydown",e=>{
-      const popover=document.getElementById("inline-filter-panel");
-      if(e.key==="Escape"&&popover.open) {
-        popover.open=false;
-        e.stopPropagation();
-        document.getElementById("btn-bo-loc").focus();
-      }
-    });
     document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
     document.addEventListener("keydown", e => {
       const lightboxDangMo = document.getElementById("lightbox").style.display === "flex";
@@ -2566,8 +2479,6 @@
 
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     khoiTaoTuyChon();
-    capNhatChiSoBoLoc();
-    veBoLocDaLuu();
     khoiTaoLichNhacBaoCao();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
