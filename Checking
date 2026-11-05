@@ -522,7 +522,7 @@
             <button type="button" class="btn btn-primary" onclick="locDuLieu()" data-i18n="search">Tìm kiếm</button>
             <button type="button" class="btn btn-secondary" onclick="lamMoi()" data-i18n="clear">Xóa</button>
           </div>
-          <button type="button" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất Excel (CSV)</span></button>
+          <button type="button" id="btn-xuat-excel" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo Excel (.xlsx)</span></button>
         </div>
         <div class="toolbar-filters">
           <span class="filter-label" data-i18n="searchIn">Tìm trong</span>
@@ -615,7 +615,7 @@
         inventoryValuePartial:"Bỏ qua {count} dòng thiếu số lượng/đơn giá",
         resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
         searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP, mô tả hoặc Part No...",
-        search:"Tìm kiếm", clear:"Xóa", export:"Xuất Excel (CSV)", searchIn:"Tìm trong",
+        search:"Tìm kiếm", clear:"Xóa", export:"Xuất báo cáo Excel (.xlsx)", searchIn:"Tìm trong",
         searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
         searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
         materialsList:"Danh sách vật tư", rowHint:"Nhấn vào một dòng để xem chi tiết và hình ảnh",
@@ -641,7 +641,25 @@
         imagesCount:"{current} / {total} ảnh", imagesLoading:" · Đang tải",
         imagesFinding:"Đang tìm ảnh", imagesSearching:"Đang tìm hình ảnh...",
         imagesNone:"Chưa có ảnh cho mã SAP này", imagesEmpty:"0/0 ảnh",
-        noExport:"Không có dữ liệu để xuất.",
+        noExport:"Không có dữ liệu phù hợp để xuất.",
+        exportBusy:"Dữ liệu đang xử lý hoặc tìm kiếm. Vui lòng xuất khi kết quả đã cập nhật.",
+        exportGenerating:"Đang tạo báo cáo...",
+        exportTooMany:"Báo cáo vượt quá giới hạn số dòng của Excel (.xlsx).",
+        exportFailed:"Không thể tạo báo cáo Excel. Vui lòng thử lại.",
+        reportTitle:"BÁO CÁO TỒN KHO SAP",
+        reportSubtitle:"Báo cáo theo kết quả tìm kiếm và bộ lọc",
+        reportDetailTitle:"DANH SÁCH VẬT TƯ CHI TIẾT",
+        reportSummarySection:"CHỈ SỐ TỔNG QUAN",
+        reportFilterSection:"PHẠM VI BÁO CÁO",
+        reportCount:"Số dòng phù hợp",reportInStock:"Số dòng còn hàng",
+        reportOutStock:"Số dòng hết hàng",reportQuantity:"Tổng số lượng tồn dương",
+        reportValuation:"Tổng giá trị kho trong kết quả",reportMissing:"Dòng có giá không hợp lệ",
+        reportKeyword:"Từ khóa",reportScope:"Tìm trong",reportStockOnly:"Chỉ còn hàng",
+        reportSort:"Sắp xếp",reportUpdated:"Dữ liệu cập nhật",reportGenerated:"Ngày xuất báo cáo",
+        reportAll:"Tất cả",reportNone:"Không nhập từ khóa",reportYes:"Có",reportNo:"Không",
+        reportNoSort:"Theo dữ liệu gốc",reportLineValue:"Thành tiền (VND)",
+        reportNote:"Giá trị kho = số lượng tồn dương × đơn giá hợp lệ; bỏ qua dòng không có giá hợp lệ.",
+        reportDisclaimer:"Nguồn: dữ liệu SAP nội bộ · Chỉ bao gồm các mã phù hợp với bộ lọc hiện tại.",
         colSap:"Mã SAP", colDescription:"Mô tả", colPart:"Part No",
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"BM No", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
@@ -658,7 +676,7 @@
         resultNote:"Matching the current search", searchFilters:"Search and filters",
         searchAria:"Search SAP code, description or part number",
         searchPlaceholder:"Search SAP code, description, or Part No...",
-        search:"Search", clear:"Clear", export:"Export Excel (CSV)", searchIn:"Search by",
+        search:"Search", clear:"Clear", export:"Export Excel report (.xlsx)", searchIn:"Search by",
         searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
         searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
         materialsList:"Material list", rowHint:"Select a row to view details and images",
@@ -684,7 +702,25 @@
         imagesCount:"{current} / {total} images", imagesLoading:" · Loading",
         imagesFinding:"Finding images", imagesSearching:"Searching for images...",
         imagesNone:"No images available for this SAP code", imagesEmpty:"0/0 images",
-        noExport:"No data to export.",
+        noExport:"No matching data to export.",
+        exportBusy:"Data is still loading or filtering. Please export after results are ready.",
+        exportGenerating:"Generating report...",
+        exportTooMany:"The report exceeds Excel .xlsx worksheet row limits.",
+        exportFailed:"Unable to create the Excel report. Please try again.",
+        reportTitle:"SAP INVENTORY REPORT",
+        reportSubtitle:"Search and filter results",
+        reportDetailTitle:"DETAILED MATERIAL LIST",
+        reportSummarySection:"REPORT OVERVIEW",
+        reportFilterSection:"REPORT SCOPE",
+        reportCount:"Matching records",reportInStock:"In-stock records",
+        reportOutStock:"Out-of-stock records",reportQuantity:"Total positive stock quantity",
+        reportValuation:"Inventory value in results",reportMissing:"Rows with invalid unit price",
+        reportKeyword:"Keyword",reportScope:"Search in",reportStockOnly:"In stock only",
+        reportSort:"Sort order",reportUpdated:"Source updated",reportGenerated:"Report generated",
+        reportAll:"All",reportNone:"No keyword",reportYes:"Yes",reportNo:"No",
+        reportNoSort:"Source order",reportLineValue:"Line value (VND)",
+        reportNote:"Inventory value = positive stock quantity × valid unit price; invalid prices are excluded.",
+        reportDisclaimer:"Source: internal SAP data · Includes only records matching the current filters.",
         colSap:"SAP code", colDescription:"Description", colPart:"Part No",
         colQuantity:"Quantity", colPrice:"Price", colBm:"BM No", colUnit:"Unit", colGroup:"Group"
       }
@@ -1040,6 +1076,7 @@
       duLieuTimKiem = [];
       soCoTonKho = 0;
       chiMucSanSang = false;
+      dangLocDuLieu = true;
       let viTri = 1;
       const tong = Math.max(0, tatCaDuLieu.length - 1);
       document.getElementById("metric-total").textContent = dinhDangSoLuong.format(tong);
@@ -1100,8 +1137,10 @@
     }
 
     let boTriHoanTimKiem = null;
+    let dangLocDuLieu = false;
     function yeuCauLocDuLieu() {
       clearTimeout(boTriHoanTimKiem);
+      dangLocDuLieu = true;
       ++soLanLocDuLieu;
       trangHienTai = 1;
       boTriHoanTimKiem = setTimeout(locDuLieu, 170);
@@ -1110,7 +1149,9 @@
     // Lọc theo từng nhịp animation frame và hủy các truy vấn đã lỗi thời.
     function locDuLieu() {
       clearTimeout(boTriHoanTimKiem);
+      boTriHoanTimKiem = null;
       if (!chiMucSanSang) return;
+      dangLocDuLieu = true;
       const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
@@ -1136,6 +1177,7 @@
         }
         ketQuaLoc = moi;
         sapXepKetQua();
+        dangLocDuLieu = false;
         hienThiTrangHienTai();
         document.querySelector(".table-wrapper").scrollTop = 0;
         document.getElementById("trang-thai-ban-ghi").textContent =
@@ -1527,32 +1569,441 @@
       locDuLieu();
     }
 
-    function xuatExcel() {
+
+    // Native OOXML/ZIP writer: exports a genuine styled XLSX offline, without
+    // external scripts, CDN dependencies or CSV formula-injection ambiguity.
+    function xmlXlsx(value) {
+      return String(value ?? "")
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g, "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+    }
+
+    function tenCotXlsx(index) {
+      let name = "";
+      for (let i = index + 1; i > 0; i = Math.floor((i - 1) / 26)) {
+        name = String.fromCharCode(65 + ((i - 1) % 26)) + name;
+      }
+      return name;
+    }
+
+    function oChuXlsx(col, row, value, style = 0) {
+      const ref = tenCotXlsx(col) + row;
+      return '<c r="' + ref + '" s="' + style + '" t="inlineStr"><is><t xml:space="preserve">' +
+        xmlXlsx(value) + '</t></is></c>';
+    }
+
+    function oSoXlsx(col, row, value, style = 0, formula = "") {
+      const ref = tenCotXlsx(col) + row;
+      if (!Number.isFinite(value)) return oChuXlsx(col, row, "", style);
+      return '<c r="' + ref + '" s="' + style + '">' +
+        (formula ? '<f>' + xmlXlsx(formula) + '</f>' : '') +
+        '<v>' + value + '</v></c>';
+    }
+
+    function hangXlsx(row, cells, height = 22) {
+      return '<row r="' + row + '" ht="' + height + '" customHeight="1">' + cells.join("") + '</row>';
+    }
+
+    function taoKieuXlsx() {
+      const ns = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+      const font = (size, color, bold) =>
+        '<font>' + (bold ? '<b/>' : '') + '<sz val="' + size + '"/>' +
+        '<color rgb="' + color + '"/><name val="Aptos"/></font>';
+      const fill = color => '<fill><patternFill patternType="solid"><fgColor rgb="' +
+        color + '"/><bgColor indexed="64"/></patternFill></fill>';
+      const xf = (fontId, fillId, borderId = 0, numFmtId = 0, align = "left") =>
+        '<xf numFmtId="' + numFmtId + '" fontId="' + fontId + '" fillId="' + fillId +
+        '" borderId="' + borderId + '" xfId="0" applyFont="1" applyFill="1" applyBorder="1" ' +
+        'applyAlignment="1" applyNumberFormat="' + (numFmtId ? '1' : '0') + '">' +
+        '<alignment horizontal="' + align + '" vertical="center"/></xf>';
+
+      const fonts = [
+        font(11, "FF263449", false), font(19, "FFFFFFFF", true),
+        font(12, "FF183E74", true), font(15, "FF1768BD", true),
+        font(10, "FF61748B", false), font(11, "FFB72D48", true)
+      ];
+      const fills = [
+        '<fill><patternFill patternType="none"/></fill>',
+        '<fill><patternFill patternType="gray125"/></fill>',
+        fill("FF142D52"),fill("FFEAF2FC"),fill("FFFFFFFF"),
+        fill("FFF5F8FC"),fill("FFFFE9EB"),fill("FFE6F6F2")
+      ];
+      const borders = [
+        '<border><left/><right/><top/><bottom/><diagonal/></border>',
+        '<border><left/><right/><top/><bottom style="thin"><color rgb="FFDFE6EF"/></bottom/><diagonal/></border>'
+      ];
+      const xfs = [
+        xf(0, 4),             // 0 default
+        xf(1, 2),             // 1 title
+        xf(4, 3),             // 2 subtitle
+        xf(2, 3),             // 3 section
+        xf(4, 4),             // 4 KPI label
+        xf(3, 4, 0, 165),     // 5 KPI numeric
+        xf(3, 7, 0, 164),     // 6 KPI money
+        xf(1, 2, 1),          // 7 table header
+        xf(0, 4, 1),          // 8 table even text
+        xf(0, 5, 1),          // 9 table odd text
+        xf(0, 4, 1, 164),     // 10 even currency
+        xf(0, 5, 1, 164),     // 11 odd currency
+        xf(0, 4, 1, 165),     // 12 even numeric
+        xf(0, 5, 1, 165),     // 13 odd numeric
+        xf(5, 6, 1),          // 14 out-of-stock string
+        xf(5, 6, 1, 165),     // 15 out-of-stock quantity
+        xf(5, 6, 1, 164),     // 16 out-of-stock currency
+        xf(4, 3),             // 17 note
+        xf(2, 7),             // 18 summary total label
+        xf(3, 7, 0, 164)      // 19 summary total currency
+      ];
+      return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<styleSheet xmlns="' + ns + '">' +
+        '<numFmts count="2">' +
+        '<numFmt numFmtId="164" formatCode="#,##0&quot; ₫&quot;"/>' +
+        '<numFmt numFmtId="165" formatCode="#,##0.##"/>' +
+        '</numFmts><fonts count="' + fonts.length + '">' + fonts.join("") +
+        '</fonts><fills count="' + fills.length + '">' + fills.join("") +
+        '</fills><borders count="' + borders.length + '">' + borders.join("") +
+        '</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+        '<cellXfs count="' + xfs.length + '">' + xfs.join("") +
+        '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
+        '</styleSheet>';
+    }
+
+    // ZIP "store" format with CRC-32. Excel supports uncompressed XLSX members.
+    function dongGoiZipXlsx(files) {
+      const encoder = new TextEncoder();
+      const bangCrc = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        let crc = i;
+        for (let j = 0; j < 8; j++) crc = crc & 1 ? (crc >>> 1) ^ 0xedb88320 : crc >>> 1;
+        bangCrc[i] = crc >>> 0;
+      }
+      const crc32 = data => {
+        let crc = 0xffffffff;
+        for (let i = 0; i < data.length; i++) {
+          crc = bangCrc[(crc ^ data[i]) & 255] ^ (crc >>> 8);
+        }
+        return (crc ^ 0xffffffff) >>> 0;
+      };
+      const entries = files.map(file => ({
+        name: encoder.encode(file.name),
+        bytes: encoder.encode(file.data)
+      }));
+      if (entries.length > 65535) throw new Error("ZIP file-count limit");
+      let size = 22;
+      for (const entry of entries) {
+        entry.crc = crc32(entry.bytes);
+        entry.size = entry.bytes.length;
+        size += 30 + entry.name.length + entry.size + 46 + entry.name.length;
+      }
+      if (size >= 0xffffffff) throw new Error("ZIP 4GB limit");
+      const zip = new Uint8Array(size);
+      const view = new DataView(zip.buffer);
+      let offset = 0, centralStart;
+      const write16 = (pos, value) => view.setUint16(pos, value, true);
+      const write32 = (pos, value) => view.setUint32(pos, value >>> 0, true);
+
+      for (const entry of entries) {
+        entry.offset = offset;
+        write32(offset, 0x04034b50);
+        write16(offset+4, 20); write16(offset+6, 0); write16(offset+8, 0);
+        write16(offset+10, 0); write16(offset+12, 0);
+        write32(offset+14, entry.crc);
+        write32(offset+18, entry.size); write32(offset+22, entry.size);
+        write16(offset+26, entry.name.length); write16(offset+28, 0);
+        offset += 30;
+        zip.set(entry.name, offset); offset += entry.name.length;
+        zip.set(entry.bytes, offset); offset += entry.size;
+      }
+      centralStart = offset;
+      for (const entry of entries) {
+        write32(offset, 0x02014b50);
+        write16(offset+4, 20); write16(offset+6, 20);
+        write16(offset+8, 0); write16(offset+10, 0);
+        write16(offset+12, 0); write16(offset+14, 0);
+        write32(offset+16, entry.crc);
+        write32(offset+20, entry.size); write32(offset+24, entry.size);
+        write16(offset+28, entry.name.length);
+        write16(offset+30, 0); write16(offset+32, 0);
+        write16(offset+34, 0); write16(offset+36, 0);
+        write32(offset+38, 0); write32(offset+42, entry.offset);
+        offset += 46;
+        zip.set(entry.name, offset); offset += entry.name.length;
+      }
+      const centralSize = offset - centralStart;
+      write32(offset, 0x06054b50);
+      write16(offset+4, 0); write16(offset+6, 0);
+      write16(offset+8, entries.length); write16(offset+10, entries.length);
+      write32(offset+12, centralSize); write32(offset+16, centralStart);
+      write16(offset+20, 0);
+      return zip;
+    }
+
+    async function taoBaoCaoXlsx(danhSach, option = {}) {
+      const src = danhSach;
+      const locale = ngonNguHienTai === "en" ? "en-US" : "vi-VN";
+      const soCotNguon = tieuDeCot.length;
+      const timChiSo = aliases => tieuDeCot.findIndex(text =>
+        aliases.includes(String(text ?? "").trim().toLowerCase()));
+      const colQty = Math.max(0, timChiSo(["quantity","qty","số lượng"]) < 0 ?
+        Math.min(3, soCotNguon - 1) : timChiSo(["quantity","qty","số lượng"]));
+      const colPrice = timChiSo(["price","unit price","đơn giá","giá"]);
+      const themThanhTien = colPrice >= 0;
+      const cotCuoi = soCotNguon + (themThanhTien ? 1 : 0);
+      const dongCuoi = 6 + src.length + (themThanhTien ? 2 : 0);
+      if (dongCuoi > 1048576 || cotCuoi > 16384 || cotCuoi < 1) throw new Error("XLSX_EXCEL_LIMIT");
+      const tenSheetTongQuan = ngonNguHienTai === "en" ? "Overview" : "Tong quan";
+      const tenSheetChiTiet = ngonNguHienTai === "en" ? "Details" : "Chi tiet";
+
+      const tenCotCuoi = tenCotXlsx(cotCuoi - 1);
+      const moTaLoc = option.keyword || tuDien("reportNone");
+      const phamVi = tuDien({
+        all:"searchAll", sap:"searchSap", desc:"searchDesc",
+        part:"searchPart", bmno:"searchBm"
+      }[option.scope] || "searchAll");
+      const thuTu = option.sortCol >= 0 ?
+        tenCotDaDich(tieuDeCot[option.sortCol]) + (option.sortDir === -1 ? " ↓" : " ↑") :
+        tuDien("reportNoSort");
+      const ngayBaoCao = new Date().toLocaleString(locale);
+      const boLoc = [
+        [tuDien("reportKeyword"), moTaLoc],
+        [tuDien("reportScope"), phamVi],
+        [tuDien("reportStockOnly"), option.onlyStock ? tuDien("reportYes") : tuDien("reportNo")],
+        [tuDien("reportSort"), thuTu],
+        [tuDien("reportUpdated"), option.updated || "—"],
+        [tuDien("reportGenerated"), ngayBaoCao]
+      ];
+
+      // Detail sheet: complete original SAP columns plus calculated line value.
+      const header = tieuDeCot.map(tenCotDaDich);
+      if (themThanhTien) header.push(tuDien("reportLineValue"));
+      const widths = header.map((h,i) =>
+        Math.min(45,Math.max(i === 1 ? 27 : 14, Math.min(35,String(h).length + 3))));
+      const sample = Math.min(src.length, 250);
+      for (let i = 0; i < sample; i++) {
+        for (let col = 0; col < soCotNguon; col++) {
+          const len = String(src[i].dong[col] ?? "").length;
+          widths[col] = Math.min(col === 1 ? 46 : 34, Math.max(widths[col], Math.min(len+2,34)));
+        }
+      }
+      if (themThanhTien) widths[cotCuoi-1] = 23;
+
+      const rows = [];
+      const merges = [];
+      const mergeFull = row => { if (cotCuoi > 1) merges.push("A"+row+":"+tenCotCuoi+row); };
+      const bigRow = (row, text, style, height) => {
+        rows.push(hangXlsx(row, [oChuXlsx(0,row,text,style)],height));
+        mergeFull(row);
+      };
+      bigRow(1,tuDien("reportDetailTitle"),1,42);
+      bigRow(2,tuDien("reportSubtitle") + " | " + phamVi,2,26);
+      bigRow(3,tuDien("reportKeyword") + ": " + moTaLoc +
+        "   |   " + tuDien("reportStockOnly") + ": " +
+        (option.onlyStock ? tuDien("reportYes") : tuDien("reportNo")),2,25);
+      bigRow(4,tuDien("reportGenerated") + ": " + ngayBaoCao,2,25);
+      rows.push(hangXlsx(6,header.map((h,col)=>oChuXlsx(col,6,h,7)),30));
+
+      let tonKho = 0, conHang = 0, giaTri = 0, dongGiaLoi = 0;
+      for (let i = 0; i < src.length; i++) {
+        if (i > 0 && i % 1200 === 0) await new Promise(resolve => setTimeout(resolve, 0));
+        const rec = src[i].dong;
+        const row = i + 7;
+        const qty = chuyenThanhSo(rec[colQty]);
+        const stock = Number.isFinite(qty) && qty > 0;
+        if (stock) { tonKho += qty; conHang++; }
+        const price = themThanhTien ? chuyenThanhSo(rec[colPrice]) : NaN;
+        const validPrice = Number.isFinite(price) && price >= 0;
+        const lineValue = stock && validPrice ? qty * price : 0;
+        if (stock && themThanhTien && (!validPrice || !Number.isFinite(lineValue))) dongGiaLoi++;
+        if (Number.isFinite(lineValue) && lineValue > 0) giaTri += lineValue;
+
+        const even = i % 2 === 0;
+        const stockStyle = stock ? (even ? 8 : 9) : 14;
+        const qtyStyle = stock ? (even ? 12 : 13) : 15;
+        const moneyStyle = stock ? (even ? 10 : 11) : 16;
+        const cells = [];
+        for (let j = 0; j < soCotNguon; j++) {
+          const raw = rec[j] ?? "";
+          const num = j === colQty ? qty : j === colPrice ? price : NaN;
+          if (raw !== "" && Number.isFinite(num)) {
+            cells.push(oSoXlsx(j,row,num,j === colPrice ? moneyStyle : qtyStyle));
+          } else {
+            cells.push(oChuXlsx(j,row,raw,stockStyle));
+          }
+        }
+        if (themThanhTien) {
+          // Keep line amount editable in Excel and cache its numeric result.
+          const refQty = tenCotXlsx(colQty) + row;
+          const refPrice = tenCotXlsx(colPrice) + row;
+          const formula = 'IF(AND(ISNUMBER(' + refQty + '),ISNUMBER(' + refPrice +
+            '),' + refQty + '>0,' + refPrice + '>=0),' +
+            refQty + '*' + refPrice + ',0)';
+          if (Number.isFinite(qty) && validPrice && Number.isFinite(lineValue)) {
+            cells.push(oSoXlsx(soCotNguon,row,lineValue,moneyStyle,formula));
+          } else {
+            cells.push(oChuXlsx(soCotNguon,row,"",stockStyle));
+          }
+        }
+        rows.push(hangXlsx(row,cells,23));
+      }
+      const lastDataRow = Math.max(6,6+src.length);
+      if (themThanhTien) {
+        const sumRow = lastDataRow + 2;
+        const formula = 'SUM(' + tenCotCuoi + '7:' + tenCotCuoi + lastDataRow + ')';
+        rows.push(hangXlsx(sumRow,[
+          oChuXlsx(0,sumRow,tuDien("reportValuation"),18),
+          oSoXlsx(cotCuoi-1,sumRow,giaTri,19,formula)
+        ],29));
+        if (cotCuoi > 2) merges.push("A"+sumRow+":"+tenCotXlsx(cotCuoi-2)+sumRow);
+      }
+      const colsXml = widths.map((width,i) => '<col min="' +(i+1)+
+        '" max="'+(i+1)+'" width="'+width+'" customWidth="1"/>').join("");
+      const sheetNs = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+      const sheetDetails = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<worksheet xmlns="' + sheetNs + '"><dimension ref="A1:' +
+        tenCotCuoi + (lastDataRow+(themThanhTien?2:0)) + '"/>' +
+        '<sheetViews><sheetView showGridLines="0" workbookViewId="0">' +
+        '<pane ySplit="6" topLeftCell="A7" activePane="bottomLeft" state="frozen"/>' +
+        '<selection pane="bottomLeft" activeCell="A7" sqref="A7"/></sheetView></sheetViews>' +
+        '<sheetFormatPr defaultRowHeight="22"/><cols>'+colsXml+'</cols><sheetData>' +
+        rows.join("") + '</sheetData><autoFilter ref="A6:' +
+        tenCotCuoi + lastDataRow + '"/>' +
+        '<mergeCells count="'+merges.length+'">' +
+        merges.map(x=>'<mergeCell ref="'+x+'"/>').join("") +
+        '</mergeCells>' +
+         '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>' +
+         '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+
+      // Overview sheet with large title, 6 key metrics and report audit details.
+      const s = [], mergeSummary = [];
+      const full = row => mergeSummary.push("A"+row+":H"+row);
+      const textRow = (r,text,style,height) => {
+        s.push(hangXlsx(r,[oChuXlsx(0,r,text,style)],height));full(r);
+      };
+      textRow(1,tuDien("reportTitle"),1,44);
+      textRow(2,tuDien("reportSubtitle"),2,25);
+      textRow(3,tuDien("reportGenerated")+": "+ngayBaoCao,2,24);
+      textRow(4,tuDien("reportDisclaimer"),17,25);
+      textRow(6,tuDien("reportSummarySection"),3,30);
+      const stats = [
+        [tuDien("reportCount"),src.length,5],
+        [tuDien("reportInStock"),conHang,5],
+        [tuDien("reportOutStock"),src.length-conHang,5],
+        [tuDien("reportQuantity"),tonKho,5],
+        [tuDien("reportValuation"),themThanhTien ? giaTri : null,19],
+        [tuDien("reportMissing"),dongGiaLoi,5]
+      ];
+      for (let i=0;i<stats.length;i++) {
+        const r=8+i, [name,value,style]=stats[i];
+        s.push(hangXlsx(r,[
+          oChuXlsx(0,r,name,style===19?18:4),
+          value===null ? oChuXlsx(3,r,"—",style) : oSoXlsx(3,r,value,style,
+            style===19 ? "SUM('"+tenSheetChiTiet+"'!"+tenCotCuoi+"7:"+tenCotCuoi+lastDataRow+")" : "")
+        ],29));
+        mergeSummary.push("A"+r+":C"+r,"D"+r+":H"+r);
+      }
+      textRow(15,tuDien("reportFilterSection"),3,30);
+      for(let i=0;i<boLoc.length;i++) {
+        const r=17+i;
+        s.push(hangXlsx(r,[oChuXlsx(0,r,boLoc[i][0],4),
+          oChuXlsx(3,r,boLoc[i][1],8)],26));
+        mergeSummary.push("A"+r+":C"+r,"D"+r+":H"+r);
+      }
+      textRow(24,tuDien("reportNote"),17,28);
+      const sumCols = '<cols><col min="1" max="1" width="23" customWidth="1"/>' +
+        '<col min="2" max="3" width="14" customWidth="1"/>' +
+        '<col min="4" max="4" width="26" customWidth="1"/>' +
+        '<col min="5" max="8" width="14" customWidth="1"/></cols>';
+      const sheetOverview = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<worksheet xmlns="' + sheetNs + '"><dimension ref="A1:H24"/>' +
+        '<sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews>' +
+        '<sheetFormatPr defaultRowHeight="22"/>'+sumCols+'<sheetData>' +
+        s.join("") + '</sheetData><mergeCells count="'+mergeSummary.length+'">' +
+        mergeSummary.map(x=>'<mergeCell ref="'+x+'"/>').join("") +
+        '</mergeCells>' +
+         '<pageMargins left="0.35" right="0.35" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>' +
+         '<pageSetup orientation="portrait" fitToWidth="1" fitToHeight="1"/></worksheet>';
+      const packType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const files = [
+        {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+          '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+          '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+          '<Default Extension="xml" ContentType="application/xml"/>' +
+          '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+          '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+          '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+          '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+          '</Types>'},
+        {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+          '</Relationships>'},
+        {name:"xl/workbook.xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+          '<workbook xmlns="'+sheetNs+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+          '<bookViews><workbookView/></bookViews><sheets>' +
+          '<sheet name="'+tenSheetTongQuan+'" sheetId="1" r:id="rId1"/>' +
+          '<sheet name="'+tenSheetChiTiet+'" sheetId="2" r:id="rId2"/></sheets>' +
+          '<calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>'},
+        {name:"xl/_rels/workbook.xml.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+          '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>' +
+          '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+          '</Relationships>'},
+        {name:"xl/styles.xml",data:taoKieuXlsx()},
+        {name:"xl/worksheets/sheet1.xml",data:sheetOverview},
+        {name:"xl/worksheets/sheet2.xml",data:sheetDetails}
+      ];
+      return new Blob([dongGoiZipXlsx(files)],{type:packType});
+    }
+
+    let dangXuatExcel = false;
+    async function xuatExcel() {
+      if (dangXuatExcel) return;
+      if (!chiMucSanSang || dangLocDuLieu) {
+        alert(tuDien("exportBusy"));
+        return;
+      }
       if (!tieuDeCot.length || !ketQuaLoc.length) {
         alert(tuDien("noExport"));
         return;
       }
-
-      // CSV UTF-8 có BOM, mở trực tiếp được bằng Excel và giữ thứ tự lọc/sắp xếp.
-      // Chặn công thức trong ô dữ liệu để tránh CSV formula injection.
-      const dinhDangO = giaTri => {
-        const chuoi = String(giaTri ?? "");
-        const anToan = /^[\s\u0000-\u001f]*[=+\-@]/.test(chuoi) ? "'" + chuoi : chuoi;
-        return '"' + anToan.replace(/"/g, '""') + '"';
+      const mode = document.querySelector('input[name="truongTim"]:checked').value;
+      const options = {
+        keyword: document.getElementById("o-tim-kiem").value.trim(),
+        scope: mode,
+        onlyStock: document.getElementById("chk-ton-kho").checked,
+        sortCol: cotSapXep, sortDir: huongSapXep, updated: mocCapNhatCu
       };
-      const duLieuXuat = [tieuDeCot, ...ketQuaLoc.map(muc => muc.dong)];
-      const csv = "\uFEFF" + duLieuXuat.map(dong =>
-        dong.map(dinhDangO).join(",")
-      ).join("\r\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const lienKet = document.createElement("a");
-      lienKet.href = url;
-      lienKet.download = "SAP_Inventory_" + new Date().toLocaleDateString("sv-SE") + ".csv";
-      document.body.appendChild(lienKet);
-      lienKet.click();
-      lienKet.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const nutXuat = document.getElementById("btn-xuat-excel");
+      const nhanXuat = nutXuat.querySelector('[data-i18n="export"]');
+      dangXuatExcel = true;
+      nutXuat.disabled = true;
+      nutXuat.setAttribute("aria-busy", "true");
+      nhanXuat.textContent = tuDien("exportGenerating");
+      try {
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const blob = await taoBaoCaoXlsx(ketQuaLoc,options);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const date = new Date().toLocaleDateString("sv-SE");
+        const time = new Date().toTimeString().slice(0, 5).replace(":", "");
+        a.download = "SAP_Inventory_Report_" + date + "_" + time + ".xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url),1500);
+      } catch(err) {
+        console.error("XLSX export:",err);
+        alert(tuDien(err.message === "XLSX_EXCEL_LIMIT" ? "exportTooMany" : "exportFailed"));
+      } finally {
+        dangXuatExcel = false;
+        nutXuat.disabled = false;
+        nutXuat.removeAttribute("aria-busy");
+        nhanXuat.textContent = tuDien("export");
+      }
     }
 
     document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonCuoiBang, { passive: true });
