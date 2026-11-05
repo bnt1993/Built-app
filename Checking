@@ -2,400 +2,367 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>SAP Inventory & Part Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SAP Inventory · Operations Workspace</title>
   <style>
+
     :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --bg-main: #f6f8fc;
-      --border: #e5eaf2;
-      --text: #172033;
-      --muted: #718096;
-      --surface: #ffffff;
-      --surface-soft: #f8fafc;
-      --shadow: 0 10px 30px rgba(37, 55, 85, 0.07);
+      color-scheme: light;
+      --bg: #f3f6fb; --surface: #fff; --surface-subtle: #f8fafc;
+      --ink: #10223b; --muted: #677991; --line: #e4eaf2;
+      --blue: #3568e8; --blue-strong: #2252c8; --blue-soft: #eef4ff;
+      --green: #0f9968; --green-soft: #e8f9f2; --red: #cb4c55;
+      --shadow: 0 10px 32px rgba(17, 39, 79, .055);
+      --radius: 18px;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-main); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-    /* Thanh công cụ tìm kiếm trên cùng */
-    .toolbar {
-      background: #fff;
-      padding: 12px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .search-box-group { display: flex; gap: 8px; flex: 1; min-width: 300px; }
-    .search-box-group input {
-      flex: 1; padding: 8px 12px; font-size: 15px; border: 1px solid #8a8886; border-radius: 4px; outline: none;
-    }
-    .search-box-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
-    
-    .radio-group, .checkbox-group { display: flex; gap: 12px; align-items: center; font-size: 14px; }
-    .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: #106ebe; }
-    .btn-secondary { background: #f3f2f1; color: #323130; border: 1px solid #8a8886; }
-    .btn-secondary:hover { background: #edebe9; }
-
-    /* Khu vực chính chia đôi: Bảng bên trái, Chi tiết + Hình ảnh bên phải */
-    .main-container { display: flex; flex: 1; overflow: hidden; gap: 10px; padding: 10px; }
-    
-    .table-section {
-      flex: 2; background: #fff; border-radius: 6px; border: 1px solid var(--border);
-      display: flex; flex-direction: column; overflow: hidden;
-    }
-    .table-wrapper { flex: 1; overflow-y: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    th, td { padding: 8px 12px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
-    th { background: #faf9f8; position: sticky; top: 0; z-index: 2; font-weight: 600; color: #605e5c; }
-    tbody tr { cursor: pointer; }
-    tbody tr:hover { background: #f1fdfd; }
-    tbody tr.selected { background: #c7e0f4 !important; font-weight: 600; }
-
-    /* Bảng điều khiển chi tiết & hình ảnh bên phải (Mô phỏng UserForm) */
-    .detail-section {
-      flex: 1; background: #fff; border-radius: 6px; border: 1px solid var(--border);
-      display: flex; flex-direction: column; padding: 15px; overflow-y: auto; min-width: 350px;
-    }
-    .detail-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
-    
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 13px; }
-    .detail-item { background: #faf9f8; padding: 8px; border-radius: 4px; border: 1px solid var(--border); }
-    .detail-item label { display: block; color: #605e5c; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
-    .detail-item span { font-weight: 600; color: #201f1e; }
-
-    /* Khu vực hiển thị ảnh SAP */
-    .image-viewer-box {
-      border: 1px solid #8a8886; border-radius: 6px; background: #000;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      position: relative; height: 260px; margin-bottom: 15px; overflow: hidden;
-    }
-    .image-viewer-box img { max-width: 100%; max-height: 220px; object-fit: contain; cursor: zoom-in; }
-    .img-nav-btn {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      background: rgba(0,0,0,0.5); color: #fff; border: none; font-size: 20px; padding: 8px 12px; cursor: pointer; border-radius: 4px;
-    }
-    .img-nav-btn:hover { background: rgba(0,0,0,0.8); }
-    .btn-prev { left: 10px; }
-    .btn-next { right: 10px; }
-    .img-counter {
-      position: absolute; bottom: 8px; right: 10px; background: rgba(0,0,0,0.6); color: #fff;
-      padding: 2px 8px; font-size: 12px; border-radius: 4px;
-    }
-
-    .meta-info { font-size: 12px; color: #605e5c; background: #faf9f8; padding: 10px; border-radius: 4px; border: 1px solid var(--border); margin-top: auto; }
-    
-    /* Footer trạng thái */
-    .footer-bar {
-      background: #fff; padding: 8px 20px; border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #605e5c;
-    }
-    .pagination {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .pagination .btn {
-      min-height: 32px;
-      padding: 5px 10px;
-    }
-    .pagination .btn:disabled {
-      cursor: not-allowed;
-      opacity: .5;
-      transform: none;
-    }
-
-    /* Modal phóng to ảnh */
-    #lightbox {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999;
-      justify-content: center; align-items: center; flex-direction: column; cursor: zoom-out;
-    }
-    #lightbox img { max-width: 90%; max-height: 85vh; border: 2px solid #fff; border-radius: 6px; transform-origin: center; transition: transform .2s; cursor: grab; }
-    .lightbox-controls { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
-    .lightbox-btn {
-      min-width: 42px; min-height: 38px; padding: 7px 12px; border: 1px solid rgba(255,255,255,.35);
-      border-radius: 9px; color: #fff; background: rgba(255,255,255,.16); cursor: pointer; font-size: 15px;
-      backdrop-filter: blur(8px); transition: background .2s, transform .2s;
-    }
-    .lightbox-btn:hover { background: var(--primary); transform: translateY(-1px); }
-    .lightbox-close { position: absolute; top: 20px; right: 24px; font-size: 24px; line-height: 1; }
-    #lightbox-zoom-level { min-width: 52px; color: #fff; text-align: center; font-size: 12px; }
-    
-    /* Modern web app layer */
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      background: var(--bg-main);
-      color: var(--text);
-      letter-spacing: 0.01em;
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: Inter, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      line-height: 1.5; -webkit-font-smoothing: antialiased;
     }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, .sort-trigger:focus-visible {
+      outline: 3px solid rgba(53,104,232,.3); outline-offset: 2px;
+    }
+    .app-shell { min-height: 100vh; }
+    .app-header {
+      height: 70px; background: rgba(255,255,255,.94); border-bottom: 1px solid var(--line);
+      padding: 0 clamp(18px, 3vw, 46px); display: flex; align-items: center;
+      justify-content: space-between; gap: 16px;
+    }
+    .brand, .header-actions, .brand-wordmark, .breadcrumbs { display: flex; align-items: center; }
+    .brand { gap: 12px; font-size: 16px; font-weight: 800; letter-spacing: -.035em; }
+    .brand-icon {
+      width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px;
+      background: linear-gradient(140deg,#2f65ec,#618dff); color: white;
+      box-shadow: 0 6px 15px rgba(53,104,232,.22); font-size: 21px; font-weight: 500;
+    }
+    .brand-wordmark { flex-direction: column; align-items: flex-start; gap: 0; line-height: 1.2; }
+    .brand-wordmark small { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .15em; margin-top: 4px; }
+    .header-actions { gap: 12px; }
+    .online-pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 100px;
+      background: #f0faf5; color: #238061; padding: 8px 12px; font-size: 12px; font-weight: 700; }
+    .online-pill::before { content: ""; height: 7px; width: 7px; border-radius: 50%; background: currentColor; }
+    .online-pill.loading { background: #fff7e8; color: #b77a20; }
+    .online-pill.error { background: #fff0f1; color: #b73d4d; }
+    .btn { border: 1px solid transparent; border-radius: 11px; padding: 10px 15px;
+      min-height: 42px; display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; font-size: 13px; font-weight: 700; white-space: nowrap; transition: .18s ease; }
+    .btn:disabled { cursor: not-allowed; opacity: .43; }
+    .btn-primary { background: var(--blue); color: white; box-shadow: 0 4px 12px rgba(53,104,232,.18); }
+    .btn-primary:hover:not(:disabled) { background: var(--blue-strong); transform: translateY(-1px); }
+    .btn-secondary { background: white; border-color: var(--line); color: var(--ink); }
+    .btn-secondary:hover:not(:disabled) { background: var(--blue-soft); border-color: #c9d9ff; }
+    .btn-soft { background: var(--blue-soft); color: #2c5dd1; border-color: #dfebff; }
+    .btn-soft:hover { background: #dce9ff; }
+    .workspace { max-width: 1780px; margin: 0 auto; padding: 30px clamp(16px, 3vw, 46px) 24px; }
+    .breadcrumbs { gap: 9px; color: #8293a7; font-size: 11px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+    .breadcrumbs .active { color: var(--blue); }
+    .intro { margin: 12px 0 24px; }
+    .intro h1 { font-size: clamp(27px,3.1vw,39px); letter-spacing: -.055em; margin: 0 0 8px; line-height: 1.2; font-weight: 790; }
+    .intro h1 span { color: var(--blue); }
+    .intro p { margin: 0; color: var(--muted); font-size: 13px; }
+    .metric-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 15px; margin-bottom: 20px; }
+    .metric-card { position: relative; overflow: hidden; display: flex; justify-content: space-between;
+      padding: 18px 20px; background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius); box-shadow: var(--shadow); min-height: 116px; }
+    .metric-text { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+    .metric-label { color: var(--muted); font-size: 12px; font-weight: 650; }
+    .metric-value { font-size: clamp(23px,2.6vw,32px); letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; font-weight: 790; }
+    .metric-note { font-size: 10px; color: #8290a5; font-weight: 500; }
+    .metric-icon { height: 39px; width: 39px; border-radius: 13px; display: grid; place-items: center; flex: none;
+      background: var(--blue-soft); color: var(--blue); font-size: 20px; font-weight: 700; }
+    .metric-card:nth-child(2) .metric-icon { background: var(--green-soft); color: var(--green); }
+    .metric-card:nth-child(3) .metric-icon { background: #f4efff; color: #7956c9; }
     .toolbar {
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      padding: 14px 22px;
-      gap: 12px 18px;
-      background: rgba(255,255,255,0.92);
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 4px 18px rgba(37, 55, 85, 0.05);
-      backdrop-filter: blur(14px);
+      background: white; border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 18px 20px; margin-bottom: 20px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 14px;
     }
-    .search-box-group { min-width: 320px; max-width: 610px; }
-    .search-box-group input {
-      min-height: 40px;
-      padding: 9px 14px;
-      border: 1px solid #d5dce8;
-      border-radius: 10px;
-      color: var(--text);
-      background: var(--surface-soft);
-      transition: border-color .2s, box-shadow .2s, background .2s;
+    .toolbar-primary, .toolbar-filters { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .toolbar-primary { justify-content: space-between; }
+    .search-box-group { display: flex; flex: 1; min-width: min(100%,350px); max-width: 740px; gap: 9px; }
+    .search-input { position: relative; flex: 1; min-width: 0; }
+    .search-input::before { content: "⌕"; position: absolute; left: 15px; top: 50%;
+      transform: translateY(-50%); color: #8695a9; font-size: 27px; font-weight: 400; pointer-events: none; }
+    .search-input input {
+      width: 100%; height: 44px; padding: 0 57px 0 42px;
+      background: #f8faff; border: 1px solid #e0e8f4; border-radius: 11px;
+      font-size: 13px; color: var(--ink); outline: none; transition: .18s ease;
     }
-    .search-box-group input:hover { background: var(--surface); }
-    .search-box-group input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
-      background: var(--surface);
-    }
-    .radio-group, .checkbox-group { gap: 7px; color: var(--muted); font-size: 12px; }
-    .radio-group label, .checkbox-group label {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      min-height: 32px;
-      padding: 0 9px;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: .2s;
-    }
-    .radio-group label:hover, .checkbox-group label:hover { color: var(--primary); background: #eff5ff; }
-    input[type="radio"], input[type="checkbox"] { accent-color: var(--primary); }
-    .btn {
-      min-height: 40px;
-      padding: 9px 15px;
-      border-radius: 10px;
-      font-size: 12px;
-      transition: transform .2s, box-shadow .2s, background .2s;
-    }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-primary { background: var(--primary); box-shadow: 0 5px 12px rgba(37,99,235,.18); }
-    .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 7px 16px rgba(37,99,235,.24); }
-    .btn-secondary { background: var(--surface-soft); color: var(--text); border-color: #d5dce8; }
-    .btn-secondary:hover { background: #eef3fb; }
-    .main-container { gap: 16px; padding: 18px 22px; }
-    .table-section, .detail-section {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-    }
-    .table-section { background: var(--surface); }
-    .table-wrapper { scrollbar-color: #cbd5e1 transparent; }
-    table { font-size: 12px; }
-    th, td { padding: 12px 14px; border-color: #edf0f5; }
-    th {
-      padding-top: 13px;
-      padding-bottom: 13px;
-      color: #64748b;
-      background: #f8fafc;
-      font-size: 11px;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-    }
-    th.sortable { cursor: pointer; user-select: none; transition: background .16s, color .16s; }
-    th.sortable:hover { color: var(--primary); background: #eef5ff; }
-    th .sort-indicator { display: inline-block; width: 14px; margin-left: 4px; color: var(--primary); font-size: 12px; }
-    tbody tr { transition: background .16s, box-shadow .16s; }
-    tbody tr:hover { background: #f4f8ff; }
-    tbody tr.selected { color: #1e40af; background: #eaf2ff !important; box-shadow: inset 3px 0 var(--primary); }
-    .detail-section {
-      flex: .78;
-      min-width: 300px;
-      padding: 20px;
-      background: linear-gradient(160deg, #ffffff 0%, #f5f9ff 58%, #eef5ff 100%);
-      border-color: #cfe0fb;
-      box-shadow: 0 14px 32px rgba(37,99,235,.12), inset 0 1px 0 rgba(255,255,255,.9);
-    }
-    .detail-title {
-      margin: -20px -20px 18px;
-      padding: 18px 20px;
-      border-bottom: 1px solid #cfe0fb;
-      color: #1e3a8a;
-      background: linear-gradient(105deg, #dbeafe 0%, #eff6ff 55%, #ffffff 100%);
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .01em;
-      box-shadow: 0 4px 12px rgba(37,99,235,.08);
-    }
-    .detail-title::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 10px; border-radius: 50%; background: #2563eb; box-shadow: 0 0 0 4px #bfdbfe; vertical-align: 1px; }
-    .detail-grid { gap: 8px; }
-    .detail-item {
-      padding: 11px 12px;
-      border: 1px solid #dbeafe;
-      border-left: 3px solid #60a5fa;
-      border-radius: 10px;
-      background: rgba(255,255,255,.82);
-      box-shadow: 0 3px 10px rgba(30,64,175,.06);
-      transition: transform .18s, box-shadow .18s, border-color .18s;
-    }
-    .detail-item:hover {
-      transform: translateY(-2px);
-      border-color: #93c5fd;
-      box-shadow: 0 7px 16px rgba(30,64,175,.12);
-    }
-    .detail-item label { color: #5b7bb5; font-size: 10px; font-weight: 700; letter-spacing: .07em; }
-    .detail-item span { display: block; margin-top: 3px; color: #172554; font-size: 13px; font-weight: 600; }
-    .bm-no-card {
-      display: none;
-      grid-column: 1 / -1;
-      margin-bottom: 12px;
-      padding: 12px;
-      border: 1px solid #bfdbfe;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #eff6ff, #ffffff);
-      box-shadow: 0 4px 12px rgba(37,99,235,.08);
-    }
-    .bm-no-card.visible { display: block; }
-    .bm-no-card-title {
-      margin-bottom: 8px;
-      color: #1e3a8a;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    .bm-no-list { display: flex; flex-wrap: wrap; gap: 6px; }
-    .bm-no-value {
-      padding: 4px 8px;
-      border: 1px solid #bfdbfe;
-      border-radius: 6px;
-      color: #1e40af;
-      background: #ffffff;
-      font-size: 12px;
-      font-weight: 600;
-    }
+    .search-input input:focus { background: white; border-color: #91b4ff;
+      box-shadow: 0 0 0 3px rgba(53,104,232,.11); }
+    .search-hint { position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      border: 1px solid var(--line); border-radius: 5px; padding: 1px 7px;
+      color: #8b97a9; font-size: 11px; font-weight: 700; pointer-events: none; }
+    .toolbar-filters { border-top: 1px solid var(--line); padding-top: 13px; }
+    .filter-label { font-size: 11px; color: var(--muted); font-weight: 700; margin-right: 1px; }
+    .radio-group { display: flex; flex-wrap: wrap; gap: 5px; }
+    .radio-group label { position: relative; cursor: pointer; }
+    .radio-group input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .radio-group span { display: block; padding: 6px 11px; font-size: 11px; color: #6a7e98; font-weight: 650;
+      background: transparent; border-radius: 8px; border: 1px solid transparent; transition: .15s ease; }
+    .radio-group input:checked + span { background: var(--blue-soft); border-color: #dbe7ff; color: #2d5fcb; }
+    .radio-group input:focus-visible + span { outline: 3px solid rgba(53,104,232,.3); outline-offset: 2px; }
+    .radio-group label:hover span { color: var(--blue); }
+    .checkbox-group { margin-left: auto; }
+    .checkbox-group label { display: inline-flex; align-items: center; gap: 9px;
+      font-size: 12px; font-weight: 650; color: var(--ink); cursor: pointer; }
+    .checkbox-group input { width: 16px; height: 16px; accent-color: var(--blue); }
+    .main-container { display: grid; grid-template-columns: minmax(0,1.7fr) minmax(320px,.87fr); align-items: start; gap: 20px; }
+    .table-section, .detail-section { background: white; border: 1px solid var(--line);
+      border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; min-width: 0; }
+    .section-header { padding: 19px 21px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+      border-bottom: 1px solid var(--line); }
+    .section-header h2 { margin: 0; font-size: 15px; letter-spacing: -.025em; }
+    .section-caption { color: var(--muted); font-size: 11px; margin-top: 4px; }
+    .record-count { color: #3866c2; background: var(--blue-soft); font-size: 11px; font-weight: 700; border-radius: 20px; padding: 6px 11px; }
+    .table-wrapper { overflow: auto; height: min(57vh,670px); min-height: 330px; scrollbar-color: #c8d5e5 transparent; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 12px; }
+    th, td { white-space: nowrap; padding: 13px 15px; border-bottom: 1px solid #f0f3f8; }
+    th { position: sticky; top: 0; background: #f8fafe; z-index: 2; color: #71819b;
+      font-size: 10px; letter-spacing: .075em; text-transform: uppercase; }
+    .sort-trigger { border: 0; background: transparent; padding: 0; color: inherit; font: inherit;
+      font-size: inherit; font-weight: 750; text-transform: inherit; letter-spacing: inherit; display: inline-flex; gap: 4px; align-items: center; cursor: pointer; }
+    .sort-trigger:hover { color: var(--blue); }
+    .sort-indicator { font-size: 11px; color: #b3c0d0; }
+    th[aria-sort="ascending"] .sort-indicator, th[aria-sort="descending"] .sort-indicator { color: var(--blue); }
+    tbody tr { cursor: pointer; transition: background .12s ease; }
+    tbody tr:hover { background: #f3f7ff; }
+    tbody tr.selected { background: #eaf1ff; box-shadow: inset 3px 0 0 var(--blue); }
+    tbody tr:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+    .sap-code { font-weight: 750; color: #315ac2; letter-spacing: .01em; }
+    .stock-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px;
+      background: var(--green-soft); color: #178263; border-radius: 7px; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .stock-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .stock-badge.empty { background: #f1f3f6; color: #8b98ab; }
+    .empty-table { text-align: center; padding: 48px 20px; color: var(--muted); white-space: normal; font-size: 13px; }
+    .table-bottom { display: flex; gap: 10px; align-items: center; justify-content: space-between;
+      padding: 12px 17px; color: var(--muted); font-size: 11px; }
+    .pagination { display: flex; align-items: center; gap: 9px; }
+    .pagination .btn { padding: 7px 11px; min-height: 33px; font-size: 11px; }
+    #thong-tin-trang { white-space: nowrap; font-weight: 700; color: #546b89; }
+    .detail-section { position: sticky; top: 18px; padding: 0 20px 19px; max-height: calc(100vh - 35px); overflow-y: auto; }
+    .detail-title { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+      padding: 20px 0 15px; margin-bottom: 15px; border-bottom: 1px solid var(--line); gap: 8px; }
+    .detail-title strong { font-size: 15px; letter-spacing: -.03em; }
+    .detail-title small { color: #6880a0; font-size: 11px; font-weight: 700; }
     .image-viewer-box {
-      height: 380px;
-      margin-bottom: 16px;
-      border: 1px solid #dbeafe;
-      border-radius: 14px;
-      background: linear-gradient(145deg, #f8fbff 0%, #eaf3ff 52%, #dbeafe 100%);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.8), 0 8px 20px rgba(59,130,246,.1);
+      height: 265px; background: linear-gradient(145deg,#f7faff,#edf3fb);
+      border: 1px solid #e1eaf5; border-radius: 14px; position: relative; margin-bottom: 17px;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
-    .image-viewer-box img { max-height: 340px; }
-    .img-nav-btn { border-radius: 9px; color: #2563eb; background: rgba(255,255,255,.78); box-shadow: 0 3px 10px rgba(37,99,235,.14); backdrop-filter: blur(8px); transition: .2s; }
-    .img-nav-btn:hover { background: var(--primary); }
-    .img-counter { right: 12px; bottom: 12px; padding: 4px 9px; border-radius: 6px; color: #1e3a8a; background: rgba(255,255,255,.82); font-size: 10px; box-shadow: 0 2px 8px rgba(37,99,235,.12); }
-    .meta-info { padding: 12px; border-color: #edf0f5; border-radius: 9px; color: var(--muted); background: var(--surface-soft); line-height: 1.7; }
-    .footer-bar { padding: 10px 22px; border-top-color: var(--border); color: var(--muted); background: #fff; font-size: 11px; }
-    #lightbox { background: rgba(15,23,42,.88); backdrop-filter: blur(7px); }
-    #lightbox img { max-width: min(90%, 1100px); max-height: 82vh; border: 8px solid #fff; box-shadow: 0 24px 60px rgba(0,0,0,.3); }
-    @media (max-width: 1080px) {
-      .toolbar { align-items: stretch; }
-      .search-box-group { flex-basis: 100%; max-width: none; }
-      .main-container { flex-direction: column; overflow-y: auto; }
-      .table-section { min-height: 390px; }
-      .detail-section { min-width: 0; }
+    .image-viewer-box img { width: auto; height: auto; max-width: 96%; max-height: 96%;
+      object-fit: contain; cursor: zoom-in; transition: opacity .16s ease; }
+    .image-viewer-box img:not([src]) { display: none; }
+    .image-empty { position: absolute; display: grid; place-items: center; gap: 6px;
+      text-align: center; color: #95a5bb; padding: 10px; font-size: 11px; pointer-events: none; }
+    .image-empty .empty-icon { height: 57px; width: 57px; display: grid; place-items: center;
+      border-radius: 18px; background: white; box-shadow: 0 7px 20px rgba(71,100,146,.07);
+      color: #9bb0ce; font-size: 26px; }
+    .img-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; display: none;
+      border: 1px solid rgba(219,228,242,.8); background: rgba(255,255,255,.91); color: var(--blue);
+      width: 32px; height: 37px; border-radius: 8px; font-size: 18px; }
+    .img-nav-btn:hover { background: white; }
+    .btn-prev { left: 10px; } .btn-next { right: 10px; }
+    .img-counter { position: absolute; right: 10px; bottom: 10px; padding: 5px 8px; background: rgba(255,255,255,.92);
+      border: 1px solid #e3eaf5; border-radius: 7px; color: #526683; font-size: 10px; font-weight: 750; }
+    .detail-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+    .detail-item { background: #f8faff; border: 1px solid #edf1f7; border-radius: 11px; padding: 11px 12px; min-width: 0; }
+    .detail-item label { display: block; margin-bottom: 5px; color: #7b8ba3; font-weight: 750; text-transform: uppercase;
+      font-size: 9px; letter-spacing: .08em; }
+    .detail-item span { display: block; overflow-wrap: anywhere; color: #203756; font-size: 12px; font-weight: 750; }
+    .detail-placeholder { margin: 5px 0 6px; padding: 20px 6px; text-align: center; font-size: 12px; color: #8492a7; }
+    .bm-no-card { display: none; grid-column: 1 / -1; background: #f2f7ff; border: 1px solid #d9e7ff;
+      border-radius: 11px; padding: 12px; }
+    .bm-no-card.visible { display: block; }
+    .bm-no-card-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #4e70b4;
+      letter-spacing: .08em; margin-bottom: 9px; }
+    .bm-no-list { display: flex; gap: 6px; flex-wrap: wrap; }
+    .bm-no-value { background: white; color: #315ac2; border: 1px solid #dce8ff;
+      border-radius: 6px; padding: 5px 7px; font-size: 11px; font-weight: 750; }
+    .footer-bar { color: #8b98a8; font-size: 11px; display: flex; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; padding: 20px 2px 0; }
+    #lightbox { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(9,20,41,.92);
+      backdrop-filter: blur(10px); justify-content: center; align-items: center; flex-direction: column; cursor: zoom-out; }
+    #lightbox img { max-width: min(90%,1200px); max-height: 78vh; object-fit: contain; border: 5px solid white;
+      border-radius: 10px; transform-origin: center; transition: transform .12s ease; cursor: grab; }
+    .lightbox-btn { color: white; background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.3); border-radius: 9px; padding: 8px 12px; font-size: 15px; cursor: pointer; }
+    .lightbox-btn:hover { background: rgba(255,255,255,.28); }
+    .lightbox-controls { display: flex; gap: 8px; align-items: center; margin-top: 20px; }
+    #lightbox-zoom-level { min-width: 46px; text-align: center; color: white; font-size: 12px; }
+    .lightbox-close { position: absolute; top: 21px; right: 22px; font-size: 21px; }
+    #lightbox .img-nav-btn { top: 50%; display: block; color: white; transform: translateY(-50%); background: rgba(255,255,255,.16); }
+    @media (max-width: 1150px) {
+      .main-container { grid-template-columns: minmax(0,1.25fr) minmax(295px, .9fr); gap: 14px; }
+      .workspace { padding-top: 23px; }
+      .detail-section { padding: 0 14px 16px; }
     }
-    @media (max-width: 640px) {
-      body { overflow: auto; height: auto; min-height: 100vh; }
-      .toolbar { padding: 12px; }
-      .search-box-group { display: grid; grid-template-columns: 1fr auto auto; min-width: 0; }
-      .radio-group { flex-wrap: wrap; gap: 3px; }
-      .checkbox-group { margin-top: 2px; }
-      .main-container { padding: 12px; gap: 12px; overflow: visible; }
-      .table-section { min-height: 320px; }
-      .table-wrapper { overflow-x: auto; }
-      .detail-section { min-width: 0; }
+    @media (max-width: 900px) {
+      .main-container { grid-template-columns: minmax(0,1fr); }
+      .detail-section { position: static; max-height: none; }
+      .table-wrapper { height: 420px; }
       .image-viewer-box { height: 320px; }
-      .image-viewer-box img { max-height: 280px; }
-      .footer-bar { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+    }
+    @media (max-width: 620px) {
+      .app-header { height: 62px; padding: 0 14px; }
+      .brand { font-size: 14px; gap: 8px; }
+      .brand-icon { width: 33px; height: 33px; }
+      .brand-wordmark small { font-size: 8px; }
+      .header-actions { gap: 7px; }
+      .header-actions .btn { min-height: 35px; padding: 6px 9px; font-size: 11px; }
+      .online-pill { padding: 7px 9px; font-size: 10px; }
+      .workspace { padding: 19px 12px 20px; }
+      .intro { margin-bottom: 17px; }
+      .metric-grid { gap: 7px; }
+      .metric-card { padding: 13px 10px; min-height: 105px; border-radius: 13px; }
+      .metric-icon { display: none; }
+      .metric-value { font-size: 22px; }
+      .metric-label { font-size: 10px; }
+      .metric-note { font-size: 9px; }
+      .toolbar { border-radius: 14px; padding: 13px; }
+      .toolbar-primary { gap: 8px; }
+      .search-box-group { flex-basis: 100%; min-width: 0; }
+      .search-box-group .btn { padding: 8px 12px; font-size: 11px; }
+      .toolbar-primary > .btn { flex: 1; }
+      .toolbar-filters { gap: 8px; }
+      .checkbox-group { margin-left: 0; width: 100%; }
+      .section-header { padding: 14px; }
+      th, td { padding: 12px 13px; }
+      .table-wrapper { height: 370px; }
+      .table-bottom { padding: 12px; flex-direction: column; align-items: stretch; }
+      .pagination { justify-content: space-between; }
+      .detail-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .footer-bar { padding-top: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
 <body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">▦</div>
+        <div class="brand-wordmark">SAP Inventory<small>OPERATIONS WORKSPACE</small></div>
+      </div>
+      <div class="header-actions">
+        <span class="online-pill loading" id="tinh-trang-du-lieu" role="status">Đang kết nối</span>
+        <button type="button" class="btn btn-secondary" onclick="taiDuLieu()" title="Đồng bộ dữ liệu từ nguồn">↻ <span>Đồng bộ</span></button>
+      </div>
+    </header>
 
-  <!-- Thanh công cụ tìm kiếm và bộ lọc -->
-  <div class="toolbar">
-    <div class="search-box-group">
-      <input type="text" id="o-tim-kiem" placeholder="Nhập mã SAP, tên mô tả hoặc part no..." oninput="yeuCauLocDuLieu()">
-      <button class="btn btn-primary" onclick="locDuLieu()">Search</button>
-      <button class="btn btn-secondary" onclick="lamMoi()">Clear</button>
-    </div>
+    <main class="workspace">
+      <div class="breadcrumbs"><span>Workspace</span><span>/</span><span class="active">Inventory overview</span></div>
+      <div class="intro">
+        <h1>Quản lý vật tư <span>thông minh.</span></h1>
+        <p>Tra cứu mã SAP, theo dõi tồn kho và xem hình ảnh vật tư trong cùng một không gian làm việc.</p>
+      </div>
 
-    <div class="radio-group">
-      <label><input type="radio" name="truongTim" value="all" onchange="yeuCauLocDuLieu()" checked> All</label>
-      <label><input type="radio" name="truongTim" value="sap" onchange="yeuCauLocDuLieu()"> Sap</label>
-      <label><input type="radio" name="truongTim" value="desc" onchange="yeuCauLocDuLieu()"> Description</label>
-      <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"> Part no</label>
-      <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"> BM No</label>
-    </div>
+      <section class="metric-grid" aria-label="Thống kê tồn kho">
+        <div class="metric-card">
+          <div class="metric-text"><div class="metric-label">Tổng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note">Mã SAP trong hệ thống</span></div>
+          <div class="metric-icon" aria-hidden="true">▦</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-text"><div class="metric-label">Còn hàng</div><strong class="metric-value" id="metric-instock">—</strong><span class="metric-note">Số dòng có tồn kho &gt; 0</span></div>
+          <div class="metric-icon" aria-hidden="true">✓</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-text"><div class="metric-label">Kết quả lọc</div><strong class="metric-value" id="metric-results">—</strong><span class="metric-note">Theo tìm kiếm hiện tại</span></div>
+          <div class="metric-icon" aria-hidden="true">⌕</div>
+        </div>
+      </section>
 
-    <div class="checkbox-group">
-      <label><input type="checkbox" id="chk-ton-kho" onchange="yeuCauLocDuLieu()"> Quantity > 0</label>
-    </div>
+      <section class="toolbar" aria-label="Tìm kiếm và bộ lọc">
+        <div class="toolbar-primary">
+          <div class="search-box-group">
+            <div class="search-input">
+              <input type="search" id="o-tim-kiem" autocomplete="off" aria-label="Tìm mã SAP, mô tả, part no" placeholder="Tìm mã SAP, mô tả hoặc Part No..." oninput="yeuCauLocDuLieu()">
+              <span class="search-hint" aria-hidden="true">/</span>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="locDuLieu()">Tìm kiếm</button>
+            <button type="button" class="btn btn-secondary" onclick="lamMoi()">Xóa</button>
+          </div>
+          <button type="button" class="btn btn-soft" onclick="xuatExcel()">↓ Xuất Excel (CSV)</button>
+        </div>
+        <div class="toolbar-filters">
+          <span class="filter-label">Tìm trong</span>
+          <div class="radio-group" role="group" aria-label="Phạm vi tìm kiếm">
+            <label><input type="radio" name="truongTim" value="all" onchange="yeuCauLocDuLieu()" checked><span>Tất cả</span></label>
+            <label><input type="radio" name="truongTim" value="sap" onchange="yeuCauLocDuLieu()"><span>Mã SAP</span></label>
+            <label><input type="radio" name="truongTim" value="desc" onchange="yeuCauLocDuLieu()"><span>Mô tả</span></label>
+            <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"><span>Part No</span></label>
+            <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span>BM No</span></label>
+          </div>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="chk-ton-kho" onchange="yeuCauLocDuLieu()"> Chỉ hiển thị còn hàng</label>
+          </div>
+        </div>
+      </section>
 
-    <button class="btn btn-secondary" onclick="xuatExcel()">Export Excel</button>
+      <div class="main-container">
+        <section class="table-section" aria-labelledby="ten-bang">
+          <div class="section-header">
+            <div><h2 id="ten-bang">Danh sách vật tư</h2><div class="section-caption">Nhấn vào một dòng để xem chi tiết và hình ảnh</div></div>
+            <span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span>
+          </div>
+          <div class="table-wrapper" role="region" aria-label="Bảng vật tư, có thể cuộn ngang" tabindex="0">
+            <table id="bang-du-lieu"><thead id="dau-bang"></thead><tbody id="than-bang"><tr><td class="empty-table">Đang kết nối dữ liệu...</td></tr></tbody></table>
+          </div>
+          <div class="table-bottom">
+            <span>↑ ↓ để chọn dòng · / để tìm kiếm</span>
+            <div class="pagination" aria-label="Chuyển trang">
+              <button type="button" class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)" disabled>← Trước</button>
+              <span id="thong-tin-trang">Trang 1 / 1</span>
+              <button type="button" class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)" disabled>Sau →</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="detail-section" aria-label="Chi tiết vật tư">
+          <div class="detail-title"><strong>Thông tin chi tiết</strong><small id="nhan-sap">Chưa chọn mã SAP</small></div>
+          <div class="image-viewer-box" id="khung-anh">
+            <div class="image-empty" id="anh-trong">
+              <span class="empty-icon" aria-hidden="true">▣</span>
+              <span>Chọn một mã SAP để xem hình ảnh</span>
+            </div>
+            <img id="anh-chinh" alt="Hình ảnh vật tư" decoding="async" onclick="phongToAnh()">
+            <button type="button" class="img-nav-btn btn-prev" id="btn-anh-truoc" onclick="doiAnhChiTiet(-1, event)" aria-label="Ảnh trước">‹</button>
+            <button type="button" class="img-nav-btn btn-next" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" aria-label="Ảnh sau">›</button>
+            <div class="img-counter" id="dem-anh">0/0 ảnh</div>
+          </div>
+          <div class="detail-placeholder" id="chi-tiet-trong">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
+          <div class="detail-grid" id="luoi-chi-tiet"></div>
+          <div class="bm-no-card" id="bm-no-card">
+            <div class="bm-no-card-title">BM No</div>
+            <div class="bm-no-list" id="bm-no-list"></div>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="footer-bar">
+        <span>SAP Inventory · Giao diện tối ưu cho tra cứu và quản lý tồn kho</span>
+        <span id="trang-thai-cap-nhat" role="status" aria-live="polite">Đang tải nguồn dữ liệu...</span>
+      </footer>
+    </main>
   </div>
 
-  <!-- Nội dung chính: Bảng danh sách + Khung chi tiết & hình ảnh -->
-  <div class="main-container">
-    <div class="table-section">
-      <div class="table-wrapper">
-        <table id="bang-du-lieu">
-          <thead id="dau-bang"></thead>
-          <tbody id="than-bang"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Khung chi tiết tương tự UserForm trong hình -->
-    <div class="detail-section">
-      <div class="detail-title">Thông tin chi tiết mã SAP</div>
-      
-      <!-- Khung xem ảnh tích hợp bộ sưu tập _01, _02 -->
-      <div class="image-viewer-box" id="khung-anh">
-        <img id="anh-chinh" src="" alt="Chưa có hình ảnh" onclick="phongToAnh()">
-        <button class="img-nav-btn btn-prev" id="btn-anh-truoc" onclick="doiAnhChiTiet(-1, event)" style="display:none">&#10094;</button>
-        <button class="img-nav-btn btn-next" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" style="display:none">&#10095;</button>
-        <div class="img-counter" id="dem-anh">0/0 images</div>
-      </div>
-
-      <div class="detail-grid" id="luoi-chi-tiet">
-        <!-- Điền động bằng JavaScript -->
-      </div>
-
-      <div class="bm-no-card" id="bm-no-card">
-        <div class="bm-no-card-title">BM No</div>
-        <div class="bm-no-list" id="bm-no-list"></div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Thanh trạng thái cuối màn hình -->
-  <div class="footer-bar">
-    <span id="trang-thai-ban-ghi">Records Found: 0 / 0</span>
-    <div class="pagination" aria-label="Pagination">
-      <button class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)">Previous</button>
-      <span id="thong-tin-trang">Page 1 / 1</span>
-      <button class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)">Next</button>
-    </div>
-    <span id="trang-thai-cap-nhat">Cập nhật lúc: --</span>
-  </div>
-
-  <!-- Hộp thoại phóng to ảnh -->
-  <div id="lightbox" onclick="dongLightbox(event)">
-    <button class="lightbox-btn lightbox-close" onclick="dongLightbox(event)" aria-label="Đóng">&#10005;</button>
-    <button class="lightbox-btn img-nav-btn btn-prev" onclick="doiAnhLightbox(-1, event)" aria-label="Ảnh trước">&#10094;</button>
-    <img id="lightbox-img" src="" onclick="event.stopPropagation()">
-    <button class="lightbox-btn img-nav-btn btn-next" onclick="doiAnhLightbox(1, event)" aria-label="Ảnh sau">&#10095;</button>
+  <div id="lightbox" onclick="dongLightbox(event)" role="dialog" aria-modal="true" aria-label="Xem ảnh vật tư">
+    <button type="button" class="lightbox-btn lightbox-close" onclick="dongLightbox(event)" aria-label="Đóng">×</button>
+    <button type="button" class="lightbox-btn img-nav-btn btn-prev" onclick="doiAnhLightbox(-1, event)" aria-label="Ảnh trước">‹</button>
+    <img id="lightbox-img" alt="Ảnh vật tư phóng to" onclick="event.stopPropagation()">
+    <button type="button" class="lightbox-btn img-nav-btn btn-next" onclick="doiAnhLightbox(1, event)" aria-label="Ảnh sau">›</button>
     <div class="lightbox-controls" onclick="event.stopPropagation()">
-      <button class="lightbox-btn" onclick="thayDoiZoom(-0.2)">−</button>
+      <button type="button" class="lightbox-btn" onclick="thayDoiZoom(-0.2)" aria-label="Thu nhỏ">−</button>
       <span id="lightbox-zoom-level">100%</span>
-      <button class="lightbox-btn" onclick="thayDoiZoom(0.2)">+</button>
-      <button class="lightbox-btn" onclick="datLaiZoom()">Reset</button>
+      <button type="button" class="lightbox-btn" onclick="thayDoiZoom(0.2)" aria-label="Phóng to">+</button>
+      <button type="button" class="lightbox-btn" onclick="datLaiZoom()">Đặt lại</button>
     </div>
   </div>
 
@@ -404,7 +371,7 @@
     const duongDanOMang = "data.js";
     const THU_MUC_HINH = "Material/"; // Thư mục chứa ảnh
     const SO_ANH_TOI_DA = 10;        // Tự động quét từ _01 đến _10
-    const SO_DONG_MOI_TRANG = 200;
+    const SO_DONG_MOI_TRANG = 75;
     // Chỉ hiển thị các cột Excel 1, 2, 6, 4, 5, 3 trong bảng.
     const COT_HIEN_THI = [0, 1, 5, 3, 4, 2];
     // ==========================================================
@@ -425,49 +392,74 @@
     let mucZoom = 1;
 
     let lanTaiDuLieu = 0;
+    let dangTaiScript = false;
+
+    function datTrangThaiDuLieu(noiDung, loai) {
+      const el = document.getElementById("tinh-trang-du-lieu");
+      el.textContent = noiDung;
+      el.className = "online-pill" + (loai ? " " + loai : "");
+    }
 
     function taiDuLieu() {
+      if (document.hidden || dangTaiScript) return;
+      dangTaiScript = true;
       const lanHienTai = ++lanTaiDuLieu;
       const scriptCu = document.getElementById("script-data");
       if (scriptCu) scriptCu.remove();
 
       const s = document.createElement("script");
       s.id = "script-data";
+      s.async = true;
       s.src = duongDanOMang + "?t=" + Date.now();
+      datTrangThaiDuLieu("Đang đồng bộ", "loading");
+
+      let daHetGio = false;
+      const gioiHan = setTimeout(function() {
+        if (lanHienTai !== lanTaiDuLieu || !dangTaiScript) return;
+        daHetGio = true;
+        dangTaiScript = false;
+        s.remove();
+        datTrangThaiDuLieu("Mất kết nối", "error");
+        document.getElementById("trang-thai-cap-nhat").textContent =
+          "Hết thời gian chờ tải dữ liệu (giữ dữ liệu hiện có)";
+      }, 15000);
 
       s.onload = function() {
-        if (lanHienTai !== lanTaiDuLieu) return;
-
+        if (lanHienTai !== lanTaiDuLieu || daHetGio) return;
+        clearTimeout(gioiHan);
+        dangTaiScript = false;
         const duLieuMoi = window.duLieuCongTy;
         const thoiGianCapNhat = window.thoiGianCapNhat;
         const coMocCapNhat = thoiGianCapNhat !== undefined
           && thoiGianCapNhat !== null && thoiGianCapNhat !== "";
 
         if (!Array.isArray(duLieuMoi) || !duLieuMoi.length || !Array.isArray(duLieuMoi[0])) {
+          datTrangThaiDuLieu("Dữ liệu không hợp lệ", "error");
           document.getElementById("trang-thai-cap-nhat").textContent =
             "Lỗi: data.js không chứa bảng dữ liệu hợp lệ";
           return;
         }
-
         if (!coMocCapNhat || thoiGianCapNhat !== mocCapNhatCu || !tatCaDuLieu.length) {
           mocCapNhatCu = coMocCapNhat ? thoiGianCapNhat : "";
           tatCaDuLieu = duLieuMoi;
           tieuDeCot = tatCaDuLieu[0];
-          taoChiMucTimKiem();
+          chiMucSanSang = false;
+          soLanLocDuLieu++;
           veTieuDe();
-          locDuLieu();
+          taoChiMucTimKiem();
         }
-
+        datTrangThaiDuLieu("Đã kết nối");
         document.getElementById("trang-thai-cap-nhat").textContent =
-          "Cập nhật lúc: " + (coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString("vi-VN"));
+          "Cập nhật: " + (coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString("vi-VN"));
       };
-
       s.onerror = function() {
-        if (lanHienTai !== lanTaiDuLieu) return;
+        if (lanHienTai !== lanTaiDuLieu || daHetGio) return;
+        clearTimeout(gioiHan);
+        dangTaiScript = false;
+        datTrangThaiDuLieu("Mất kết nối", "error");
         document.getElementById("trang-thai-cap-nhat").textContent =
           "Không thể tải " + duongDanOMang + " (giữ dữ liệu hiện có)";
       };
-
       document.body.appendChild(s);
     }
 
@@ -487,8 +479,9 @@
         const dangSapXep = cotSapXep === chiSo;
         const muiTen = dangSapXep ? (huongSapXep === 1 ? "▲" : "▼") : "↕";
         const ariaSort = dangSapXep ? (huongSapXep === 1 ? "ascending" : "descending") : "none";
-        return `<th class="sortable" onclick="sapXepTheoCot(${chiSo})" aria-sort="${ariaSort}" title="Sắp xếp theo ${c}">` +
-               `${c}<span class="sort-indicator">${muiTen}</span></th>`;
+        return '<th aria-sort="' + ariaSort + '"><button type="button" class="sort-trigger" ' +
+          'onclick="sapXepTheoCot(' + chiSo + ')" title="Sắp xếp theo ' + c + '">' +
+          c + '<span class="sort-indicator">' + muiTen + '</span></button></th>';
       }).join("") + "</tr>";
     }
 
@@ -565,68 +558,110 @@
       }
     }
 
+    let chiMucSanSang = false;
+    let lanLapChiMuc = 0;
+    let soCoTonKho = 0;
+    const dinhDangSoLuong = new Intl.NumberFormat("vi-VN");
+
+    // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
+      const lanHienTai = ++lanLapChiMuc;
       const chiSoBmNo = timCotTheoTen("BM No");
-      duLieuTimKiem = tatCaDuLieu.slice(1).map((dong, viTri) => {
-        const giaTri = dong.map(cell => String(cell ?? "").toLocaleLowerCase());
-        return {
-          chiSo: viTri + 1,
-          dong,
-          all: giaTri.join("\u0001"),
-          sap: giaTri[0] || "",
-          desc: giaTri[1] || "",
-          part: giaTri[2] || "",
-          bmno: chiSoBmNo >= 0 ? giaTri[chiSoBmNo] || "" : "",
-          coTonKho: (parseFloat(dong[3]) || 0) > 0
-        };
-      });
+      duLieuTimKiem = [];
+      soCoTonKho = 0;
+      chiMucSanSang = false;
+      let viTri = 1;
+      const tong = Math.max(0, tatCaDuLieu.length - 1);
+      document.getElementById("metric-total").textContent = dinhDangSoLuong.format(tong);
+      document.getElementById("metric-instock").textContent = "…";
+      document.getElementById("metric-results").textContent = "…";
+      document.getElementById("trang-thai-ban-ghi").textContent = "Đang xử lý dữ liệu...";
+      document.getElementById("than-bang").innerHTML =
+        '<tr><td colspan="6" class="empty-table">Đang chuẩn bị dữ liệu...</td></tr>';
+
+      function xuLyNhom() {
+        if (lanHienTai !== lanLapChiMuc) return;
+        const gioiHan = Math.min(viTri + 1000, tatCaDuLieu.length);
+        for (; viTri < gioiHan; viTri++) {
+          const dong = tatCaDuLieu[viTri];
+          if (!Array.isArray(dong)) continue;
+          const giaTri = dong.map(ten => String(ten ?? "").toLowerCase());
+          const coTonKho = chuyenThanhSo(dong[3]) > 0;
+          if (coTonKho) soCoTonKho++;
+          duLieuTimKiem.push({
+            chiSo: viTri,
+            dong: dong,
+            all: giaTri.join("\u0001"),
+            sap: giaTri[0] || "",
+            desc: giaTri[1] || "",
+            part: giaTri[2] || "",
+            bmno: chiSoBmNo >= 0 ? giaTri[chiSoBmNo] || "" : "",
+            coTonKho: coTonKho
+          });
+        }
+        if (viTri < tatCaDuLieu.length) {
+          setTimeout(xuLyNhom, 0);
+        } else {
+          chiMucSanSang = true;
+          document.getElementById("metric-instock").textContent = dinhDangSoLuong.format(soCoTonKho);
+          locDuLieu();
+        }
+      }
+      xuLyNhom();
     }
 
     let boTriHoanTimKiem = null;
-
     function yeuCauLocDuLieu() {
       clearTimeout(boTriHoanTimKiem);
+      ++soLanLocDuLieu;
       trangHienTai = 1;
-      boTriHoanTimKiem = setTimeout(locDuLieu, 120);
+      boTriHoanTimKiem = setTimeout(locDuLieu, 170);
     }
 
+    // Lọc theo từng nhịp animation frame và hủy các truy vấn đã lỗi thời.
     function locDuLieu() {
-      if (!tieuDeCot.length) return;
+      clearTimeout(boTriHoanTimKiem);
+      if (!chiMucSanSang) return;
       const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
-      const lanLocHienTai = ++soLanLocDuLieu;
-
       const truongTim = cheDoTim === "all" ? "all" : cheDoTim;
+      const lanLocHienTai = ++soLanLocDuLieu;
+      const moi = [];
+      let viTri = 0;
+      const tong = duLieuTimKiem.length;
+      document.getElementById("trang-thai-ban-ghi").textContent = "Đang tìm kiếm...";
 
-      ketQuaLoc = [];
-      for (const muc of duLieuTimKiem) {
-        const khop = (!tuKhoa || muc[truongTim].includes(tuKhoa))
-          && (!chiTonKho || muc.coTonKho);
-        if (khop) ketQuaLoc.push(muc);
+      function xuLyNhom() {
+        if (lanLocHienTai !== soLanLocDuLieu) return;
+        const gioiHan = Math.min(viTri + 2500, tong);
+        for (; viTri < gioiHan; viTri++) {
+          const muc = duLieuTimKiem[viTri];
+          if ((!tuKhoa || muc[truongTim].includes(tuKhoa)) && (!chiTonKho || muc.coTonKho)) {
+            moi.push(muc);
+          }
+        }
+        if (viTri < tong) {
+          requestAnimationFrame(xuLyNhom);
+          return;
+        }
+        ketQuaLoc = moi;
+        sapXepKetQua();
+        hienThiTrangHienTai();
+        document.querySelector(".table-wrapper").scrollTop = 0;
+        document.getElementById("trang-thai-ban-ghi").textContent =
+          dinhDangSoLuong.format(ketQuaLoc.length) + " / " + dinhDangSoLuong.format(tong) + " vật tư";
+        document.getElementById("metric-results").textContent = dinhDangSoLuong.format(ketQuaLoc.length);
       }
-
-      if (lanLocHienTai !== soLanLocDuLieu) return;
-      sapXepKetQua();
-      hienThiTrangHienTai();
-      document.querySelector(".table-wrapper").scrollTop = 0;
-      document.getElementById("trang-thai-ban-ghi").textContent =
-        `Records Found: ${ketQuaLoc.length} / ${tatCaDuLieu.length - 1}`;
+      xuLyNhom();
     }
 
     function sapXepTheoCot(chiSoCot) {
-      if (cotSapXep === chiSoCot) {
-        huongSapXep *= -1;
-      } else {
-        cotSapXep = chiSoCot;
-        huongSapXep = 1;
-      }
-
+      if (cotSapXep === chiSoCot) huongSapXep *= -1;
+      else { cotSapXep = chiSoCot; huongSapXep = 1; }
       trangHienTai = 1;
-      sapXepKetQua();
       veTieuDe();
-      hienThiTrangHienTai();
-      document.querySelector(".table-wrapper").scrollTop = 0;
+      locDuLieu();
     }
 
     function sapXepKetQua() {
@@ -661,15 +696,24 @@
       const batDau = (trangHienTai - 1) * SO_DONG_MOI_TRANG;
       const mucTrenTrang = ketQuaLoc.slice(batDau, batDau + SO_DONG_MOI_TRANG);
       const html = mucTrenTrang.map(muc => {
-        const selectedClass = (muc.chiSo === dongDangChonIndex) ? "selected" : "";
-        return `<tr class="${selectedClass}" onclick="chonDong(${muc.chiSo}, this)">` +
-               COT_HIEN_THI.map(chiSoCot => `<td>${thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]))}</td>`).join("") +
-               `</tr>`;
+        const selectedClass = muc.chiSo === dongDangChonIndex ? "selected" : "";
+        const selectedAria = muc.chiSo === dongDangChonIndex ? "true" : "false";
+        const o = COT_HIEN_THI.map(chiSoCot => {
+          const giaTri = thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]));
+          if (chiSoCot === 0) return '<td><span class="sap-code">' + giaTri + '</span></td>';
+          if (chiSoCot === 3) return '<td><span class="stock-badge' +
+            (muc.coTonKho ? '' : ' empty') + '">' + giaTri + '</span></td>';
+          return '<td>' + giaTri + '</td>';
+        }).join("");
+        return '<tr class="' + selectedClass + '" data-row-index="' + muc.chiSo +
+          '" tabindex="0" aria-selected="' + selectedAria +
+          '" onclick="chonDong(' + muc.chiSo + ', this)">' + o + '</tr>';
       }).join("");
 
-      document.getElementById("than-bang").innerHTML = html;
+      document.getElementById("than-bang").innerHTML = html ||
+        '<tr><td colspan="6" class="empty-table">Không tìm thấy vật tư phù hợp. Hãy thử từ khóa hoặc bộ lọc khác.</td></tr>';
       document.getElementById("thong-tin-trang").textContent =
-        `Page ${trangHienTai} / ${tongSoTrang}`;
+        "Trang " + trangHienTai + " / " + tongSoTrang;
       document.getElementById("btn-trang-truoc").disabled = trangHienTai <= 1;
       document.getElementById("btn-trang-sau").disabled = trangHienTai >= tongSoTrang;
     }
@@ -681,14 +725,6 @@
       trangHienTai = trangMoi;
       hienThiTrangHienTai();
       document.querySelector(".table-wrapper").scrollTop = 0;
-    }
-
-    function xuLyCuonBang() {
-      const vungBang = document.querySelector(".table-wrapper");
-      if (!vungBang || trangHienTai >= Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG)) return;
-
-      const ganCuoi = vungBang.scrollTop + vungBang.clientHeight >= vungBang.scrollHeight - 24;
-      if (ganCuoi) doiTrang(1);
     }
 
     function chonDongBangPhim(buoc) {
@@ -706,7 +742,7 @@
 
       const mucMoi = ketQuaLoc[viTriMoi];
       const dongMoi = document.querySelector(
-        `#than-bang tr[onclick*="chonDong(${mucMoi.chiSo},"]`
+        '#than-bang tr[data-row-index="' + mucMoi.chiSo + '"]'
       );
       if (!dongMoi) return;
 
@@ -715,12 +751,18 @@
     }
 
     function chonDong(index, element) {
-      document.querySelectorAll("#than-bang tr").forEach(tr => tr.classList.remove("selected"));
+      document.querySelectorAll("#than-bang tr").forEach(tr => {
+        tr.classList.remove("selected");
+        tr.setAttribute("aria-selected", "false");
+      });
       element.classList.add("selected");
+      element.setAttribute("aria-selected", "true");
       dongDangChonIndex = index;
 
       const dongData = tatCaDuLieu[index];
       const maSap = chuanHoaMaSap(dongData[0]); // Cột đầu tiên là Mã SAP
+      document.getElementById("nhan-sap").textContent = "SAP: " + (maSap || "—");
+      document.getElementById("chi-tiet-trong").style.display = "none";
 
       // Hiển thị thông tin chi tiết sang panel bên phải
       let htmlChiTiet = "";
@@ -738,78 +780,137 @@
 
       // Tải hình ảnh tương ứng với Mã SAP
       taiBoSuuTapAnh(maSap);
-
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        document.querySelector(".detail-section").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
 
     let lanTaiAnh = 0;
+    let dangQuetAnh = false;
     const boNhoAnh = new Map();
+    const dangKiemTraAnh = new Map();
+    const boNhoBoSuuTap = new Map();
 
-    // Tải bộ sưu tập ảnh với tối đa 3 request đồng thời.
-    function taiBoSuuTapAnh(maSap) {
+    // HEAD kiểm tra tên tệp mà không tải toàn bộ ảnh. Fallback Image() nếu
+    // chạy file://, ổ mạng, hoặc server không hỗ trợ HEAD.
+    function kiemTraAnh(url) {
+      const daLuu = boNhoAnh.get(url);
+      if (daLuu && daLuu.hetHan > Date.now()) return Promise.resolve(daLuu.coAnh);
+      if (dangKiemTraAnh.has(url)) return dangKiemTraAnh.get(url);
+
+      const tacVu = (async function() {
+        let coAnh;
+        if (location.protocol === "http:" || location.protocol === "https:") {
+          const controller = new AbortController();
+          const gioiHan = setTimeout(() => controller.abort(), 3000);
+          try {
+            const response = await fetch(url, {
+              method: "HEAD", cache: "force-cache", signal: controller.signal
+            });
+            if (response.status === 404) {
+              coAnh = false;
+            } else if (response.ok) {
+              const loai = (response.headers.get("content-type") || "").toLowerCase();
+              coAnh = !loai || loai.startsWith("image/") || loai.includes("octet-stream");
+            }
+          } catch (e) {
+            // Trình duyệt hoặc server không hỗ trợ HEAD: thử Image().
+          } finally {
+            clearTimeout(gioiHan);
+          }
+        }
+
+        if (coAnh === undefined) {
+          coAnh = await new Promise(resolve => {
+            const img = new Image();
+            let xong = false;
+            const gioiHan = setTimeout(() => ketThuc(false), 5000);
+            function ketThuc(ok) {
+              if (xong) return;
+              xong = true;
+              clearTimeout(gioiHan);
+              img.onload = null;
+              img.onerror = null;
+              resolve(ok);
+            }
+            img.onload = () => ketThuc(true);
+            img.onerror = () => ketThuc(false);
+            img.src = url;
+          });
+        }
+
+        boNhoAnh.set(url, {
+          coAnh: coAnh, hetHan: Date.now() + (coAnh ? 600000 : 60000)
+        });
+        if (boNhoAnh.size > 600) boNhoAnh.delete(boNhoAnh.keys().next().value);
+        return coAnh;
+      })();
+
+      dangKiemTraAnh.set(url, tacVu);
+      return tacVu.finally(() => dangKiemTraAnh.delete(url));
+    }
+
+    // Chỉ 4 tác vụ kiểm tra đồng thời, giữ dữ liệu từ SAP đã xem gần đây.
+    async function taiBoSuuTapAnh(maSap) {
       const lanHienTai = ++lanTaiAnh;
       maSapDangXem = chuanHoaMaSap(maSap);
-
       danhSachAnhDangXem = [];
       viTriAnhDangXem = 0;
+      dangQuetAnh = Boolean(maSapDangXem);
       capNhatGiaoDienAnh();
-
       if (!maSapDangXem) return;
 
-      const danhSachTen = [];
-
-      for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
-        const hauTo = String(k).padStart(2, "0");
-        danhSachTen.push(`${maSapDangXem}_${hauTo}.jpg`);
-        danhSachTen.push(`${maSapDangXem}_${hauTo}.png`);
+      const boDaCo = boNhoBoSuuTap.get(maSapDangXem);
+      if (boDaCo && boDaCo.hetHan > Date.now()) {
+        danhSachAnhDangXem = boDaCo.urls.slice();
+        dangQuetAnh = false;
+        capNhatGiaoDienAnh();
+        return;
       }
 
-      danhSachTen.push(`${maSapDangXem}.jpg`, `${maSapDangXem}.png`);
+      const danhSachTen = [];
+      for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
+        const hauTo = String(k).padStart(2, "0");
+        danhSachTen.push(maSapDangXem + "_" + hauTo + ".jpg");
+        danhSachTen.push(maSapDangXem + "_" + hauTo + ".png");
+      }
+      danhSachTen.push(maSapDangXem + ".jpg", maSapDangXem + ".png");
 
       const hangDoi = [...new Set(danhSachTen)];
       let viTri = 0;
-
       async function congNhan() {
         while (viTri < hangDoi.length && lanHienTai === lanTaiAnh) {
-          const tenAnh = hangDoi[viTri++];
-          const url = THU_MUC_HINH + encodeURIComponent(tenAnh);
+          const url = THU_MUC_HINH + encodeURIComponent(hangDoi[viTri++]);
           const tonTai = await kiemTraAnh(url);
-
-          if (tonTai && lanHienTai === lanTaiAnh) {
-            if (!danhSachAnhDangXem.includes(url)) {
-              const anhHienTai = danhSachAnhDangXem[viTriAnhDangXem];
-              danhSachAnhDangXem.push(url);
-              danhSachAnhDangXem.sort();
-              viTriAnhDangXem = Math.max(0, danhSachAnhDangXem.indexOf(anhHienTai));
-              capNhatGiaoDienAnh();
-            }
+          if (tonTai && lanHienTai === lanTaiAnh && !danhSachAnhDangXem.includes(url)) {
+            const anhDangChon = danhSachAnhDangXem[viTriAnhDangXem];
+            danhSachAnhDangXem.push(url);
+            danhSachAnhDangXem.sort();
+            viTriAnhDangXem = anhDangChon
+              ? danhSachAnhDangXem.indexOf(anhDangChon) : 0;
+            capNhatGiaoDienAnh();
           }
         }
       }
 
-      Promise.all([congNhan(), congNhan(), congNhan()]);
+      await Promise.all([congNhan(), congNhan(), congNhan(), congNhan()]);
+      if (lanHienTai !== lanTaiAnh) return;
+      dangQuetAnh = false;
+      boNhoBoSuuTap.set(maSapDangXem, {
+        urls: danhSachAnhDangXem.slice(),
+        hetHan: Date.now() + (danhSachAnhDangXem.length ? 300000 : 60000)
+      });
+      if (boNhoBoSuuTap.size > 80) boNhoBoSuuTap.delete(boNhoBoSuuTap.keys().next().value);
+      capNhatGiaoDienAnh();
     }
 
-    function kiemTraAnh(url) {
-      if (boNhoAnh.has(url)) {
-        return Promise.resolve(boNhoAnh.get(url));
-      }
-
-      return new Promise(resolve => {
-        const img = new Image();
-        let daKetThuc = false;
-
-        const ketThuc = ketQua => {
-          if (daKetThuc) return;
-          daKetThuc = true;
-          if (ketQua) boNhoAnh.set(url, true); // Cho phép thử lại ảnh tải lỗi.
-          resolve(ketQua);
-        };
-
-        img.onload = () => ketThuc(true);
-        img.onerror = () => ketThuc(false);
-        setTimeout(() => ketThuc(false), 5000);
-        img.src = url;
-      });
+    // Chuẩn bị ảnh tiếp theo sau khi chuyển ảnh để thao tác mượt hơn.
+    function napTruocAnhKeTiep() {
+      if (danhSachAnhDangXem.length < 2) return;
+      const url = danhSachAnhDangXem[(viTriAnhDangXem + 1) % danhSachAnhDangXem.length];
+      const anh = new Image();
+      anh.decoding = "async";
+      anh.src = url;
     }
 
     function capNhatGiaoDienAnh() {
@@ -817,26 +918,31 @@
       const btnPrev = document.getElementById("btn-anh-truoc");
       const btnNext = document.getElementById("btn-anh-sau");
       const counterEl = document.getElementById("dem-anh");
+      const khuVucTrong = document.getElementById("anh-trong");
+      const thongBaoAnh = khuVucTrong.querySelector("span:last-child");
       const tong = danhSachAnhDangXem.length;
 
+      khuVucTrong.style.display = tong > 0 ? "none" : "grid";
       if (tong > 0) {
         if (viTriAnhDangXem >= tong) viTriAnhDangXem = 0;
         const src = danhSachAnhDangXem[viTriAnhDangXem];
-        imgEl.src = src;
+        if (imgEl.getAttribute("src") !== src) imgEl.src = src;
         const lightboxImg = document.getElementById("lightbox-img");
-        if (document.getElementById("lightbox").style.display === "flex") {
+        if (document.getElementById("lightbox").style.display === "flex" &&
+            lightboxImg.getAttribute("src") !== src) {
           lightboxImg.src = src;
           datLaiZoom();
         }
-        counterEl.textContent = `${viTriAnhDangXem + 1} / ${tong} images`;
-        
-        const hienNut = tong > 1 ? "block" : "none";
-        btnPrev.style.display = hienNut;
-        btnNext.style.display = hienNut;
+        counterEl.textContent = (viTriAnhDangXem + 1) + " / " + tong +
+          " ảnh" + (dangQuetAnh ? " · Đang tải" : "");
+        btnPrev.style.display = tong > 1 ? "block" : "none";
+        btnNext.style.display = tong > 1 ? "block" : "none";
       } else {
         imgEl.removeAttribute("src");
         document.getElementById("lightbox-img").removeAttribute("src");
-        counterEl.textContent = "0/0 images";
+        thongBaoAnh.textContent = dangQuetAnh ? "Đang tìm hình ảnh..." :
+          (maSapDangXem ? "Chưa có ảnh cho mã SAP này" : "Chọn một mã SAP để xem hình ảnh");
+        counterEl.textContent = dangQuetAnh ? "Đang tìm ảnh" : "0/0 ảnh";
         btnPrev.style.display = "none";
         btnNext.style.display = "none";
       }
@@ -848,6 +954,7 @@
       if (tong <= 1) return;
       viTriAnhDangXem = (viTriAnhDangXem + buoc + tong) % tong;
       capNhatGiaoDienAnh();
+      napTruocAnhKeTiep();
     }
 
     function phongToAnh() {
@@ -928,7 +1035,6 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
-    document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonBang, { passive: true });
     document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
     document.addEventListener("keydown", e => {
       const lightboxDangMo = document.getElementById("lightbox").style.display === "flex";
@@ -942,6 +1048,20 @@
       }
 
       const dangNhapLieu = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName);
+      if (e.key === "/" && !dangNhapLieu) {
+        e.preventDefault();
+        document.getElementById("o-tim-kiem").focus();
+        return;
+      }
+      if (e.key === "Escape" && document.activeElement?.id === "o-tim-kiem") {
+        document.getElementById("o-tim-kiem").blur();
+        return;
+      }
+      if (e.key === "Enter" && document.activeElement?.dataset?.rowIndex) {
+        e.preventDefault();
+        chonDong(Number(document.activeElement.dataset.rowIndex), document.activeElement);
+        return;
+      }
       if (dangNhapLieu) return;
       if (e.key === "ArrowUp" || e.key === "ArrowDown") {
         e.preventDefault();
@@ -949,9 +1069,12 @@
       }
     });
 
-    // Tự động nạp dữ liệu và kiểm tra cập nhật mỗi 30 giây
+    // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) taiDuLieu();
+    });
   </script>
 </body>
 </html>
