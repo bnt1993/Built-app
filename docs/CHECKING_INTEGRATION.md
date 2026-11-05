@@ -101,3 +101,38 @@ Những phần này **chưa thể được xác nhận là hoàn tất** nếu c
 
 ## 6. Kiểm thử triển khai
 Kiểm tra chuyển qua 3 tab, tải History.js thật hoặc hiển thị lỗi khi thiếu file; lọc ngày và loại giao dịch, phân trang lịch sử; Stock trên/bằng/dưới/0; dòng có Reorder Point không hợp lệ; VI/EN và sáng/tối; danh sách SAP nhiều mã; tìm gần đúng; bảng phân trang; mở bộ ảnh; XLSX có công thức và màu; manifest có/không có; dùng thử khi mất mạng. Nên thử trên môi trường nội bộ có `data.js` và thư mục `Material/` thật trước khi merge.
+
+## 7. Tăng tốc ảnh và card Số lượng xuất
+
+### Chuẩn bị ảnh một lần và chạy lại khi thêm/thay ảnh
+Repo hiện chỉ có manifest mẫu; ZIP tên IMG_* chưa có ánh xạ SAP, nên không tự đoán mã từ tên ảnh.
+Đặt ảnh thật vào thư mục Material, dùng tên như `00123.jpg`, `00123_01.JPG`, `SAP001_02.png`.
+Chạy từ thư mục chứa Checking:
+
+```sh
+python -m pip install -r scripts/requirements-images.txt
+python scripts/build_material_images.py --material Material
+```
+
+Công cụ tự sinh `Material/manifest.json`, `Material/manifest.js` và `Material/_optimized/`:
+- Thumbnail WebP tối đa 160px; preview tối đa 960px, không phóng lớn ảnh nhỏ.
+- Giữ nguyên ảnh gốc; sửa hướng theo EXIF, tên bản nhỏ chứa hash nội dung để ảnh mới không dùng nhầm cache cũ.
+- Cần sao chép cả manifest, thư mục _optimized và ảnh gốc cùng ứng dụng.
+- Chạy lại lệnh mỗi khi thêm/xóa/thay ảnh. Công cụ không xóa ảnh gốc hoặc các bản nhỏ cũ.
+- Không tạo manifest rỗng khi chưa có ảnh. Tên IMG_* bị bỏ qua vì chưa xác định mã SAP.
+- Nếu tất cả tên ảnh được nhận diện, manifest đầy đủ giúp xác định cả mã không có ảnh mà không dò file.
+- Manifest JS hỗ trợ mở bằng file:// hoặc ổ mạng; manifest JSON cũ vẫn được hỗ trợ.
+- Ảnh chính được ưu tiên tải trước thumbnail. Preview/thumbnail lỗi sẽ thử ảnh gốc.
+- Lightbox luôn dùng ảnh gốc. Không tải trước toàn kho; chỉ nạp trước preview kế tiếp khi điều hướng.
+
+### Card Số lượng xuất
+Card nằm ngay dưới giá trong phần chi tiết mã SAP; khi không có cột giá, card nằm cuối phần chi tiết.
+- Nguồn: toàn bộ History.js, độc lập bộ lọc tab Lịch sử.
+- Dùng cùng phân loại Xuất với tab Lịch sử (gồm OUTPUT, SCRAP và các giao dịch xuất/đảo nhập/chuyển kho được xác định là Xuất).
+- Tổng trị tuyệt đối lượng xuất, **chưa trừ hoàn nhập**, không phải lượng xuất ròng.
+- Tách riêng từng đơn vị; không cộng PC, M, EA thành một số chung.
+- Hiển thị cảnh báo khi thiếu lượng hợp lệ, thiếu cấu trúc, tải lỗi; chỉ hiện 0 khi dữ liệu đã tải và không có giao dịch Xuất cho mã đó.
+- Tải lịch sử một lần khi xem vật tư đầu tiên; tái sử dụng chỉ mục theo mã SAP. Nút Tải lại History.js cập nhật cả card.
+- Giữ nguyên dữ liệu Stock khi đọc History.js; đổi mã đang chọn trong khi tải không làm hiển thị kết quả của mã cũ.
+
+Kiểm thử: `python tests/test_material_images.py`; `node tests/checking_browser.cjs` (cần Playwright và Chromium).
