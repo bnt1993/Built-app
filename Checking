@@ -619,6 +619,8 @@
       .history-kind-buttons { justify-content:space-between; }
       .history-kind-filter { flex:1 1 0; padding:5px 6px; }
     }
+    .history-quantity.in { color:var(--green); font-weight:750; }
+    .history-quantity.out { color:var(--red); font-weight:750; }
   </style>
 </head>
 <body>
@@ -817,9 +819,9 @@
             <input type="hidden" id="history-type" value="all">
             <div class="history-kind-buttons">
               <button type="button" class="history-kind-filter selected" data-history-kind="all" aria-pressed="true" onclick="chonLoaiHistory('all')" data-i18n="historyAny">Tất cả</button>
-              <button type="button" class="history-kind-filter" data-history-kind="in" aria-pressed="false" onclick="chonLoaiHistory('in')" data-i18n="historyIn">Nhập</button>
-              <button type="button" class="history-kind-filter" data-history-kind="out" aria-pressed="false" onclick="chonLoaiHistory('out')" data-i18n="historyOut">Xuất</button>
-              <button type="button" class="history-kind-filter" data-history-kind="unknown" aria-pressed="false" onclick="chonLoaiHistory('unknown')" data-i18n="historyOther">Khác</button>
+              <button type="button" class="history-kind-filter" data-history-kind="in" aria-pressed="false" onclick="chonLoaiHistory('in')" data-i18n="historyInShort">Nhập</button>
+              <button type="button" class="history-kind-filter" data-history-kind="out" aria-pressed="false" onclick="chonLoaiHistory('out')" data-i18n="historyOutShort">Xuất</button>
+              <button type="button" class="history-kind-filter" data-history-kind="unknown" aria-pressed="false" onclick="chonLoaiHistory('unknown')" data-i18n="historyOtherShort">Khác</button>
             </div>
           </div>
           <label><span data-i18n="historyFrom">Từ ngày</span><input type="date" id="history-from" onchange="locHistory()"></label>
@@ -865,7 +867,7 @@
         historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu các giao dịch thực tế từ History.js, không suy diễn giao dịch từ tồn kho.",
         stockDistribution:"Phân bố trạng thái tồn kho",stockDistributionTotal:"Mã vật tư", stockUnknownLabel:"Chưa có định mức",
         historyRefresh:"Tải lại History.js",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
-        historyMatching:"Kết quả lọc",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
+        historyMatching:"Kết quả lọc",historyInShort:"Nhập",historyOutShort:"Xuất",historyOtherShort:"Khác",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
         historyType:"Loại giao dịch",historyAny:"Tất cả",historyOther:"Khác / chưa rõ",historyFrom:"Từ ngày",historyTo:"Đến ngày",
         historyClear:"Xóa lọc",historyDirection:"Phân loại",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
         historyIdle:"Chưa tải History.js",historyLoading:"Đang tải History.js...",historyNoSource:"Không thể tải History.js (giữ dữ liệu lịch sử trước đó nếu có).",
@@ -942,7 +944,7 @@
         historyHeading:"Inbound / outbound history",historyDesc:"View actual transactions from History.js, without inferring movements from stock snapshots.",
         stockDistribution:"Stock status distribution",stockDistributionTotal:"Materials",stockUnknownLabel:"No reorder point",
         historyRefresh:"Reload History.js",historyTotal:"Total transactions",historyIn:"Inbound",historyOut:"Outbound",
-        historyMatching:"Matching transactions",historySearchLabel:"Search SAP, description, reference...",historySearchPlaceholder:"SAP, description, document number...",
+        historyMatching:"Matching transactions",historyInShort:"Inbound",historyOutShort:"Outbound",historyOtherShort:"Other",historySearchLabel:"Search SAP, description, reference...",historySearchPlaceholder:"SAP, description, document number...",
         historyType:"Movement type",historyAny:"All",historyOther:"Other / unknown",historyFrom:"From date",historyTo:"To date",
         historyClear:"Clear filters",historyDirection:"Direction",historyTable:"Transaction records",historyTableNote:"Shows all source columns in History.js; no fabricated transactions.",
         historyIdle:"History.js has not been loaded",historyLoading:"Loading History.js...",historyNoSource:"History.js could not be loaded (previous history is preserved if available).",
@@ -1898,10 +1900,13 @@
       const start=(historyPage-1)*SO_DONG_HISTORY_MOI_TRANG;
       const data=historyFiltered.slice(start,start+SO_DONG_HISTORY_MOI_TRANG);
       document.getElementById("history-body").innerHTML=data.map(rec=>{
-        const label=rec.type==="in"?tuDien("historyIn"):
-          rec.type==="out"?tuDien("historyOut"):tuDien("historyOther");
+        const label=rec.type==="in"?tuDien("historyInShort"):
+          rec.type==="out"?tuDien("historyOutShort"):tuDien("historyOtherShort");
         return '<tr><td><span class="history-kind '+rec.type+'">'+thoatHTML(label)+'</span></td>'+
-          rec.cells.map(val=>'<td title="'+thoatHTML(val)+'">'+thoatHTML(val)+'</td>').join("")+'</tr>';
+          rec.cells.map((val,j)=>{
+            const accent=j===historyQuantityColumn?' class="history-quantity '+rec.type+'"':"";
+            return '<td'+accent+' title="'+thoatHTML(val)+'">'+thoatHTML(val)+'</td>';
+          }).join("")+'</tr>';
       }).join("") ||
         '<tr><td class="empty-table" colspan="'+Math.max(1,historyColumns.length+1)+'">'+
         thoatHTML(tuDien("historyNoResults"))+'</td></tr>';
