@@ -739,6 +739,7 @@
         reportValuation:"Tổng giá trị kho trong kết quả",reportMissing:"Dòng có giá không hợp lệ",
         reportKeyword:"Từ khóa",reportScope:"Tìm trong",reportStockOnly:"Chỉ còn hàng",
         reportSort:"Sắp xếp",reportUpdated:"Dữ liệu cập nhật",reportGenerated:"Ngày xuất báo cáo",
+        reportStockStatus:"Trạng thái tồn kho",reportBatchSap:"Danh sách mã SAP",reportFuzzy:"Tìm gần đúng",
         reportAll:"Tất cả",reportNone:"Không nhập từ khóa",reportYes:"Có",reportNo:"Không",
         reportNoSort:"Theo dữ liệu gốc",reportLineValue:"Thành tiền (VND)",
         reportNote:"Giá trị kho = số lượng tồn dương × đơn giá hợp lệ; bỏ qua dòng không có giá hợp lệ.",
@@ -803,6 +804,7 @@
         reportValuation:"Inventory value in results",reportMissing:"Rows with invalid unit price",
         reportKeyword:"Keyword",reportScope:"Search in",reportStockOnly:"In stock only",
         reportSort:"Sort order",reportUpdated:"Source updated",reportGenerated:"Report generated",
+        reportStockStatus:"Stock status",reportBatchSap:"SAP code list",reportFuzzy:"Fuzzy search",
         reportAll:"All",reportNone:"No keyword",reportYes:"Yes",reportNo:"No",
         reportNoSort:"Source order",reportLineValue:"Line value (VND)",
         reportNote:"Inventory value = positive stock quantity × valid unit price; invalid prices are excluded.",
@@ -1979,7 +1981,8 @@
         '<fill><patternFill patternType="none"/></fill>',
         '<fill><patternFill patternType="gray125"/></fill>',
         fill("FF142D52"),fill("FFEAF2FC"),fill("FFFFFFFF"),
-        fill("FFF5F8FC"),fill("FFFFE9EB"),fill("FFE6F6F2")
+        fill("FFF5F8FC"),fill("FFFFE9EB"),fill("FFE6F6F2"),
+        fill("FFDCFCE7"),fill("FFFEF3C7"),fill("FFFFEDD5"),fill("FFFFE4E6")
       ];
       const borders = [
         '<border><left/><right/><top/><bottom/><diagonal/></border>',
@@ -2005,7 +2008,12 @@
         xf(5, 6, 1, 164),     // 16 out-of-stock currency
         xf(4, 3),             // 17 note
         xf(2, 7),             // 18 summary total label
-        xf(3, 7, 0, 164)      // 19 summary total currency
+        xf(3, 7, 0, 164),     // 19 summary total currency
+        xf(2, 8, 1, 165),     // 20 green above ROP
+        xf(2, 9, 1, 165),     // 21 yellow at ROP
+        xf(2, 10, 1, 165),    // 22 orange below ROP
+        xf(5, 11, 1, 165),    // 23 red zero
+        xf(0, 5, 1, 165)      // 24 unknown ROP
       ];
       return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
         '<styleSheet xmlns="' + ns + '">' +
@@ -2100,6 +2108,7 @@
       const colQty = Math.max(0, timChiSo(["quantity","qty","số lượng"]) < 0 ?
         Math.min(3, soCotNguon - 1) : timChiSo(["quantity","qty","số lượng"]));
       const colPrice = timChiSo(["price","unit price","đơn giá","giá"]);
+      const colReorder = cotReorderPoint();
       const themThanhTien = colPrice >= 0;
       const cotCuoi = soCotNguon + (themThanhTien ? 1 : 0);
       const dongCuoi = 6 + src.length + (themThanhTien ? 2 : 0);
@@ -2123,7 +2132,10 @@
         [tuDien("reportStockOnly"), option.onlyStock ? tuDien("reportYes") : tuDien("reportNo")],
         [tuDien("reportSort"), thuTu],
         [tuDien("reportUpdated"), option.updated || "—"],
-        [tuDien("reportGenerated"), ngayBaoCao]
+        [tuDien("reportGenerated"), ngayBaoCao],
+        [tuDien("reportStockStatus"),tuDien({all:"stockAny",healthy:"stockAbove",at:"stockEqual",below:"stockBelow",zero:"stockZero",unknown:"stockUnknown"}[option.status]||"stockAny")],
+        [tuDien("reportBatchSap"),option.codes?option.codes.slice(0,1000).replace(/[\n\r]+/g,", "):"—"],
+        [tuDien("reportFuzzy"),option.fuzzy?tuDien("reportYes"):tuDien("reportNo")]
       ];
 
       // Detail sheet: complete original SAP columns plus calculated line value.
@@ -2162,6 +2174,9 @@
         const row = i + 7;
         const qty = chuyenThanhSo(rec[colQty]);
         const stock = Number.isFinite(qty) && qty > 0;
+        const reorder = colReorder >= 0 ? chuyenThanhSo(rec[colReorder]) : NaN;
+        const stockLevel = trangThaiTheoReorderPoint(qty,reorder);
+        const levelStyle = {healthy:20,at:21,below:22,zero:23,unknown:24}[stockLevel];
         if (stock) { tonKho += qty; conHang++; }
         const price = themThanhTien ? chuyenThanhSo(rec[colPrice]) : NaN;
         const validPrice = Number.isFinite(price) && price >= 0;
@@ -2178,9 +2193,9 @@
           const raw = rec[j] ?? "";
           const num = j === colQty ? qty : j === colPrice ? price : NaN;
           if (raw !== "" && Number.isFinite(num)) {
-            cells.push(oSoXlsx(j,row,num,j === colPrice ? moneyStyle : qtyStyle));
+            cells.push(oSoXlsx(j,row,num,j === colPrice ? moneyStyle : j===colQty ? levelStyle : qtyStyle));
           } else {
-            cells.push(oChuXlsx(j,row,raw,stockStyle));
+            cells.push(oChuXlsx(j,row,raw,j===colQty?levelStyle:stockStyle));
           }
         }
         if (themThanhTien) {
@@ -2261,13 +2276,13 @@
           oChuXlsx(3,r,boLoc[i][1],8)],26));
         mergeSummary.push("A"+r+":C"+r,"D"+r+":H"+r);
       }
-      textRow(24,tuDien("reportNote"),17,28);
+      textRow(28,tuDien("reportNote"),17,28);
       const sumCols = '<cols><col min="1" max="1" width="23" customWidth="1"/>' +
         '<col min="2" max="3" width="14" customWidth="1"/>' +
         '<col min="4" max="4" width="26" customWidth="1"/>' +
         '<col min="5" max="8" width="14" customWidth="1"/></cols>';
       const sheetOverview = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-        '<worksheet xmlns="' + sheetNs + '"><dimension ref="A1:H24"/>' +
+        '<worksheet xmlns="' + sheetNs + '"><dimension ref="A1:H28"/>' +
         '<sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews>' +
         '<sheetFormatPr defaultRowHeight="22"/>'+sumCols+'<sheetData>' +
         s.join("") + '</sheetData><mergeCells count="'+mergeSummary.length+'">' +
@@ -2325,6 +2340,9 @@
         keyword: document.getElementById("o-tim-kiem").value.trim(),
         scope: mode,
         onlyStock: document.getElementById("chk-ton-kho").checked,
+        status:document.getElementById("loc-canh-bao").value,
+        codes:document.getElementById("sap-batch").value.trim(),
+        fuzzy:document.getElementById("tim-gan-dung").checked,
         sortCol: cotSapXep, sortDir: huongSapXep, updated: mocCapNhatCu
       };
       const nutXuat = document.getElementById("btn-xuat-excel");
