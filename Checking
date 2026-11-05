@@ -465,6 +465,48 @@
       .metric-money { font-size: clamp(17px, 4.5vw, 23px); }
       .metric-card { min-width: 0; }
     }
+
+    /* Reorder point states: green >, yellow =, orange below, red stock zero. */
+    .stock-badge.stock-healthy{background:#dcfce7;color:#067647}
+    .stock-badge.stock-at{background:#fef3c7;color:#8b6506}
+    .stock-badge.stock-below{background:#ffedd5;color:#9a3412}
+    .stock-badge.stock-zero{background:#ffe4e6;color:#b42336}
+    .stock-badge.stock-unknown{background:var(--app-chip);color:var(--muted)}
+    html[data-theme="dark"] .stock-badge.stock-healthy{background:#144c36;color:#86efac}
+    html[data-theme="dark"] .stock-badge.stock-at{background:#504016;color:#fde68a}
+    html[data-theme="dark"] .stock-badge.stock-below{background:#552e1a;color:#fdba74}
+    html[data-theme="dark"] .stock-badge.stock-zero{background:#54212e;color:#fda4af}
+    tbody tr.out-of-stock{background:var(--app-panel)}
+    tbody tr.out-of-stock td{border-bottom-color:var(--app-border-soft)}
+    .stock-badge{border-radius:8px;min-width:55px;justify-content:center;border:1px solid transparent}
+    .reorder-legend{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;color:var(--muted);font-size:10px}
+    .reorder-legend b{height:9px;width:9px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:4px}
+    .legend-green{background:#16a34a}.legend-yellow{background:#facc15}.legend-orange{background:#fb923c}.legend-red{background:#e11d48}
+    .advanced-panel,.insights-panel{border:1px solid var(--line);background:var(--app-panel);border-radius:13px;padding:10px 13px;margin-bottom:11px}
+    .advanced-panel summary,.insights-panel summary{cursor:pointer;font-weight:800;color:var(--ink);font-size:12px}
+    .advanced-controls{display:flex;align-items:flex-end;flex-wrap:wrap;gap:9px;padding-top:12px}
+    .advanced-controls label{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-weight:700;font-size:11px;min-width:130px}
+    .advanced-controls select,.advanced-controls textarea,.advanced-controls input{background:var(--app-field);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:12px}
+    .advanced-controls textarea{width:min(400px,100%);min-height:66px;resize:vertical}
+    .advanced-controls .check-row{flex-direction:row;align-items:center}
+    .advanced-controls button{min-height:36px}
+    .insight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:12px}
+    .insight-box{padding:12px;border:1px solid var(--line);border-radius:11px;min-width:0;background:var(--app-field)}
+    .insight-box h3{font-size:12px;margin:0 0 10px;color:var(--ink)}
+    .insight-row{display:flex;align-items:center;gap:7px;font-size:11px;margin:7px 0}
+    .insight-row .name{width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .insight-track{flex:1;min-width:0;height:9px;background:var(--line);border-radius:8px;overflow:hidden}
+    .insight-bar{height:100%;background:var(--blue);border-radius:8px}
+    .insight-row strong{min-width:45px;font-size:10px;text-align:right}
+    .insight-note{font-size:11px;color:var(--muted);margin-top:8px}
+    .history-grid{overflow:auto;max-height:200px}
+    .image-thumbs{display:flex;gap:6px;overflow-x:auto;padding:6px 0 3px}
+    .image-thumb{flex:0 0 55px;width:55px;height:55px;padding:2px;border-radius:8px;border:2px solid var(--line);background:var(--app-field)}
+    .image-thumb[aria-pressed="true"]{border-color:var(--blue)}
+    .image-thumb img{width:100%;height:100%;object-fit:contain}
+    @media(max-width:900px){.insight-grid{grid-template-columns:1fr 1fr}.insight-grid .insight-box:last-child{grid-column:1/-1}}
+    @media(max-width:620px){.insight-grid{grid-template-columns:1fr}.insight-grid .insight-box:last-child{grid-column:auto}.advanced-controls label{flex:1 1 125px}.advanced-controls textarea{max-width:100%}}
+
   </style>
 </head>
 <body>
@@ -539,11 +581,59 @@
         </div>
       </section>
 
+      <details class="advanced-panel" id="advanced-search">
+        <summary data-i18n="advancedSearch">Tìm kiếm nâng cao và bộ lọc yêu thích</summary>
+        <div class="advanced-controls">
+          <label><span data-i18n="stockStatus">Stock / Reorder Point</span>
+            <select id="loc-canh-bao" onchange="yeuCauLocDuLieu()">
+              <option value="all" data-i18n="stockAny">Tất cả</option>
+              <option value="healthy" data-i18n="stockAbove">Trên định mức</option>
+              <option value="at" data-i18n="stockEqual">Bằng định mức</option>
+              <option value="below" data-i18n="stockBelow">Dưới định mức</option>
+              <option value="zero" data-i18n="stockZero">Hết hàng (= 0)</option>
+              <option value="unknown" data-i18n="stockUnknown">Chưa có định mức</option>
+            </select></label>
+          <label><span data-i18n="batchSapLabel">Nhiều mã SAP</span>
+            <textarea id="sap-batch" data-i18n-placeholder="batchSapPlaceholder" placeholder="SAP001, SAP002 hoặc dán mã trên nhiều dòng" oninput="yeuCauLocDuLieu()"></textarea></label>
+          <label class="check-row"><input type="checkbox" id="tim-gan-dung" onchange="yeuCauLocDuLieu()"> <span data-i18n="fuzzySearch">Tìm gần đúng</span></label>
+          <label><span data-i18n="savedFilters">Bộ lọc đã lưu</span><select id="loc-da-luu" aria-label="Saved filters"><option value="">—</option></select></label>
+          <button class="btn btn-secondary" type="button" onclick="luuBoLoc()" data-i18n="saveFilter">Lưu</button>
+          <button class="btn btn-soft" type="button" onclick="apDungBoLoc()" data-i18n="applyFilter">Áp dụng</button>
+          <button class="btn btn-secondary" type="button" onclick="xoaBoLoc()" data-i18n="removeFilter">Xóa đã lưu</button>
+        </div>
+      </details>
+      <details class="insights-panel" id="insights-panel">
+        <summary data-i18n="inventoryInsights">Phân tích giá trị kho, ABC và lịch sử đồng bộ</summary>
+        <div class="insight-grid">
+          <div class="insight-box"><h3 data-i18n="abcTitle">ABC theo giá trị</h3><div id="insight-abc"></div></div>
+          <div class="insight-box"><h3 data-i18n="topTen">Top 10 giá trị cao</h3><div id="insight-top"></div></div>
+          <div class="insight-box"><h3 data-i18n="groupValue">Giá trị theo nhóm</h3><div id="insight-groups"></div></div>
+          <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><div id="insight-history" class="history-grid"></div></div>
+          <div class="insight-box"><h3 data-i18n="transactionHistory">Lịch sử nhập/xuất từ SAP</h3><div id="insight-transactions" class="history-grid"></div></div>
+          <div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
+            <div class="advanced-controls" style="padding-top:0">
+              <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
+                <option value="off" data-i18n="scheduleOff">Tắt</option>
+                <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
+                <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
+              </select>
+              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="scheduleDownload">Xuất XLSX ngay</button>
+            </div>
+            <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
+          </div>
+        </div>
+        <div class="insight-note" data-i18n="insightNote">Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất.</div>
+      </details>
       <div class="main-container">
         <section class="table-section" aria-labelledby="ten-bang">
           <div class="section-header">
             <div><h2 id="ten-bang" data-i18n="materialsList">Danh sách vật tư</h2><div class="section-caption" data-i18n="rowHint">Nhấn vào một dòng để xem chi tiết và hình ảnh</div></div>
-            <div class="table-header-actions"><span class="panel-legend" data-i18n="outOfStock">Hết hàng</span><span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span></div>
+            <div class="table-header-actions"><div class="reorder-legend">
+<span><b class="legend-green"></b><span data-i18n="stockAbove">Trên định mức</span></span>
+<span><b class="legend-yellow"></b><span data-i18n="stockEqual">Bằng định mức</span></span>
+<span><b class="legend-orange"></b><span data-i18n="stockBelow">Dưới định mức</span></span>
+<span><b class="legend-red"></b><span data-i18n="stockZero">Hết hàng (= 0)</span></span>
+</div><span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span></div>
           </div>
           <div class="table-wrapper" role="region" data-i18n-aria="tableAria" aria-label="Bảng vật tư, có thể cuộn ngang" tabindex="0">
             <table id="bang-du-lieu"><thead id="dau-bang"></thead><tbody id="than-bang"><tr><td class="empty-table" data-i18n="loadingData">Đang kết nối dữ liệu...</td></tr></tbody></table>
@@ -570,6 +660,7 @@
             <button type="button" class="img-nav-btn btn-next" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" data-i18n-aria="nextImage" aria-label="Ảnh sau">›</button>
             <div class="img-counter" id="dem-anh">0/0 ảnh</div>
           </div>
+          <div class="image-thumbs" id="image-thumbnails" aria-label="Image thumbnails"></div>
           <div class="detail-placeholder" id="chi-tiet-trong" data-i18n="emptyDetails">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
           <div class="detail-grid" id="luoi-chi-tiet"></div>
           <div class="bm-no-card" id="bm-no-card">
@@ -616,6 +707,10 @@
         resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
         searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP, mô tả hoặc Part No...",
         search:"Tìm kiếm", clear:"Xóa", export:"Xuất báo cáo Excel (.xlsx)", searchIn:"Tìm trong",
+        advancedSearch:"Tìm kiếm nâng cao và bộ lọc yêu thích",stockStatus:"Tồn kho so với Reorder Point",
+        stockAny:"Tất cả trạng thái",stockAbove:"Trên định mức",stockEqual:"Bằng định mức",stockBelow:"Dưới định mức",stockZero:"Hết hàng (= 0)",stockUnknown:"Chưa có định mức",
+        batchSapLabel:"Nhiều mã SAP",batchSapPlaceholder:"SAP001, SAP002 hoặc dán nhiều dòng",fuzzySearch:"Tìm gần đúng",savedFilters:"Bộ lọc đã lưu",saveFilter:"Lưu bộ lọc",applyFilter:"Áp dụng",removeFilter:"Xóa bộ lọc",filterName:"Tên bộ lọc",
+        inventoryInsights:"Phân tích giá trị kho, ABC và lịch sử đồng bộ",abcTitle:"Phân nhóm ABC theo giá trị",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",groupValue:"Phân bổ giá trị theo nhóm vật tư",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất XLSX ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi app đang mở",scheduleDue:"Đến lịch xuất báo cáo Excel. Bấm Xuất XLSX ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
         searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
         searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
         materialsList:"Danh sách vật tư", rowHint:"Nhấn vào một dòng để xem chi tiết và hình ảnh",
@@ -656,6 +751,7 @@
         reportValuation:"Tổng giá trị kho trong kết quả",reportMissing:"Dòng có giá không hợp lệ",
         reportKeyword:"Từ khóa",reportScope:"Tìm trong",reportStockOnly:"Chỉ còn hàng",
         reportSort:"Sắp xếp",reportUpdated:"Dữ liệu cập nhật",reportGenerated:"Ngày xuất báo cáo",
+        reportStockStatus:"Trạng thái tồn kho",reportBatchSap:"Danh sách mã SAP",reportFuzzy:"Tìm gần đúng",
         reportAll:"Tất cả",reportNone:"Không nhập từ khóa",reportYes:"Có",reportNo:"Không",
         reportNoSort:"Theo dữ liệu gốc",reportLineValue:"Thành tiền (VND)",
         reportNote:"Giá trị kho = số lượng tồn dương × đơn giá hợp lệ; bỏ qua dòng không có giá hợp lệ.",
@@ -677,6 +773,9 @@
         searchAria:"Search SAP code, description or part number",
         searchPlaceholder:"Search SAP code, description, or Part No...",
         search:"Search", clear:"Clear", export:"Export Excel report (.xlsx)", searchIn:"Search by",
+        advancedSearch:"Advanced search and saved filters",stockStatus:"Stock vs Reorder Point",stockAny:"All statuses",stockAbove:"Above reorder point",stockEqual:"At reorder point",stockBelow:"Below reorder point",stockZero:"Out of stock (= 0)",stockUnknown:"No reorder point",
+        batchSapLabel:"Multiple SAP codes",batchSapPlaceholder:"SAP001, SAP002 or one per line",fuzzySearch:"Fuzzy search",savedFilters:"Saved filters",saveFilter:"Save filter",applyFilter:"Apply",removeFilter:"Delete saved filter",filterName:"Filter name",
+        inventoryInsights:"Inventory analytics, ABC and sync snapshots",abcTitle:"ABC classification by value",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",groupValue:"Value by material group",transactionHistory:"SAP inbound/outbound transactions",transactionUnavailable:"No SAP transaction feed is connected",scheduleTitle:"Report reminder while the app is open",scheduleOff:"Off",scheduleDaily:"Daily after 9:00",scheduleWeekly:"Mondays after 9:00",scheduleDownload:"Export XLSX now",scheduleWaiting:"Reminders only run while this app is open",scheduleDue:"Your Excel report reminder is due. Click Export XLSX now.",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
         searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
         searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
         materialsList:"Material list", rowHint:"Select a row to view details and images",
@@ -717,6 +816,7 @@
         reportValuation:"Inventory value in results",reportMissing:"Rows with invalid unit price",
         reportKeyword:"Keyword",reportScope:"Search in",reportStockOnly:"In stock only",
         reportSort:"Sort order",reportUpdated:"Source updated",reportGenerated:"Report generated",
+        reportStockStatus:"Stock status",reportBatchSap:"SAP code list",reportFuzzy:"Fuzzy search",
         reportAll:"All",reportNone:"No keyword",reportYes:"Yes",reportNo:"No",
         reportNoSort:"Source order",reportLineValue:"Line value (VND)",
         reportNote:"Inventory value = positive stock quantity × valid unit price; invalid prices are excluded.",
@@ -803,7 +903,8 @@
         current: trangHienTai, total: Math.max(1,Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG))
       });
       capNhatGiaoDienAnh();
-      if (chiMucSanSang) hienThiTongGiaTriKho();
+      if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
+      kiemTraNhacBaoCao();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
     }
 
@@ -1061,14 +1162,242 @@
           : tuDien("inventoryValueNote");
     }
 
+
+    // Reorder Point is sourced from SAP data, not a fixed global threshold.
+    let chiSoReorderPoint = -1;
+    let chiSoSoLuong = 3;
+    let danhSachGiaTri = [];
+    let analyticsReady = false;
+
+    function cotReorderPoint() {
+      return tieuDeCot.findIndex(h => [
+        "reorder point", "re-order point", "reorderpoint", "reorder level",
+        "rop", "điểm đặt hàng lại", "mức đặt hàng lại", "ngưỡng đặt hàng lại"
+      ].includes(String(h ?? "").normalize("NFC").trim().toLowerCase()));
+    }
+
+    function trangThaiTheoReorderPoint(soLuong, diemDatHang) {
+      if (!Number.isFinite(soLuong)) return "unknown";
+      if (soLuong === 0) return "zero";
+      if (!Number.isFinite(diemDatHang) || diemDatHang < 0) return "unknown";
+      if (soLuong > diemDatHang) return "healthy";
+      if (soLuong === diemDatHang) return "at";
+      return "below";
+    }
+
+    function tenTrangThaiTon(trangThai) {
+      return tuDien({
+        healthy:"stockAbove", at:"stockEqual", below:"stockBelow",
+        zero:"stockZero",unknown:"stockUnknown"
+      }[trangThai] || "stockUnknown");
+    }
+
+    function trungGanDung(mot, hai) {
+      if (mot === hai) return true;
+      if (Math.abs(mot.length - hai.length) > 1) return false;
+      let i=0,j=0,soLoi=0;
+      while (i < mot.length && j < hai.length) {
+        if (mot[i] === hai[j]) {i++;j++;continue;}
+        if (++soLoi > 1) return false;
+        if (mot.length > hai.length) i++;
+        else if (hai.length > mot.length) j++;
+        else {i++;j++;}
+      }
+      return soLoi + (i<mot.length||j<hai.length ? 1:0) <= 1;
+    }
+
+    function chuanHoaTimKiem(text) {
+      return String(text ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/đ/g,"d");
+    }
+
+    function coTuGanDung(chuoi,tuKhoa) {
+      if (tuKhoa.length < 4 || tuKhoa.length > 48) return false;
+      const words = chuanHoaTimKiem(chuoi).split(/[^a-z0-9]+/).filter(Boolean);
+      return words.some(word => Math.abs(word.length-tuKhoa.length)<=1 && trungGanDung(word,tuKhoa));
+    }
+
+    function layDanhSachLocDaLuu() {
+      try {
+        const mang=JSON.parse(docTuyChon("checking-filters-v2") || "[]");
+        return Array.isArray(mang) ? mang.filter(x=>x&&typeof x.name==="string").slice(0,12):[];
+      } catch { return []; }
+    }
+
+    function veBoLocDaLuu() {
+      const sel=document.getElementById("loc-da-luu");
+      const selected=sel.value;
+      sel.innerHTML='<option value="">—</option>'+layDanhSachLocDaLuu().map((x,i)=>
+        '<option value="'+i+'">'+thoatHTML(x.name)+'</option>').join("");
+      if([...sel.options].some(x=>x.value===selected))sel.value=selected;
+    }
+
+    function luuBoLoc() {
+      const name=prompt(tuDien("filterName"));
+      if (!name || !name.trim()) return;
+      const records=layDanhSachLocDaLuu().filter(x=>x.name!==name.trim());
+      records.unshift({
+        name:name.trim().slice(0,70),
+        keyword:document.getElementById("o-tim-kiem").value,
+        scope:document.querySelector('input[name="truongTim"]:checked').value,
+        onlyStock:document.getElementById("chk-ton-kho").checked,
+        status:document.getElementById("loc-canh-bao").value,
+        codes:document.getElementById("sap-batch").value.slice(0,12000),
+        fuzzy:document.getElementById("tim-gan-dung").checked
+      });
+      ghiTuyChon("checking-filters-v2",JSON.stringify(records.slice(0,12)));
+      veBoLocDaLuu();
+      document.getElementById("loc-da-luu").value="0";
+    }
+
+    function apDungBoLoc() {
+      const idx=Number(document.getElementById("loc-da-luu").value);
+      if(document.getElementById("loc-da-luu").value===""||!Number.isInteger(idx))return;
+      const data=layDanhSachLocDaLuu()[idx];if(!data)return;
+      document.getElementById("o-tim-kiem").value=data.keyword||"";
+      const radio=document.querySelector('input[name="truongTim"][value="'+data.scope+'"]');
+      document.querySelector('input[name="truongTim"][value="all"]').checked=true;
+      if(radio)radio.checked=true;
+      document.getElementById("chk-ton-kho").checked=Boolean(data.onlyStock);
+      document.getElementById("loc-canh-bao").value=data.status||"all";
+      document.getElementById("sap-batch").value=data.codes||"";
+      document.getElementById("tim-gan-dung").checked=Boolean(data.fuzzy);
+      yeuCauLocDuLieu();
+    }
+
+    function xoaBoLoc() {
+      const sel=document.getElementById("loc-da-luu");
+      if(sel.value==="")return;
+      const idx=Number(sel.value), list=layDanhSachLocDaLuu();
+      if(!Number.isInteger(idx)||idx<0||idx>=list.length)return;
+      list.splice(idx,1);
+      ghiTuyChon("checking-filters-v2",JSON.stringify(list));
+      veBoLocDaLuu();sel.value="";
+    }
+
+
+    function hienThiThanhGiaTri(danhSach,containerId,tong,loai) {
+      const target=document.getElementById(containerId);
+      if (!danhSach.length || !tong) {
+        target.textContent=tuDien("noAnalytics");return;
+      }
+      target.innerHTML=danhSach.map(({name,value})=>{
+        const share=Math.max(0,Math.min(100,100*value/tong));
+        const text=loai==="money" ? dinhDangGiaTriKho(value) : dinhDangSoLuong.format(value);
+        return '<div class="insight-row"><span class="name" title="'+thoatHTML(name)+'">'+
+          thoatHTML(name)+'</span><div class="insight-track"><div class="insight-bar" style="width:'+
+          share.toFixed(2)+'%"></div></div><strong title="'+thoatHTML(text)+'">'+
+          thoatHTML(loai==="money" ? share.toFixed(1)+"%" : text)+'</strong></div>';
+      }).join("");
+    }
+
+    function capNhatThongKeNangCao() {
+      if (!analyticsReady) return;
+      const sorted=danhSachGiaTri.slice().sort((a,b)=>b.value-a.value);
+      const total=sorted.reduce((sum,x)=>sum+x.value,0);
+      const abc=[{name:"A",value:0,count:0},{name:"B",value:0,count:0},{name:"C",value:0,count:0}];
+      let running=0;
+      for(const rec of sorted) {
+        const idx=total===0?2:(running/total < .80?0:running/total < .95?1:2);
+        abc[idx].value+=rec.value;abc[idx].count++;
+        running+=rec.value;
+      }
+      hienThiThanhGiaTri(abc,"insight-abc",total,"money");
+      const top=sorted.slice(0,10).map(x=>({name:x.sap,value:x.value}));
+      hienThiThanhGiaTri(top,"insight-top",total,"money");
+      const groupMap=new Map();
+      for(const rec of sorted) groupMap.set(rec.group||"—",(groupMap.get(rec.group||"—")||0)+rec.value);
+      const groups=[...groupMap].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,value])=>({name,value}));
+      hienThiThanhGiaTri(groups,"insight-groups",total,"money");
+      veLichSuKho();
+      veLichSuGiaoDich();
+      kiemTraNhacBaoCao();
+    }
+
+    function layAnhChupKho() {
+      try{
+        const data=JSON.parse(docTuyChon("checking-stock-snapshots")||"[]");
+        return Array.isArray(data)?data.filter(x=>x&&typeof x.date==="string"&&Number.isFinite(x.value)).slice(-60):[];
+      }catch{return []}
+    }
+
+    function luuAnhChupKho() {
+      if(!analyticsReady) return;
+      const today=new Date().toLocaleDateString("sv-SE");
+      const snapshots=layAnhChupKho().filter(x=>x.date!==today);
+      const warnings=duLieuTimKiem.reduce((count,x)=>count+(x.trangThaiTon==="zero"||x.trangThaiTon==="below"||x.trangThaiTon==="at"?1:0),0);
+      snapshots.push({date:today,value:Number.isFinite(tongGiaTriTonKho)?tongGiaTriTonKho:0,
+        rows:duLieuTimKiem.length,warnings,hasPrice:tongGiaTriTonKho!==null});
+      ghiTuyChon("checking-stock-snapshots",JSON.stringify(snapshots.slice(-60)));
+      veLichSuKho();
+    }
+
+    function veLichSuKho() {
+      const snapshots=layAnhChupKho();
+      const node=document.getElementById("insight-history");
+      if (!snapshots.length) {node.textContent=tuDien("noAnalytics");return;}
+      node.innerHTML=snapshots.slice(-12).reverse().map(rec=>
+        '<div class="insight-row"><span class="name">'+thoatHTML(rec.date)+'</span>'+
+        '<strong style="min-width:96px" title="'+thoatHTML(rec.hasPrice===false?"—":dinhDangGiaTriKho(rec.value))+'">'+
+        thoatHTML(rec.hasPrice===false?"—":dinhDangGiaTriKho(rec.value))+'</strong></div>').join("");
+    }
+
+
+    // Optional read-only transaction feed supplied by the SAP integration.
+    // Example: window.lichSuNhapXuat = [{date:"2026-11-05",sap:"SAP001",type:"IN",quantity:5}].
+    function veLichSuGiaoDich() {
+      const container=document.getElementById("insight-transactions");
+      const data=window.lichSuNhapXuat || window.inventoryTransactions;
+      if (!Array.isArray(data) || !data.length) {
+        container.textContent=tuDien("transactionUnavailable");return;
+      }
+      container.innerHTML=data.slice(-15).reverse().map(item=>{
+        if(!item || typeof item!=="object")return "";
+        const date=String(item.date??item.ngay??"—");
+        const sap=String(item.sap??item.material??"—");
+        const type=String(item.type??item.loai??"—");
+        const qty=String(item.quantity??item.qty??"—");
+        return '<div class="insight-row"><span class="name" title="'+thoatHTML(sap)+'">'+
+          thoatHTML(sap)+'</span><span>'+thoatHTML(type)+'</span><strong>'+
+          thoatHTML(qty)+'</strong><span>'+thoatHTML(date)+'</span></div>';
+      }).join("");
+    }
+
+    function caiDatNhacBaoCao() {
+      ghiTuyChon("checking-report-reminder",document.getElementById("bao-cao-nhac-lich").value);
+      kiemTraNhacBaoCao();
+    }
+
+    function kiemTraNhacBaoCao() {
+      const choice=document.getElementById("bao-cao-nhac-lich");
+      const message=document.getElementById("bao-cao-nhac-tin");
+      if (!choice || !message) return;
+      const mode=choice.value;
+      if (mode==="off" || document.hidden || !chiMucSanSang) {
+        message.textContent=tuDien("scheduleWaiting");return;
+      }
+      const date=new Date(),due=date.getHours()>=9 && (mode==="daily" || date.getDay()===1);
+      message.textContent=due?tuDien("scheduleDue"):tuDien("scheduleWaiting");
+    }
+
+    function khoiTaoLichNhacBaoCao() {
+      const mode=docTuyChon("checking-report-reminder");
+      document.getElementById("bao-cao-nhac-lich").value=
+        mode==="daily" || mode==="weekly" ? mode : "off";
+      kiemTraNhacBaoCao();
+    }
+
     // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
       const lanHienTai = ++lanLapChiMuc;
       const chiSoBmNo = timCotTheoTen("BM No");
       // Prefer named headers; keep the existing quantity column position as a fallback.
       const cotSoLuong = tieuDeCot.findIndex(x =>
-        ["quantity", "qty", "số lượng"].includes(String(x ?? "").trim().toLowerCase()));
-      const chiSoSoLuong = cotSoLuong >= 0 ? cotSoLuong : 3;
+        ["quantity", "qty", "số lượng", "stock", "stock qty", "on hand", "tồn kho"].includes(String(x ?? "").trim().toLowerCase()));
+      chiSoSoLuong = cotSoLuong >= 0 ? cotSoLuong : 3;
+      chiSoReorderPoint = cotReorderPoint();
+      danhSachGiaTri = [];
+      analyticsReady = false;
       const chiSoGia = tieuDeCot.findIndex(x =>
         ["price", "unit price", "đơn giá", "giá"].includes(String(x ?? "").trim().toLowerCase()));
       let giaTriDaTinh = 0;
@@ -1099,14 +1428,19 @@
           const giaTri = dong.map(ten => String(ten ?? "").toLowerCase());
           const soLuong = chuyenThanhSo(dong[chiSoSoLuong]);
           const coTonKho = soLuong > 0;
+          const reorderPoint = chiSoReorderPoint >= 0 ? chuyenThanhSo(dong[chiSoReorderPoint]) : NaN;
+          const trangThaiTon = trangThaiTheoReorderPoint(soLuong, reorderPoint);
           if (coTonKho) soCoTonKho++;
           // Inventory valuation uses all rows, independent of the active search/filter.
           // Do not count empty stock or non-numeric/negative prices as monetary value.
+          let giaTriDong = 0;
           if (chiSoGia >= 0 && coTonKho) {
             const donGia = chuyenThanhSo(dong[chiSoGia]);
             const thanhTien = soLuong * donGia;
             if (Number.isFinite(donGia) && donGia >= 0 && Number.isFinite(thanhTien)) {
               giaTriDaTinh += thanhTien;
+              giaTriDong = thanhTien;
+              if (thanhTien > 0) danhSachGiaTri.push({sap:String(dong[0]??""),value:thanhTien,group:String(dong[5]??"")});
             } else {
               soDongGiaKhongHopLe++;
             }
@@ -1119,7 +1453,7 @@
             desc: giaTri[1] || "",
             part: giaTri[2] || "",
             bmno: chiSoBmNo >= 0 ? giaTri[chiSoBmNo] || "" : "",
-            coTonKho: coTonKho
+            coTonKho: coTonKho, soLuong, reorderPoint, trangThaiTon, giaTriDong
           });
         }
         if (viTri < tatCaDuLieu.length) {
@@ -1130,6 +1464,9 @@
           soDongGiaTriKhongHopLe = soDongGiaKhongHopLe;
           document.getElementById("metric-instock").textContent = dinhDangSoLuong.format(soCoTonKho);
           hienThiTongGiaTriKho();
+          analyticsReady=true;
+          capNhatThongKeNangCao();
+          luuAnhChupKho();
           locDuLieu();
         }
       }
@@ -1155,6 +1492,11 @@
       const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
+      const locCanhBao=document.getElementById("loc-canh-bao").value;
+      const dsSap=new Set(document.getElementById("sap-batch").value.split(/[,;|\n\r\t ]+/)
+        .map(x=>chuanHoaMaSap(x).toLowerCase()).filter(Boolean));
+      const nhieuTuKhoa=tuKhoa.split(/[,;|\n\r]+/).map(x=>x.trim()).filter(Boolean);
+      const ganDung=document.getElementById("tim-gan-dung").checked;
       const truongTim = cheDoTim === "all" ? "all" : cheDoTim;
       const lanLocHienTai = ++soLanLocDuLieu;
       const moi = [];
@@ -1167,9 +1509,12 @@
         const gioiHan = Math.min(viTri + 2500, tong);
         for (; viTri < gioiHan; viTri++) {
           const muc = duLieuTimKiem[viTri];
-          if ((!tuKhoa || muc[truongTim].includes(tuKhoa)) && (!chiTonKho || muc.coTonKho)) {
-            moi.push(muc);
-          }
+          const giaTri=muc[truongTim];
+          const hopTuKhoa=!tuKhoa || (nhieuTuKhoa.length?nhieuTuKhoa:[tuKhoa]).some(term=>
+            giaTri.includes(term) || (ganDung && coTuGanDung(giaTri,chuanHoaTimKiem(term))));
+          const hopSap=!dsSap.size||dsSap.has(chuanHoaMaSap(muc.dong[0]).toLowerCase());
+          if (hopTuKhoa && hopSap && (!chiTonKho || muc.coTonKho) &&
+              (locCanhBao==="all" || muc.trangThaiTon===locCanhBao)) moi.push(muc);
         }
         if (viTri < tong) {
           requestAnimationFrame(xuLyNhom);
@@ -1232,10 +1577,13 @@
         const o = COT_HIEN_THI.map(chiSoCot => {
           const giaTri = thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]));
           if (chiSoCot === 0) return '<td><span class="sap-code">' + giaTri + '</span></td>';
-          if (chiSoCot === 3) return '<td><span class="stock-badge' +
-            (muc.coTonKho ? '' : ' empty') + '"' +
-            (muc.coTonKho ? '' : ' title="' + thoatHTML(tuDien("outOfStock")) + '"') + '>' +
-            (muc.coTonKho ? '' : '⚠ ') + giaTri + '</span></td>';
+          if (chiSoCot === chiSoSoLuong) {
+            const trangThai=muc.trangThaiTon||"unknown";
+            const tooltip=tenTrangThaiTon(trangThai) +
+              (Number.isFinite(muc.reorderPoint) ? ' · Reorder Point: '+muc.reorderPoint : '');
+            return '<td><span class="stock-badge stock-'+trangThai+'" title="'+thoatHTML(tooltip)+'">' +
+              (trangThai==="zero"?'⚠ ':'')+giaTri+'</span></td>';
+          }
           return '<td>' + giaTri + '</td>';
         }).join("");
         return '<tr class="' + selectedClass + (muc.coTonKho ? '' : ' out-of-stock') + '" data-row-index="' + muc.chiSo +
@@ -1412,6 +1760,32 @@
       return tacVu.finally(() => dangKiemTraAnh.delete(url));
     }
 
+    // Optional Material/manifest.json: {"SAP001":["SAP001_01.jpg","SAP001_02.png"]}.
+    // A manifest avoids up to 22 HEAD requests per SAP; missing files fall back to scanning.
+    let promiseManifestAnh = null;
+    function taiManifestAnh() {
+      if (window.MaterialImageManifest && typeof window.MaterialImageManifest === "object") {
+        return Promise.resolve(window.MaterialImageManifest);
+      }
+      if (!/^https?:$/.test(location.protocol) || typeof fetch !== "function") return Promise.resolve(null);
+      if (!promiseManifestAnh) {
+        promiseManifestAnh = fetch(THU_MUC_HINH+"manifest.json",{cache:"force-cache"})
+          .then(resp=>resp.ok?resp.json():null)
+          .then(data=>data&&typeof data==="object"&&!Array.isArray(data)?data:null)
+          .catch(()=>null);
+      }
+      return promiseManifestAnh;
+    }
+
+    function hinhAnhTuManifest(manifest,sap) {
+      if (!manifest || !Object.prototype.hasOwnProperty.call(manifest,sap)) return null;
+      const names=manifest[sap];
+      if (!Array.isArray(names)) return null;
+      return [...new Set(names.filter(name=>
+        typeof name==="string" && /^[a-zA-Z0-9_. -]+\.(?:jpg|jpeg|png|webp)$/i.test(name))
+        .map(name=>THU_MUC_HINH+encodeURIComponent(name)))].sort();
+    }
+
     // Chỉ 4 tác vụ kiểm tra đồng thời, giữ dữ liệu từ SAP đã xem gần đây.
     async function taiBoSuuTapAnh(maSap) {
       const lanHienTai = ++lanTaiAnh;
@@ -1430,6 +1804,16 @@
         return;
       }
 
+      const manifest=await taiManifestAnh();
+      if(lanHienTai!==lanTaiAnh)return;
+      const daBiet=hinhAnhTuManifest(manifest,maSapDangXem);
+      if(daBiet!==null) {
+        danhSachAnhDangXem=daBiet;
+        dangQuetAnh=false;
+        boNhoBoSuuTap.set(maSapDangXem,{urls:daBiet.slice(),hetHan:Date.now()+300000});
+        capNhatGiaoDienAnh();
+        return;
+      }
       const danhSachTen = [];
       for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
         const hauTo = String(k).padStart(2, "0");
@@ -1475,6 +1859,31 @@
       anh.src = url;
     }
 
+    function capNhatAnhThuNho() {
+      const holder=document.getElementById("image-thumbnails");
+      const key=danhSachAnhDangXem.join("\u0001");
+      if(holder.dataset.galleryKey!==key) {
+        holder.dataset.galleryKey=key;
+        holder.innerHTML="";
+        danhSachAnhDangXem.forEach((src,index)=>{
+          const btn=document.createElement("button");
+          btn.type="button";
+          btn.className="image-thumb";
+          btn.setAttribute("aria-label", (index+1)+" / "+danhSachAnhDangXem.length);
+          const img=document.createElement("img");
+          img.src=src;img.alt="";img.loading="lazy";img.decoding="async";
+          btn.appendChild(img);
+          btn.addEventListener("click",()=>{
+            viTriAnhDangXem=index;
+            capNhatGiaoDienAnh();napTruocAnhKeTiep();
+          });
+          holder.appendChild(btn);
+        });
+      }
+      [...holder.children].forEach((btn,index)=>
+        btn.setAttribute("aria-pressed",String(index===viTriAnhDangXem)));
+    }
+
     function capNhatGiaoDienAnh() {
       const imgEl = document.getElementById("anh-chinh");
       const btnPrev = document.getElementById("btn-anh-truoc");
@@ -1483,6 +1892,7 @@
       const khuVucTrong = document.getElementById("anh-trong");
       const thongBaoAnh = khuVucTrong.querySelector("span:last-child");
       const tong = danhSachAnhDangXem.length;
+      capNhatAnhThuNho();
 
       khuVucTrong.style.display = tong > 0 ? "none" : "grid";
       if (tong > 0) {
@@ -1565,6 +1975,9 @@
       document.getElementById("o-tim-kiem").value = "";
       document.querySelector('input[name="truongTim"][value="all"]').checked = true;
       document.getElementById("chk-ton-kho").checked = false;
+      document.getElementById("loc-canh-bao").value="all";
+      document.getElementById("sap-batch").value="";
+      document.getElementById("tim-gan-dung").checked=false;
       trangHienTai = 1;
       locDuLieu();
     }
@@ -1628,7 +2041,8 @@
         '<fill><patternFill patternType="none"/></fill>',
         '<fill><patternFill patternType="gray125"/></fill>',
         fill("FF142D52"),fill("FFEAF2FC"),fill("FFFFFFFF"),
-        fill("FFF5F8FC"),fill("FFFFE9EB"),fill("FFE6F6F2")
+        fill("FFF5F8FC"),fill("FFFFE9EB"),fill("FFE6F6F2"),
+        fill("FFDCFCE7"),fill("FFFEF3C7"),fill("FFFFEDD5"),fill("FFFFE4E6")
       ];
       const borders = [
         '<border><left/><right/><top/><bottom/><diagonal/></border>',
@@ -1654,7 +2068,12 @@
         xf(5, 6, 1, 164),     // 16 out-of-stock currency
         xf(4, 3),             // 17 note
         xf(2, 7),             // 18 summary total label
-        xf(3, 7, 0, 164)      // 19 summary total currency
+        xf(3, 7, 0, 164),     // 19 summary total currency
+        xf(2, 8, 1, 165),     // 20 green above ROP
+        xf(2, 9, 1, 165),     // 21 yellow at ROP
+        xf(2, 10, 1, 165),    // 22 orange below ROP
+        xf(5, 11, 1, 165),    // 23 red zero
+        xf(0, 5, 1, 165)      // 24 unknown ROP
       ];
       return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
         '<styleSheet xmlns="' + ns + '">' +
@@ -1746,9 +2165,11 @@
       const soCotNguon = tieuDeCot.length;
       const timChiSo = aliases => tieuDeCot.findIndex(text =>
         aliases.includes(String(text ?? "").trim().toLowerCase()));
-      const colQty = Math.max(0, timChiSo(["quantity","qty","số lượng"]) < 0 ?
-        Math.min(3, soCotNguon - 1) : timChiSo(["quantity","qty","số lượng"]));
+      const aliasesQty=["quantity","qty","số lượng","stock","stock qty","on hand","tồn kho"];
+      const colQty = Math.max(0, timChiSo(aliasesQty) < 0 ?
+        Math.min(3, soCotNguon - 1) : timChiSo(aliasesQty));
       const colPrice = timChiSo(["price","unit price","đơn giá","giá"]);
+      const colReorder = cotReorderPoint();
       const themThanhTien = colPrice >= 0;
       const cotCuoi = soCotNguon + (themThanhTien ? 1 : 0);
       const dongCuoi = 6 + src.length + (themThanhTien ? 2 : 0);
@@ -1772,7 +2193,10 @@
         [tuDien("reportStockOnly"), option.onlyStock ? tuDien("reportYes") : tuDien("reportNo")],
         [tuDien("reportSort"), thuTu],
         [tuDien("reportUpdated"), option.updated || "—"],
-        [tuDien("reportGenerated"), ngayBaoCao]
+        [tuDien("reportGenerated"), ngayBaoCao],
+        [tuDien("reportStockStatus"),tuDien({all:"stockAny",healthy:"stockAbove",at:"stockEqual",below:"stockBelow",zero:"stockZero",unknown:"stockUnknown"}[option.status]||"stockAny")],
+        [tuDien("reportBatchSap"),option.codes?option.codes.slice(0,1000).replace(/[\n\r]+/g,", "):"—"],
+        [tuDien("reportFuzzy"),option.fuzzy?tuDien("reportYes"):tuDien("reportNo")]
       ];
 
       // Detail sheet: complete original SAP columns plus calculated line value.
@@ -1811,6 +2235,9 @@
         const row = i + 7;
         const qty = chuyenThanhSo(rec[colQty]);
         const stock = Number.isFinite(qty) && qty > 0;
+        const reorder = colReorder >= 0 ? chuyenThanhSo(rec[colReorder]) : NaN;
+        const stockLevel = trangThaiTheoReorderPoint(qty,reorder);
+        const levelStyle = {healthy:20,at:21,below:22,zero:23,unknown:24}[stockLevel];
         if (stock) { tonKho += qty; conHang++; }
         const price = themThanhTien ? chuyenThanhSo(rec[colPrice]) : NaN;
         const validPrice = Number.isFinite(price) && price >= 0;
@@ -1827,9 +2254,9 @@
           const raw = rec[j] ?? "";
           const num = j === colQty ? qty : j === colPrice ? price : NaN;
           if (raw !== "" && Number.isFinite(num)) {
-            cells.push(oSoXlsx(j,row,num,j === colPrice ? moneyStyle : qtyStyle));
+            cells.push(oSoXlsx(j,row,num,j === colPrice ? moneyStyle : j===colQty ? levelStyle : qtyStyle));
           } else {
-            cells.push(oChuXlsx(j,row,raw,stockStyle));
+            cells.push(oChuXlsx(j,row,raw,j===colQty?levelStyle:stockStyle));
           }
         }
         if (themThanhTien) {
@@ -1910,13 +2337,13 @@
           oChuXlsx(3,r,boLoc[i][1],8)],26));
         mergeSummary.push("A"+r+":C"+r,"D"+r+":H"+r);
       }
-      textRow(24,tuDien("reportNote"),17,28);
+      textRow(28,tuDien("reportNote"),17,28);
       const sumCols = '<cols><col min="1" max="1" width="23" customWidth="1"/>' +
         '<col min="2" max="3" width="14" customWidth="1"/>' +
         '<col min="4" max="4" width="26" customWidth="1"/>' +
         '<col min="5" max="8" width="14" customWidth="1"/></cols>';
       const sheetOverview = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-        '<worksheet xmlns="' + sheetNs + '"><dimension ref="A1:H24"/>' +
+        '<worksheet xmlns="' + sheetNs + '"><dimension ref="A1:H28"/>' +
         '<sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews>' +
         '<sheetFormatPr defaultRowHeight="22"/>'+sumCols+'<sheetData>' +
         s.join("") + '</sheetData><mergeCells count="'+mergeSummary.length+'">' +
@@ -1974,6 +2401,9 @@
         keyword: document.getElementById("o-tim-kiem").value.trim(),
         scope: mode,
         onlyStock: document.getElementById("chk-ton-kho").checked,
+        status:document.getElementById("loc-canh-bao").value,
+        codes:document.getElementById("sap-batch").value.trim(),
+        fuzzy:document.getElementById("tim-gan-dung").checked,
         sortCol: cotSapXep, sortDir: huongSapXep, updated: mocCapNhatCu
       };
       const nutXuat = document.getElementById("btn-xuat-excel");
@@ -2043,10 +2473,13 @@
 
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     khoiTaoTuyChon();
+    veBoLocDaLuu();
+    khoiTaoLichNhacBaoCao();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
+    setInterval(kiemTraNhacBaoCao, 60000);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) taiDuLieu();
+      if (!document.hidden) {taiDuLieu();kiemTraNhacBaoCao();}
     });
   </script>
 </body>
