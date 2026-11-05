@@ -29,8 +29,9 @@ window.thoiGianCapNhat = "2026-11-05 09:00";
 `Price` được tính là **VND**, thống nhất với định dạng tiền hiện tại. Nếu SAP dùng ngoại tệ, cần thêm dữ liệu đơn vị tiền/tỷ giá ở backend thay vì cộng trực tiếp.
 
 ## 2. Tìm kiếm và báo cáo
-- Ô tìm kiếm thường hỗ trợ nhiều cụm cách nhau bởi dấu phẩy, dấu chấm phẩy, hoặc dấu gạch đứng (OR).
-- Ô **Nhiều mã SAP** hỗ trợ danh sách mã chính xác, ngăn cách bằng dòng mới/dấu phẩy; được áp dụng cùng tìm kiếm và bộ lọc trạng thái.
+- **Một ô tìm kiếm duy nhất ở trên cùng**: nhập một mã SAP, mô tả hoặc Part No như trước; hoặc nhập nhiều mã SAP cách nhau bằng dấu phẩy, chấm phẩy, dấu gạch đứng hay khoảng trắng. Ví dụ `SAP001, SAP002, SAP003` hoặc `SAP001 SAP002`. Khi dán danh sách nhiều dòng từ Excel, các dòng được gộp thành dấu phẩy. Với danh sách mã giống mã SAP, ứng dụng so khớp chính xác từng mã và giữ cả số 0 đầu.
+- Có thể tìm nhiều cụm mô tả, ngăn cách bởi dấu phẩy/dấu chấm phẩy (OR). Chuỗi mô tả có khoảng trắng vẫn được tìm như một cụm, ví dụ `Blue bolt`.
+- Nhấn nút **Bộ lọc** ở ngay sau nút **Xóa** để mở phạm vi tìm kiếm, chỉ còn hàng, lọc Reorder Point, tìm gần đúng và các bộ lọc lưu sẵn. Menu hiển thị số bộ lọc đang áp dụng.
 - **Tìm gần đúng** cho phép tối đa một sai khác ký tự trên mỗi từ độ dài 4–48; khi bật có thể cần nhiều tài nguyên hơn trên tập dữ liệu rất lớn.
 - Bộ lọc yêu thích lưu tối đa 12 mục bằng `localStorage` trên **thiết bị/trình duyệt hiện tại**.
 - File **XLSX** gồm Tổng quan và Chi tiết, giữ mọi cột SAP; có màu Stock theo Reorder Point và mô tả bộ lọc nâng cao. Bản ghi xuất là toàn bộ kết quả lọc, không chỉ một trang.
