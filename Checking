@@ -870,7 +870,7 @@
         historyClear:"Xóa lọc",historyDirection:"Phân loại",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
         historyIdle:"Chưa tải History.js",historyLoading:"Đang tải History.js...",historyNoSource:"Không thể tải History.js (giữ dữ liệu lịch sử trước đó nếu có).",
         historyInvalid:"History.js không có cấu trúc bảng giao dịch hợp lệ.",historyEmpty:"History.js không có giao dịch.",
-        historyLoaded:"Đã tải {count} giao dịch từ History.js",historyLoadedExisting:"Đã đọc {count} giao dịch từ dữ liệu SAP đã có",historyPage:"Trang {current} / {total}",
+        historyLoaded:"Đã tải {count} giao dịch từ History.js",historyLoadedAt:"Đã tải {count} giao dịch từ History.js · Nguồn cập nhật: {time}",historyLoadedExisting:"Đã đọc {count} giao dịch từ dữ liệu SAP đã có",historyPage:"Trang {current} / {total}",
         historyNoResults:"Không tìm thấy giao dịch phù hợp với bộ lọc.",historyCount:"{count} / {total} giao dịch",
         brandSubtitle:"KHÔNG GIAN QUẢN LÝ", themeSettings:"Giao diện", themeToLight:"Chuyển sang giao diện sáng",
         themeToDark:"Chuyển sang giao diện tối", refresh:"Đồng bộ", refreshTitle:"Đồng bộ dữ liệu từ nguồn",
@@ -947,7 +947,7 @@
         historyClear:"Clear filters",historyDirection:"Direction",historyTable:"Transaction records",historyTableNote:"Shows all source columns in History.js; no fabricated transactions.",
         historyIdle:"History.js has not been loaded",historyLoading:"Loading History.js...",historyNoSource:"History.js could not be loaded (previous history is preserved if available).",
         historyInvalid:"History.js does not expose a valid transaction array.",historyEmpty:"History.js contains no transactions.",
-        historyLoaded:"Loaded {count} transactions from History.js",historyLoadedExisting:"Read {count} transactions from the existing SAP feed",historyPage:"Page {current} / {total}",
+        historyLoaded:"Loaded {count} transactions from History.js",historyLoadedAt:"Loaded {count} transactions from History.js · Source updated: {time}",historyLoadedExisting:"Read {count} transactions from the existing SAP feed",historyPage:"Page {current} / {total}",
         historyNoResults:"No matching transactions.",historyCount:"{count} / {total} transactions",
         brandSubtitle:"OPERATIONS WORKSPACE", themeSettings:"Appearance", themeToLight:"Switch to light mode",
         themeToDark:"Switch to dark mode", refresh:"Sync", refreshTitle:"Refresh source data",
@@ -1696,95 +1696,149 @@
       status.classList.toggle("error",["historyNoSource","historyInvalid"].includes(key));
     }
 
-    function apDungNguonHistory(source,origin="file") {
+    // Parse the actual 6 MB History.js as *data* rather than executing it.
+    // It assigns window.duLieuCongTy, the same global used by data.js for Stock.
+    // Parsing protects the live stock source from being overwritten.
+    function docHistoryTuVanBan(source) {
+      const assignment=/window\.(?:duLieuCongTy|duLieuLichSu|duLieuHistory|lichSuNhapXuat|inventoryTransactions|historyData)\s*=\s*\[/.exec(source);
+      if(!assignment)throw Error("HISTORY_BAD_FORMAT");
+      const from=assignment.index+assignment[0].length-1;
+      const to=source.lastIndexOf("]");
+      if(to<=from)throw Error("HISTORY_BAD_FORMAT");
+      const data=JSON.parse(source.slice(from,to+1));
+      const time=/window\.thoiGianCapNhat\s*=\s*("(?:\\.|[^"\\])*")/.exec(source);
+      return {data,updated:time?JSON.parse(time[1]):""};
+    }
+
+    async function apDungNguonHistory(source,origin="file",updated="",sequence=historySeq) {
       let parsed;
-      try {parsed=bienDoiHistory(source);}catch(err){
+      try { parsed=bienDoiHistory(source); }
+      catch(err){capNhatTrangThaiHistory("historyInvalid");return false;}
+      const columns=parsed.headers;
+      const dateColumn=cotHistoryTheoTen(columns,[
+        "Date","Posting Date","Document Date","Transaction Date","Datetime",
+        "Created At","Ngay","Ngày","Ngày giao dịch","Ngày hạch toán","PostingDate"]);
+      const typeColumn=cotHistoryTheoTen(columns,[
+        "Type","Movement Type","Movement","IN/OUT","Transaction Type",
+        "Loai","Loại","Loại giao dịch","Nhập/Xuất","Action"]);
+      const qtyColumn=cotHistoryTheoTen(columns,[
+        "Quantity","Qty","Movement Qty","Qty in unit of entry","Số lượng",
+        "So luong","Amount Qty","Quantity Change"]);
+      const inColumn=cotHistoryTheoTen(columns,["In","Inbound","Qty In","Nhap","Nhập","Số lượng nhập"]);
+      const outColumn=cotHistoryTheoTen(columns,["Out","Outbound","Qty Out","Xuat","Xuất","Số lượng xuất"]);
+      if(!columns.length || (typeColumn<0 && inColumn<0 && outColumn<0)) {
         capNhatTrangThaiHistory("historyInvalid");return false;
       }
-      historyColumns=parsed.headers;
-      historyDateColumn=cotHistoryTheoTen(historyColumns,
-        ["Date","Posting Date","Document Date","Transaction Date","Datetime","Created At","Ngay","Ngày","Ngày giao dịch","Ngày hạch toán","PostingDate"]);
-      historyTypeColumn=cotHistoryTheoTen(historyColumns,
-        ["Type","Movement Type","Movement","IN/OUT","Transaction Type","Loai","Loại","Loại giao dịch","Nhập/Xuất","Action"]);
-      historyQuantityColumn=cotHistoryTheoTen(historyColumns,
-        ["Quantity","Qty","Movement Qty","Qty in unit of entry","Số lượng","So luong","Amount Qty","Quantity Change"]);
-      historyInColumn=cotHistoryTheoTen(historyColumns,["In","Inbound","Qty In","Nhap","Nhập","Số lượng nhập"]);
-      historyOutColumn=cotHistoryTheoTen(historyColumns,["Out","Outbound","Qty Out","Xuat","Xuất","Số lượng xuất"]);
-      historyAll=parsed.rows.map((row,i)=>{
+      // Set source index hints before classification.
+      historyDateColumn=dateColumn;
+      historyTypeColumn=typeColumn;
+      historyQuantityColumn=qtyColumn;
+      historyInColumn=inColumn;
+      historyOutColumn=outColumn;
+      const indexed=[];
+      let countIn=0,countOut=0;
+      for(let i=0;i<parsed.rows.length;i++) {
+        if(sequence!==historySeq)return false;
+        const row=parsed.rows[i];
         const cells=row.map(v=>v!==null&&typeof v==="object"?JSON.stringify(v):String(v??""));
-        return {
-          cells,number:i,
-          date:historyDateColumn>=0?ngayHistoryISO(row[historyDateColumn]):"",
-          type:loaiHistory(historyTypeColumn>=0?row[historyTypeColumn]:"",row),
-          search:chuanHoaTimKiem(cells.join("\u0001"))
-        };
-      });
-      historyAll.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
+        const kind=loaiHistory(typeColumn>=0?row[typeColumn]:"",row);
+        if(kind==="in")countIn++;
+        if(kind==="out")countOut++;
+        indexed.push({
+          cells,number:i, date:dateColumn>=0?ngayHistoryISO(row[dateColumn]):"",
+          type:kind,search:chuanHoaTimKiem(cells.join("\u0001"))
+        });
+        // Keep 60k+ movement records responsive on mobile browsers.
+        if(i>0 && i%1600===0)await new Promise(resolve=>setTimeout(resolve,0));
+      }
+      if(sequence!==historySeq)return false;
+      indexed.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
+      historyColumns=columns;
+      historyAll=indexed;
       historyLoaded=true;
       historyPage=1;
-      const total=historyAll.length;
+      const total=indexed.length;
       document.getElementById("history-total").textContent=dinhDangSoLuong.format(total);
-      document.getElementById("history-in").textContent=dinhDangSoLuong.format(historyAll.filter(x=>x.type==="in").length);
-      document.getElementById("history-out").textContent=dinhDangSoLuong.format(historyAll.filter(x=>x.type==="out").length);
-      capNhatTrangThaiHistory(total?(origin==="existing"?"historyLoadedExisting":"historyLoaded"):"historyEmpty",
-        {count:dinhDangSoLuong.format(total)});
+      document.getElementById("history-in").textContent=dinhDangSoLuong.format(countIn);
+      document.getElementById("history-out").textContent=dinhDangSoLuong.format(countOut);
+      const status=total?(origin==="existing"?"historyLoadedExisting":updated?"historyLoadedAt":"historyLoaded"):"historyEmpty";
+      capNhatTrangThaiHistory(status,{count:dinhDangSoLuong.format(total),time:updated});
+      capNhatNutLoaiHistory();
       locHistory();
       return true;
     }
 
-    // Load actual History.js beside Checking, not a guessed hardcoded transaction list.
-    function taiHistory(force=false) {
-      if(historyLoading || (historyLoaded && !force))return;
-      historyLoading=true;
-      const sequence=++historySeq;
-      const reloadBtn=document.getElementById("btn-refresh-history");
-      reloadBtn.disabled=true;
-      capNhatTrangThaiHistory("historyLoading");
-      const old=document.getElementById("script-history-data");
-      if(old)old.remove();
-      const script=document.createElement("script");
-      script.id="script-history-data";
-      script.async=true;
-      script.src=DUONG_DAN_HISTORY+"?t="+Date.now();
-      let finished=false;
-      const timeout=setTimeout(()=>end(false),12000);
-      function end(ok) {
-        if(finished || sequence!==historySeq)return;
-        finished=true;
-        clearTimeout(timeout);
-        historyLoading=false;
-        reloadBtn.disabled=false;
-        if(!ok){
-          script.remove();
-          // A data.js integration may already provide real movement records.
-          const fallback=timNguonHistory();
-          if(fallback)apDungNguonHistory(fallback,"existing");
-          else capNhatTrangThaiHistory("historyNoSource");
-          return;
+    // Only the known array assignment is read; no eval/new Function on History.js.
+    // Local file:// environments cannot fetch JS text, so they use a temporary
+    // script, snapshot both shared globals, then restore Stock immediately.
+    function taiHistoryBangScript() {
+      return new Promise((resolve,reject)=>{
+        const hasStock=Object.prototype.hasOwnProperty.call(window,"duLieuCongTy");
+        const hasTime=Object.prototype.hasOwnProperty.call(window,"thoiGianCapNhat");
+        const oldStock=window.duLieuCongTy;
+        const oldTime=window.thoiGianCapNhat;
+        const oldScript=document.getElementById("script-history-data");
+        if(oldScript)oldScript.remove();
+        const script=document.createElement("script");
+        script.id="script-history-data";
+        script.async=true;
+        script.src=DUONG_DAN_HISTORY+"?t="+Date.now();
+        let finished=false;
+        const timer=setTimeout(()=>finish(null,Error("HISTORY_TIMEOUT")),18000);
+        function restore() {
+          if(hasStock)window.duLieuCongTy=oldStock;
+          else delete window.duLieuCongTy;
+          if(hasTime)window.thoiGianCapNhat=oldTime;
+          else delete window.thoiGianCapNhat;
         }
-        const source=timNguonHistory();
-        if(!source)capNhatTrangThaiHistory("historyInvalid");
-        else apDungNguonHistory(source,"file");
-      }
-      script.onload=()=>end(true);
-      script.onerror=()=>end(false);
-      document.body.appendChild(script);
-    }
-
-    function capNhatNutLoaiHistory() {
-      const selected=document.getElementById("history-type").value;
-      document.querySelectorAll("[data-history-kind]").forEach(button=>{
-        const active=button.dataset.historyKind===selected;
-        button.classList.toggle("selected",active);
-        button.setAttribute("aria-pressed",String(active));
+        function finish(data,err) {
+          if(finished)return;
+          finished=true;
+          clearTimeout(timer);
+          restore();
+          script.remove();
+          if(err)reject(err);
+          else resolve(data);
+        }
+        script.onload=()=>{
+          const data=window.duLieuCongTy!==oldStock
+            ? window.duLieuCongTy:timNguonHistory();
+          finish({data,updated:window.thoiGianCapNhat||""},null);
+        };
+        script.onerror=()=>finish(null,Error("HISTORY_MISSING"));
+        document.body.appendChild(script);
       });
     }
 
-    function chonLoaiHistory(kind) {
-      if(!["all","in","out","unknown"].includes(kind))return;
-      document.getElementById("history-type").value=kind;
-      capNhatNutLoaiHistory();
-      locHistory();
+    async function taiHistory(force=false) {
+      if(historyLoading || (historyLoaded && !force))return;
+      historyLoading=true;
+      const sequence=++historySeq;
+      const button=document.getElementById("btn-refresh-history");
+      button.disabled=true;
+      capNhatTrangThaiHistory("historyLoading");
+      try{
+        let source;
+        if(typeof fetch==="function" && location.protocol!=="file:") {
+          const response=await fetch(DUONG_DAN_HISTORY+"?t="+Date.now(),{cache:"no-store"});
+          if(!response.ok)throw Error("HISTORY_MISSING");
+          source=docHistoryTuVanBan(await response.text());
+        } else source=await taiHistoryBangScript();
+        if(!source.data)throw Error("HISTORY_BAD_FORMAT");
+        const ok=await apDungNguonHistory(source.data,"file",source.updated,sequence);
+        if(!ok && historyStatusKey==="historyLoading")
+          capNhatTrangThaiHistory("historyInvalid");
+      }catch(err){
+        console.warn("History.js:",err);
+        // Preserve the last good History result when a reload fails.
+        capNhatTrangThaiHistory(err.message==="HISTORY_BAD_FORMAT"||err instanceof SyntaxError
+          ?"historyInvalid":"historyNoSource");
+      }finally{
+        if(sequence===historySeq) {
+          historyLoading=false;
+          button.disabled=false;
+        }
+      }
     }
 
     let historyPendingFilter=0;
