@@ -1542,24 +1542,277 @@
     }
 
 
-    // Optional read-only transaction feed supplied by the SAP integration.
-    // Example: window.lichSuNhapXuat = [{date:"2026-11-05",sap:"SAP001",type:"IN",quantity:5}].
-    function veLichSuGiaoDich() {
-      const container=document.getElementById("insight-transactions");
-      const data=window.lichSuNhapXuat || window.inventoryTransactions;
-      if (!Array.isArray(data) || !data.length) {
-        container.textContent=tuDien("transactionUnavailable");return;
+    // History.js is a real optional source, loaded on demand. There is no
+    // inferred transaction history from snapshots or stock balances.
+    const DUONG_DAN_HISTORY="History.js";
+    const SO_DONG_HISTORY_MOI_TRANG=100;
+    let historyColumns=[];
+    let historyAll=[];
+    let historyFiltered=[];
+    let historyPage=1;
+    let historyLoaded=false;
+    let historyLoading=false;
+    let historySeq=0;
+    let historyFilterSeq=0;
+    let historyStatusKey="historyIdle";
+    let historyStatusArgs={};
+    let historyDateColumn=-1;
+    let historyTypeColumn=-1;
+    let historyQuantityColumn=-1;
+    let historyInColumn=-1;
+    let historyOutColumn=-1;
+
+    function timNguonHistory() {
+      const candidates=[
+        "duLieuLichSu","duLieuHistory","duLieuLichSuNhapXuat","lichSuNhapXuat",
+        "inventoryTransactions","historyData","HistoryData","HISTORY_DATA",
+        "inventoryHistory","historyTransactions","duLieuNhapXuat"
+      ];
+      for(const key of candidates) {
+        const data=window[key];
+        if(Array.isArray(data) ||
+           (data && typeof data==="object" && !Array.isArray(data) &&
+            [data.rows,data.data,data.records,data.transactions].some(Array.isArray))) {
+          return data;
+        }
       }
-      container.innerHTML=data.slice(-15).reverse().map(item=>{
-        if(!item || typeof item!=="object")return "";
-        const date=String(item.date??item.ngay??"—");
-        const sap=String(item.sap??item.material??"—");
-        const type=String(item.type??item.loai??"—");
-        const qty=String(item.quantity??item.qty??"—");
-        return '<div class="insight-row"><span class="name" title="'+thoatHTML(sap)+'">'+
-          thoatHTML(sap)+'</span><span>'+thoatHTML(type)+'</span><strong>'+
-          thoatHTML(qty)+'</strong><span>'+thoatHTML(date)+'</span></div>';
-      }).join("");
+      return null;
+    }
+
+    function tenHistoryChuan(ten) {
+      return String(ten??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/đ/g,"d").toLowerCase().replace(/[^a-z0-9]/g,"");
+    }
+    function cotHistoryTheoTen(headers, aliases) {
+      const names=new Set(aliases.map(tenHistoryChuan));
+      return headers.findIndex(key=>names.has(tenHistoryChuan(key)));
+    }
+    function ngayHistoryISO(value) {
+      if(value==null || value==="")return "";
+      const text=String(value).trim();
+      let m=text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+      if(m) return m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0");
+      m=text.match(/^(\d{1,2})[/. -](\d{1,2})[/. -](\d{4})/);
+      if(m) return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
+      if(typeof value==="number" && value>20000 && value<100000) {
+        // Excel date serial: Excel day 1 = 1900-01-01 (1900 leap-year quirk).
+        return new Date(Date.UTC(1899,11,30)+Math.floor(value)*86400000).toISOString().slice(0,10);
+      }
+      return "";
+    }
+
+    function loaiHistory(raw,row) {
+      const kind=tenHistoryChuan(raw);
+      const incoming=new Set(["in","inbound","import","receive","receipt","goodsreceipt","gr",
+        "nhap","nhapkho","101","102","tang","plus"]);
+      const outgoing=new Set(["out","outbound","export","issue","goodsissue","gi","xuat",
+        "xuatkho","201","202","giam","minus"]);
+      if(incoming.has(kind))return "in";
+      if(outgoing.has(kind))return "out";
+      const incomingValue=historyInColumn>=0?chuyenThanhSo(row[historyInColumn]):NaN;
+      const outgoingValue=historyOutColumn>=0?chuyenThanhSo(row[historyOutColumn]):NaN;
+      const hasIn=Number.isFinite(incomingValue)&&incomingValue>0;
+      const hasOut=Number.isFinite(outgoingValue)&&outgoingValue>0;
+      if(hasIn&&!hasOut)return "in";
+      if(hasOut&&!hasIn)return "out";
+      return "unknown"; // Never assume a positive quantity is always inbound.
+    }
+
+    function bienDoiHistory(source) {
+      let data=source,headers=null;
+      if(data && !Array.isArray(data) && typeof data==="object") {
+        headers=data.headers||data.columns||data.tieuDeCot||null;
+        data=data.rows??data.data??data.records??data.transactions;
+      }
+      if(!Array.isArray(data))throw Error("HISTORY_BAD_FORMAT");
+      if(!data.length) return {headers:Array.isArray(headers)?headers.map(String):[],rows:[]};
+      let inputRows=data;
+      if(Array.isArray(inputRows[0])) {
+        if(!Array.isArray(headers)) {headers=inputRows[0];inputRows=inputRows.slice(1);}
+        const maxLength=Math.max(headers.length,...inputRows.slice(0,100).map(r=>Array.isArray(r)?r.length:0));
+        const names=Array.from({length:maxLength},(_,i)=>String(headers[i]??("Column "+(i+1))));
+        const rows=inputRows.filter(Array.isArray).map(row=>names.map((_,i)=>row[i]??""));
+        return {headers:names,rows};
+      }
+      if(inputRows[0] && typeof inputRows[0]==="object" && !Array.isArray(inputRows[0])) {
+        const names=[];
+        const seen=new Set();
+        for(const row of inputRows) {
+          if(!row || typeof row!=="object" || Array.isArray(row))continue;
+          for(const key of Object.keys(row)) {
+            if(!seen.has(key)) {seen.add(key);names.push(key);}
+          }
+        }
+        return {headers:names,rows:inputRows.filter(x=>x&&typeof x==="object"&&!Array.isArray(x))
+          .map(row=>names.map(name=>row[name]??""))};
+      }
+      throw Error("HISTORY_BAD_FORMAT");
+    }
+
+    function capNhatTrangThaiHistory(key,values={}) {
+      historyStatusKey=key;
+      historyStatusArgs=values;
+      const status=document.getElementById("history-status");
+      status.dataset.historyStatus=key;
+      status.textContent=tuDien(key,values);
+      status.classList.toggle("error",["historyNoSource","historyInvalid"].includes(key));
+    }
+
+    function apDungNguonHistory(source,origin="file") {
+      let parsed;
+      try {parsed=bienDoiHistory(source);}catch(err){
+        capNhatTrangThaiHistory("historyInvalid");return false;
+      }
+      historyColumns=parsed.headers;
+      historyDateColumn=cotHistoryTheoTen(historyColumns,
+        ["Date","Posting Date","Document Date","Transaction Date","Datetime","Created At","Ngay","Ngày","Ngày giao dịch","Ngày hạch toán","PostingDate"]);
+      historyTypeColumn=cotHistoryTheoTen(historyColumns,
+        ["Type","Movement Type","Movement","IN/OUT","Transaction Type","Loai","Loại","Loại giao dịch","Nhập/Xuất","Action"]);
+      historyQuantityColumn=cotHistoryTheoTen(historyColumns,
+        ["Quantity","Qty","Movement Qty","Số lượng","So luong","Amount Qty","Quantity Change"]);
+      historyInColumn=cotHistoryTheoTen(historyColumns,["In","Inbound","Qty In","Nhap","Nhập","Số lượng nhập"]);
+      historyOutColumn=cotHistoryTheoTen(historyColumns,["Out","Outbound","Qty Out","Xuat","Xuất","Số lượng xuất"]);
+      historyAll=parsed.rows.map((row,i)=>{
+        const cells=row.map(v=>v!==null&&typeof v==="object"?JSON.stringify(v):String(v??""));
+        return {
+          cells,number:i,
+          date:historyDateColumn>=0?ngayHistoryISO(row[historyDateColumn]):"",
+          type:loaiHistory(historyTypeColumn>=0?row[historyTypeColumn]:"",row),
+          search:chuanHoaTimKiem(cells.join("\u0001"))
+        };
+      });
+      historyAll.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
+      historyLoaded=true;
+      historyPage=1;
+      const total=historyAll.length;
+      document.getElementById("history-total").textContent=dinhDangSoLuong.format(total);
+      document.getElementById("history-in").textContent=dinhDangSoLuong.format(historyAll.filter(x=>x.type==="in").length);
+      document.getElementById("history-out").textContent=dinhDangSoLuong.format(historyAll.filter(x=>x.type==="out").length);
+      capNhatTrangThaiHistory(total?"historyLoaded":"historyEmpty",{count:dinhDangSoLuong.format(total)});
+      locHistory();
+      return true;
+    }
+
+    // Load actual History.js beside Checking, not a guessed hardcoded transaction list.
+    function taiHistory(force=false) {
+      if(historyLoading || (historyLoaded && !force))return;
+      historyLoading=true;
+      const sequence=++historySeq;
+      const reloadBtn=document.getElementById("btn-refresh-history");
+      reloadBtn.disabled=true;
+      capNhatTrangThaiHistory("historyLoading");
+      const old=document.getElementById("script-history-data");
+      if(old)old.remove();
+      const script=document.createElement("script");
+      script.id="script-history-data";
+      script.async=true;
+      script.src=DUONG_DAN_HISTORY+"?t="+Date.now();
+      let finished=false;
+      const timeout=setTimeout(()=>end(false),12000);
+      function end(ok) {
+        if(finished || sequence!==historySeq)return;
+        finished=true;
+        clearTimeout(timeout);
+        historyLoading=false;
+        reloadBtn.disabled=false;
+        if(!ok){
+          script.remove();
+          // A data.js integration may already provide real movement records.
+          const fallback=timNguonHistory();
+          if(fallback)apDungNguonHistory(fallback,"existing");
+          else capNhatTrangThaiHistory("historyNoSource");
+          return;
+        }
+        const source=timNguonHistory();
+        if(!source)capNhatTrangThaiHistory("historyInvalid");
+        else apDungNguonHistory(source,"file");
+      }
+      script.onload=()=>end(true);
+      script.onerror=()=>end(false);
+      document.body.appendChild(script);
+    }
+
+    let historyPendingFilter=0;
+    function locHistory() {
+      if(!historyLoaded)return;
+      const seq=++historyPendingFilter;
+      const term=chuanHoaTimKiem(document.getElementById("history-search").value.trim());
+      const kind=document.getElementById("history-type").value;
+      const from=document.getElementById("history-from").value;
+      const to=document.getElementById("history-to").value;
+      historyPage=1;
+      const selected=[];
+      let at=0;
+      function batch(){
+        if(seq!==historyPendingFilter)return;
+        const limit=Math.min(at+2000,historyAll.length);
+        for(;at<limit;at++) {
+          const row=historyAll[at];
+          if(term&&!row.search.includes(term))continue;
+          if(kind!=="all"&&row.type!==kind)continue;
+          if(from&&(!row.date||row.date<from))continue;
+          if(to&&(!row.date||row.date>to))continue;
+          selected.push(row);
+        }
+        if(at<historyAll.length)requestAnimationFrame(batch);
+        else {
+          historyFiltered=selected;
+          veTrangHistory();
+        }
+      }
+      batch();
+    }
+
+    function veTrangHistory() {
+      if(!historyLoaded)return;
+      const headers=document.getElementById("history-head");
+      headers.innerHTML='<tr>'+historyColumns.map(name=>
+        '<th scope="col">'+thoatHTML(tenCotDaDich(name))+'</th>').join("")+'</tr>';
+      const pages=Math.max(1,Math.ceil(historyFiltered.length/SO_DONG_HISTORY_MOI_TRANG));
+      historyPage=Math.min(Math.max(1,historyPage),pages);
+      const start=(historyPage-1)*SO_DONG_HISTORY_MOI_TRANG;
+      const data=historyFiltered.slice(start,start+SO_DONG_HISTORY_MOI_TRANG);
+      document.getElementById("history-body").innerHTML=data.map(rec=>
+        '<tr>'+rec.cells.map((val,j)=>{
+          if(j===historyTypeColumn) {
+            const label=rec.type==="in"?tuDien("historyIn"):
+              rec.type==="out"?tuDien("historyOut"):String(val);
+            return '<td><span class="history-kind '+rec.type+'">'+thoatHTML(label)+'</span></td>';
+          }
+          return '<td title="'+thoatHTML(val)+'">'+thoatHTML(val)+'</td>';
+        }).join("")+'</tr>').join("") ||
+        '<tr><td class="empty-table" colspan="'+Math.max(1,historyColumns.length)+'">'+
+        thoatHTML(tuDien("historyNoResults"))+'</td></tr>';
+      document.getElementById("history-matching").textContent=
+        dinhDangSoLuong.format(historyFiltered.length);
+      document.getElementById("history-count").textContent=tuDien("historyCount",{
+        count:dinhDangSoLuong.format(historyFiltered.length),
+        total:dinhDangSoLuong.format(historyAll.length)});
+      document.getElementById("history-page").textContent=tuDien("historyPage",{current:historyPage,total:pages});
+      document.getElementById("history-prev").disabled=historyPage<=1;
+      document.getElementById("history-next").disabled=historyPage>=pages;
+    }
+
+    function doiTrangHistory(step){
+      const max=Math.max(1,Math.ceil(historyFiltered.length/SO_DONG_HISTORY_MOI_TRANG));
+      historyPage=Math.max(1,Math.min(max,historyPage+step));
+      veTrangHistory();
+      document.querySelector(".history-table-wrapper").scrollTop=0;
+    }
+
+    function xoaLocHistory(){
+      for(const id of ["history-search","history-from","history-to"])
+        document.getElementById(id).value="";
+      document.getElementById("history-type").value="all";
+      locHistory();
+    }
+
+    function capNhatNgonNguHistory(){
+      if(historyLoaded) {
+        capNhatTrangThaiHistory(historyStatusKey,{
+          ...historyStatusArgs,count:dinhDangSoLuong.format(historyAll.length)});
+        veTrangHistory();
+      } else capNhatTrangThaiHistory(historyStatusKey,historyStatusArgs);
     }
 
     function caiDatNhacBaoCao() {
