@@ -449,6 +449,22 @@
       .image-viewer-box { height: 240px; }
     }
 
+
+    /* Four compact KPI cards: currency remains legible at all viewport sizes. */
+    .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .metric-card-value { border-color: var(--line); }
+    .metric-card-value .metric-icon { background: var(--blue-soft); color: var(--blue); }
+    .metric-card-value .metric-text { min-width: 0; }
+    .metric-money { font-size: clamp(18px, 1.8vw, 28px); overflow-wrap: anywhere; }
+    @media (max-width: 1180px) {
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric-card-value .metric-icon { display: none; }
+      .metric-money { font-size: clamp(17px, 4.5vw, 23px); }
+      .metric-card { min-width: 0; }
+    }
   </style>
 </head>
 <body>
@@ -485,6 +501,14 @@
         <div class="metric-card">
           <div class="metric-text"><div class="metric-label" data-i18n="filteredResults">Kết quả lọc</div><strong class="metric-value" id="metric-results">—</strong><span class="metric-note" data-i18n="resultNote">Theo tìm kiếm hiện tại</span></div>
           <div class="metric-icon" aria-hidden="true">⌕</div>
+        </div>
+        <div class="metric-card metric-card-value">
+          <div class="metric-text">
+            <div class="metric-label" data-i18n="inventoryValue">Tổng giá trị tồn kho</div>
+            <strong class="metric-value metric-money" id="metric-inventory-value" aria-live="polite">—</strong>
+            <span class="metric-note" id="metric-value-note" data-i18n="inventoryValueNote">Tổng (Số lượng tồn × Đơn giá)</span>
+          </div>
+          <div class="metric-icon" aria-hidden="true">₫</div>
         </div>
       </section>
 
@@ -586,6 +610,9 @@
         heroDesc:"Tra cứu mã SAP, theo dõi tồn kho và xem hình ảnh vật tư trong cùng một không gian làm việc.",
         metricsAria:"Thống kê tồn kho", totalMaterials:"Tổng vật tư", totalNote:"Mã SAP trong hệ thống",
         inStock:"Còn hàng", stockNote:"Số dòng có tồn kho > 0", filteredResults:"Kết quả lọc",
+        inventoryValue:"Tổng giá trị tồn kho", inventoryValueNote:"Tổng (Số lượng tồn × Đơn giá)",
+        inventoryValueNoPrice:"Không tìm thấy cột giá trong dữ liệu",
+        inventoryValuePartial:"Bỏ qua {count} dòng thiếu số lượng/đơn giá",
         resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
         searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP, mô tả hoặc Part No...",
         search:"Tìm kiếm", clear:"Xóa", export:"Xuất Excel (CSV)", searchIn:"Tìm trong",
@@ -625,6 +652,9 @@
         heroDesc:"Look up SAP materials, track stock, and browse material images in one workspace.",
         metricsAria:"Inventory metrics", totalMaterials:"Total materials", totalNote:"SAP material records",
         inStock:"In stock", stockNote:"Rows with quantity > 0", filteredResults:"Filtered results",
+        inventoryValue:"Total inventory value", inventoryValueNote:"Sum (stock quantity × unit price)",
+        inventoryValueNoPrice:"No price column found in the data",
+        inventoryValuePartial:"Excluded {count} rows with invalid quantity/price",
         resultNote:"Matching the current search", searchFilters:"Search and filters",
         searchAria:"Search SAP code, description or part number",
         searchPlaceholder:"Search SAP code, description, or Part No...",
@@ -737,6 +767,7 @@
         current: trangHienTai, total: Math.max(1,Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG))
       });
       capNhatGiaoDienAnh();
+      if (chiMucSanSang) hienThiTongGiaTriKho();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
     }
 
@@ -973,11 +1004,39 @@
     let lanLapChiMuc = 0;
     let soCoTonKho = 0;
     let dinhDangSoLuong = new Intl.NumberFormat("vi-VN");
+    let tongGiaTriTonKho = null;
+    let soDongGiaTriKhongHopLe = 0;
+
+    function dinhDangGiaTriKho(giaTri) {
+      if (!Number.isFinite(giaTri)) return "—";
+      return new Intl.NumberFormat(ngonNguHienTai === "en" ? "en-US" : "vi-VN", {
+        style: "currency", currency: "VND", maximumFractionDigits: 0
+      }).format(giaTri);
+    }
+
+    function hienThiTongGiaTriKho() {
+      const oGiaTri = document.getElementById("metric-inventory-value");
+      const ghiChu = document.getElementById("metric-value-note");
+      oGiaTri.textContent = tongGiaTriTonKho === null ? "—" : dinhDangGiaTriKho(tongGiaTriTonKho);
+      oGiaTri.title = oGiaTri.textContent;
+      ghiChu.textContent = tongGiaTriTonKho === null ? tuDien("inventoryValueNoPrice")
+        : soDongGiaTriKhongHopLe > 0
+          ? tuDien("inventoryValuePartial", {count:dinhDangSoLuong.format(soDongGiaTriKhongHopLe)})
+          : tuDien("inventoryValueNote");
+    }
 
     // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
       const lanHienTai = ++lanLapChiMuc;
       const chiSoBmNo = timCotTheoTen("BM No");
+      // Prefer named headers; keep the existing quantity column position as a fallback.
+      const cotSoLuong = tieuDeCot.findIndex(x =>
+        ["quantity", "qty", "số lượng"].includes(String(x ?? "").trim().toLowerCase()));
+      const chiSoSoLuong = cotSoLuong >= 0 ? cotSoLuong : 3;
+      const chiSoGia = tieuDeCot.findIndex(x =>
+        ["price", "unit price", "đơn giá", "giá"].includes(String(x ?? "").trim().toLowerCase()));
+      let giaTriDaTinh = 0;
+      let soDongGiaKhongHopLe = 0;
       duLieuTimKiem = [];
       soCoTonKho = 0;
       chiMucSanSang = false;
@@ -986,6 +1045,10 @@
       document.getElementById("metric-total").textContent = dinhDangSoLuong.format(tong);
       document.getElementById("metric-instock").textContent = "…";
       document.getElementById("metric-results").textContent = "…";
+      tongGiaTriTonKho = null;
+      soDongGiaTriKhongHopLe = 0;
+      document.getElementById("metric-inventory-value").textContent = "…";
+      document.getElementById("metric-value-note").textContent = tuDien("inventoryValueNote");
       document.getElementById("trang-thai-ban-ghi").textContent = tuDien("processing");
       document.getElementById("than-bang").innerHTML =
         '<tr><td colspan="6" class="empty-table">' + tuDien("preparing") + '</td></tr>';
@@ -997,8 +1060,20 @@
           const dong = tatCaDuLieu[viTri];
           if (!Array.isArray(dong)) continue;
           const giaTri = dong.map(ten => String(ten ?? "").toLowerCase());
-          const coTonKho = chuyenThanhSo(dong[3]) > 0;
+          const soLuong = chuyenThanhSo(dong[chiSoSoLuong]);
+          const coTonKho = soLuong > 0;
           if (coTonKho) soCoTonKho++;
+          // Inventory valuation uses all rows, independent of the active search/filter.
+          // Do not count empty stock or non-numeric/negative prices as monetary value.
+          if (chiSoGia >= 0 && coTonKho) {
+            const donGia = chuyenThanhSo(dong[chiSoGia]);
+            const thanhTien = soLuong * donGia;
+            if (Number.isFinite(donGia) && donGia >= 0 && Number.isFinite(thanhTien)) {
+              giaTriDaTinh += thanhTien;
+            } else {
+              soDongGiaKhongHopLe++;
+            }
+          }
           duLieuTimKiem.push({
             chiSo: viTri,
             dong: dong,
@@ -1014,7 +1089,10 @@
           setTimeout(xuLyNhom, 0);
         } else {
           chiMucSanSang = true;
+          tongGiaTriTonKho = chiSoGia < 0 ? null : giaTriDaTinh;
+          soDongGiaTriKhongHopLe = soDongGiaKhongHopLe;
           document.getElementById("metric-instock").textContent = dinhDangSoLuong.format(soCoTonKho);
+          hienThiTongGiaTriKho();
           locDuLieu();
         }
       }
