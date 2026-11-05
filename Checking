@@ -465,6 +465,48 @@
       .metric-money { font-size: clamp(17px, 4.5vw, 23px); }
       .metric-card { min-width: 0; }
     }
+
+    /* Reorder point states: green >, yellow =, orange below, red stock zero. */
+    .stock-badge.stock-healthy{background:#dcfce7;color:#067647}
+    .stock-badge.stock-at{background:#fef3c7;color:#8b6506}
+    .stock-badge.stock-below{background:#ffedd5;color:#9a3412}
+    .stock-badge.stock-zero{background:#ffe4e6;color:#b42336}
+    .stock-badge.stock-unknown{background:var(--app-chip);color:var(--muted)}
+    html[data-theme="dark"] .stock-badge.stock-healthy{background:#144c36;color:#86efac}
+    html[data-theme="dark"] .stock-badge.stock-at{background:#504016;color:#fde68a}
+    html[data-theme="dark"] .stock-badge.stock-below{background:#552e1a;color:#fdba74}
+    html[data-theme="dark"] .stock-badge.stock-zero{background:#54212e;color:#fda4af}
+    tbody tr.out-of-stock{background:var(--app-panel)}
+    tbody tr.out-of-stock td{border-bottom-color:var(--app-border-soft)}
+    .stock-badge{border-radius:8px;min-width:55px;justify-content:center;border:1px solid transparent}
+    .reorder-legend{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;color:var(--muted);font-size:10px}
+    .reorder-legend b{height:9px;width:9px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:4px}
+    .legend-green{background:#16a34a}.legend-yellow{background:#facc15}.legend-orange{background:#fb923c}.legend-red{background:#e11d48}
+    .advanced-panel,.insights-panel{border:1px solid var(--line);background:var(--app-panel);border-radius:13px;padding:10px 13px;margin-bottom:11px}
+    .advanced-panel summary,.insights-panel summary{cursor:pointer;font-weight:800;color:var(--ink);font-size:12px}
+    .advanced-controls{display:flex;align-items:flex-end;flex-wrap:wrap;gap:9px;padding-top:12px}
+    .advanced-controls label{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-weight:700;font-size:11px;min-width:130px}
+    .advanced-controls select,.advanced-controls textarea,.advanced-controls input{background:var(--app-field);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:12px}
+    .advanced-controls textarea{width:min(400px,100%);min-height:66px;resize:vertical}
+    .advanced-controls .check-row{flex-direction:row;align-items:center}
+    .advanced-controls button{min-height:36px}
+    .insight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:12px}
+    .insight-box{padding:12px;border:1px solid var(--line);border-radius:11px;min-width:0;background:var(--app-field)}
+    .insight-box h3{font-size:12px;margin:0 0 10px;color:var(--ink)}
+    .insight-row{display:flex;align-items:center;gap:7px;font-size:11px;margin:7px 0}
+    .insight-row .name{width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .insight-track{flex:1;min-width:0;height:9px;background:var(--line);border-radius:8px;overflow:hidden}
+    .insight-bar{height:100%;background:var(--blue);border-radius:8px}
+    .insight-row strong{min-width:45px;font-size:10px;text-align:right}
+    .insight-note{font-size:11px;color:var(--muted);margin-top:8px}
+    .history-grid{overflow:auto;max-height:200px}
+    .image-thumbs{display:flex;gap:6px;overflow-x:auto;padding:6px 0 3px}
+    .image-thumb{flex:0 0 55px;width:55px;height:55px;padding:2px;border-radius:8px;border:2px solid var(--line);background:var(--app-field)}
+    .image-thumb[aria-pressed="true"]{border-color:var(--blue)}
+    .image-thumb img{width:100%;height:100%;object-fit:contain}
+    @media(max-width:900px){.insight-grid{grid-template-columns:1fr 1fr}.insight-grid .insight-box:last-child{grid-column:1/-1}}
+    @media(max-width:620px){.insight-grid{grid-template-columns:1fr}.insight-grid .insight-box:last-child{grid-column:auto}.advanced-controls label{flex:1 1 125px}.advanced-controls textarea{max-width:100%}}
+
   </style>
 </head>
 <body>
@@ -539,11 +581,46 @@
         </div>
       </section>
 
+      <details class="advanced-panel" id="advanced-search">
+        <summary data-i18n="advancedSearch">Tìm kiếm nâng cao và bộ lọc yêu thích</summary>
+        <div class="advanced-controls">
+          <label><span data-i18n="stockStatus">Stock / Reorder Point</span>
+            <select id="loc-canh-bao" onchange="yeuCauLocDuLieu()">
+              <option value="all" data-i18n="stockAny">Tất cả</option>
+              <option value="healthy" data-i18n="stockAbove">Trên định mức</option>
+              <option value="at" data-i18n="stockEqual">Bằng định mức</option>
+              <option value="below" data-i18n="stockBelow">Dưới định mức</option>
+              <option value="zero" data-i18n="stockZero">Hết hàng (= 0)</option>
+              <option value="unknown" data-i18n="stockUnknown">Chưa có định mức</option>
+            </select></label>
+          <label><span data-i18n="batchSapLabel">Nhiều mã SAP</span>
+            <textarea id="sap-batch" data-i18n-placeholder="batchSapPlaceholder" placeholder="SAP001, SAP002 hoặc dán mã trên nhiều dòng" oninput="yeuCauLocDuLieu()"></textarea></label>
+          <label class="check-row"><input type="checkbox" id="tim-gan-dung" onchange="yeuCauLocDuLieu()"> <span data-i18n="fuzzySearch">Tìm gần đúng</span></label>
+          <label><span data-i18n="savedFilters">Bộ lọc đã lưu</span><select id="loc-da-luu" aria-label="Saved filters"><option value="">—</option></select></label>
+          <button class="btn btn-secondary" type="button" onclick="luuBoLoc()" data-i18n="saveFilter">Lưu</button>
+          <button class="btn btn-soft" type="button" onclick="apDungBoLoc()" data-i18n="applyFilter">Áp dụng</button>
+          <button class="btn btn-secondary" type="button" onclick="xoaBoLoc()" data-i18n="removeFilter">Xóa đã lưu</button>
+        </div>
+      </details>
+      <details class="insights-panel" id="insights-panel">
+        <summary data-i18n="inventoryInsights">Phân tích giá trị kho, ABC và lịch sử đồng bộ</summary>
+        <div class="insight-grid">
+          <div class="insight-box"><h3 data-i18n="abcTitle">ABC theo giá trị</h3><div id="insight-abc"></div></div>
+          <div class="insight-box"><h3 data-i18n="topTen">Top 10 giá trị cao</h3><div id="insight-top"></div></div>
+          <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><div id="insight-history" class="history-grid"></div></div>
+        </div>
+        <div class="insight-note" data-i18n="insightNote">Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất.</div>
+      </details>
       <div class="main-container">
         <section class="table-section" aria-labelledby="ten-bang">
           <div class="section-header">
             <div><h2 id="ten-bang" data-i18n="materialsList">Danh sách vật tư</h2><div class="section-caption" data-i18n="rowHint">Nhấn vào một dòng để xem chi tiết và hình ảnh</div></div>
-            <div class="table-header-actions"><span class="panel-legend" data-i18n="outOfStock">Hết hàng</span><span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span></div>
+            <div class="table-header-actions"><div class="reorder-legend">
+<span><b class="legend-green"></b><span data-i18n="stockAbove">Trên định mức</span></span>
+<span><b class="legend-yellow"></b><span data-i18n="stockEqual">Bằng định mức</span></span>
+<span><b class="legend-orange"></b><span data-i18n="stockBelow">Dưới định mức</span></span>
+<span><b class="legend-red"></b><span data-i18n="stockZero">Hết hàng (= 0)</span></span>
+</div><span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span></div>
           </div>
           <div class="table-wrapper" role="region" data-i18n-aria="tableAria" aria-label="Bảng vật tư, có thể cuộn ngang" tabindex="0">
             <table id="bang-du-lieu"><thead id="dau-bang"></thead><tbody id="than-bang"><tr><td class="empty-table" data-i18n="loadingData">Đang kết nối dữ liệu...</td></tr></tbody></table>
@@ -570,6 +647,7 @@
             <button type="button" class="img-nav-btn btn-next" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" data-i18n-aria="nextImage" aria-label="Ảnh sau">›</button>
             <div class="img-counter" id="dem-anh">0/0 ảnh</div>
           </div>
+          <div class="image-thumbs" id="image-thumbnails" aria-label="Image thumbnails"></div>
           <div class="detail-placeholder" id="chi-tiet-trong" data-i18n="emptyDetails">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
           <div class="detail-grid" id="luoi-chi-tiet"></div>
           <div class="bm-no-card" id="bm-no-card">
@@ -616,6 +694,10 @@
         resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
         searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP, mô tả hoặc Part No...",
         search:"Tìm kiếm", clear:"Xóa", export:"Xuất báo cáo Excel (.xlsx)", searchIn:"Tìm trong",
+        advancedSearch:"Tìm kiếm nâng cao và bộ lọc yêu thích",stockStatus:"Tồn kho so với Reorder Point",
+        stockAny:"Tất cả trạng thái",stockAbove:"Trên định mức",stockEqual:"Bằng định mức",stockBelow:"Dưới định mức",stockZero:"Hết hàng (= 0)",stockUnknown:"Chưa có định mức",
+        batchSapLabel:"Nhiều mã SAP",batchSapPlaceholder:"SAP001, SAP002 hoặc dán nhiều dòng",fuzzySearch:"Tìm gần đúng",savedFilters:"Bộ lọc đã lưu",saveFilter:"Lưu bộ lọc",applyFilter:"Áp dụng",removeFilter:"Xóa bộ lọc",filterName:"Tên bộ lọc",
+        inventoryInsights:"Phân tích giá trị kho, ABC và lịch sử đồng bộ",abcTitle:"Phân nhóm ABC theo giá trị",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
         searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
         searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
         materialsList:"Danh sách vật tư", rowHint:"Nhấn vào một dòng để xem chi tiết và hình ảnh",
@@ -677,6 +759,9 @@
         searchAria:"Search SAP code, description or part number",
         searchPlaceholder:"Search SAP code, description, or Part No...",
         search:"Search", clear:"Clear", export:"Export Excel report (.xlsx)", searchIn:"Search by",
+        advancedSearch:"Advanced search and saved filters",stockStatus:"Stock vs Reorder Point",stockAny:"All statuses",stockAbove:"Above reorder point",stockEqual:"At reorder point",stockBelow:"Below reorder point",stockZero:"Out of stock (= 0)",stockUnknown:"No reorder point",
+        batchSapLabel:"Multiple SAP codes",batchSapPlaceholder:"SAP001, SAP002 or one per line",fuzzySearch:"Fuzzy search",savedFilters:"Saved filters",saveFilter:"Save filter",applyFilter:"Apply",removeFilter:"Delete saved filter",filterName:"Filter name",
+        inventoryInsights:"Inventory analytics, ABC and sync snapshots",abcTitle:"ABC classification by value",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
         searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
         searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
         materialsList:"Material list", rowHint:"Select a row to view details and images",
