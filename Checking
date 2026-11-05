@@ -507,6 +507,37 @@
     @media(max-width:900px){.insight-grid{grid-template-columns:1fr 1fr}.insight-grid .insight-box:last-child{grid-column:1/-1}}
     @media(max-width:620px){.insight-grid{grid-template-columns:1fr}.insight-grid .insight-box:last-child{grid-column:auto}.advanced-controls label{flex:1 1 125px}.advanced-controls textarea{max-width:100%}}
 
+
+    /* Compact, accessible filter popover immediately beside the Clear button. */
+    .toolbar-primary { gap:10px; }
+    .search-box-group { max-width:none; min-width:0; flex:1 1 610px; align-items:center; flex-wrap:wrap; }
+    .search-box-group > .search-input { flex:1 1 240px; }
+    .search-box-group > .btn { white-space:nowrap; flex:0 0 auto; }
+    .filter-popover { position:relative; flex:0 0 auto; }
+    .filter-popover > summary { list-style:none; cursor:pointer; min-height:41px; display:flex; align-items:center; gap:6px; white-space:nowrap; }
+    .filter-popover > summary::-webkit-details-marker { display:none; }
+    .filter-popover[open] > summary { border-color:var(--blue); background:var(--blue-soft); color:var(--blue); }
+    .active-filter-count { display:inline-grid; place-items:center; background:var(--blue); color:#fff;
+      min-width:18px; height:18px; padding:0 4px; border-radius:20px; font-size:10px; font-weight:800; }
+    .active-filter-count[hidden] { display:none; }
+    .filter-popover-content { position:absolute; z-index:40; top:calc(100% + 9px); right:0;
+      width:min(625px,calc(100vw - 40px)); max-height:min(72vh,690px); overflow-y:auto;
+      box-shadow:0 20px 55px rgba(18,36,65,.2); padding:16px; border:1px solid var(--line);
+      background:var(--app-panel); color:var(--ink); border-radius:14px; }
+    .filter-popover-heading { font-size:13px; font-weight:850; margin:0 0 12px; }
+    .filter-popover-content .toolbar-filters { padding:0 0 13px; border-top:0; border-bottom:1px solid var(--line); gap:10px; }
+    .filter-popover-content .checkbox-group { margin-left:0; }
+    .filter-popover-content .advanced-controls { padding-top:12px; }
+    .filter-popover-content .advanced-controls label { min-width:170px; }
+    .filter-popover-content .advanced-controls .check-row { align-self:center; min-width:130px; }
+    .filter-popover-content button { min-height:36px; }
+    @media(max-width:750px) {
+      .search-box-group { flex-basis:100%; }
+      .search-box-group .search-input { flex:1 1 100%; }
+      .filter-popover-content { width:min(440px,calc(100vw - 26px)); padding:12px; }
+      .toolbar-primary > #btn-xuat-excel { margin-left:0; }
+    }
+
   </style>
 </head>
 <body>
@@ -558,15 +589,16 @@
         <div class="toolbar-primary">
           <div class="search-box-group">
             <div class="search-input">
-              <input type="search" id="o-tim-kiem" autocomplete="off" data-i18n-aria="searchAria" aria-label="Tìm mã SAP, mô tả, part no" data-i18n-placeholder="searchPlaceholder" placeholder="Tìm mã SAP, mô tả hoặc Part No..." oninput="yeuCauLocDuLieu()">
+              <input type="search" id="o-tim-kiem" autocomplete="off" data-i18n-aria="searchAria" aria-label="Tìm mã SAP, mô tả, part no" data-i18n-placeholder="searchPlaceholder" placeholder="Tìm một hoặc nhiều mã SAP, mô tả, Part No..." oninput="yeuCauLocDuLieu()" onpaste="xuLyDanTimKiem(event)">
               <span class="search-hint" aria-hidden="true">/</span>
             </div>
             <button type="button" class="btn btn-primary" onclick="locDuLieu()" data-i18n="search">Tìm kiếm</button>
             <button type="button" class="btn btn-secondary" onclick="lamMoi()" data-i18n="clear">Xóa</button>
-          </div>
-          <button type="button" id="btn-xuat-excel" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo Excel (.xlsx)</span></button>
-        </div>
-        <div class="toolbar-filters">
+             <details class="filter-popover" id="inline-filter-panel">
+               <summary class="btn btn-secondary" id="btn-bo-loc"><span aria-hidden="true">☷</span> <span data-i18n="filterOptions">Bộ lọc</span><span class="active-filter-count" id="active-filter-count" hidden>0</span></summary>
+               <div class="filter-popover-content">
+                 <div class="filter-popover-heading" data-i18n="filterOptions">Bộ lọc tìm kiếm</div>
+                 <div class="toolbar-filters">
           <span class="filter-label" data-i18n="searchIn">Tìm trong</span>
           <div class="radio-group" role="group" data-i18n-aria="searchScopeAria" aria-label="Phạm vi tìm kiếm">
             <label><input type="radio" name="truongTim" value="all" onchange="yeuCauLocDuLieu()" checked><span data-i18n="searchAll">Tất cả</span></label>
@@ -579,11 +611,7 @@
             <label><input type="checkbox" id="chk-ton-kho" onchange="yeuCauLocDuLieu()"> <span data-i18n="onlyStock">Chỉ hiển thị còn hàng</span></label>
           </div>
         </div>
-      </section>
-
-      <details class="advanced-panel" id="advanced-search">
-        <summary data-i18n="advancedSearch">Tìm kiếm nâng cao và bộ lọc yêu thích</summary>
-        <div class="advanced-controls">
+                 <div class="advanced-controls">
           <label><span data-i18n="stockStatus">Stock / Reorder Point</span>
             <select id="loc-canh-bao" onchange="yeuCauLocDuLieu()">
               <option value="all" data-i18n="stockAny">Tất cả</option>
@@ -593,8 +621,7 @@
               <option value="zero" data-i18n="stockZero">Hết hàng (= 0)</option>
               <option value="unknown" data-i18n="stockUnknown">Chưa có định mức</option>
             </select></label>
-          <label><span data-i18n="batchSapLabel">Nhiều mã SAP</span>
-            <textarea id="sap-batch" data-i18n-placeholder="batchSapPlaceholder" placeholder="SAP001, SAP002 hoặc dán mã trên nhiều dòng" oninput="yeuCauLocDuLieu()"></textarea></label>
+          
           <label class="check-row"><input type="checkbox" id="tim-gan-dung" onchange="yeuCauLocDuLieu()"> <span data-i18n="fuzzySearch">Tìm gần đúng</span></label>
           <label><span data-i18n="savedFilters">Bộ lọc đã lưu</span><select id="loc-da-luu" aria-label="Saved filters"><option value="">—</option></select></label>
           <button class="btn btn-secondary" type="button" onclick="luuBoLoc()" data-i18n="saveFilter">Lưu</button>
@@ -602,6 +629,14 @@
           <button class="btn btn-secondary" type="button" onclick="xoaBoLoc()" data-i18n="removeFilter">Xóa đã lưu</button>
         </div>
       </details>
+               </div>
+             </details>
+          </div>
+          <button type="button" id="btn-xuat-excel" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo Excel (.xlsx)</span></button>
+        </div>
+      </section>
+
+
       <details class="insights-panel" id="insights-panel">
         <summary data-i18n="inventoryInsights">Phân tích giá trị kho, ABC và lịch sử đồng bộ</summary>
         <div class="insight-grid">
@@ -705,9 +740,9 @@
         inventoryValueNoPrice:"Không tìm thấy cột giá trong dữ liệu",
         inventoryValuePartial:"Bỏ qua {count} dòng thiếu số lượng/đơn giá",
         resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
-        searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP, mô tả hoặc Part No...",
+        searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP001, SAP002 hoặc mô tả, Part No...",
         search:"Tìm kiếm", clear:"Xóa", export:"Xuất báo cáo Excel (.xlsx)", searchIn:"Tìm trong",
-        advancedSearch:"Tìm kiếm nâng cao và bộ lọc yêu thích",stockStatus:"Tồn kho so với Reorder Point",
+        filterOptions:"Bộ lọc",advancedSearch:"Tìm kiếm nâng cao và bộ lọc yêu thích",stockStatus:"Tồn kho so với Reorder Point",
         stockAny:"Tất cả trạng thái",stockAbove:"Trên định mức",stockEqual:"Bằng định mức",stockBelow:"Dưới định mức",stockZero:"Hết hàng (= 0)",stockUnknown:"Chưa có định mức",
         batchSapLabel:"Nhiều mã SAP",batchSapPlaceholder:"SAP001, SAP002 hoặc dán nhiều dòng",fuzzySearch:"Tìm gần đúng",savedFilters:"Bộ lọc đã lưu",saveFilter:"Lưu bộ lọc",applyFilter:"Áp dụng",removeFilter:"Xóa bộ lọc",filterName:"Tên bộ lọc",
         inventoryInsights:"Phân tích giá trị kho, ABC và lịch sử đồng bộ",abcTitle:"Phân nhóm ABC theo giá trị",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",groupValue:"Phân bổ giá trị theo nhóm vật tư",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất XLSX ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi app đang mở",scheduleDue:"Đến lịch xuất báo cáo Excel. Bấm Xuất XLSX ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
@@ -771,9 +806,9 @@
         inventoryValuePartial:"Excluded {count} rows with invalid quantity/price",
         resultNote:"Matching the current search", searchFilters:"Search and filters",
         searchAria:"Search SAP code, description or part number",
-        searchPlaceholder:"Search SAP code, description, or Part No...",
+        searchPlaceholder:"Search SAP001, SAP002, description or Part No...",
         search:"Search", clear:"Clear", export:"Export Excel report (.xlsx)", searchIn:"Search by",
-        advancedSearch:"Advanced search and saved filters",stockStatus:"Stock vs Reorder Point",stockAny:"All statuses",stockAbove:"Above reorder point",stockEqual:"At reorder point",stockBelow:"Below reorder point",stockZero:"Out of stock (= 0)",stockUnknown:"No reorder point",
+        filterOptions:"Filters",advancedSearch:"Advanced search and saved filters",stockStatus:"Stock vs Reorder Point",stockAny:"All statuses",stockAbove:"Above reorder point",stockEqual:"At reorder point",stockBelow:"Below reorder point",stockZero:"Out of stock (= 0)",stockUnknown:"No reorder point",
         batchSapLabel:"Multiple SAP codes",batchSapPlaceholder:"SAP001, SAP002 or one per line",fuzzySearch:"Fuzzy search",savedFilters:"Saved filters",saveFilter:"Save filter",applyFilter:"Apply",removeFilter:"Delete saved filter",filterName:"Filter name",
         inventoryInsights:"Inventory analytics, ABC and sync snapshots",abcTitle:"ABC classification by value",topTen:"Top 10 highest-value materials",inventoryHistory:"Local sync snapshots",groupValue:"Value by material group",transactionHistory:"SAP inbound/outbound transactions",transactionUnavailable:"No SAP transaction feed is connected",scheduleTitle:"Report reminder while the app is open",scheduleOff:"Off",scheduleDaily:"Daily after 9:00",scheduleWeekly:"Mondays after 9:00",scheduleDownload:"Export XLSX now",scheduleWaiting:"Reminders only run while this app is open",scheduleDue:"Your Excel report reminder is due. Click Export XLSX now.",insightNote:"History on this device contains summary values only, not an inbound/outbound transaction ledger.",noReorder:"Reorder Point column unavailable",noAnalytics:"No analytics data yet",
         searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
