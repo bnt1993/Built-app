@@ -1194,8 +1194,8 @@
     }
 
     function chuanHoaTimKiem(text) {
-      return String(text ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-        .replace(/đ/g,"d").toLowerCase();
+      return String(text ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/đ/g,"d");
     }
 
     function coTuGanDung(chuoi,tuKhoa) {
@@ -1333,7 +1333,7 @@
       const chiSoBmNo = timCotTheoTen("BM No");
       // Prefer named headers; keep the existing quantity column position as a fallback.
       const cotSoLuong = tieuDeCot.findIndex(x =>
-        ["quantity", "qty", "số lượng"].includes(String(x ?? "").trim().toLowerCase()));
+        ["quantity", "qty", "số lượng", "stock", "stock qty", "on hand", "tồn kho"].includes(String(x ?? "").trim().toLowerCase()));
       chiSoSoLuong = cotSoLuong >= 0 ? cotSoLuong : 3;
       chiSoReorderPoint = cotReorderPoint();
       danhSachGiaTri = [];
@@ -2105,8 +2105,9 @@
       const soCotNguon = tieuDeCot.length;
       const timChiSo = aliases => tieuDeCot.findIndex(text =>
         aliases.includes(String(text ?? "").trim().toLowerCase()));
-      const colQty = Math.max(0, timChiSo(["quantity","qty","số lượng"]) < 0 ?
-        Math.min(3, soCotNguon - 1) : timChiSo(["quantity","qty","số lượng"]));
+      const aliasesQty=["quantity","qty","số lượng","stock","stock qty","on hand","tồn kho"];
+      const colQty = Math.max(0, timChiSo(aliasesQty) < 0 ?
+        Math.min(3, soCotNguon - 1) : timChiSo(aliasesQty));
       const colPrice = timChiSo(["price","unit price","đơn giá","giá"]);
       const colReorder = cotReorderPoint();
       const themThanhTien = colPrice >= 0;
