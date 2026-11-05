@@ -1628,21 +1628,32 @@
       return "";
     }
 
+    // History.js actual movement values: INPUT, OUTPUT, SCRAP and SAP codes.
+    // SAP reversal movements (102, 202, 502, 552) have the opposite effect
+    // from their originating transaction. Transfer movements may have both
+    // a positive receiving leg and a negative issuing leg.
     function loaiHistory(raw,row) {
       const kind=tenHistoryChuan(raw);
-      const incoming=new Set(["in","inbound","import","receive","receipt","goodsreceipt","gr",
-        "nhap","nhapkho","101","102","tang","plus"]);
-      const outgoing=new Set(["out","outbound","export","issue","goodsissue","gi","xuat",
-        "xuatkho","201","202","giam","minus"]);
+      const incoming=new Set([
+        "in","input","inbound","import","receive","receipt","goodsreceipt","gr",
+        "nhap","nhapkho","101","202","501","552","tang","plus"
+      ]);
+      const outgoing=new Set([
+        "out","output","outbound","export","issue","goodsissue","gi","scrap",
+        "xuat","xuatkho","201","102","502","551","giam","minus"
+      ]);
       if(incoming.has(kind))return "in";
       if(outgoing.has(kind))return "out";
       const incomingValue=historyInColumn>=0?chuyenThanhSo(row[historyInColumn]):NaN;
       const outgoingValue=historyOutColumn>=0?chuyenThanhSo(row[historyOutColumn]):NaN;
       const hasIn=Number.isFinite(incomingValue)&&incomingValue>0;
       const hasOut=Number.isFinite(outgoingValue)&&outgoingValue>0;
-      if(hasIn&&!hasOut)return "in";
-      if(hasOut&&!hasIn)return "out";
-      return "unknown"; // Never assume a positive quantity is always inbound.
+      if(hasIn!==hasOut)return hasIn?"in":"out";
+      // For transfer (301/302/311/312) and other SAP movement codes, an
+      // explicit signed movement quantity indicates the direction of each leg.
+      const qty=historyQuantityColumn>=0?chuyenThanhSo(row[historyQuantityColumn]):NaN;
+      if(Number.isFinite(qty)&&qty!==0)return qty>0?"in":"out";
+      return "unknown";
     }
 
     function bienDoiHistory(source) {
@@ -1658,7 +1669,7 @@
         if(!Array.isArray(headers)) {headers=inputRows[0];inputRows=inputRows.slice(1);}
         const maxLength=Math.max(headers.length,...inputRows.slice(0,100).map(r=>Array.isArray(r)?r.length:0));
         const names=Array.from({length:maxLength},(_,i)=>String(headers[i]??("Column "+(i+1))));
-        const rows=inputRows.filter(Array.isArray).map(row=>names.map((_,i)=>row[i]??""));
+        const rows=inputRows.filter(Array.isArray);
         return {headers:names,rows};
       }
       if(inputRows[0] && typeof inputRows[0]==="object" && !Array.isArray(inputRows[0])) {
@@ -1696,7 +1707,7 @@
       historyTypeColumn=cotHistoryTheoTen(historyColumns,
         ["Type","Movement Type","Movement","IN/OUT","Transaction Type","Loai","Loại","Loại giao dịch","Nhập/Xuất","Action"]);
       historyQuantityColumn=cotHistoryTheoTen(historyColumns,
-        ["Quantity","Qty","Movement Qty","Số lượng","So luong","Amount Qty","Quantity Change"]);
+        ["Quantity","Qty","Movement Qty","Qty in unit of entry","Số lượng","So luong","Amount Qty","Quantity Change"]);
       historyInColumn=cotHistoryTheoTen(historyColumns,["In","Inbound","Qty In","Nhap","Nhập","Số lượng nhập"]);
       historyOutColumn=cotHistoryTheoTen(historyColumns,["Out","Outbound","Qty Out","Xuat","Xuất","Số lượng xuất"]);
       historyAll=parsed.rows.map((row,i)=>{
@@ -1760,6 +1771,22 @@
       document.body.appendChild(script);
     }
 
+    function capNhatNutLoaiHistory() {
+      const selected=document.getElementById("history-type").value;
+      document.querySelectorAll("[data-history-kind]").forEach(button=>{
+        const active=button.dataset.historyKind===selected;
+        button.classList.toggle("selected",active);
+        button.setAttribute("aria-pressed",String(active));
+      });
+    }
+
+    function chonLoaiHistory(kind) {
+      if(!["all","in","out","unknown"].includes(kind))return;
+      document.getElementById("history-type").value=kind;
+      capNhatNutLoaiHistory();
+      locHistory();
+    }
+
     let historyPendingFilter=0;
     function locHistory() {
       if(!historyLoaded)return;
@@ -1794,22 +1821,19 @@
     function veTrangHistory() {
       if(!historyLoaded)return;
       const headers=document.getElementById("history-head");
-      headers.innerHTML='<tr>'+historyColumns.map(name=>
-        '<th scope="col">'+thoatHTML(tenCotDaDich(name))+'</th>').join("")+'</tr>';
+      headers.innerHTML='<tr><th scope="col">'+thoatHTML(tuDien("historyDirection"))+'</th>'+
+        historyColumns.map(name=>'<th scope="col">'+thoatHTML(tenCotDaDich(name))+'</th>').join("")+'</tr>';
       const pages=Math.max(1,Math.ceil(historyFiltered.length/SO_DONG_HISTORY_MOI_TRANG));
       historyPage=Math.min(Math.max(1,historyPage),pages);
       const start=(historyPage-1)*SO_DONG_HISTORY_MOI_TRANG;
       const data=historyFiltered.slice(start,start+SO_DONG_HISTORY_MOI_TRANG);
-      document.getElementById("history-body").innerHTML=data.map(rec=>
-        '<tr>'+rec.cells.map((val,j)=>{
-          if(j===historyTypeColumn) {
-            const label=rec.type==="in"?tuDien("historyIn"):
-              rec.type==="out"?tuDien("historyOut"):String(val);
-            return '<td><span class="history-kind '+rec.type+'">'+thoatHTML(label)+'</span></td>';
-          }
-          return '<td title="'+thoatHTML(val)+'">'+thoatHTML(val)+'</td>';
-        }).join("")+'</tr>').join("") ||
-        '<tr><td class="empty-table" colspan="'+Math.max(1,historyColumns.length)+'">'+
+      document.getElementById("history-body").innerHTML=data.map(rec=>{
+        const label=rec.type==="in"?tuDien("historyIn"):
+          rec.type==="out"?tuDien("historyOut"):tuDien("historyOther");
+        return '<tr><td><span class="history-kind '+rec.type+'">'+thoatHTML(label)+'</span></td>'+
+          rec.cells.map(val=>'<td title="'+thoatHTML(val)+'">'+thoatHTML(val)+'</td>').join("")+'</tr>';
+      }).join("") ||
+        '<tr><td class="empty-table" colspan="'+Math.max(1,historyColumns.length+1)+'">'+
         thoatHTML(tuDien("historyNoResults"))+'</td></tr>';
       document.getElementById("history-matching").textContent=
         dinhDangSoLuong.format(historyFiltered.length);
@@ -1831,11 +1855,11 @@
     function xoaLocHistory(){
       for(const id of ["history-search","history-from","history-to"])
         document.getElementById(id).value="";
-      document.getElementById("history-type").value="all";
-      locHistory();
+      chonLoaiHistory("all");
     }
 
     function capNhatNgonNguHistory(){
+      capNhatNutLoaiHistory();
       if(historyLoaded) {
         capNhatTrangThaiHistory(historyStatusKey,{
           ...historyStatusArgs,count:dinhDangSoLuong.format(historyAll.length)});
