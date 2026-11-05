@@ -447,7 +447,7 @@
         </section>
 
         <aside class="detail-section" data-i18n-aria="detailsAria" aria-label="Chi tiết vật tư">
-          <div class="detail-title"><strong data-i18n="details">Thông tin chi tiết</strong><small id="nhan-sap">Chưa chọn mã SAP</small></div>
+          <div class="detail-title"><strong data-i18n="details">Thông tin chi tiết</strong><small id="nhan-sap" data-i18n="noSelectedSap">Chưa chọn mã SAP</small></div>
           <div class="image-viewer-box" id="khung-anh">
             <div class="image-empty" id="anh-trong">
               <span class="empty-icon" aria-hidden="true">▣</span>
@@ -488,6 +488,197 @@
   </div>
 
   <script>
+
+    // Text labels are translated without reloading data.js or the image gallery.
+    const NGON_NGU = {
+      vi: {
+        brandSubtitle:"KHÔNG GIAN QUẢN LÝ", themeSettings:"Giao diện", themeToLight:"Chuyển sang giao diện sáng",
+        themeToDark:"Chuyển sang giao diện tối", refresh:"Đồng bộ", refreshTitle:"Đồng bộ dữ liệu từ nguồn",
+        breadcrumb:"Tổng quan vật tư", heroFirst:"Quản lý vật tư", heroAccent:"thông minh.",
+        heroDesc:"Tra cứu mã SAP, theo dõi tồn kho và xem hình ảnh vật tư trong cùng một không gian làm việc.",
+        metricsAria:"Thống kê tồn kho", totalMaterials:"Tổng vật tư", totalNote:"Mã SAP trong hệ thống",
+        inStock:"Còn hàng", stockNote:"Số dòng có tồn kho > 0", filteredResults:"Kết quả lọc",
+        resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
+        searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP, mô tả hoặc Part No...",
+        search:"Tìm kiếm", clear:"Xóa", export:"Xuất Excel (CSV)", searchIn:"Tìm trong",
+        searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
+        searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
+        materialsList:"Danh sách vật tư", rowHint:"Nhấn vào một dòng để xem chi tiết và hình ảnh",
+        outOfStock:"Hết hàng", loadingData:"Đang kết nối dữ liệu...", tableAria:"Bảng vật tư, có thể cuộn ngang",
+        keyboardHint:"↑ ↓ để chọn dòng · / để tìm kiếm", paginationAria:"Chuyển trang",
+        prev:"Trước", next:"Sau", detailsAria:"Chi tiết vật tư", details:"Thông tin chi tiết",
+        noSelectedSap:"Chưa chọn mã SAP", selectSapImage:"Chọn một mã SAP để xem hình ảnh",
+        imageAlt:"Hình ảnh vật tư", prevImage:"Ảnh trước", nextImage:"Ảnh sau",
+        emptyDetails:"Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.",
+        footer:"SAP Inventory · Giao diện tối ưu cho tra cứu và quản lý tồn kho",
+        lightboxAria:"Xem ảnh vật tư", lightboxAlt:"Ảnh vật tư phóng to",
+        close:"Đóng", zoomOut:"Thu nhỏ", zoomIn:"Phóng to", resetZoom:"Đặt lại",
+        statusConnecting:"Đang kết nối", statusLoading:"Đang đồng bộ", statusOnline:"Đã kết nối",
+        statusInvalid:"Dữ liệu không hợp lệ", statusOffline:"Mất kết nối",
+        statusTimeout:"Hết thời gian chờ tải dữ liệu (giữ dữ liệu hiện có)",
+        statusBadData:"Lỗi: data.js không chứa bảng dữ liệu hợp lệ",
+        statusLoadFail:"Không thể tải {file} (giữ dữ liệu hiện có)",
+        updated:"Cập nhật: {time}", loadingSource:"Đang tải nguồn dữ liệu...",
+        processing:"Đang xử lý dữ liệu...", preparing:"Đang chuẩn bị dữ liệu...",
+        searching:"Đang tìm kiếm...", records:"{found} / {total} vật tư",
+        page:"Trang {current} / {total}", noResults:"Không tìm thấy vật tư phù hợp. Hãy thử từ khóa hoặc bộ lọc khác.",
+        sortBy:"Sắp xếp theo {column}", sapCode:"SAP: {code}",
+        imagesCount:"{current} / {total} ảnh", imagesLoading:" · Đang tải",
+        imagesFinding:"Đang tìm ảnh", imagesSearching:"Đang tìm hình ảnh...",
+        imagesNone:"Chưa có ảnh cho mã SAP này", imagesEmpty:"0/0 ảnh",
+        noExport:"Không có dữ liệu để xuất.",
+        colSap:"Mã SAP", colDescription:"Mô tả", colPart:"Part No",
+        colQuantity:"Số lượng", colPrice:"Giá", colBm:"BM No", colUnit:"Đơn vị", colGroup:"Nhóm"
+      },
+      en: {
+        brandSubtitle:"OPERATIONS WORKSPACE", themeSettings:"Appearance", themeToLight:"Switch to light mode",
+        themeToDark:"Switch to dark mode", refresh:"Sync", refreshTitle:"Refresh source data",
+        breadcrumb:"Inventory overview", heroFirst:"Smart inventory", heroAccent:"management.",
+        heroDesc:"Look up SAP materials, track stock, and browse material images in one workspace.",
+        metricsAria:"Inventory metrics", totalMaterials:"Total materials", totalNote:"SAP material records",
+        inStock:"In stock", stockNote:"Rows with quantity > 0", filteredResults:"Filtered results",
+        resultNote:"Matching the current search", searchFilters:"Search and filters",
+        searchAria:"Search SAP code, description or part number",
+        searchPlaceholder:"Search SAP code, description, or Part No...",
+        search:"Search", clear:"Clear", export:"Export Excel (CSV)", searchIn:"Search by",
+        searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
+        searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
+        materialsList:"Material list", rowHint:"Select a row to view details and images",
+        outOfStock:"Out of stock", loadingData:"Connecting to data...", tableAria:"Scrollable material table",
+        keyboardHint:"↑ ↓ select a row · / search", paginationAria:"Pagination",
+        prev:"Previous", next:"Next", detailsAria:"Material details", details:"Material details",
+        noSelectedSap:"No SAP code selected", selectSapImage:"Select an SAP code to view images",
+        imageAlt:"Material image", prevImage:"Previous image", nextImage:"Next image",
+        emptyDetails:"Select a material row to see its details here.",
+        footer:"SAP Inventory · Optimized material lookup and stock management",
+        lightboxAria:"Material image viewer", lightboxAlt:"Zoomed material image",
+        close:"Close", zoomOut:"Zoom out", zoomIn:"Zoom in", resetZoom:"Reset",
+        statusConnecting:"Connecting", statusLoading:"Syncing", statusOnline:"Connected",
+        statusInvalid:"Invalid data", statusOffline:"Disconnected",
+        statusTimeout:"Data request timed out (existing data preserved)",
+        statusBadData:"Error: data.js does not contain a valid table",
+        statusLoadFail:"Unable to load {file} (existing data preserved)",
+        updated:"Updated: {time}", loadingSource:"Loading data source...",
+        processing:"Processing data...", preparing:"Preparing data...",
+        searching:"Searching...", records:"{found} / {total} materials",
+        page:"Page {current} / {total}", noResults:"No matching materials. Try another search or filter.",
+        sortBy:"Sort by {column}", sapCode:"SAP: {code}",
+        imagesCount:"{current} / {total} images", imagesLoading:" · Loading",
+        imagesFinding:"Finding images", imagesSearching:"Searching for images...",
+        imagesNone:"No images available for this SAP code", imagesEmpty:"0/0 images",
+        noExport:"No data to export.",
+        colSap:"SAP code", colDescription:"Description", colPart:"Part No",
+        colQuantity:"Quantity", colPrice:"Price", colBm:"BM No", colUnit:"Unit", colGroup:"Group"
+      }
+    };
+    let ngonNguHienTai = "vi";
+    let giaoDienHienTai = "light";
+
+    function tuDien(key, values = {}) {
+      const text = NGON_NGU[ngonNguHienTai][key] ?? NGON_NGU.vi[key] ?? key;
+      return String(text).replace(/\{([a-zA-Z]+)\}/g, (_, variable) =>
+        Object.prototype.hasOwnProperty.call(values, variable) ? String(values[variable]) : "{" + variable + "}");
+    }
+
+    function ghiTuyChon(key, value) {
+      try { localStorage.setItem(key, value); } catch (_) { /* file:// / private browsing */ }
+    }
+    function docTuyChon(key) {
+      try { return localStorage.getItem(key); } catch (_) { return null; }
+    }
+
+    function tenCotDaDich(tenCot) {
+      const ten = String(tenCot ?? "");
+      const k = ten.trim().toLowerCase();
+      const key = {
+        "sap":"colSap", "sap code":"colSap", "mã sap":"colSap",
+        "description":"colDescription", "mô tả":"colDescription",
+        "part no":"colPart", "part no.":"colPart", "part number":"colPart",
+        "quantity":"colQuantity", "qty":"colQuantity", "số lượng":"colQuantity",
+        "price":"colPrice", "giá":"colPrice", "bm no":"colBm",
+        "unit":"colUnit", "đơn vị":"colUnit", "group":"colGroup", "nhóm":"colGroup"
+      }[k];
+      return key ? tuDien(key) : ten;
+    }
+
+    function apDungNgonNgu() {
+      document.documentElement.lang = ngonNguHienTai;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = tuDien(el.dataset.i18n);
+      });
+      for (const [selector, attribute, key] of [
+        ["[data-i18n-placeholder]","placeholder","i18nPlaceholder"],
+        ["[data-i18n-title]","title","i18nTitle"],
+        ["[data-i18n-aria]","aria-label","i18nAria"],
+        ["[data-i18n-alt]","alt","i18nAlt"]
+      ]) {
+        document.querySelectorAll(selector).forEach(el =>
+          el.setAttribute(attribute, tuDien(el.dataset[key]))
+        );
+      }
+      document.getElementById("lang-vi").setAttribute("aria-pressed", String(ngonNguHienTai === "vi"));
+      document.getElementById("lang-en").setAttribute("aria-pressed", String(ngonNguHienTai === "en"));
+      document.getElementById("theme-toggle").setAttribute("aria-label",
+        tuDien(giaoDienHienTai === "dark" ? "themeToLight" : "themeToDark"));
+      document.getElementById("theme-toggle").title =
+        tuDien(giaoDienHienTai === "dark" ? "themeToLight" : "themeToDark");
+      const trangThai = document.getElementById("tinh-trang-du-lieu");
+      trangThai.textContent = tuDien(trangThai.dataset.status || "statusConnecting");
+
+      if (tieuDeCot.length) veTieuDe();
+      if (chiMucSanSang) {
+        hienThiTrangHienTai();
+        document.getElementById("trang-thai-ban-ghi").textContent = tuDien("records", {
+          found: dinhDangSoLuong.format(ketQuaLoc.length),
+          total: dinhDangSoLuong.format(duLieuTimKiem.length)
+        });
+      }
+      const idDaChon = dongDangChonIndex;
+      if (idDaChon >= 0 && tatCaDuLieu[idDaChon]) {
+        document.getElementById("nhan-sap").textContent =
+          tuDien("sapCode",{code:chuanHoaMaSap(tatCaDuLieu[idDaChon][0]) || "—"});
+        hienThiChiTiet(tatCaDuLieu[idDaChon]);
+      } else {
+        document.getElementById("nhan-sap").textContent = tuDien("noSelectedSap");
+      }
+      document.getElementById("thong-tin-trang").textContent = tuDien("page", {
+        current: trangHienTai, total: Math.max(1,Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG))
+      });
+      capNhatGiaoDienAnh();
+      if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
+    }
+
+    function doiNgonNgu(ngonNgu) {
+      if (ngonNgu !== "vi" && ngonNgu !== "en") return;
+      ngonNguHienTai = ngonNgu;
+      ghiTuyChon("checking-language", ngonNgu);
+      apDungNgonNgu();
+    }
+
+    function apDungGiaoDien() {
+      document.documentElement.dataset.theme = giaoDienHienTai;
+      const nut = document.getElementById("theme-toggle");
+      nut.textContent = giaoDienHienTai === "dark" ? "☀" : "☾";
+      nut.setAttribute("aria-pressed", String(giaoDienHienTai === "dark"));
+      nut.setAttribute("aria-label", tuDien(giaoDienHienTai === "dark" ? "themeToLight" : "themeToDark"));
+      nut.title = tuDien(giaoDienHienTai === "dark" ? "themeToLight" : "themeToDark");
+    }
+
+    function doiGiaoDien() {
+      giaoDienHienTai = giaoDienHienTai === "dark" ? "light" : "dark";
+      ghiTuyChon("checking-theme", giaoDienHienTai);
+      apDungGiaoDien();
+    }
+
+    function khoiTaoTuyChon() {
+      const ngonNgu = docTuyChon("checking-language");
+      const giaoDien = docTuyChon("checking-theme");
+      ngonNguHienTai = ngonNgu === "en" ? "en" : "vi";
+      giaoDienHienTai = giaoDien === "dark" ? "dark" : "light";
+      apDungGiaoDien();
+      apDungNgonNgu();
+    }
+
     // ================= CẤU HÌNH THƯ MỤC Ổ MẠNG =================
     const duongDanOMang = "data.js";
     const THU_MUC_HINH = "Material/"; // Thư mục chứa ảnh
@@ -1191,6 +1382,7 @@
     });
 
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
+    khoiTaoTuyChon();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
     document.addEventListener("visibilitychange", () => {
