@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -242,6 +242,129 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
+
+    /* Preserve the two-tone heading and primary-button contrast in dark mode. */
+    .intro h1 span:first-child { color: var(--ink); }
+    html[data-theme="dark"] .btn-primary { background: #3568e8; color: #fff; }
+    html[data-theme="dark"] .btn-primary:hover:not(:disabled) { background: #4979f0; }
+    /* Theme-aware UI: independent preference, no external CSS dependencies. */
+    :root {
+      --app-panel: #fff; --app-field: #f8faff; --app-th: #f8fafe;
+      --app-border-soft: #f0f3f8; --app-hover: #f3f7ff;
+      --app-selection: #eaf1ff; --app-code: #315ac2; --app-chip: #f1f3f6;
+      --app-stock-out: #fff0f1; --app-stock-out-ink: #a5223b;
+      --app-stock-row: #fff3f2; --app-stock-hover: #ffe7e5;
+      --app-card-soft: #f8faff; --app-image-bg: linear-gradient(145deg,#f7faff,#edf3fb);
+      --app-image-border: #e1eaf5; --app-input-border: #e0e8f4;
+      --app-figure: #203756; --app-label: #7b8ba3;
+      --app-header: rgba(255,255,255,.94);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0b1220; --surface: #151f31; --surface-subtle: #182439;
+      --ink: #e8eefb; --muted: #a6b4ce; --line: #31415c;
+      --blue: #8eaeff; --blue-strong: #7098ff; --blue-soft: #233b63;
+      --green: #62dcaa; --green-soft: #174b42; --red: #ff8499;
+      --shadow: 0 13px 34px rgba(0,0,0,.18);
+      --app-panel: #151f31; --app-field: #1c2a41; --app-th: #202d43;
+      --app-border-soft: #2b3951; --app-hover: #223452;
+      --app-selection: #304d7b; --app-code: #bed0ff; --app-chip: #344359;
+      --app-stock-out: #512434; --app-stock-out-ink: #ffb1bd;
+      --app-stock-row: #352434; --app-stock-hover: #4b2b3b;
+      --app-card-soft: #1b2940; --app-image-bg: linear-gradient(145deg,#1b2940,#101b2d);
+      --app-image-border: #344562; --app-input-border: #344662;
+      --app-figure: #e0e9fc; --app-label: #b8c6dd;
+      --app-header: rgba(21,31,49,.96);
+    }
+    .app-header { background: var(--app-header); }
+    .metric-card, .toolbar, .table-section, .detail-section { background: var(--app-panel); }
+    .btn-secondary { background: var(--app-panel); color: var(--ink); border-color: var(--line); }
+    .btn-secondary:hover:not(:disabled) { background: var(--app-hover); border-color: var(--blue); }
+    .btn-soft { background: var(--blue-soft); color: var(--blue); border-color: var(--line); }
+    .btn-soft:hover { background: var(--app-hover); }
+    .search-input input { background: var(--app-field); border-color: var(--app-input-border); color: var(--ink); }
+    .search-input input:focus { background: var(--app-panel); }
+    .search-hint { color: var(--muted); }
+    .metric-label, .metric-note, .section-caption, .filter-label { color: var(--muted); }
+    .metric-card:nth-child(3) .metric-icon { background: var(--blue-soft); color: var(--blue); }
+    .record-count { color: var(--blue); background: var(--blue-soft); }
+    th { background: var(--app-th); color: var(--muted); }
+    th, td { border-bottom-color: var(--app-border-soft); }
+    tbody tr:hover { background: var(--app-hover); }
+    tbody tr.selected { background: var(--app-selection); }
+    .sap-code { color: var(--app-code); }
+    .stock-badge { background: var(--green-soft); color: var(--green); }
+    .stock-badge.empty { background: var(--app-stock-out); color: var(--app-stock-out-ink); }
+    tbody tr.out-of-stock { background: var(--app-stock-row); }
+    tbody tr.out-of-stock:hover { background: var(--app-stock-hover); }
+    tbody tr.out-of-stock.selected { background: var(--app-selection); box-shadow: inset 3px 0 0 var(--red); }
+    .out-of-stock .sap-code { color: var(--app-stock-out-ink); }
+    .out-of-stock td { border-bottom-color: var(--line); }
+    .image-viewer-box { background: var(--app-image-bg); border-color: var(--app-image-border); }
+    .image-empty .empty-icon, .img-nav-btn { background: var(--app-panel); color: var(--blue); }
+    .img-counter { background: var(--app-panel); color: var(--ink); border-color: var(--line); }
+    .detail-item { background: var(--app-card-soft); border-color: var(--line); }
+    .detail-item label { color: var(--app-label); }
+    .detail-item span { color: var(--app-figure); }
+    .bm-no-card { background: var(--blue-soft); border-color: var(--line); }
+    .bm-no-card-title { color: var(--blue); }
+    .bm-no-value { background: var(--app-panel); color: var(--blue); border-color: var(--line); }
+    #thong-tin-trang, .detail-title small { color: var(--muted); }
+    .online-pill { background: var(--green-soft); color: var(--green); }
+    .online-pill.loading { background: #5b451e; color: #ffce7a; }
+    .online-pill.error { background: var(--app-stock-out); color: var(--app-stock-out-ink); }
+    html[data-theme="light"] .online-pill.loading { background: #fff7e8; color: #b77a20; }
+
+    /* Distinct search scopes: color is an enhancement, not the sole selected state. */
+    .radio-group label:nth-child(1) { --chip-color:#3568e8; --chip-bg:#eaf1ff; }
+    .radio-group label:nth-child(2) { --chip-color:#0f846b; --chip-bg:#e7f7f2; }
+    .radio-group label:nth-child(3) { --chip-color:#8060c9; --chip-bg:#f0eaff; }
+    .radio-group label:nth-child(4) { --chip-color:#b36c13; --chip-bg:#fff3e0; }
+    .radio-group label:nth-child(5) { --chip-color:#bf4b77; --chip-bg:#fff0f5; }
+    .radio-group span { border-color: color-mix(in srgb,var(--chip-color),transparent 67%); color: var(--chip-color); background: color-mix(in srgb,var(--chip-bg),transparent 36%); }
+    .radio-group input:checked + span { border-color: var(--chip-color); color: var(--chip-color);
+      background: var(--chip-bg); box-shadow: inset 0 0 0 1px var(--chip-color); font-weight: 800; }
+    .radio-group label:hover span { color: var(--chip-color); filter: brightness(.97); }
+    html[data-theme="dark"] .radio-group span { background: color-mix(in srgb,var(--chip-color),transparent 82%);
+      color: color-mix(in srgb,var(--chip-color),white 55%); border-color: color-mix(in srgb,var(--chip-color),transparent 48%); }
+    html[data-theme="dark"] .radio-group input:checked + span { background: color-mix(in srgb,var(--chip-color),transparent 70%); color: #fff;
+      box-shadow: inset 0 0 0 1px var(--chip-color); }
+    .checkbox-group label { color: var(--ink); }
+
+    /* Equal-height grid tracks; the table and detail card scroll independently. */
+    .main-container { align-items: stretch; --panel-height: clamp(580px, 70vh, 820px); }
+    .table-section, .detail-section { height: var(--panel-height); min-height: 0; }
+    .table-section { display: flex; flex-direction: column; }
+    .table-wrapper { flex: 1 1 auto; height: auto; min-height: 0; }
+    .table-bottom { flex: 0 0 auto; }
+    .detail-section { position: relative; top: auto; max-height: none; overflow-y: auto; overscroll-behavior: contain; }
+    .panel-legend { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; color: var(--app-stock-out-ink);
+      background: var(--app-stock-out); border-radius: 20px; padding: 5px 9px; font-weight: 750; }
+    .panel-legend::before { content:""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .table-header-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+    .preference-group { display:flex; align-items:center; gap:3px; padding:3px; border-radius:10px;
+      background: var(--app-field); border:1px solid var(--line); }
+    .preference-group button { min-width:32px; height:31px; padding: 0 8px; color:var(--muted); background:transparent;
+      border: 0; border-radius:7px; font-size:11px; font-weight:800; }
+    .preference-group button[aria-pressed="true"] { background:var(--app-panel); color:var(--blue); box-shadow:0 1px 5px rgba(0,0,0,.1); }
+    .preference-group button:hover { color:var(--blue); }
+    .icon-control { display:inline-flex; align-items:center; gap:7px; }
+    @media (max-width:900px) {
+      .main-container { --panel-height:auto; }
+      .table-section, .detail-section { height:auto; }
+      .table-wrapper { flex:none; height:420px; min-height:0; }
+      .detail-section { position:static; overflow:visible; }
+    }
+    @media (max-width:620px) {
+      .app-header { height:auto; min-height:62px; flex-wrap:wrap; padding:10px 12px; }
+      .header-actions { flex-wrap:wrap; justify-content:flex-end; margin-left:auto; gap:5px; }
+      .header-actions .btn { min-height:35px; }
+      .preference-group button { min-width:29px; height:29px; padding:0 6px; }
+      .table-wrapper { height:370px; }
+      .panel-legend { font-size:9px; }
+    }
+
   </style>
 </head>
 <body>
@@ -249,59 +372,61 @@
     <header class="app-header">
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">▦</div>
-        <div class="brand-wordmark">SAP Inventory<small>OPERATIONS WORKSPACE</small></div>
+        <div class="brand-wordmark">SAP Inventory<small data-i18n="brandSubtitle">OPERATIONS WORKSPACE</small></div>
       </div>
       <div class="header-actions">
-        <span class="online-pill loading" id="tinh-trang-du-lieu" role="status">Đang kết nối</span>
-        <button type="button" class="btn btn-secondary" onclick="taiDuLieu()" title="Đồng bộ dữ liệu từ nguồn">↻ <span>Đồng bộ</span></button>
+        <div class="preference-group" role="group" data-i18n-aria="themeSettings" aria-label="Giao diện"><button type="button" id="theme-toggle" onclick="doiGiaoDien()" aria-pressed="false" aria-label="Chuyển sang giao diện tối" title="Chuyển sang giao diện tối">☾</button></div>
+        <div class="preference-group" role="group" aria-label="Language / Ngôn ngữ"><button type="button" id="lang-vi" onclick="doiNgonNgu('vi')" aria-pressed="true">VI</button><button type="button" id="lang-en" onclick="doiNgonNgu('en')" aria-pressed="false">EN</button></div>
+        <span class="online-pill loading" id="tinh-trang-du-lieu" role="status" data-status="connecting">Đang kết nối</span>
+        <button type="button" class="btn btn-secondary" onclick="taiDuLieu()" data-i18n-title="refreshTitle" title="Đồng bộ dữ liệu từ nguồn">↻ <span data-i18n="refresh">Đồng bộ</span></button>
       </div>
     </header>
 
     <main class="workspace">
-      <div class="breadcrumbs"><span>Workspace</span><span>/</span><span class="active">Inventory overview</span></div>
+      <div class="breadcrumbs"><span>Workspace</span><span>/</span><span class="active" data-i18n="breadcrumb">Tổng quan vật tư</span></div>
       <div class="intro">
-        <h1>Quản lý vật tư <span>thông minh.</span></h1>
-        <p>Tra cứu mã SAP, theo dõi tồn kho và xem hình ảnh vật tư trong cùng một không gian làm việc.</p>
+        <h1><span data-i18n="heroFirst">Quản lý vật tư</span> <span data-i18n="heroAccent">thông minh.</span></h1>
+        <p data-i18n="heroDesc">Tra cứu mã SAP, theo dõi tồn kho và xem hình ảnh vật tư trong cùng một không gian làm việc.</p>
       </div>
 
-      <section class="metric-grid" aria-label="Thống kê tồn kho">
+      <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
         <div class="metric-card">
-          <div class="metric-text"><div class="metric-label">Tổng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note">Mã SAP trong hệ thống</span></div>
+          <div class="metric-text"><div class="metric-label" data-i18n="totalMaterials">Tổng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="totalNote">Mã SAP trong hệ thống</span></div>
           <div class="metric-icon" aria-hidden="true">▦</div>
         </div>
         <div class="metric-card">
-          <div class="metric-text"><div class="metric-label">Còn hàng</div><strong class="metric-value" id="metric-instock">—</strong><span class="metric-note">Số dòng có tồn kho &gt; 0</span></div>
+          <div class="metric-text"><div class="metric-label" data-i18n="inStock">Còn hàng</div><strong class="metric-value" id="metric-instock">—</strong><span class="metric-note" data-i18n="stockNote">Số dòng có tồn kho &gt; 0</span></div>
           <div class="metric-icon" aria-hidden="true">✓</div>
         </div>
         <div class="metric-card">
-          <div class="metric-text"><div class="metric-label">Kết quả lọc</div><strong class="metric-value" id="metric-results">—</strong><span class="metric-note">Theo tìm kiếm hiện tại</span></div>
+          <div class="metric-text"><div class="metric-label" data-i18n="filteredResults">Kết quả lọc</div><strong class="metric-value" id="metric-results">—</strong><span class="metric-note" data-i18n="resultNote">Theo tìm kiếm hiện tại</span></div>
           <div class="metric-icon" aria-hidden="true">⌕</div>
         </div>
       </section>
 
-      <section class="toolbar" aria-label="Tìm kiếm và bộ lọc">
+      <section class="toolbar" data-i18n-aria="searchFilters" aria-label="Tìm kiếm và bộ lọc">
         <div class="toolbar-primary">
           <div class="search-box-group">
             <div class="search-input">
-              <input type="search" id="o-tim-kiem" autocomplete="off" aria-label="Tìm mã SAP, mô tả, part no" placeholder="Tìm mã SAP, mô tả hoặc Part No..." oninput="yeuCauLocDuLieu()">
+              <input type="search" id="o-tim-kiem" autocomplete="off" data-i18n-aria="searchAria" aria-label="Tìm mã SAP, mô tả, part no" data-i18n-placeholder="searchPlaceholder" placeholder="Tìm mã SAP, mô tả hoặc Part No..." oninput="yeuCauLocDuLieu()">
               <span class="search-hint" aria-hidden="true">/</span>
             </div>
-            <button type="button" class="btn btn-primary" onclick="locDuLieu()">Tìm kiếm</button>
-            <button type="button" class="btn btn-secondary" onclick="lamMoi()">Xóa</button>
+            <button type="button" class="btn btn-primary" onclick="locDuLieu()" data-i18n="search">Tìm kiếm</button>
+            <button type="button" class="btn btn-secondary" onclick="lamMoi()" data-i18n="clear">Xóa</button>
           </div>
-          <button type="button" class="btn btn-soft" onclick="xuatExcel()">↓ Xuất Excel (CSV)</button>
+          <button type="button" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất Excel (CSV)</span></button>
         </div>
         <div class="toolbar-filters">
-          <span class="filter-label">Tìm trong</span>
-          <div class="radio-group" role="group" aria-label="Phạm vi tìm kiếm">
-            <label><input type="radio" name="truongTim" value="all" onchange="yeuCauLocDuLieu()" checked><span>Tất cả</span></label>
-            <label><input type="radio" name="truongTim" value="sap" onchange="yeuCauLocDuLieu()"><span>Mã SAP</span></label>
-            <label><input type="radio" name="truongTim" value="desc" onchange="yeuCauLocDuLieu()"><span>Mô tả</span></label>
-            <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"><span>Part No</span></label>
-            <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span>BM No</span></label>
+          <span class="filter-label" data-i18n="searchIn">Tìm trong</span>
+          <div class="radio-group" role="group" data-i18n-aria="searchScopeAria" aria-label="Phạm vi tìm kiếm">
+            <label><input type="radio" name="truongTim" value="all" onchange="yeuCauLocDuLieu()" checked><span data-i18n="searchAll">Tất cả</span></label>
+            <label><input type="radio" name="truongTim" value="sap" onchange="yeuCauLocDuLieu()"><span data-i18n="searchSap">Mã SAP</span></label>
+            <label><input type="radio" name="truongTim" value="desc" onchange="yeuCauLocDuLieu()"><span data-i18n="searchDesc">Mô tả</span></label>
+            <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"><span data-i18n="searchPart">Part No</span></label>
+            <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span data-i18n="searchBm">BM No</span></label>
           </div>
           <div class="checkbox-group">
-            <label><input type="checkbox" id="chk-ton-kho" onchange="yeuCauLocDuLieu()"> Chỉ hiển thị còn hàng</label>
+            <label><input type="checkbox" id="chk-ton-kho" onchange="yeuCauLocDuLieu()"> <span data-i18n="onlyStock">Chỉ hiển thị còn hàng</span></label>
           </div>
         </div>
       </section>
@@ -309,35 +434,35 @@
       <div class="main-container">
         <section class="table-section" aria-labelledby="ten-bang">
           <div class="section-header">
-            <div><h2 id="ten-bang">Danh sách vật tư</h2><div class="section-caption">Nhấn vào một dòng để xem chi tiết và hình ảnh</div></div>
-            <span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span>
+            <div><h2 id="ten-bang" data-i18n="materialsList">Danh sách vật tư</h2><div class="section-caption" data-i18n="rowHint">Nhấn vào một dòng để xem chi tiết và hình ảnh</div></div>
+            <div class="table-header-actions"><span class="panel-legend" data-i18n="outOfStock">Hết hàng</span><span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span></div>
           </div>
-          <div class="table-wrapper" role="region" aria-label="Bảng vật tư, có thể cuộn ngang" tabindex="0">
-            <table id="bang-du-lieu"><thead id="dau-bang"></thead><tbody id="than-bang"><tr><td class="empty-table">Đang kết nối dữ liệu...</td></tr></tbody></table>
+          <div class="table-wrapper" role="region" data-i18n-aria="tableAria" aria-label="Bảng vật tư, có thể cuộn ngang" tabindex="0">
+            <table id="bang-du-lieu"><thead id="dau-bang"></thead><tbody id="than-bang"><tr><td class="empty-table" data-i18n="loadingData">Đang kết nối dữ liệu...</td></tr></tbody></table>
           </div>
           <div class="table-bottom">
-            <span>↑ ↓ để chọn dòng · / để tìm kiếm</span>
-            <div class="pagination" aria-label="Chuyển trang">
-              <button type="button" class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)" disabled>← Trước</button>
+            <span data-i18n="keyboardHint">↑ ↓ để chọn dòng · / để tìm kiếm</span>
+            <div class="pagination" data-i18n-aria="paginationAria" aria-label="Chuyển trang">
+              <button type="button" class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)" disabled>← <span data-i18n="prev">Trước</span></button>
               <span id="thong-tin-trang">Trang 1 / 1</span>
-              <button type="button" class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)" disabled>Sau →</button>
+              <button type="button" class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)" disabled><span data-i18n="next">Sau</span> →</button>
             </div>
           </div>
         </section>
 
-        <aside class="detail-section" aria-label="Chi tiết vật tư">
-          <div class="detail-title"><strong>Thông tin chi tiết</strong><small id="nhan-sap">Chưa chọn mã SAP</small></div>
+        <aside class="detail-section" data-i18n-aria="detailsAria" aria-label="Chi tiết vật tư">
+          <div class="detail-title"><strong data-i18n="details">Thông tin chi tiết</strong><small id="nhan-sap" data-i18n="noSelectedSap">Chưa chọn mã SAP</small></div>
           <div class="image-viewer-box" id="khung-anh">
             <div class="image-empty" id="anh-trong">
               <span class="empty-icon" aria-hidden="true">▣</span>
-              <span>Chọn một mã SAP để xem hình ảnh</span>
+              <span data-i18n="selectSapImage">Chọn một mã SAP để xem hình ảnh</span>
             </div>
-            <img id="anh-chinh" alt="Hình ảnh vật tư" decoding="async" onclick="phongToAnh()">
-            <button type="button" class="img-nav-btn btn-prev" id="btn-anh-truoc" onclick="doiAnhChiTiet(-1, event)" aria-label="Ảnh trước">‹</button>
-            <button type="button" class="img-nav-btn btn-next" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" aria-label="Ảnh sau">›</button>
+            <img id="anh-chinh" data-i18n-alt="imageAlt" alt="Hình ảnh vật tư" decoding="async" onclick="phongToAnh()">
+            <button type="button" class="img-nav-btn btn-prev" id="btn-anh-truoc" onclick="doiAnhChiTiet(-1, event)" data-i18n-aria="prevImage" aria-label="Ảnh trước">‹</button>
+            <button type="button" class="img-nav-btn btn-next" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" data-i18n-aria="nextImage" aria-label="Ảnh sau">›</button>
             <div class="img-counter" id="dem-anh">0/0 ảnh</div>
           </div>
-          <div class="detail-placeholder" id="chi-tiet-trong">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
+          <div class="detail-placeholder" id="chi-tiet-trong" data-i18n="emptyDetails">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
           <div class="detail-grid" id="luoi-chi-tiet"></div>
           <div class="bm-no-card" id="bm-no-card">
             <div class="bm-no-card-title">BM No</div>
@@ -347,26 +472,223 @@
       </div>
 
       <footer class="footer-bar">
-        <span>SAP Inventory · Giao diện tối ưu cho tra cứu và quản lý tồn kho</span>
+        <span data-i18n="footer">SAP Inventory · Giao diện tối ưu cho tra cứu và quản lý tồn kho</span>
         <span id="trang-thai-cap-nhat" role="status" aria-live="polite">Đang tải nguồn dữ liệu...</span>
       </footer>
     </main>
   </div>
 
-  <div id="lightbox" onclick="dongLightbox(event)" role="dialog" aria-modal="true" aria-label="Xem ảnh vật tư">
-    <button type="button" class="lightbox-btn lightbox-close" onclick="dongLightbox(event)" aria-label="Đóng">×</button>
-    <button type="button" class="lightbox-btn img-nav-btn btn-prev" onclick="doiAnhLightbox(-1, event)" aria-label="Ảnh trước">‹</button>
-    <img id="lightbox-img" alt="Ảnh vật tư phóng to" onclick="event.stopPropagation()">
-    <button type="button" class="lightbox-btn img-nav-btn btn-next" onclick="doiAnhLightbox(1, event)" aria-label="Ảnh sau">›</button>
+  <div id="lightbox" onclick="dongLightbox(event)" role="dialog" aria-modal="true" data-i18n-aria="lightboxAria" aria-label="Xem ảnh vật tư">
+    <button type="button" class="lightbox-btn lightbox-close" onclick="dongLightbox(event)" data-i18n-aria="close" aria-label="Đóng">×</button>
+    <button type="button" class="lightbox-btn img-nav-btn btn-prev" onclick="doiAnhLightbox(-1, event)" data-i18n-aria="prevImage" aria-label="Ảnh trước">‹</button>
+    <img id="lightbox-img" data-i18n-alt="lightboxAlt" alt="Ảnh vật tư phóng to" onclick="event.stopPropagation()">
+    <button type="button" class="lightbox-btn img-nav-btn btn-next" onclick="doiAnhLightbox(1, event)" data-i18n-aria="nextImage" aria-label="Ảnh sau">›</button>
     <div class="lightbox-controls" onclick="event.stopPropagation()">
-      <button type="button" class="lightbox-btn" onclick="thayDoiZoom(-0.2)" aria-label="Thu nhỏ">−</button>
+      <button type="button" class="lightbox-btn" onclick="thayDoiZoom(-0.2)" data-i18n-aria="zoomOut" aria-label="Thu nhỏ">−</button>
       <span id="lightbox-zoom-level">100%</span>
-      <button type="button" class="lightbox-btn" onclick="thayDoiZoom(0.2)" aria-label="Phóng to">+</button>
-      <button type="button" class="lightbox-btn" onclick="datLaiZoom()">Đặt lại</button>
+      <button type="button" class="lightbox-btn" onclick="thayDoiZoom(0.2)" data-i18n-aria="zoomIn" aria-label="Phóng to">+</button>
+      <button type="button" class="lightbox-btn" onclick="datLaiZoom()" data-i18n="resetZoom">Đặt lại</button>
     </div>
   </div>
 
   <script>
+
+    // Text labels are translated without reloading data.js or the image gallery.
+    const NGON_NGU = {
+      vi: {
+        brandSubtitle:"KHÔNG GIAN QUẢN LÝ", themeSettings:"Giao diện", themeToLight:"Chuyển sang giao diện sáng",
+        themeToDark:"Chuyển sang giao diện tối", refresh:"Đồng bộ", refreshTitle:"Đồng bộ dữ liệu từ nguồn",
+        breadcrumb:"Tổng quan vật tư", heroFirst:"Quản lý vật tư", heroAccent:"thông minh.",
+        heroDesc:"Tra cứu mã SAP, theo dõi tồn kho và xem hình ảnh vật tư trong cùng một không gian làm việc.",
+        metricsAria:"Thống kê tồn kho", totalMaterials:"Tổng vật tư", totalNote:"Mã SAP trong hệ thống",
+        inStock:"Còn hàng", stockNote:"Số dòng có tồn kho > 0", filteredResults:"Kết quả lọc",
+        resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
+        searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP, mô tả hoặc Part No...",
+        search:"Tìm kiếm", clear:"Xóa", export:"Xuất Excel (CSV)", searchIn:"Tìm trong",
+        searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
+        searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
+        materialsList:"Danh sách vật tư", rowHint:"Nhấn vào một dòng để xem chi tiết và hình ảnh",
+        outOfStock:"Hết hàng", loadingData:"Đang kết nối dữ liệu...", tableAria:"Bảng vật tư, có thể cuộn ngang",
+        keyboardHint:"↑ ↓ để chọn dòng · / để tìm kiếm", paginationAria:"Chuyển trang",
+        prev:"Trước", next:"Sau", detailsAria:"Chi tiết vật tư", details:"Thông tin chi tiết",
+        noSelectedSap:"Chưa chọn mã SAP", selectSapImage:"Chọn một mã SAP để xem hình ảnh",
+        imageAlt:"Hình ảnh vật tư", prevImage:"Ảnh trước", nextImage:"Ảnh sau",
+        emptyDetails:"Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.",
+        footer:"SAP Inventory · Giao diện tối ưu cho tra cứu và quản lý tồn kho",
+        lightboxAria:"Xem ảnh vật tư", lightboxAlt:"Ảnh vật tư phóng to",
+        close:"Đóng", zoomOut:"Thu nhỏ", zoomIn:"Phóng to", resetZoom:"Đặt lại",
+        statusConnecting:"Đang kết nối", statusLoading:"Đang đồng bộ", statusOnline:"Đã kết nối",
+        statusInvalid:"Dữ liệu không hợp lệ", statusOffline:"Mất kết nối",
+        statusTimeout:"Hết thời gian chờ tải dữ liệu (giữ dữ liệu hiện có)",
+        statusBadData:"Lỗi: data.js không chứa bảng dữ liệu hợp lệ",
+        statusLoadFail:"Không thể tải {file} (giữ dữ liệu hiện có)",
+        updated:"Cập nhật: {time}", loadingSource:"Đang tải nguồn dữ liệu...",
+        processing:"Đang xử lý dữ liệu...", preparing:"Đang chuẩn bị dữ liệu...",
+        searching:"Đang tìm kiếm...", records:"{found} / {total} vật tư",
+        page:"Trang {current} / {total}", noResults:"Không tìm thấy vật tư phù hợp. Hãy thử từ khóa hoặc bộ lọc khác.",
+        sortBy:"Sắp xếp theo {column}", sapCode:"SAP: {code}",
+        imagesCount:"{current} / {total} ảnh", imagesLoading:" · Đang tải",
+        imagesFinding:"Đang tìm ảnh", imagesSearching:"Đang tìm hình ảnh...",
+        imagesNone:"Chưa có ảnh cho mã SAP này", imagesEmpty:"0/0 ảnh",
+        noExport:"Không có dữ liệu để xuất.",
+        colSap:"Mã SAP", colDescription:"Mô tả", colPart:"Part No",
+        colQuantity:"Số lượng", colPrice:"Giá", colBm:"BM No", colUnit:"Đơn vị", colGroup:"Nhóm"
+      },
+      en: {
+        brandSubtitle:"OPERATIONS WORKSPACE", themeSettings:"Appearance", themeToLight:"Switch to light mode",
+        themeToDark:"Switch to dark mode", refresh:"Sync", refreshTitle:"Refresh source data",
+        breadcrumb:"Inventory overview", heroFirst:"Smart inventory", heroAccent:"management.",
+        heroDesc:"Look up SAP materials, track stock, and browse material images in one workspace.",
+        metricsAria:"Inventory metrics", totalMaterials:"Total materials", totalNote:"SAP material records",
+        inStock:"In stock", stockNote:"Rows with quantity > 0", filteredResults:"Filtered results",
+        resultNote:"Matching the current search", searchFilters:"Search and filters",
+        searchAria:"Search SAP code, description or part number",
+        searchPlaceholder:"Search SAP code, description, or Part No...",
+        search:"Search", clear:"Clear", export:"Export Excel (CSV)", searchIn:"Search by",
+        searchScopeAria:"Search scope", searchAll:"All", searchSap:"SAP code",
+        searchDesc:"Description", searchPart:"Part No", searchBm:"BM No", onlyStock:"In stock only",
+        materialsList:"Material list", rowHint:"Select a row to view details and images",
+        outOfStock:"Out of stock", loadingData:"Connecting to data...", tableAria:"Scrollable material table",
+        keyboardHint:"↑ ↓ select a row · / search", paginationAria:"Pagination",
+        prev:"Previous", next:"Next", detailsAria:"Material details", details:"Material details",
+        noSelectedSap:"No SAP code selected", selectSapImage:"Select an SAP code to view images",
+        imageAlt:"Material image", prevImage:"Previous image", nextImage:"Next image",
+        emptyDetails:"Select a material row to see its details here.",
+        footer:"SAP Inventory · Optimized material lookup and stock management",
+        lightboxAria:"Material image viewer", lightboxAlt:"Zoomed material image",
+        close:"Close", zoomOut:"Zoom out", zoomIn:"Zoom in", resetZoom:"Reset",
+        statusConnecting:"Connecting", statusLoading:"Syncing", statusOnline:"Connected",
+        statusInvalid:"Invalid data", statusOffline:"Disconnected",
+        statusTimeout:"Data request timed out (existing data preserved)",
+        statusBadData:"Error: data.js does not contain a valid table",
+        statusLoadFail:"Unable to load {file} (existing data preserved)",
+        updated:"Updated: {time}", loadingSource:"Loading data source...",
+        processing:"Processing data...", preparing:"Preparing data...",
+        searching:"Searching...", records:"{found} / {total} materials",
+        page:"Page {current} / {total}", noResults:"No matching materials. Try another search or filter.",
+        sortBy:"Sort by {column}", sapCode:"SAP: {code}",
+        imagesCount:"{current} / {total} images", imagesLoading:" · Loading",
+        imagesFinding:"Finding images", imagesSearching:"Searching for images...",
+        imagesNone:"No images available for this SAP code", imagesEmpty:"0/0 images",
+        noExport:"No data to export.",
+        colSap:"SAP code", colDescription:"Description", colPart:"Part No",
+        colQuantity:"Quantity", colPrice:"Price", colBm:"BM No", colUnit:"Unit", colGroup:"Group"
+      }
+    };
+    let ngonNguHienTai = "vi";
+    let giaoDienHienTai = "light";
+
+    function tuDien(key, values = {}) {
+      const text = NGON_NGU[ngonNguHienTai][key] ?? NGON_NGU.vi[key] ?? key;
+      return String(text).replace(/\{([a-zA-Z]+)\}/g, (_, variable) =>
+        Object.prototype.hasOwnProperty.call(values, variable) ? String(values[variable]) : "{" + variable + "}");
+    }
+
+    function ghiTuyChon(key, value) {
+      try { localStorage.setItem(key, value); } catch (_) { /* file:// / private browsing */ }
+    }
+    function docTuyChon(key) {
+      try { return localStorage.getItem(key); } catch (_) { return null; }
+    }
+
+    function tenCotDaDich(tenCot) {
+      const ten = String(tenCot ?? "");
+      const k = ten.trim().toLowerCase();
+      const key = {
+        "sap":"colSap", "sap code":"colSap", "mã sap":"colSap",
+        "description":"colDescription", "mô tả":"colDescription",
+        "part no":"colPart", "part no.":"colPart", "part number":"colPart",
+        "quantity":"colQuantity", "qty":"colQuantity", "số lượng":"colQuantity",
+        "price":"colPrice", "giá":"colPrice", "bm no":"colBm",
+        "unit":"colUnit", "đơn vị":"colUnit", "group":"colGroup", "nhóm":"colGroup"
+      }[k];
+      return key ? tuDien(key) : ten;
+    }
+
+    function apDungNgonNgu() {
+      document.documentElement.lang = ngonNguHienTai;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = tuDien(el.dataset.i18n);
+      });
+      for (const [selector, attribute, key] of [
+        ["[data-i18n-placeholder]","placeholder","i18nPlaceholder"],
+        ["[data-i18n-title]","title","i18nTitle"],
+        ["[data-i18n-aria]","aria-label","i18nAria"],
+        ["[data-i18n-alt]","alt","i18nAlt"]
+      ]) {
+        document.querySelectorAll(selector).forEach(el =>
+          el.setAttribute(attribute, tuDien(el.dataset[key]))
+        );
+      }
+      document.getElementById("lang-vi").setAttribute("aria-pressed", String(ngonNguHienTai === "vi"));
+      document.getElementById("lang-en").setAttribute("aria-pressed", String(ngonNguHienTai === "en"));
+      document.getElementById("theme-toggle").setAttribute("aria-label",
+        tuDien(giaoDienHienTai === "dark" ? "themeToLight" : "themeToDark"));
+      document.getElementById("theme-toggle").title =
+        tuDien(giaoDienHienTai === "dark" ? "themeToLight" : "themeToDark");
+      const trangThai = document.getElementById("tinh-trang-du-lieu");
+      trangThai.textContent = tuDien(trangThai.dataset.status || "statusConnecting");
+      const capNhat = document.getElementById("trang-thai-cap-nhat");
+      if (capNhat.dataset.messageKey) capNhat.textContent = tuDien(capNhat.dataset.messageKey, {
+        time: capNhat.dataset.updateTime || "", file: duongDanOMang
+      });
+
+      if (tieuDeCot.length) veTieuDe();
+      if (chiMucSanSang) {
+        hienThiTrangHienTai();
+        document.getElementById("trang-thai-ban-ghi").textContent = tuDien("records", {
+          found: dinhDangSoLuong.format(ketQuaLoc.length),
+          total: dinhDangSoLuong.format(duLieuTimKiem.length)
+        });
+      }
+      const idDaChon = dongDangChonIndex;
+      if (idDaChon >= 0 && tatCaDuLieu[idDaChon]) {
+        document.getElementById("nhan-sap").textContent =
+          tuDien("sapCode",{code:chuanHoaMaSap(tatCaDuLieu[idDaChon][0]) || "—"});
+        hienThiChiTiet(tatCaDuLieu[idDaChon]);
+      } else {
+        document.getElementById("nhan-sap").textContent = tuDien("noSelectedSap");
+      }
+      document.getElementById("thong-tin-trang").textContent = tuDien("page", {
+        current: trangHienTai, total: Math.max(1,Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG))
+      });
+      capNhatGiaoDienAnh();
+      if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
+    }
+
+    function doiNgonNgu(ngonNgu) {
+      if (ngonNgu !== "vi" && ngonNgu !== "en") return;
+      ngonNguHienTai = ngonNgu;
+      dinhDangSoLuong = new Intl.NumberFormat(ngonNgu === "en" ? "en-US" : "vi-VN");
+      ghiTuyChon("checking-language", ngonNgu);
+      apDungNgonNgu();
+    }
+
+    function apDungGiaoDien() {
+      document.documentElement.dataset.theme = giaoDienHienTai;
+      const nut = document.getElementById("theme-toggle");
+      nut.textContent = giaoDienHienTai === "dark" ? "☀" : "☾";
+      nut.setAttribute("aria-pressed", String(giaoDienHienTai === "dark"));
+      nut.setAttribute("aria-label", tuDien(giaoDienHienTai === "dark" ? "themeToLight" : "themeToDark"));
+      nut.title = tuDien(giaoDienHienTai === "dark" ? "themeToLight" : "themeToDark");
+    }
+
+    function doiGiaoDien() {
+      giaoDienHienTai = giaoDienHienTai === "dark" ? "light" : "dark";
+      ghiTuyChon("checking-theme", giaoDienHienTai);
+      apDungGiaoDien();
+    }
+
+    function khoiTaoTuyChon() {
+      const ngonNgu = docTuyChon("checking-language");
+      const giaoDien = docTuyChon("checking-theme");
+      ngonNguHienTai = ngonNgu === "en" ? "en" : "vi";
+      dinhDangSoLuong = new Intl.NumberFormat(ngonNguHienTai === "en" ? "en-US" : "vi-VN");
+      giaoDienHienTai = giaoDien === "dark" ? "dark" : "light";
+      apDungGiaoDien();
+      apDungNgonNgu();
+    }
+
     // ================= CẤU HÌNH THƯ MỤC Ổ MẠNG =================
     const duongDanOMang = "data.js";
     const THU_MUC_HINH = "Material/"; // Thư mục chứa ảnh
@@ -394,10 +716,18 @@
     let lanTaiDuLieu = 0;
     let dangTaiScript = false;
 
-    function datTrangThaiDuLieu(noiDung, loai) {
+    function datTrangThaiDuLieu(key, loai) {
       const el = document.getElementById("tinh-trang-du-lieu");
-      el.textContent = noiDung;
+      el.dataset.status = key;
+      el.textContent = tuDien(key);
       el.className = "online-pill" + (loai ? " " + loai : "");
+    }
+
+    function datThongBaoCapNhat(key, values = {}) {
+      const el = document.getElementById("trang-thai-cap-nhat");
+      el.dataset.messageKey = key;
+      el.dataset.updateTime = values.time ?? "";
+      el.textContent = tuDien(key, values);
     }
 
     function taiDuLieu() {
@@ -411,7 +741,7 @@
       s.id = "script-data";
       s.async = true;
       s.src = duongDanOMang + "?t=" + Date.now();
-      datTrangThaiDuLieu("Đang đồng bộ", "loading");
+      datTrangThaiDuLieu("statusLoading", "loading");
 
       let daHetGio = false;
       const gioiHan = setTimeout(function() {
@@ -419,9 +749,8 @@
         daHetGio = true;
         dangTaiScript = false;
         s.remove();
-        datTrangThaiDuLieu("Mất kết nối", "error");
-        document.getElementById("trang-thai-cap-nhat").textContent =
-          "Hết thời gian chờ tải dữ liệu (giữ dữ liệu hiện có)";
+        datTrangThaiDuLieu("statusOffline", "error");
+        datThongBaoCapNhat("statusTimeout");
       }, 15000);
 
       s.onload = function() {
@@ -434,9 +763,8 @@
           && thoiGianCapNhat !== null && thoiGianCapNhat !== "";
 
         if (!Array.isArray(duLieuMoi) || !duLieuMoi.length || !Array.isArray(duLieuMoi[0])) {
-          datTrangThaiDuLieu("Dữ liệu không hợp lệ", "error");
-          document.getElementById("trang-thai-cap-nhat").textContent =
-            "Lỗi: data.js không chứa bảng dữ liệu hợp lệ";
+          datTrangThaiDuLieu("statusInvalid", "error");
+          datThongBaoCapNhat("statusBadData");
           return;
         }
         if (!coMocCapNhat || thoiGianCapNhat !== mocCapNhatCu || !tatCaDuLieu.length) {
@@ -448,17 +776,15 @@
           veTieuDe();
           taoChiMucTimKiem();
         }
-        datTrangThaiDuLieu("Đã kết nối");
-        document.getElementById("trang-thai-cap-nhat").textContent =
-          "Cập nhật: " + (coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString("vi-VN"));
+        datTrangThaiDuLieu("statusOnline");
+        datThongBaoCapNhat("updated", {time: coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString(ngonNguHienTai === "en" ? "en-US" : "vi-VN")});
       };
       s.onerror = function() {
         if (lanHienTai !== lanTaiDuLieu || daHetGio) return;
         clearTimeout(gioiHan);
         dangTaiScript = false;
-        datTrangThaiDuLieu("Mất kết nối", "error");
-        document.getElementById("trang-thai-cap-nhat").textContent =
-          "Không thể tải " + duongDanOMang + " (giữ dữ liệu hiện có)";
+        datTrangThaiDuLieu("statusOffline", "error");
+        datThongBaoCapNhat("statusLoadFail", {file:duongDanOMang});
       };
       document.body.appendChild(s);
     }
@@ -475,12 +801,12 @@
 
     function veTieuDe() {
       document.getElementById("dau-bang").innerHTML = "<tr>" + COT_HIEN_THI.map(chiSo => {
-        const c = thoatHTML(tieuDeCot[chiSo]);
+        const c = thoatHTML(tenCotDaDich(tieuDeCot[chiSo]));
         const dangSapXep = cotSapXep === chiSo;
         const muiTen = dangSapXep ? (huongSapXep === 1 ? "▲" : "▼") : "↕";
         const ariaSort = dangSapXep ? (huongSapXep === 1 ? "ascending" : "descending") : "none";
         return '<th aria-sort="' + ariaSort + '"><button type="button" class="sort-trigger" ' +
-          'onclick="sapXepTheoCot(' + chiSo + ')" title="Sắp xếp theo ' + c + '">' +
+          'onclick="sapXepTheoCot(' + chiSo + ')" title="' + thoatHTML(tuDien("sortBy", {column:tenCotDaDich(tieuDeCot[chiSo])})) + '">' +
           c + '<span class="sort-indicator">' + muiTen + '</span></button></th>';
       }).join("") + "</tr>";
     }
@@ -547,9 +873,10 @@
       card.classList.toggle("visible", maBmNo.length > 0);
 
       const luoiChiTiet = document.getElementById("luoi-chi-tiet");
-      const thePrice = [...luoiChiTiet.querySelectorAll(".detail-item")].find(item =>
-        item.querySelector("label")?.textContent.trim().toLowerCase() === "price"
-      );
+      const chiSoPrice = timCotTheoTen("Price");
+      const thePrice = chiSoPrice >= 0 ? luoiChiTiet.querySelector(
+        '.detail-item[data-col-index="' + chiSoPrice + '"]'
+      ) : null;
 
       if (thePrice) {
         thePrice.after(card);
@@ -561,7 +888,7 @@
     let chiMucSanSang = false;
     let lanLapChiMuc = 0;
     let soCoTonKho = 0;
-    const dinhDangSoLuong = new Intl.NumberFormat("vi-VN");
+    let dinhDangSoLuong = new Intl.NumberFormat("vi-VN");
 
     // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
@@ -575,9 +902,9 @@
       document.getElementById("metric-total").textContent = dinhDangSoLuong.format(tong);
       document.getElementById("metric-instock").textContent = "…";
       document.getElementById("metric-results").textContent = "…";
-      document.getElementById("trang-thai-ban-ghi").textContent = "Đang xử lý dữ liệu...";
+      document.getElementById("trang-thai-ban-ghi").textContent = tuDien("processing");
       document.getElementById("than-bang").innerHTML =
-        '<tr><td colspan="6" class="empty-table">Đang chuẩn bị dữ liệu...</td></tr>';
+        '<tr><td colspan="6" class="empty-table">' + tuDien("preparing") + '</td></tr>';
 
       function xuLyNhom() {
         if (lanHienTai !== lanLapChiMuc) return;
@@ -630,7 +957,7 @@
       const moi = [];
       let viTri = 0;
       const tong = duLieuTimKiem.length;
-      document.getElementById("trang-thai-ban-ghi").textContent = "Đang tìm kiếm...";
+      document.getElementById("trang-thai-ban-ghi").textContent = tuDien("searching");
 
       function xuLyNhom() {
         if (lanLocHienTai !== soLanLocDuLieu) return;
@@ -650,7 +977,7 @@
         hienThiTrangHienTai();
         document.querySelector(".table-wrapper").scrollTop = 0;
         document.getElementById("trang-thai-ban-ghi").textContent =
-          dinhDangSoLuong.format(ketQuaLoc.length) + " / " + dinhDangSoLuong.format(tong) + " vật tư";
+          tuDien("records",{found:dinhDangSoLuong.format(ketQuaLoc.length), total:dinhDangSoLuong.format(tong)});
         document.getElementById("metric-results").textContent = dinhDangSoLuong.format(ketQuaLoc.length);
       }
       xuLyNhom();
@@ -702,18 +1029,19 @@
           const giaTri = thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]));
           if (chiSoCot === 0) return '<td><span class="sap-code">' + giaTri + '</span></td>';
           if (chiSoCot === 3) return '<td><span class="stock-badge' +
-            (muc.coTonKho ? '' : ' empty') + '">' + giaTri + '</span></td>';
+            (muc.coTonKho ? '' : ' empty') + '"' +
+            (muc.coTonKho ? '' : ' title="' + thoatHTML(tuDien("outOfStock")) + '"') + '>' +
+            (muc.coTonKho ? '' : '⚠ ') + giaTri + '</span></td>';
           return '<td>' + giaTri + '</td>';
         }).join("");
-        return '<tr class="' + selectedClass + '" data-row-index="' + muc.chiSo +
+        return '<tr class="' + selectedClass + (muc.coTonKho ? '' : ' out-of-stock') + '" data-row-index="' + muc.chiSo +
           '" tabindex="0" aria-selected="' + selectedAria +
           '" onclick="chonDong(' + muc.chiSo + ', this)">' + o + '</tr>';
       }).join("");
 
       document.getElementById("than-bang").innerHTML = html ||
-        '<tr><td colspan="6" class="empty-table">Không tìm thấy vật tư phù hợp. Hãy thử từ khóa hoặc bộ lọc khác.</td></tr>';
-      document.getElementById("thong-tin-trang").textContent =
-        "Trang " + trangHienTai + " / " + tongSoTrang;
+        '<tr><td colspan="6" class="empty-table">' + tuDien("noResults") + '</td></tr>';
+      document.getElementById("thong-tin-trang").textContent = tuDien("page",{current:trangHienTai,total:tongSoTrang});
       document.getElementById("btn-trang-truoc").disabled = trangHienTai <= 1;
       document.getElementById("btn-trang-sau").disabled = trangHienTai >= tongSoTrang;
     }
@@ -750,6 +1078,23 @@
       dongMoi.scrollIntoView({ block: "nearest" });
     }
 
+    function hienThiChiTiet(dongData) {
+      let htmlChiTiet = "";
+      const chiSoBm = timCotTheoTen("BM No");
+      for (let c = 0; c < tieuDeCot.length; c++) {
+        if (c === chiSoBm) continue;
+        htmlChiTiet += '<div class="detail-item" data-col-index="' + c + '"><label>' +
+          thoatHTML(tenCotDaDich(tieuDeCot[c])) + '</label><span>' +
+          thoatHTML(hienThiGiaTri(c, dongData[c])) + '</span></div>';
+      }
+      const luoiChiTiet = document.getElementById("luoi-chi-tiet");
+      const cardBmNo = document.getElementById("bm-no-card");
+      cardBmNo.remove();
+      luoiChiTiet.innerHTML = htmlChiTiet;
+      luoiChiTiet.appendChild(cardBmNo);
+      capNhatCardBmNo(dongData);
+    }
+
     function chonDong(index, element) {
       document.querySelectorAll("#than-bang tr").forEach(tr => {
         tr.classList.remove("selected");
@@ -761,22 +1106,11 @@
 
       const dongData = tatCaDuLieu[index];
       const maSap = chuanHoaMaSap(dongData[0]); // Cột đầu tiên là Mã SAP
-      document.getElementById("nhan-sap").textContent = "SAP: " + (maSap || "—");
+      document.getElementById("nhan-sap").textContent = tuDien("sapCode",{code:maSap || "—"});
       document.getElementById("chi-tiet-trong").style.display = "none";
 
-      // Hiển thị thông tin chi tiết sang panel bên phải
-      let htmlChiTiet = "";
-      for (let c = 0; c < tieuDeCot.length; c++) {
-        if (c === timCotTheoTen("BM No")) continue;
-        htmlChiTiet += `<div class="detail-item"><label>${thoatHTML(tieuDeCot[c])}</label><span>${thoatHTML(hienThiGiaTri(c, dongData[c]))}</span></div>`;
-      }
-      const luoiChiTiet = document.getElementById("luoi-chi-tiet");
-      const cardBmNo = document.getElementById("bm-no-card");
-      // Giữ lại phần tử BM No khi xây dựng lại lưới chi tiết cho dòng tiếp theo.
-      cardBmNo.remove();
-      luoiChiTiet.innerHTML = htmlChiTiet;
-      luoiChiTiet.appendChild(cardBmNo);
-      capNhatCardBmNo(dongData);
+      // Keep image/navigation state intact when re-rendering translated details.
+      hienThiChiTiet(dongData);
 
       // Tải hình ảnh tương ứng với Mã SAP
       taiBoSuuTapAnh(maSap);
@@ -933,16 +1267,16 @@
           lightboxImg.src = src;
           datLaiZoom();
         }
-        counterEl.textContent = (viTriAnhDangXem + 1) + " / " + tong +
-          " ảnh" + (dangQuetAnh ? " · Đang tải" : "");
+        counterEl.textContent = tuDien("imagesCount",{current:viTriAnhDangXem+1,total:tong}) +
+          (dangQuetAnh ? tuDien("imagesLoading") : "");
         btnPrev.style.display = tong > 1 ? "block" : "none";
         btnNext.style.display = tong > 1 ? "block" : "none";
       } else {
         imgEl.removeAttribute("src");
         document.getElementById("lightbox-img").removeAttribute("src");
-        thongBaoAnh.textContent = dangQuetAnh ? "Đang tìm hình ảnh..." :
-          (maSapDangXem ? "Chưa có ảnh cho mã SAP này" : "Chọn một mã SAP để xem hình ảnh");
-        counterEl.textContent = dangQuetAnh ? "Đang tìm ảnh" : "0/0 ảnh";
+        thongBaoAnh.textContent = dangQuetAnh ? tuDien("imagesSearching") :
+          (maSapDangXem ? tuDien("imagesNone") : tuDien("selectSapImage"));
+        counterEl.textContent = tuDien(dangQuetAnh ? "imagesFinding" : "imagesEmpty");
         btnPrev.style.display = "none";
         btnNext.style.display = "none";
       }
@@ -1009,7 +1343,7 @@
 
     function xuatExcel() {
       if (!tieuDeCot.length || !ketQuaLoc.length) {
-        alert("Không có dữ liệu để xuất.");
+        alert(tuDien("noExport"));
         return;
       }
 
@@ -1070,6 +1404,7 @@
     });
 
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
+    khoiTaoTuyChon();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
     document.addEventListener("visibilitychange", () => {
