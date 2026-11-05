@@ -628,7 +628,6 @@
           <button class="btn btn-soft" type="button" onclick="apDungBoLoc()" data-i18n="applyFilter">Áp dụng</button>
           <button class="btn btn-secondary" type="button" onclick="xoaBoLoc()" data-i18n="removeFilter">Xóa đã lưu</button>
         </div>
-      </details>
                </div>
              </details>
           </div>
