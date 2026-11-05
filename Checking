@@ -888,7 +888,7 @@
         current: trangHienTai, total: Math.max(1,Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG))
       });
       capNhatGiaoDienAnh();
-      if (chiMucSanSang) hienThiTongGiaTriKho();
+      if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
     }
 
@@ -1146,6 +1146,119 @@
           : tuDien("inventoryValueNote");
     }
 
+
+    // Reorder Point is sourced from SAP data, not a fixed global threshold.
+    let chiSoReorderPoint = -1;
+    let chiSoSoLuong = 3;
+    let danhSachGiaTri = [];
+    let analyticsReady = false;
+
+    function cotReorderPoint() {
+      return tieuDeCot.findIndex(h => [
+        "reorder point", "re-order point", "reorderpoint", "reorder level",
+        "rop", "điểm đặt hàng lại", "mức đặt hàng lại", "ngưỡng đặt hàng lại"
+      ].includes(String(h ?? "").normalize("NFC").trim().toLowerCase()));
+    }
+
+    function trangThaiTheoReorderPoint(soLuong, diemDatHang) {
+      if (!Number.isFinite(soLuong)) return "unknown";
+      if (soLuong === 0) return "zero";
+      if (!Number.isFinite(diemDatHang) || diemDatHang < 0) return "unknown";
+      if (soLuong > diemDatHang) return "healthy";
+      if (soLuong === diemDatHang) return "at";
+      return "below";
+    }
+
+    function tenTrangThaiTon(trangThai) {
+      return tuDien({
+        healthy:"stockAbove", at:"stockEqual", below:"stockBelow",
+        zero:"stockZero",unknown:"stockUnknown"
+      }[trangThai] || "stockUnknown");
+    }
+
+    function trungGanDung(mot, hai) {
+      if (mot === hai) return true;
+      if (Math.abs(mot.length - hai.length) > 1) return false;
+      let i=0,j=0,soLoi=0;
+      while (i < mot.length && j < hai.length) {
+        if (mot[i] === hai[j]) {i++;j++;continue;}
+        if (++soLoi > 1) return false;
+        if (mot.length > hai.length) i++;
+        else if (hai.length > mot.length) j++;
+        else {i++;j++;}
+      }
+      return soLoi + (i<mot.length||j<hai.length ? 1:0) <= 1;
+    }
+
+    function chuanHoaTimKiem(text) {
+      return String(text ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/đ/g,"d").toLowerCase();
+    }
+
+    function coTuGanDung(chuoi,tuKhoa) {
+      if (tuKhoa.length < 4 || tuKhoa.length > 48) return false;
+      const words = chuanHoaTimKiem(chuoi).split(/[^a-z0-9]+/).filter(Boolean);
+      return words.some(word => Math.abs(word.length-tuKhoa.length)<=1 && trungGanDung(word,tuKhoa));
+    }
+
+    function layDanhSachLocDaLuu() {
+      try {
+        const mang=JSON.parse(docTuyChon("checking-filters-v2") || "[]");
+        return Array.isArray(mang) ? mang.filter(x=>x&&typeof x.name==="string").slice(0,12):[];
+      } catch { return []; }
+    }
+
+    function veBoLocDaLuu() {
+      const sel=document.getElementById("loc-da-luu");
+      const selected=sel.value;
+      sel.innerHTML='<option value="">—</option>'+layDanhSachLocDaLuu().map((x,i)=>
+        '<option value="'+i+'">'+thoatHTML(x.name)+'</option>').join("");
+      if([...sel.options].some(x=>x.value===selected))sel.value=selected;
+    }
+
+    function luuBoLoc() {
+      const name=prompt(tuDien("filterName"));
+      if (!name || !name.trim()) return;
+      const records=layDanhSachLocDaLuu().filter(x=>x.name!==name.trim());
+      records.unshift({
+        name:name.trim().slice(0,70),
+        keyword:document.getElementById("o-tim-kiem").value,
+        scope:document.querySelector('input[name="truongTim"]:checked').value,
+        onlyStock:document.getElementById("chk-ton-kho").checked,
+        status:document.getElementById("loc-canh-bao").value,
+        codes:document.getElementById("sap-batch").value.slice(0,12000),
+        fuzzy:document.getElementById("tim-gan-dung").checked
+      });
+      ghiTuyChon("checking-filters-v2",JSON.stringify(records.slice(0,12)));
+      veBoLocDaLuu();
+      document.getElementById("loc-da-luu").value="0";
+    }
+
+    function apDungBoLoc() {
+      const idx=Number(document.getElementById("loc-da-luu").value);
+      if(document.getElementById("loc-da-luu").value===""||!Number.isInteger(idx))return;
+      const data=layDanhSachLocDaLuu()[idx];if(!data)return;
+      document.getElementById("o-tim-kiem").value=data.keyword||"";
+      const radio=document.querySelector('input[name="truongTim"][value="'+data.scope+'"]');
+      document.querySelector('input[name="truongTim"][value="all"]').checked=true;
+      if(radio)radio.checked=true;
+      document.getElementById("chk-ton-kho").checked=Boolean(data.onlyStock);
+      document.getElementById("loc-canh-bao").value=data.status||"all";
+      document.getElementById("sap-batch").value=data.codes||"";
+      document.getElementById("tim-gan-dung").checked=Boolean(data.fuzzy);
+      yeuCauLocDuLieu();
+    }
+
+    function xoaBoLoc() {
+      const sel=document.getElementById("loc-da-luu");
+      if(sel.value==="")return;
+      const idx=Number(sel.value), list=layDanhSachLocDaLuu();
+      if(!Number.isInteger(idx)||idx<0||idx>=list.length)return;
+      list.splice(idx,1);
+      ghiTuyChon("checking-filters-v2",JSON.stringify(list));
+      veBoLocDaLuu();sel.value="";
+    }
+
     // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
       const lanHienTai = ++lanLapChiMuc;
@@ -1153,7 +1266,10 @@
       // Prefer named headers; keep the existing quantity column position as a fallback.
       const cotSoLuong = tieuDeCot.findIndex(x =>
         ["quantity", "qty", "số lượng"].includes(String(x ?? "").trim().toLowerCase()));
-      const chiSoSoLuong = cotSoLuong >= 0 ? cotSoLuong : 3;
+      chiSoSoLuong = cotSoLuong >= 0 ? cotSoLuong : 3;
+      chiSoReorderPoint = cotReorderPoint();
+      danhSachGiaTri = [];
+      analyticsReady = false;
       const chiSoGia = tieuDeCot.findIndex(x =>
         ["price", "unit price", "đơn giá", "giá"].includes(String(x ?? "").trim().toLowerCase()));
       let giaTriDaTinh = 0;
@@ -1184,14 +1300,19 @@
           const giaTri = dong.map(ten => String(ten ?? "").toLowerCase());
           const soLuong = chuyenThanhSo(dong[chiSoSoLuong]);
           const coTonKho = soLuong > 0;
+          const reorderPoint = chiSoReorderPoint >= 0 ? chuyenThanhSo(dong[chiSoReorderPoint]) : NaN;
+          const trangThaiTon = trangThaiTheoReorderPoint(soLuong, reorderPoint);
           if (coTonKho) soCoTonKho++;
           // Inventory valuation uses all rows, independent of the active search/filter.
           // Do not count empty stock or non-numeric/negative prices as monetary value.
+          let giaTriDong = 0;
           if (chiSoGia >= 0 && coTonKho) {
             const donGia = chuyenThanhSo(dong[chiSoGia]);
             const thanhTien = soLuong * donGia;
             if (Number.isFinite(donGia) && donGia >= 0 && Number.isFinite(thanhTien)) {
               giaTriDaTinh += thanhTien;
+              giaTriDong = thanhTien;
+              if (thanhTien > 0) danhSachGiaTri.push({sap:String(dong[0]??""),value:thanhTien,group:String(dong[5]??"")});
             } else {
               soDongGiaKhongHopLe++;
             }
@@ -1204,7 +1325,7 @@
             desc: giaTri[1] || "",
             part: giaTri[2] || "",
             bmno: chiSoBmNo >= 0 ? giaTri[chiSoBmNo] || "" : "",
-            coTonKho: coTonKho
+            coTonKho: coTonKho, soLuong, reorderPoint, trangThaiTon, giaTriDong
           });
         }
         if (viTri < tatCaDuLieu.length) {
@@ -1215,6 +1336,9 @@
           soDongGiaTriKhongHopLe = soDongGiaKhongHopLe;
           document.getElementById("metric-instock").textContent = dinhDangSoLuong.format(soCoTonKho);
           hienThiTongGiaTriKho();
+          analyticsReady=true;
+          capNhatThongKeNangCao();
+          luuAnhChupKho();
           locDuLieu();
         }
       }
@@ -1240,6 +1364,11 @@
       const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
+      const locCanhBao=document.getElementById("loc-canh-bao").value;
+      const dsSap=new Set(document.getElementById("sap-batch").value.split(/[,;|\n\r\t ]+/)
+        .map(x=>chuanHoaMaSap(x).toLowerCase()).filter(Boolean));
+      const nhieuTuKhoa=tuKhoa.split(/[,;|\n\r]+/).map(x=>x.trim()).filter(Boolean);
+      const ganDung=document.getElementById("tim-gan-dung").checked;
       const truongTim = cheDoTim === "all" ? "all" : cheDoTim;
       const lanLocHienTai = ++soLanLocDuLieu;
       const moi = [];
@@ -1252,9 +1381,12 @@
         const gioiHan = Math.min(viTri + 2500, tong);
         for (; viTri < gioiHan; viTri++) {
           const muc = duLieuTimKiem[viTri];
-          if ((!tuKhoa || muc[truongTim].includes(tuKhoa)) && (!chiTonKho || muc.coTonKho)) {
-            moi.push(muc);
-          }
+          const giaTri=muc[truongTim];
+          const hopTuKhoa=!tuKhoa || (nhieuTuKhoa.length?nhieuTuKhoa:[tuKhoa]).some(term=>
+            giaTri.includes(term) || (ganDung && coTuGanDung(giaTri,chuanHoaTimKiem(term))));
+          const hopSap=!dsSap.size||dsSap.has(chuanHoaMaSap(muc.dong[0]).toLowerCase());
+          if (hopTuKhoa && hopSap && (!chiTonKho || muc.coTonKho) &&
+              (locCanhBao==="all" || muc.trangThaiTon===locCanhBao)) moi.push(muc);
         }
         if (viTri < tong) {
           requestAnimationFrame(xuLyNhom);
@@ -1317,10 +1449,13 @@
         const o = COT_HIEN_THI.map(chiSoCot => {
           const giaTri = thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]));
           if (chiSoCot === 0) return '<td><span class="sap-code">' + giaTri + '</span></td>';
-          if (chiSoCot === 3) return '<td><span class="stock-badge' +
-            (muc.coTonKho ? '' : ' empty') + '"' +
-            (muc.coTonKho ? '' : ' title="' + thoatHTML(tuDien("outOfStock")) + '"') + '>' +
-            (muc.coTonKho ? '' : '⚠ ') + giaTri + '</span></td>';
+          if (chiSoCot === chiSoSoLuong) {
+            const trangThai=muc.trangThaiTon||"unknown";
+            const tooltip=tenTrangThaiTon(trangThai) +
+              (Number.isFinite(muc.reorderPoint) ? ' · Reorder Point: '+muc.reorderPoint : '');
+            return '<td><span class="stock-badge stock-'+trangThai+'" title="'+thoatHTML(tooltip)+'">' +
+              (trangThai==="zero"?'⚠ ':'')+giaTri+'</span></td>';
+          }
           return '<td>' + giaTri + '</td>';
         }).join("");
         return '<tr class="' + selectedClass + (muc.coTonKho ? '' : ' out-of-stock') + '" data-row-index="' + muc.chiSo +
@@ -1650,6 +1785,9 @@
       document.getElementById("o-tim-kiem").value = "";
       document.querySelector('input[name="truongTim"][value="all"]').checked = true;
       document.getElementById("chk-ton-kho").checked = false;
+      document.getElementById("loc-canh-bao").value="all";
+      document.getElementById("sap-batch").value="";
+      document.getElementById("tim-gan-dung").checked=false;
       trangHienTai = 1;
       locDuLieu();
     }
@@ -2128,6 +2266,7 @@
 
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     khoiTaoTuyChon();
+    veBoLocDaLuu();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
     document.addEventListener("visibilitychange", () => {
