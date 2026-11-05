@@ -1841,6 +1841,22 @@
       }
     }
 
+    function capNhatNutLoaiHistory() {
+      const selected=document.getElementById("history-type").value;
+      document.querySelectorAll("[data-history-kind]").forEach(button=>{
+        const active=button.dataset.historyKind===selected;
+        button.classList.toggle("selected",active);
+        button.setAttribute("aria-pressed",String(active));
+      });
+    }
+
+    function chonLoaiHistory(kind) {
+      if(!["all","in","out","unknown"].includes(kind))return;
+      document.getElementById("history-type").value=kind;
+      capNhatNutLoaiHistory();
+      locHistory();
+    }
+
     let historyPendingFilter=0;
     function locHistory() {
       if(!historyLoaded)return;
