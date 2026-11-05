@@ -599,6 +599,26 @@
       #view-dashboard .insight-grid{grid-template-columns:1fr}.pane-heading{flex-wrap:wrap}
       .history-stats{gap:7px}.history-stat{padding:11px}.history-stat strong{font-size:21px}.history-toolbar label{flex:1 1 145px}
       .history-toolbar label:first-child{flex-basis:100%}}
+
+    /* Always-visible In / Out movement filters. */
+    .history-kind-group { display:flex; flex-direction:column; gap:4px; min-width:255px; }
+    .history-kind-label { font-size:11px; font-weight:700; color:var(--muted); }
+    .history-kind-buttons { display:flex; flex-wrap:wrap; align-items:center; gap:4px;
+      padding:3px; min-height:40px; border:1px solid var(--line); border-radius:10px; background:var(--app-field); }
+    .history-kind-filter { background:transparent; color:var(--muted); border:1px solid transparent; border-radius:7px;
+      min-height:32px; padding:5px 11px; font-size:12px; font-weight:800; }
+    .history-kind-filter:hover { color:var(--ink); background:var(--app-hover); }
+    .history-kind-filter.selected { color:var(--blue); border-color:var(--line);
+      background:var(--app-panel); box-shadow:0 2px 7px rgba(0,0,0,.05); }
+    .history-kind-filter:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+    .history-table td { font-variant-numeric:tabular-nums; }
+    .history-table td:first-child { position:sticky; left:0; background:var(--app-panel); z-index:1; }
+    .history-table th:first-child { position:sticky; left:0; z-index:4; }
+    .history-table tbody tr:hover td:first-child { background:var(--app-hover); }
+    @media(max-width:620px){ .history-kind-group { width:100%; }
+      .history-kind-buttons { justify-content:space-between; }
+      .history-kind-filter { flex:1 1 0; padding:5px 6px; }
+    }
   </style>
 </head>
 <body>
@@ -792,9 +812,16 @@
         </div>
         <div class="history-toolbar">
           <label><span data-i18n="historySearchLabel">Tìm mã SAP, mô tả, chứng từ...</span><input type="search" id="history-search" oninput="locHistory()" data-i18n-placeholder="historySearchPlaceholder" placeholder="SAP, mô tả, số chứng từ..."></label>
-          <label><span data-i18n="historyType">Loại giao dịch</span>
-            <select id="history-type" onchange="locHistory()"><option value="all" data-i18n="historyAny">Tất cả</option><option value="in" data-i18n="historyIn">Nhập</option><option value="out" data-i18n="historyOut">Xuất</option><option value="unknown" data-i18n="historyOther">Khác / chưa xác định</option></select>
-          </label>
+          <div class="history-kind-group" role="group" data-i18n-aria="historyType" aria-label="Loại giao dịch">
+            <span class="history-kind-label" data-i18n="historyType">Loại giao dịch</span>
+            <input type="hidden" id="history-type" value="all">
+            <div class="history-kind-buttons">
+              <button type="button" class="history-kind-filter selected" data-history-kind="all" aria-pressed="true" onclick="chonLoaiHistory('all')" data-i18n="historyAny">Tất cả</button>
+              <button type="button" class="history-kind-filter" data-history-kind="in" aria-pressed="false" onclick="chonLoaiHistory('in')" data-i18n="historyIn">Nhập</button>
+              <button type="button" class="history-kind-filter" data-history-kind="out" aria-pressed="false" onclick="chonLoaiHistory('out')" data-i18n="historyOut">Xuất</button>
+              <button type="button" class="history-kind-filter" data-history-kind="unknown" aria-pressed="false" onclick="chonLoaiHistory('unknown')" data-i18n="historyOther">Khác</button>
+            </div>
+          </div>
           <label><span data-i18n="historyFrom">Từ ngày</span><input type="date" id="history-from" onchange="locHistory()"></label>
           <label><span data-i18n="historyTo">Đến ngày</span><input type="date" id="history-to" onchange="locHistory()"></label>
           <button class="btn btn-secondary" type="button" onclick="xoaLocHistory()" data-i18n="historyClear">Xóa lọc</button>
@@ -840,9 +867,9 @@
         historyRefresh:"Tải lại History.js",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
         historyMatching:"Kết quả lọc",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
         historyType:"Loại giao dịch",historyAny:"Tất cả",historyOther:"Khác / chưa rõ",historyFrom:"Từ ngày",historyTo:"Đến ngày",
-        historyClear:"Xóa lọc",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
+        historyClear:"Xóa lọc",historyDirection:"Phân loại",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
         historyIdle:"Chưa tải History.js",historyLoading:"Đang tải History.js...",historyNoSource:"Không thể tải History.js (giữ dữ liệu lịch sử trước đó nếu có).",
-        historyInvalid:"History.js không cung cấp mảng giao dịch hợp lệ.",historyEmpty:"History.js không có giao dịch.",
+        historyInvalid:"History.js không có cấu trúc bảng giao dịch hợp lệ.",historyEmpty:"History.js không có giao dịch.",
         historyLoaded:"Đã tải {count} giao dịch từ History.js",historyLoadedExisting:"Đã đọc {count} giao dịch từ dữ liệu SAP đã có",historyPage:"Trang {current} / {total}",
         historyNoResults:"Không tìm thấy giao dịch phù hợp với bộ lọc.",historyCount:"{count} / {total} giao dịch",
         brandSubtitle:"KHÔNG GIAN QUẢN LÝ", themeSettings:"Giao diện", themeToLight:"Chuyển sang giao diện sáng",
@@ -917,7 +944,7 @@
         historyRefresh:"Reload History.js",historyTotal:"Total transactions",historyIn:"Inbound",historyOut:"Outbound",
         historyMatching:"Matching transactions",historySearchLabel:"Search SAP, description, reference...",historySearchPlaceholder:"SAP, description, document number...",
         historyType:"Movement type",historyAny:"All",historyOther:"Other / unknown",historyFrom:"From date",historyTo:"To date",
-        historyClear:"Clear filters",historyTable:"Transaction records",historyTableNote:"Shows all source columns in History.js; no fabricated transactions.",
+        historyClear:"Clear filters",historyDirection:"Direction",historyTable:"Transaction records",historyTableNote:"Shows all source columns in History.js; no fabricated transactions.",
         historyIdle:"History.js has not been loaded",historyLoading:"Loading History.js...",historyNoSource:"History.js could not be loaded (previous history is preserved if available).",
         historyInvalid:"History.js does not expose a valid transaction array.",historyEmpty:"History.js contains no transactions.",
         historyLoaded:"Loaded {count} transactions from History.js",historyLoadedExisting:"Read {count} transactions from the existing SAP feed",historyPage:"Page {current} / {total}",
