@@ -3780,40 +3780,55 @@
         (b.days??Number.MAX_SAFE_INTEGER)-(a.days??Number.MAX_SAFE_INTEGER)||
         a.sap.localeCompare(b.sap));
     }
+
     function veVatTuTonLau(){
       const root=document.getElementById("dashboard-dormant");
       const note=document.getElementById("dashboard-dormant-note");
       if(!historyLoaded){
         root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory");
-        note.textContent="";return;
+        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       const days=Number(document.getElementById("dashboard-dormant-days").value)||90;
-      const rows=thongKeVatTuTonLau(days);
+      const today=ngayDiaPhuongISO();
+      if(!dashboardDormantCache||dashboardDormantCache.days!==days||
+        dashboardDormantCache.today!==today||
+        dashboardDormantCache.history!==historyAll||
+        dashboardDormantCache.stock!==duLieuTimKiem){
+        const rows=thongKeVatTuTonLau(days);
+        dashboardDormantCache={days,today,history:historyAll,stock:duLieuTimKiem,rows};
+        dashboardTableState.dormant.page=1;
+      }
+      const rows=dashboardDormantCache.rows;
       if(rows===null){
-        root.textContent=tuDien("dashboardDormantMissing");note.textContent="";return;
+        root.textContent=tuDien("dashboardDormantMissing");
+        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       if(!rows.length){
-        root.textContent=tuDien("dashboardDormantEmpty");note.textContent="";return;
+        root.textContent=tuDien("dashboardDormantEmpty");
+        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
+      const page=capNhatPhanTrangBangKho("dormant",rows.length);
       const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
         '</th><th>'+thoatHTML(tuDien("dashboardDormantStock"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardDormantLast"))+'</th><th>'+
-        thoatHTML(tuDien("dashboardDormantDaysOld"))+'</th></tr></thead>';
+        '</th><th>'+thoatHTML(tuDien("dashboardDormantLast"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardDormantUnitPrice"))+'</th></tr></thead>';
       root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-        rows.slice(0,100).map(rec=>{
+        rows.slice(page.start,page.end).map(rec=>{
           const quantity=rec.quantityValid?
             dinhDangSoLuong.format(rec.quantity)+" "+rec.unit:"—";
+          const price=rec.priceMixed?tuDien("dashboardDormantMultiplePrices"):
+            rec.priceValid?dinhDangGiaTriKho(rec.price):"—";
           return '<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
             thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
             thoatHTML(rec.sap)+'</span><span class="material-name">'+
             thoatHTML(rec.description||"—")+'</span></td><td>'+
             thoatHTML(quantity)+'</td><td>'+thoatHTML(rec.last||tuDien("dashboardDormantNever"))+
-            '</td><td>'+thoatHTML(rec.days===null?"—":dinhDangSoLuong.format(rec.days))+
-            '</td></tr>';
+            '</td><td>'+thoatHTML(price)+'</td></tr>';
         }).join("")+'</tbody></table>';
-      note.textContent=tuDien("dashboardDormantMore",{
-        count:dinhDangSoLuong.format(Math.min(rows.length,100)),
-        total:dinhDangSoLuong.format(rows.length)
+      note.textContent=tuDien("dashboardPagerSummary",{
+        from:dinhDangSoLuong.format(page.start+1),
+        to:dinhDangSoLuong.format(page.end),
+        total:dinhDangSoLuong.format(page.total)
       });
     }
 
