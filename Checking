@@ -1470,6 +1470,70 @@
         width:100%; max-width:130px;
       }
     }
+
+    /* Compact independent pagination on the two material analytics tables. */
+    #view-dashboard .dashboard-table-chart {
+      height:430px; min-height:0; display:flex; flex-direction:column;
+    }
+    #view-dashboard .dashboard-table-chart .dashboard-chart-body {
+      flex:1 1 0; min-height:0; overflow:auto; overscroll-behavior:contain;
+    }
+    #view-dashboard .dashboard-mini-pager {
+      display:flex; flex:0 0 auto; flex-wrap:wrap; gap:6px 9px;
+      justify-content:space-between; align-items:center;
+      padding:8px 0 4px; border-top:1px solid var(--line);
+    }
+    #view-dashboard .dashboard-mini-size,
+    #view-dashboard .dashboard-mini-page {
+      display:flex; align-items:center; gap:4px 6px; flex-wrap:wrap;
+      font-size:10px; color:var(--muted); font-weight:650;
+    }
+    #view-dashboard .dashboard-mini-pager input,
+    #view-dashboard .dashboard-mini-pager select {
+      background:var(--app-field); color:var(--ink); border:1px solid var(--line);
+      border-radius:6px; min-height:28px; padding:3px 5px;
+      font:inherit; font-size:11px; font-variant-numeric:tabular-nums;
+    }
+    #view-dashboard .dashboard-mini-size select { width:61px; }
+    #view-dashboard .dashboard-mini-size input { width:52px; }
+    #view-dashboard .dashboard-mini-page input { width:46px; text-align:center; }
+    #view-dashboard .dashboard-mini-page button {
+      min-width:27px; min-height:28px; border:1px solid var(--line);
+      border-radius:6px; background:var(--app-field); color:var(--ink);
+      font:inherit; font-size:13px; cursor:pointer;
+    }
+    #view-dashboard .dashboard-mini-page button:hover:not(:disabled) {
+      background:var(--app-hover); border-color:var(--blue);
+    }
+    #view-dashboard .dashboard-mini-page button:disabled { opacity:.35; cursor:default; }
+    #view-dashboard .dashboard-out-range {
+      display:flex; flex:0 0 auto; flex-wrap:wrap; align-items:center;
+      gap:5px 9px; margin:5px 0 8px; font-size:11px; color:var(--muted);
+      font-weight:700;
+    }
+    #view-dashboard .dashboard-out-range input[type="range"] {
+      flex:1 1 115px; width:100px; min-width:72px;
+      accent-color:var(--blue); cursor:pointer;
+    }
+    #view-dashboard .dashboard-out-range input[type="range"]:disabled { opacity:.4; }
+    #view-dashboard .dashboard-out-range output {
+      color:var(--ink); min-width:75px; text-align:right;
+      font-variant-numeric:tabular-nums;
+    }
+    #view-dashboard .dashboard-detail-table td:nth-child(2),
+    #view-dashboard .dashboard-detail-table td:nth-child(3),
+    #view-dashboard .dashboard-detail-table th:nth-child(2),
+    #view-dashboard .dashboard-detail-table th:nth-child(3) {
+      text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;
+    }
+    #view-dashboard .dashboard-table-chart > p.insight-note:last-child {
+      flex:0 0 auto; margin:5px 0 0; min-height:17px;
+      font-size:10px; overflow:hidden; text-overflow:ellipsis;
+    }
+    @media(max-width:700px) {
+      #view-dashboard .dashboard-table-chart { height:430px; }
+      #view-dashboard .dashboard-mini-size { flex:1 1 100%; }
+    }
   </style>
 </head>
 <body>
@@ -1747,7 +1811,7 @@
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashboardTopOutTitle">Vật tư xuất nhiều nhất theo giá trị</h3>
               <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
-                <select id="dashboard-out-period" onchange="veTopVatTuXuatKho()">
+                <select id="dashboard-out-period" onchange="doiLocTopXuatKho()">
                   <option value="selected" data-i18n="dashboardTimeSelected" selected>Theo khoảng đã chọn</option>
                   <option value="week" data-i18n="dashWeek">Hằng tuần</option>
                   <option value="month" data-i18n="dashMonth">Hằng tháng</option>
@@ -1755,21 +1819,80 @@
                 </select></label>
             </div>
             <p class="insight-note" data-i18n="dashboardTopOutNote">Xuất theo giá trị; nhấn đúp để xem lịch sử.</p>
+            <div class="dashboard-out-range">
+              <label for="dashboard-out-min" data-i18n="dashboardOutMinLabel">Giá trị xuất tối thiểu</label>
+              <input id="dashboard-out-min" type="range" min="0" max="0" step="1" value="0"
+                oninput="doiNguongXuatKho()" data-i18n-aria="dashboardOutMinLabel"
+                aria-label="Giá trị xuất tối thiểu" disabled>
+              <output id="dashboard-out-min-value" for="dashboard-out-min">0 ₫</output>
+            </div>
             <div id="dashboard-top-out" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardTopOutTitle"></div>
+            <div id="dashboard-out-pager" class="dashboard-mini-pager">
+              <div class="dashboard-mini-size">
+                <label for="dashboard-out-size" data-i18n="rowsPerPage">Số dòng/trang</label>
+                <select id="dashboard-out-size" onchange="chonSoDongBangKho('out',this.value)">
+                  <option value="25">25</option><option value="50">50</option><option value="75">75</option>
+                  <option value="100">100</option><option value="200">200</option>
+                  <option value="500">500</option><option value="custom" data-i18n="customAmount">Tùy chọn</option>
+                </select>
+                <input id="dashboard-out-custom" type="number" inputmode="numeric" min="1" max="5000" step="1" value="25"
+                  data-i18n-aria="customRowsAria" aria-label="Nhập số dòng mỗi trang"
+                  onchange="datSoDongBangKho('out',this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongBangKho('out',this.value);}">
+              </div>
+              <div class="dashboard-mini-page">
+                <button id="dashboard-out-first" type="button" onclick="denTrangBangKho('out',1)" data-i18n-title="firstPage" title="Trang đầu">«</button>
+                <button id="dashboard-out-prev" type="button" onclick="denTrangBangKho('out','prev')" data-i18n-title="prev" title="Trước">‹</button>
+                <input id="dashboard-out-page" type="number" min="1" step="1" inputmode="numeric" value="1"
+                  data-i18n-aria="jumpPageAria" aria-label="Nhập số trang"
+                  onchange="denTrangBangKho('out',this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangBangKho('out',this.value);}">
+                <span id="dashboard-out-pages">/ 1</span>
+                <button id="dashboard-out-next" type="button" onclick="denTrangBangKho('out','next')" data-i18n-title="next" title="Sau">›</button>
+                <button id="dashboard-out-last" type="button" onclick="denTrangBangKho('out','last')" data-i18n-title="lastPage" title="Trang cuối">»</button>
+              </div>
+            </div>
             <p id="dashboard-top-out-note" class="insight-note" role="status"></p>
           </div>
           <div class="insight-box dashboard-chart dashboard-table-chart">
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashboardDormantTitle">Vật tư tồn lâu chưa xuất</h3>
               <label><span data-i18n="dashboardDormantDays">Không xuất trong</span>
-                <select id="dashboard-dormant-days" onchange="veVatTuTonLau()">
+                <select id="dashboard-dormant-days" onchange="doiLocTonLauKho()">
                   <option value="90" data-i18n="dashboardDormant90" selected>90 ngày</option>
                   <option value="180" data-i18n="dashboardDormant180">180 ngày</option>
                   <option value="365" data-i18n="dashboardDormant365">365 ngày</option>
+                  <option value="730" data-i18n="dashboardDormant730">2 năm</option>
+                  <option value="1095" data-i18n="dashboardDormant1095">3 năm</option>
                 </select></label>
             </div>
             <p class="insight-note" data-i18n="dashboardDormantNote">Xét tồn kho hiện tại và lịch sử giao dịch xuất.</p>
             <div id="dashboard-dormant" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardDormantTitle"></div>
+            <div id="dashboard-dormant-pager" class="dashboard-mini-pager">
+              <div class="dashboard-mini-size">
+                <label for="dashboard-dormant-size" data-i18n="rowsPerPage">Số dòng/trang</label>
+                <select id="dashboard-dormant-size" onchange="chonSoDongBangKho('dormant',this.value)">
+                  <option value="25">25</option><option value="50">50</option><option value="75">75</option>
+                  <option value="100">100</option><option value="200">200</option>
+                  <option value="500">500</option><option value="custom" data-i18n="customAmount">Tùy chọn</option>
+                </select>
+                <input id="dashboard-dormant-custom" type="number" inputmode="numeric" min="1" max="5000" step="1" value="25"
+                  data-i18n-aria="customRowsAria" aria-label="Nhập số dòng mỗi trang"
+                  onchange="datSoDongBangKho('dormant',this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongBangKho('dormant',this.value);}">
+              </div>
+              <div class="dashboard-mini-page">
+                <button id="dashboard-dormant-first" type="button" onclick="denTrangBangKho('dormant',1)" data-i18n-title="firstPage" title="Trang đầu">«</button>
+                <button id="dashboard-dormant-prev" type="button" onclick="denTrangBangKho('dormant','prev')" data-i18n-title="prev" title="Trước">‹</button>
+                <input id="dashboard-dormant-page" type="number" min="1" step="1" inputmode="numeric" value="1"
+                  data-i18n-aria="jumpPageAria" aria-label="Nhập số trang"
+                  onchange="denTrangBangKho('dormant',this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangBangKho('dormant',this.value);}">
+                <span id="dashboard-dormant-pages">/ 1</span>
+                <button id="dashboard-dormant-next" type="button" onclick="denTrangBangKho('dormant','next')" data-i18n-title="next" title="Sau">›</button>
+                <button id="dashboard-dormant-last" type="button" onclick="denTrangBangKho('dormant','last')" data-i18n-title="lastPage" title="Trang cuối">»</button>
+              </div>
+            </div>
             <p id="dashboard-dormant-note" class="insight-note" role="status"></p>
           </div>
         </div>
@@ -1878,6 +2001,18 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        dashboardTopOutQtyMissingNote:"Số lượng xuất chỉ được cộng khi đơn vị tính giống nhau; dữ liệu thiếu hoặc khác đơn vị hiển thị dấu —.",
+        dashboardOutMinSummary:"Giá trị xuất từ {amount}",
+        dashboardPagerSummary:"{from}–{to} / {total} vật tư",
+        dashboardOutMixedUnits:"Nhiều đơn vị",
+        dashboardOutUnknownQty:"Không đủ dữ liệu số lượng",
+        dashboardOutMinLabel:"Giá trị xuất tối thiểu",
+        dashboardTopOutUnit:"Đơn vị",
+        dashboardDormantPriceMissing:"Chưa có giá",
+        dashboardDormantMultiplePrices:"Nhiều mức giá",
+        dashboardDormantUnitPrice:"Đơn giá (VNĐ)",
+        dashboardDormant1095:"3 năm",
+        dashboardDormant730:"2 năm",
         dashboardTimeYearLimit:"Chọn tối đa 10 năm liên tiếp.",
         dashboardTimeYearTo:"Đến năm",
         dashboardTimeYearFrom:"Từ năm",
@@ -1909,17 +2044,17 @@
         dashboardTimeCurrent:"{from} – {to}",
         dashboardTimeInvalid:"Khoảng ngày không hợp lệ",
         dashboardTopOutTitle:"Vật tư xuất nhiều nhất theo giá trị",
-        dashboardTopOutNote:"Cộng giá trị giao dịch xuất theo mã SAP trong kỳ đã chọn. Nhấn đúp để xem lịch sử.",
+        dashboardTopOutNote:"Lọc theo giá trị xuất, chọn ngưỡng trên thanh trượt. Nhấn đúp dòng vật tư để xem lịch sử.",
         dashboardTopOutEmpty:"Không có giao dịch xuất hợp lệ trong giai đoạn",
         dashboardTopOutMissing:"Thiếu cột mã vật tư hoặc giá trị trong lịch sử",
         dashboardTopOutValue:"Giá trị xuất",
-        dashboardTopOutCount:"Lượt xuất",
+        dashboardTopOutCount:"Số lượng xuất",
         dashboardDormantTitle:"Vật tư tồn lâu chưa xuất",
         dashboardDormantDays:"Không xuất trong",
         dashboardDormant90:"90 ngày",
         dashboardDormant180:"180 ngày",
         dashboardDormant365:"365 ngày",
-        dashboardDormantNote:"Xét vật tư đang còn tồn và lần xuất cuối trong lịch sử khả dụng; nguồn lịch sử có thể chưa đầy đủ.",
+        dashboardDormantNote:"Vật tư còn tồn nhưng chưa xuất trong khoảng chọn. Đơn giá lấy từ bảng tồn kho hiện tại.",
         dashboardDormantLast:"Ngày xuất cuối",
         dashboardDormantStock:"Tồn kho",
         dashboardDormantDaysOld:"Số ngày chưa xuất",
@@ -2088,6 +2223,18 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        dashboardTopOutQtyMissingNote:"Issued quantities are combined only for matching units; missing or mixed units show —.",
+        dashboardOutMinSummary:"Outbound value from {amount}",
+        dashboardPagerSummary:"{from}–{to} / {total} materials",
+        dashboardOutMixedUnits:"Mixed units",
+        dashboardOutUnknownQty:"Quantity unavailable",
+        dashboardOutMinLabel:"Minimum outbound value",
+        dashboardTopOutUnit:"Unit",
+        dashboardDormantPriceMissing:"Price unavailable",
+        dashboardDormantMultiplePrices:"Multiple prices",
+        dashboardDormantUnitPrice:"Unit price (VND)",
+        dashboardDormant1095:"3 years",
+        dashboardDormant730:"2 years",
         dashboardTimeYearLimit:"Select up to 10 consecutive years.",
         dashboardTimeYearTo:"To year",
         dashboardTimeYearFrom:"From year",
@@ -2119,17 +2266,17 @@
         dashboardTimeCurrent:"{from} – {to}",
         dashboardTimeInvalid:"Invalid date range",
         dashboardTopOutTitle:"Top materials by outbound value",
-        dashboardTopOutNote:"Outbound value from Amt.In of OUTPUT movements; double-click for history.",
+        dashboardTopOutNote:"Filter by outbound value using the slider. Double-click a material for history.",
         dashboardTopOutEmpty:"No valid outbound transactions in this period",
         dashboardTopOutMissing:"Missing SAP or amount history column",
         dashboardTopOutValue:"Outbound value",
-        dashboardTopOutCount:"Issues",
+        dashboardTopOutCount:"Issued quantity",
         dashboardDormantTitle:"Slow-moving materials",
         dashboardDormantDays:"No issues for",
         dashboardDormant90:"90 days",
         dashboardDormant180:"180 days",
         dashboardDormant365:"365 days",
-        dashboardDormantNote:"Based on current stock and last outgoing movement in available history; history may be incomplete.",
+        dashboardDormantNote:"Materials with positive stock and no issue within the selected period. Unit prices come from current stock records.",
         dashboardDormantLast:"Last issued",
         dashboardDormantStock:"Stock",
         dashboardDormantDaysOld:"Days since last issue",
@@ -3391,13 +3538,100 @@
       }
       return global;
     }
-    function thongKeTopVatTuXuatKho(range,limit=20){
+
+    // Separate paging from the Stock lookup; both analytics tables remember
+    // their own page and page size, with the same controls as stock search.
+    const dashboardTableState={
+      out:{page:1,size:25},dormant:{page:1,size:25}
+    };
+    let dashboardOutCache=null;
+    let dashboardDormantCache=null;
+
+    function bangKhoPrefix(kind){
+      return kind==="out"?"dashboard-out":kind==="dormant"?"dashboard-dormant":"";
+    }
+    function capNhatPhanTrangBangKho(kind,total){
+      const state=dashboardTableState[kind],prefix=bangKhoPrefix(kind);
+      if(!state||!prefix)return {start:0,end:0,total:0};
+      const maxPage=Math.max(1,Math.ceil(total/state.size));
+      state.page=Math.max(1,Math.min(maxPage,state.page));
+      const start=(state.page-1)*state.size,end=Math.min(total,start+state.size);
+      const presets=["25","50","75","100","200","500"];
+      document.getElementById(prefix+"-size").value=
+        presets.includes(String(state.size))?String(state.size):"custom";
+      document.getElementById(prefix+"-custom").value=String(state.size);
+      const pageInput=document.getElementById(prefix+"-page");
+      pageInput.value=String(state.page);pageInput.max=String(maxPage);
+      document.getElementById(prefix+"-pages").textContent="/ "+dinhDangSoLuong.format(maxPage);
+      for(const suffix of ["first","prev"])
+        document.getElementById(prefix+"-"+suffix).disabled=state.page<=1;
+      for(const suffix of ["next","last"])
+        document.getElementById(prefix+"-"+suffix).disabled=state.page>=maxPage;
+      return {start,end,total};
+    }
+    function veBangKhoTheoLoai(kind){
+      if(kind==="out")veTopVatTuXuatKho();
+      else if(kind==="dormant")veVatTuTonLau();
+    }
+    function datSoDongBangKho(kind,value){
+      const state=dashboardTableState[kind];if(!state)return;
+      const count=Number(value);
+      if(!Number.isInteger(count)||count<1){
+        veBangKhoTheoLoai(kind);return;
+      }
+      const nextSize=Math.min(count,5000);
+      const firstIndex=(state.page-1)*state.size;
+      state.size=nextSize;state.page=Math.floor(firstIndex/nextSize)+1;
+      veBangKhoTheoLoai(kind);
+    }
+    function chonSoDongBangKho(kind,value){
+      if(!dashboardTableState[kind])return;
+      if(value==="custom"){
+        const input=document.getElementById(bangKhoPrefix(kind)+"-custom");
+        input.focus();input.select();return;
+      }
+      datSoDongBangKho(kind,value);
+    }
+    function denTrangBangKho(kind,target){
+      const state=dashboardTableState[kind];if(!state)return;
+      const prefix=bangKhoPrefix(kind);
+      const pageInput=document.getElementById(prefix+"-page");
+      const max=Math.max(1,Number(pageInput.max)||1);
+      const page=target==="first"?1:target==="last"?max:
+        target==="prev"?state.page-1:target==="next"?state.page+1:Number(target);
+      if(!Number.isInteger(page)){pageInput.value=String(state.page);return;}
+      state.page=Math.max(1,Math.min(max,page));
+      veBangKhoTheoLoai(kind);
+      document.getElementById(kind==="out"?"dashboard-top-out":"dashboard-dormant").scrollTop=0;
+    }
+    function doiLocTopXuatKho(){
+      dashboardTableState.out.page=1;
+      dashboardOutCache=null;
+      document.getElementById("dashboard-out-min").value="0";
+      veTopVatTuXuatKho();
+    }
+    function doiNguongXuatKho(){
+      dashboardTableState.out.page=1;veTopVatTuXuatKho();
+    }
+    function doiLocTonLauKho(){
+      dashboardTableState.dormant.page=1;veVatTuTonLau();
+    }
+
+
+    function thongKeTopVatTuXuatKho(range){
       const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
       if(amountCol<0||sapCol<0)return null;
-      const grouped=new Map(),stockBySap=new Map(duLieuTimKiem.map(item=>
+      const qtyCol=cotHistoryTheoTen(historyColumns,[
+        "Qty in unit of entry","Quantity","Qty","Movement Qty",
+        "Số lượng","So luong","Quantity Change","Qty Out",
+        "Outbound","Số lượng xuất"]);
+      const unitCol=cotHistoryTheoTen(historyColumns,[
+        "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
+      const descCol=cotHistoryTheoTen(historyColumns,[
+        "Material Description","Description","Mô tả","Mô tả vật tư"]);
+      const stockBySap=new Map(duLieuTimKiem.map(item=>
         [chuanHoaMaSap(item.dong[0]).toLowerCase(),item]));
-      const descCol=cotHistoryTheoTen(historyColumns,
-        ["Material Description","Description","Mô tả","Mô tả vật tư"]);
+      const grouped=new Map();
       for(const rec of locGiaoDichKho(range,["out"])){
         const sap=chuanHoaMaSap(rec.cells[sapCol]);
         const raw=String(rec.cells[amountCol]??"").trim();
@@ -3407,38 +3641,96 @@
         if(!row){
           const stock=stockBySap.get(sap.toLowerCase());
           row={sap,description:stock?String(stock.dong[1]??""):
-            descCol>=0?String(rec.cells[descCol]??""):"",value:0,count:0};
+            descCol>=0?String(rec.cells[descCol]??""):"",
+            value:0,quantity:0,unit:"",quantityValid:true,mixed:false,count:0};
           grouped.set(sap.toLowerCase(),row);
         }
         row.value+=Math.abs(amount);row.count++;
+        const qRaw=qtyCol>=0?String(rec.cells[qtyCol]??"").trim():"";
+        const quantity=qRaw?chuyenThanhSo(qRaw):NaN;
+        const unit=unitCol>=0?String(rec.cells[unitCol]??"").trim().toUpperCase():"";
+        if(!unit||!Number.isFinite(quantity)){
+          row.quantityValid=false;continue;
+        }
+        if(row.unit&&row.unit!==unit){
+          row.mixed=true;row.quantityValid=false;
+        }
+        if(!row.unit)row.unit=unit;
+        if(row.quantityValid)row.quantity+=Math.abs(quantity);
       }
-      return [...grouped.values()].filter(rec=>rec.value>0)
-        .sort((a,b)=>b.value-a.value||a.sap.localeCompare(b.sap)).slice(0,limit);
+      return [...grouped.values()].filter(row=>row.value>0)
+        .sort((a,b)=>b.value-a.value||a.sap.localeCompare(b.sap));
     }
+
     function veTopVatTuXuatKho(){
       const root=document.getElementById("dashboard-top-out");
       const note=document.getElementById("dashboard-top-out-note");
+      const slider=document.getElementById("dashboard-out-min");
+      const amountText=document.getElementById("dashboard-out-min-value");
       if(!historyLoaded){
         root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardTopOutEmpty");
-        note.textContent="";return;
+        note.textContent="";slider.disabled=true;amountText.textContent="—";
+        capNhatPhanTrangBangKho("out",0);return;
       }
       const range=phamViTopXuatKho();
-      if(!range){root.textContent=tuDien("dashboardTimeInvalid");note.textContent="";return;}
-      const rows=thongKeTopVatTuXuatKho(range,20);
-      if(!rows){root.textContent=tuDien("dashboardTopOutMissing");note.textContent="";return;}
-      if(!rows.length){root.textContent=tuDien("dashboardTopOutEmpty");note.textContent=range.from+" – "+range.to;return;}
-      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardTopOutCount"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardTopOutValue"))+'</th></tr></thead>';
-      root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-        rows.map(rec=>'<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
-          thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
-          thoatHTML(rec.sap)+'</span><span class="material-name">'+
-          thoatHTML(rec.description||"—")+'</span></td><td>'+
-          dinhDangSoLuong.format(rec.count)+'</td><td><strong>'+
-          thoatHTML(dinhDangGiaTriKho(rec.value))+'</strong></td></tr>').join("")+
-        '</tbody></table>';
-      note.textContent=range.from+" – "+range.to+" · "+tuDien("dashboardTopDoubleClick");
+      if(!range){
+        root.textContent=tuDien("dashboardTimeInvalid");note.textContent="";
+        slider.disabled=true;amountText.textContent="—";
+        capNhatPhanTrangBangKho("out",0);return;
+      }
+      const key=range.from+"|"+range.to;
+      if(!dashboardOutCache||dashboardOutCache.key!==key||
+        dashboardOutCache.history!==historyAll||
+        dashboardOutCache.stock!==duLieuTimKiem){
+        const rows=thongKeTopVatTuXuatKho(range);
+        dashboardOutCache={key,history:historyAll,stock:duLieuTimKiem,rows};
+        dashboardTableState.out.page=1;
+        slider.value="0";
+        if(rows&&rows.length){
+          const max=rows[0].value;
+          const step=Math.max(1,10**Math.max(0,Math.floor(Math.log10(Math.max(1,max/100)))));
+          slider.min="0";slider.max=String(Math.ceil(max/step)*step);
+          slider.step=String(step);slider.disabled=false;
+        }else{
+          slider.min="0";slider.max="0";slider.step="1";slider.disabled=true;
+        }
+      }
+      const rows=dashboardOutCache.rows;
+      if(!rows){
+        root.textContent=tuDien("dashboardTopOutMissing");note.textContent="";
+        amountText.textContent="—";capNhatPhanTrangBangKho("out",0);return;
+      }
+      const threshold=Math.max(0,Number(slider.value)||0);
+      amountText.textContent=dinhDangGiaTriKho(threshold);
+      amountText.title=tuDien("dashboardOutMinSummary",{amount:amountText.textContent});
+      const filtered=rows.filter(row=>row.value>=threshold);
+      const page=capNhatPhanTrangBangKho("out",filtered.length);
+      if(!filtered.length){
+        root.textContent=tuDien("dashboardTopOutEmpty");
+      }else{
+        const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
+          '</th><th title="'+thoatHTML(tuDien("dashboardTopOutQtyMissingNote"))+'">'+
+          thoatHTML(tuDien("dashboardTopOutCount"))+
+          '</th><th>'+thoatHTML(tuDien("dashboardTopOutUnit"))+
+          '</th><th>'+thoatHTML(tuDien("dashboardTopOutValue"))+'</th></tr></thead>';
+        root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
+          filtered.slice(page.start,page.end).map(rec=>{
+            const qty=rec.quantityValid&&!rec.mixed&&rec.unit?
+              dinhDangSoLuong.format(rec.quantity):"—";
+            const unit=rec.mixed?tuDien("dashboardOutMixedUnits"):(rec.unit||"—");
+            return '<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
+              thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
+              thoatHTML(rec.sap)+'</span><span class="material-name">'+
+              thoatHTML(rec.description||"—")+'</span></td><td>'+
+              thoatHTML(qty)+'</td><td>'+thoatHTML(unit)+'</td><td><strong>'+
+              thoatHTML(dinhDangGiaTriKho(rec.value))+'</strong></td></tr>';
+          }).join("")+'</tbody></table>';
+      }
+      note.textContent=tuDien("dashboardPagerSummary",{
+        from:filtered.length?dinhDangSoLuong.format(page.start+1):"0",
+        to:dinhDangSoLuong.format(page.end),
+        total:dinhDangSoLuong.format(page.total)
+      })+" · "+range.from+" – "+range.to;
     }
 
     function thongKeVatTuTonLau(days,now=new Date()){
@@ -3448,18 +3740,33 @@
       const today=ngayDiaPhuongISO(now),stock=new Map();
       const unitCol=cotHistoryTheoTen(tieuDeCot,[
         "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
+      const priceCol=cotHistoryTheoTen(tieuDeCot,["Price","Unit Price","Đơn giá","Giá"]);
       for(const item of duLieuTimKiem){
         if(!Number.isFinite(item.soLuong)||item.soLuong<=0)continue;
         const sap=chuanHoaMaSap(item.dong[0]),key=sap.toLowerCase();
         if(!key)continue;
         let row=stock.get(key);
         const unit=unitCol>=0?String(item.dong[unitCol]??"").trim():"";
+        const priceRaw=priceCol>=0?String(item.dong[priceCol]??"").trim():"";
+        const price=priceRaw?chuyenThanhSo(priceRaw):NaN;
+        const validPrice=Number.isFinite(price)&&price>=0;
         if(!row){
           row={sap,description:String(item.dong[1]??""),quantity:0,
-            unit,quantityValid:!!unit,last:"",days:null};
+            unit,quantityValid:!!unit,last:"",days:null,
+            price,priceValid:validPrice,priceMixed:false};
           stock.set(key,row);
+        }else{
+          if(!row.description)row.description=String(item.dong[1]??"");
+          if(!validPrice)row.priceValid=false;
+          else if(Number.isFinite(row.price)&&
+            Math.abs(row.price-price)>Math.max(.01,Math.abs(row.price)*1e-8)){
+            row.priceMixed=true;row.priceValid=false;
+          }
         }
-        if(!unit||row.unit!==unit)row.quantityValid=false;
+        if(!unit||row.unit!==unit){
+          row.quantityValid=false;
+          if(row.unit&&unit&&row.unit!==unit)row.priceMixed=true;
+        }
         if(row.quantityValid)row.quantity+=item.soLuong;
       }
       for(const rec of historyAll){
@@ -3477,40 +3784,55 @@
         (b.days??Number.MAX_SAFE_INTEGER)-(a.days??Number.MAX_SAFE_INTEGER)||
         a.sap.localeCompare(b.sap));
     }
+
     function veVatTuTonLau(){
       const root=document.getElementById("dashboard-dormant");
       const note=document.getElementById("dashboard-dormant-note");
       if(!historyLoaded){
         root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory");
-        note.textContent="";return;
+        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       const days=Number(document.getElementById("dashboard-dormant-days").value)||90;
-      const rows=thongKeVatTuTonLau(days);
+      const today=ngayDiaPhuongISO();
+      if(!dashboardDormantCache||dashboardDormantCache.days!==days||
+        dashboardDormantCache.today!==today||
+        dashboardDormantCache.history!==historyAll||
+        dashboardDormantCache.stock!==duLieuTimKiem){
+        const rows=thongKeVatTuTonLau(days);
+        dashboardDormantCache={days,today,history:historyAll,stock:duLieuTimKiem,rows};
+        dashboardTableState.dormant.page=1;
+      }
+      const rows=dashboardDormantCache.rows;
       if(rows===null){
-        root.textContent=tuDien("dashboardDormantMissing");note.textContent="";return;
+        root.textContent=tuDien("dashboardDormantMissing");
+        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       if(!rows.length){
-        root.textContent=tuDien("dashboardDormantEmpty");note.textContent="";return;
+        root.textContent=tuDien("dashboardDormantEmpty");
+        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
+      const page=capNhatPhanTrangBangKho("dormant",rows.length);
       const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
         '</th><th>'+thoatHTML(tuDien("dashboardDormantStock"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardDormantLast"))+'</th><th>'+
-        thoatHTML(tuDien("dashboardDormantDaysOld"))+'</th></tr></thead>';
+        '</th><th>'+thoatHTML(tuDien("dashboardDormantLast"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardDormantUnitPrice"))+'</th></tr></thead>';
       root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-        rows.slice(0,100).map(rec=>{
+        rows.slice(page.start,page.end).map(rec=>{
           const quantity=rec.quantityValid?
             dinhDangSoLuong.format(rec.quantity)+" "+rec.unit:"—";
+          const price=rec.priceMixed?tuDien("dashboardDormantMultiplePrices"):
+            rec.priceValid?dinhDangGiaTriKho(rec.price):"—";
           return '<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
             thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
             thoatHTML(rec.sap)+'</span><span class="material-name">'+
             thoatHTML(rec.description||"—")+'</span></td><td>'+
             thoatHTML(quantity)+'</td><td>'+thoatHTML(rec.last||tuDien("dashboardDormantNever"))+
-            '</td><td>'+thoatHTML(rec.days===null?"—":dinhDangSoLuong.format(rec.days))+
-            '</td></tr>';
+            '</td><td>'+thoatHTML(price)+'</td></tr>';
         }).join("")+'</tbody></table>';
-      note.textContent=tuDien("dashboardDormantMore",{
-        count:dinhDangSoLuong.format(Math.min(rows.length,100)),
-        total:dinhDangSoLuong.format(rows.length)
+      note.textContent=tuDien("dashboardPagerSummary",{
+        from:dinhDangSoLuong.format(page.start+1),
+        to:dinhDangSoLuong.format(page.end),
+        total:dinhDangSoLuong.format(page.total)
       });
     }
 
