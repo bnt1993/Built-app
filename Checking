@@ -2152,7 +2152,13 @@
       document.querySelector(".breadcrumbs .active").textContent=tuDien(
         tab==="stock"?"tabStock":"tabDashboard");
       if(opts.persist!==false)ghiTuyChon("checking-active-tab",tab);
-      if(tab==="dashboard"&&analyticsReady)capNhatThongKeNangCao();
+      if(tab==="dashboard"){
+        if(analyticsReady)capNhatThongKeNangCao();
+        if(!historyLoaded&&!historyLoading&&!daThuTaiHistoryChoCard){
+          daThuTaiHistoryChoCard=true;
+          taiHistory(false);
+        }
+      }
     }
 
     function xuLyPhimTab(event) {
@@ -2750,6 +2756,7 @@
         rows:duLieuTimKiem.length,warnings,hasPrice:tongGiaTriTonKho!==null});
       ghiTuyChon("checking-stock-snapshots",JSON.stringify(snapshots.slice(-730)));
       veLichSuKho();
+      veBieuDoGiaTriKho();
     }
 
     function veLichSuKho() {
@@ -2762,6 +2769,167 @@
         thoatHTML(rec.hasPrice===false?"—":dinhDangGiaTriKho(rec.value))+'</strong></div>').join("");
     }
 
+
+
+    // Use real posting dates for consumption and saved synchronization snapshots
+    // for inventory valuation; never infer missing historical stock balances.
+    function nhomKyKho(mode,count,now=new Date()){
+      const result=[];
+      const today=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
+      for(let i=count-1;i>=0;i--){
+        let date=new Date(today),key="",label="";
+        if(mode==="week"){
+          date.setUTCDate(date.getUTCDate()-(date.getUTCDay()+6)%7-i*7);
+          key=date.toISOString().slice(0,10);
+          label=String(date.getUTCDate()).padStart(2,"0")+"/"+
+            String(date.getUTCMonth()+1).padStart(2,"0");
+        }else if(mode==="month"){
+          date=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth()-i,1));
+          key=date.toISOString().slice(0,7);
+          label=String(date.getUTCMonth()+1).padStart(2,"0")+"/"+date.getUTCFullYear();
+        }else if(mode==="year"){
+          key=String(today.getUTCFullYear()-i);label=key;
+        }else{
+          date.setUTCDate(date.getUTCDate()-i);
+          key=date.toISOString().slice(0,10);
+          label=String(date.getUTCDate()).padStart(2,"0")+"/"+
+            String(date.getUTCMonth()+1).padStart(2,"0");
+        }
+        result.push({key,label});
+      }
+      return result;
+    }
+
+    function khoaNhomKho(date,mode){
+      if(!ngayHistoryHopLe(date))return "";
+      if(mode==="day")return date;
+      if(mode==="month")return date.slice(0,7);
+      if(mode==="year")return date.slice(0,4);
+      const [y,m,d]=date.split("-").map(Number);
+      const day=new Date(Date.UTC(y,m-1,d));
+      day.setUTCDate(day.getUTCDate()-(day.getUTCDay()+6)%7);
+      return day.toISOString().slice(0,10);
+    }
+
+    function dinhDangRutGonKho(n){
+      if(!Number.isFinite(n))return "—";
+      const locale=ngonNguHienTai==="en"?"en-US":"vi-VN";
+      const number=new Intl.NumberFormat(locale,{maximumFractionDigits:1});
+      const a=Math.abs(n);
+      if(a>=1e9)return number.format(n/1e9)+(ngonNguHienTai==="en"?"B":" tỷ");
+      if(a>=1e6)return number.format(n/1e6)+(ngonNguHienTai==="en"?"M":" tr");
+      if(a>=1e3)return number.format(n/1e3)+(ngonNguHienTai==="en"?"K":" nghìn");
+      return number.format(n);
+    }
+
+    function veCotTheoThoiGianKho(id,periods,values,kind){
+      const money=kind==="money",usage=kind==="usage";
+      const series=periods.map(p=>({...p,value:values.has(p.key)?values.get(p.key):usage?0:null}));
+      const max=Math.max(0,...series.map(p=>p.value===null?0:p.value));
+      document.getElementById(id).innerHTML='<div class="trend-list">'+series.map(p=>{
+        const missing=p.value===null;
+        const exact=missing?tuDien("dashValueTrendGap"):
+          money?dinhDangGiaTriKho(p.value):dinhDangLuongHistory(p.value);
+        const percentage=missing?12:max>0?Math.max(0,100*p.value/max):0;
+        return '<div class="trend-column" title="'+thoatHTML(p.label+" · "+exact)+'">'+
+          '<span class="trend-amount">'+thoatHTML(missing?"—":dinhDangRutGonKho(p.value))+
+          '</span><div class="trend-chart-bar-wrap"><div class="trend-chart-bar'+
+          (missing?" missing":usage?" usage":"")+'" style="height:'+
+          percentage.toFixed(1)+'%"></div></div><span class="trend-period">'+
+          thoatHTML(p.label)+'</span></div>';
+      }).join("")+'</div>';
+    }
+
+    function veBieuDoSuDungKho(){
+      const chart=document.getElementById("insight-usage");
+      const summary=document.getElementById("dashboard-usage-summary");
+      const unitSelect=document.getElementById("dashboard-usage-unit");
+      if(!historyLoaded){
+        unitSelect.disabled=true;
+        chart.textContent=tuDien(historyLoading?"dashUsageLoading":"dashUsageUnavailable");
+        summary.textContent="";return;
+      }
+      const q=cotHistoryTheoTen(historyColumns,[
+        "Qty in unit of entry","Quantity","Qty","Movement Qty","Số lượng",
+        "So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const u=cotHistoryTheoTen(historyColumns,[
+        "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
+      if(q<0||u<0){
+        chart.textContent=tuDien(q<0?"dashUsageNoQty":"dashUsageUnknownUnit");
+        summary.textContent="";unitSelect.disabled=true;return;
+      }
+      const movements=[],units=new Map();
+      let invalid=0;
+      for(const rec of historyAll){
+        if(rec.type!=="out")continue;
+        const unit=String(rec.cells[u]??"").trim().toUpperCase();
+        const raw=String(rec.cells[q]??"").trim(),quantity=chuyenThanhSo(raw);
+        if(!unit||!raw||!Number.isFinite(quantity)||!ngayHistoryHopLe(rec.date)){
+          invalid++;continue;
+        }
+        movements.push({date:rec.date,unit,quantity:Math.abs(quantity)});
+        units.set(unit,(units.get(unit)||0)+1);
+      }
+      const options=[...units].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(x=>x[0]);
+      if(!options.length){
+        chart.textContent=tuDien("dashUsageUnknownUnit");
+        summary.textContent=invalid?tuDien("dashUsageInvalid",{count:invalid}):"";
+        unitSelect.disabled=true;unitSelect.replaceChildren();return;
+      }
+      const selected=options.includes(unitSelect.value)?unitSelect.value:options[0];
+      if(unitSelect.options.length!==options.length||
+        options.some((v,i)=>unitSelect.options[i].value!==v)){
+        unitSelect.replaceChildren(...options.map(v=>{
+          const option=document.createElement("option");
+          option.value=v;option.textContent=v;return option;
+        }));
+      }
+      unitSelect.disabled=false;unitSelect.value=selected;
+      const mode=document.getElementById("dashboard-usage-period").value;
+      const buckets=nhomKyKho(mode,mode==="week"?12:mode==="year"?6:12);
+      const keys=new Set(buckets.map(x=>x.key)),sums=new Map();
+      let count=0,total=0;
+      for(const rec of movements){
+        if(rec.unit!==selected)continue;
+        const key=khoaNhomKho(rec.date,mode);
+        if(!keys.has(key))continue;
+        sums.set(key,(sums.get(key)||0)+rec.quantity);
+        count++;total+=rec.quantity;
+      }
+      veCotTheoThoiGianKho("insight-usage",buckets,sums,"usage");
+      summary.textContent=(count?tuDien("dashUsageSummary",{
+        count:dinhDangSoLuong.format(count),
+        quantity:dinhDangLuongHistory(total),unit:selected,
+        period:tuDien({week:"dashWeek",month:"dashMonth",year:"dashYear"}[mode])
+      }):tuDien("dashUsageNoData"))+
+        (invalid?" · "+tuDien("dashUsageInvalid",{count:dinhDangSoLuong.format(invalid)}):"");
+    }
+
+    function veBieuDoGiaTriKho(){
+      const mode=document.getElementById("dashboard-value-period").value;
+      const buckets=nhomKyKho(mode,mode==="day"?30:mode==="month"?12:6);
+      const keys=new Set(buckets.map(x=>x.key)),latest=new Map();
+      for(const rec of layAnhChupKho()){
+        if(rec.hasPrice===false||!ngayHistoryHopLe(rec.date)||
+          !Number.isFinite(rec.value)||rec.value<0)continue;
+        const key=khoaNhomKho(rec.date,mode);
+        if(!keys.has(key))continue;
+        const previous=latest.get(key);
+        if(!previous||rec.date>=previous.date)latest.set(key,rec);
+      }
+      const chart=document.getElementById("insight-value-trend");
+      const summary=document.getElementById("dashboard-value-trend-summary");
+      if(!latest.size){
+        chart.textContent=tuDien("dashValueTrendEmpty");
+        summary.textContent=tuDien("dashValueTrendNote");return;
+      }
+      veCotTheoThoiGianKho("insight-value-trend",buckets,
+        new Map([...latest].map(([key,rec])=>[key,rec.value])),"money");
+      summary.textContent=tuDien("dashValueTrendSummary",{
+        count:dinhDangSoLuong.format(latest.size),
+        period:tuDien({day:"dashDay",month:"dashMonth",year:"dashYear"}[mode])
+      });
+    }
 
     // History.js is a real optional source, loaded on demand. There is no
     // inferred transaction history from snapshots or stock balances.
@@ -2994,6 +3162,7 @@
       for(const [sap,date] of lastOutput)ngayXuatCuoiTheoSap.set(sap,date);
       historyLoaded=true;
       capNhatCardNgayXuat();
+      veBieuDoSuDungKho();
       const total=indexed.length;
       const status=total?(origin==="existing"?"historyLoadedExisting":updated?"historyLoadedAt":"historyLoaded"):"historyEmpty";
       capNhatTrangThaiHistory(status);
@@ -3070,6 +3239,7 @@
           historyLoading=false;
           locLichSuVatTu();
           capNhatCardNgayXuat();
+          veBieuDoSuDungKho();
         }
       }
     }
