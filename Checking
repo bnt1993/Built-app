@@ -1262,6 +1262,68 @@
     .material-history-controls #material-history-export {
       min-height:32px; padding:6px 12px; margin-left:auto;
     }
+
+    /* Search and inventory-status filter share the same baseline. */
+    #view-stock .quick-filters {
+      display:flex; align-items:center; justify-content:flex-start;
+      flex-wrap:wrap; gap:8px 12px; min-width:0;
+    }
+    #view-stock .quick-stock-select {
+      display:inline-flex; flex-direction:row; align-items:center;
+      gap:8px; flex:0 0 auto; min-width:0; width:auto;
+      font-size:11px; line-height:1.2;
+    }
+    #view-stock .quick-stock-select > span {
+      display:inline-block; flex:0 0 auto; white-space:nowrap; color:var(--muted);
+    }
+    #view-stock .quick-stock-select select {
+      flex:0 0 158px; width:158px; min-width:0; max-width:158px;
+      min-height:38px; height:38px; padding:0 26px 0 9px; font-size:12px;
+    }
+    #view-stock .quick-filters .checkbox-group { margin:0; align-self:center; }
+    @media(min-width:1100px) and (min-height:620px) {
+      body.stock-one-screen #view-stock .toolbar-primary {
+        display:grid; grid-template-columns:minmax(300px,1fr) auto auto;
+        align-items:center; gap:8px 12px;
+      }
+      body.stock-one-screen #view-stock .quick-filters {
+        flex-wrap:nowrap; justify-content:flex-start;
+        align-items:center; gap:8px 11px; width:auto;
+      }
+      body.stock-one-screen #view-stock .quick-stock-select {
+        flex:0 0 auto; min-width:0; width:auto; font-size:11px; gap:7px;
+      }
+      body.stock-one-screen #view-stock .quick-stock-select select {
+        flex:0 0 150px; width:150px; max-width:150px;
+        min-height:38px; height:38px; font-size:12px;
+      }
+      body.stock-one-screen #view-stock .quick-filters .checkbox-group label {
+        font-size:11px; gap:4px;
+      }
+      body.stock-one-screen #view-stock .toolbar-primary > #btn-xuat-excel {
+        align-self:center; min-height:38px; font-size:11px;
+      }
+    }
+    @media(min-width:1100px) and (max-width:1499px) and (min-height:620px) {
+      body.stock-one-screen #view-stock .toolbar-primary {
+        grid-template-columns:minmax(280px,1fr) minmax(0,auto);
+      }
+      body.stock-one-screen #view-stock .toolbar-primary > #btn-xuat-excel {
+        grid-column:2; justify-self:end;
+      }
+    }
+    @media(max-width:1099px) {
+      #view-stock .quick-filters { flex:1 1 100%; }
+    }
+    @media(max-width:620px) {
+      #view-stock .quick-stock-select {
+        flex:1 1 100%; width:100%; justify-content:space-between; gap:7px;
+      }
+      #view-stock .quick-stock-select > span { white-space:normal; }
+      #view-stock .quick-stock-select select {
+        flex:0 1 150px; width:150px; min-width:120px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2243,7 +2305,7 @@
     function capNhatCardBmNo(dongData) {
       const card = document.getElementById("bm-no-card");
       const danhSach = document.getElementById("bm-no-list");
-      const chiSoBmNo = timCotTheoTen("BM No");
+      const chiSoBmNo=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
       const giaTri = chiSoBmNo >= 0 ? String(dongData[chiSoBmNo] ?? "").trim() : "";
       const maBmNo = giaTri.split(/[,\n;|]+/).map(value => value.trim()).filter(Boolean);
 
@@ -2336,12 +2398,42 @@
         .replace(/đ/g,"d");
     }
 
+    // Match SAP source columns by normalized header, not their display order.
+    function cotTheoTenTimKiem(aliases,fallback=-1) {
+      const normalize=name=>chuanHoaTimKiem(name).replace(/[^a-z0-9]/g,"");
+      const accepted=new Set(aliases.map(normalize));
+      const index=tieuDeCot.findIndex(name=>accepted.has(normalize(name)));
+      return index>=0?index:(fallback>=0&&fallback<tieuDeCot.length?fallback:-1);
+    }
+
+    function khopTuKhoaVatTu(muc,term,scope,ganDung) {
+      const keyword=chuanHoaTimKiem(term).trim();
+      if(!keyword)return true;
+      const text=muc[scope]||"";
+      if(text.includes(keyword))return true;
+      // Part numbers may contain spaces, hyphens, slashes or dots. Compare the
+      // compact form only for code searches; descriptions retain phrase matching.
+      if(/\d/.test(keyword)){
+        const compact=keyword.replace(/[^a-z0-9]/g,"");
+        if(compact.length>=3){
+          const candidates=scope==="all"?[muc.sapCompact,muc.partCompact,muc.bmCompact]:
+            scope==="sap"?[muc.sapCompact]:
+            scope==="part"?[muc.partCompact]:
+            scope==="bmno"?[muc.bmCompact]:[];
+          if(candidates.some(value=>value&&value.includes(compact)))return true;
+        }
+      }
+      return ganDung&&coTuGanDung(text,keyword);
+    }
+
     function coTuGanDung(chuoi,tuKhoa) {
       if (tuKhoa.length < 4 || tuKhoa.length > 48) return false;
       const words = chuanHoaTimKiem(chuoi).split(/[^a-z0-9]+/).filter(Boolean);
       return words.some(word => Math.abs(word.length-tuKhoa.length)<=1 && trungGanDung(word,tuKhoa));
     }
 
+
+    const maSapDaLapChiMuc=new Set();
 
     // One search box handles a phrase or many SAP codes separated by comma,
     // semicolon, pipe, newline or spaces for code-like tokens.
@@ -2352,16 +2444,21 @@
       let parts=explicitlySeparated ? raw.split(/[,;|\r\n]+/) : [raw];
       if(!explicitlySeparated) {
         const words=raw.split(/\s+/).filter(Boolean);
-        const lookLikeCodes=words.length>1 && words.every(x=>
-          /^[a-z0-9._-]+$/i.test(x) && /\d/.test(x));
-        if(words.length>1 && (scope==="sap" || lookLikeCodes)) parts=words;
+        const lookLikeCodes=words.length>1&&words.every(x=>
+          /^[a-z0-9._-]+$/i.test(x)&&/\d/.test(x));
+        const verifiedSapCodes=lookLikeCodes&&words.every(x=>
+          maSapDaLapChiMuc.has(chuanHoaMaSap(x).toLowerCase()));
+        // "all" must not mistake a multipart part number for several SAP codes.
+        if(words.length>1&&(scope==="sap"||(scope==="all"&&verifiedSapCodes)))
+          parts=words;
       }
-      const terms=[...new Set(parts.map(x=>x.trim().toLowerCase()).filter(Boolean))].slice(0,2000);
+      const terms=[...new Set(parts.map(x=>chuanHoaTimKiem(x).trim()).filter(Boolean))].slice(0,2000);
       // Multi-code searches use exact SAP matches. Other multi-keyword
       // searches keep the existing substring/typo-tolerant OR semantics.
-      const sapList=terms.length>1 && (scope==="all"||scope==="sap") &&
-        terms.every(x=>/^[a-z0-9._-]+$/i.test(x)&&/\d/.test(x))
-        ? new Set(terms.map(x=>chuanHoaMaSap(x).toLowerCase())) : null;
+      const sapList=terms.length>1&&(scope==="all"||scope==="sap")&&
+        terms.every(x=>/^[a-z0-9._-]+$/i.test(x)&&/\d/.test(x)&&
+          (scope==="sap"||maSapDaLapChiMuc.has(chuanHoaMaSap(x).toLowerCase())))
+        ? new Set(terms.map(x=>chuanHoaMaSap(x).toLowerCase())):null;
       return {terms,exactSap:sapList};
     }
 
@@ -3265,7 +3362,17 @@
     // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
       const lanHienTai = ++lanLapChiMuc;
-      const chiSoBmNo = timCotTheoTen("BM No");
+      const chiSoBmNo=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
+      const chiSoPart=cotTheoTenTimKiem([
+        "Part No","Part No.","Part Number","Part Nr","Part #",
+        "Part Code","Mã phụ tùng","Mã phụ kiện"
+      ],tieuDeCot.length>5?5:2);
+      const chiSoSap=cotTheoTenTimKiem([
+        "Material","Material Number","SAP","SAP Code","Mã SAP","Mã vật tư"
+      ],0);
+      const chiSoMoTa=cotTheoTenTimKiem([
+        "Material Description","Description","Mô tả","Mô tả vật tư"
+      ],1);
       // Prefer named headers; keep the existing quantity column position as a fallback.
       const cotSoLuong = tieuDeCot.findIndex(x =>
         ["quantity", "qty", "số lượng", "stock", "stock qty", "on hand", "tồn kho"].includes(String(x ?? "").trim().toLowerCase()));
@@ -3277,6 +3384,7 @@
       let giaTriDaTinh = 0;
       let soDongGiaKhongHopLe = 0;
       duLieuTimKiem = [];
+      maSapDaLapChiMuc.clear();
       soCoTonKho = 0;
       chiMucSanSang = false;
       dangLocDuLieu = true;
@@ -3299,7 +3407,12 @@
         for (; viTri < gioiHan; viTri++) {
           const dong = tatCaDuLieu[viTri];
           if (!Array.isArray(dong)) continue;
-          const giaTri = dong.map(ten => String(ten ?? "").toLowerCase());
+          const giaTri = dong.map(ten=>chuanHoaTimKiem(ten));
+          const sap=giaTri[chiSoSap]||"";
+          const part=chiSoPart>=0?giaTri[chiSoPart]||"":"";
+          const bmno=chiSoBmNo>=0?giaTri[chiSoBmNo]||"":"";
+          const compactCode=value=>value.replace(/[^a-z0-9]/g,"");
+          if(sap)maSapDaLapChiMuc.add(chuanHoaMaSap(dong[chiSoSap]).toLowerCase());
           const soLuong = chuyenThanhSo(dong[chiSoSoLuong]);
           const coTonKho = soLuong > 0;
           const reorderPoint = chiSoReorderPoint >= 0 ? chuyenThanhSo(dong[chiSoReorderPoint]) : NaN;
@@ -3322,10 +3435,11 @@
             chiSo: viTri,
             dong: dong,
             all: giaTri.join("\u0001"),
-            sap: giaTri[0] || "",
-            desc: giaTri[1] || "",
-            part: giaTri[2] || "",
-            bmno: chiSoBmNo >= 0 ? giaTri[chiSoBmNo] || "" : "",
+            sap, desc:chiSoMoTa>=0?giaTri[chiSoMoTa]||"":"",
+            part,bmno,
+            sapCompact:compactCode(sap),
+            partCompact:compactCode(part),
+            bmCompact:compactCode(bmno),
             coTonKho: coTonKho, soLuong, reorderPoint, trangThaiTon, giaTriDong
           });
         }
@@ -3362,7 +3476,7 @@
       boTriHoanTimKiem = null;
       if (!chiMucSanSang) return;
       dangLocDuLieu = true;
-      const tuKhoa = document.getElementById("o-tim-kiem").value.trim().toLowerCase();
+      const tuKhoa = chuanHoaTimKiem(document.getElementById("o-tim-kiem").value.trim());
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
       const locCanhBao=document.getElementById("loc-canh-bao").value;
@@ -3380,11 +3494,10 @@
         const gioiHan = Math.min(viTri + 2500, tong);
         for (; viTri < gioiHan; viTri++) {
           const muc = duLieuTimKiem[viTri];
-          const giaTri=muc[truongTim];
           const hopTuKhoa=danhSachSap
             ? danhSachSap.has(chuanHoaMaSap(muc.dong[0]).toLowerCase())
-            : !tuKhoa || nhieuTuKhoa.some(term=>
-                giaTri.includes(term) || (ganDung && coTuGanDung(giaTri,chuanHoaTimKiem(term))));
+            : !tuKhoa||nhieuTuKhoa.some(term=>
+                khopTuKhoaVatTu(muc,term,truongTim,ganDung));
           if (hopTuKhoa && (!chiTonKho || muc.coTonKho) &&
               (locCanhBao==="all" || muc.trangThaiTon===locCanhBao)) moi.push(muc);
         }
@@ -3529,7 +3642,7 @@
 
     function hienThiChiTiet(dongData) {
       let htmlChiTiet = "";
-      const chiSoBm = timCotTheoTen("BM No");
+      const chiSoBm=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
       for (let c = 0; c < tieuDeCot.length; c++) {
         if(c===chiSoBm)continue;
         htmlChiTiet+='<div class="detail-item" data-col-index="'+c+'"><label>'+
@@ -3541,8 +3654,10 @@
       cardBmNo.remove();
       luoiChiTiet.innerHTML = htmlChiTiet;
       // Keep Part No before Storage Bin regardless of their order in the source.
-      const partIndex=tieuDeCot.findIndex(name=>
-        ["part no","part no.","part number","mã phụ tùng"].includes(String(name??"").trim().toLowerCase()));
+      const partIndex=cotTheoTenTimKiem([
+        "Part No","Part No.","Part Number","Part Nr","Part #",
+        "Part Code","Mã phụ tùng","Mã phụ kiện"
+      ],tieuDeCot.length>5?5:2);
       const binIndex=tieuDeCot.findIndex(name=>
         ["storage bin","storagebin","vị trí lưu kho"].includes(String(name??"").trim().toLowerCase()));
       if(partIndex>=0&&binIndex>=0&&partIndex!==binIndex) {
@@ -4639,9 +4754,10 @@
       let value="";
       if(action==="sap")value=chuanHoaMaSap(row[0]);
       else if(action==="part") {
-        const partCol=tieuDeCot.findIndex(name=>[
-          "part no","part no.","part number","mã phụ tùng"
-        ].includes(String(name??"").trim().toLowerCase()));
+        const partCol=cotTheoTenTimKiem([
+          "Part No","Part No.","Part Number","Part Nr","Part #",
+          "Part Code","Mã phụ tùng","Mã phụ kiện"
+        ],tieuDeCot.length>5?5:2);
         value=partCol>=0?String(row[partCol]??"").trim():"";
         if(!value){thongBaoMenuVatTu("stockMenuNoPart");return;}
       } else return;
