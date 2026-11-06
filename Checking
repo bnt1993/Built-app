@@ -1956,7 +1956,7 @@
       materialHistoryPage=Math.max(1,Math.min(pages,materialHistoryPage));
       // Movement is only used for classification, never shown as a source column.
       const visibleColumns=historyColumns.map((name,index)=>({name,index}))
-        .filter(col=>col.index!==historyTypeColumn&&tenHistoryChuan(col.name)!=="movement");
+        .filter(col=>col.index!==historyTypeColumn&&!["movement","movementtype"].includes(tenHistoryChuan(col.name)));
       const amtColumn=cotHistoryTheoTen(historyColumns,[
         "Amt.In","Amt.in loc.cur.","Amt in local currency","Amount in local currency",
         "Amount LC","Amount"]);
