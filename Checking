@@ -2976,6 +2976,9 @@
       veBangTopGiaTriVatTu(stats.values,limit);
       veBieuDoSuDungKho();
       veBieuDoGiaTriKho();
+      veSoSanhNhapXuatKho();
+      veTopVatTuXuatKho();
+      veVatTuTonLau();
       veLichSuKho();
       kiemTraNhacBaoCao();
     }
@@ -3105,6 +3108,325 @@
         count++;
       }
       return {missing:false,values,count,invalid,incoming,outgoing};
+    }
+
+
+    function ngayDiaPhuongISO(date=new Date()){
+      return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+
+        "-"+String(date.getDate()).padStart(2,"0");
+    }
+    function congNgayKho(iso,days){
+      const [y,m,d]=iso.split("-").map(Number);
+      const date=new Date(Date.UTC(y,m-1,d+days));
+      return date.toISOString().slice(0,10);
+    }
+    function khoangNgayKho(from,to){
+      const a=new Date(from+"T00:00:00Z"),b=new Date(to+"T00:00:00Z");
+      return Math.round((b-a)/86400000)+1;
+    }
+
+    function layKyPhanTichKho(now=new Date()){
+      const today=ngayDiaPhuongISO(now),todayYear=now.getFullYear();
+      const mode=document.getElementById("dashboard-range-mode").value;
+      let from="",to="",prevFrom="",prevTo="";
+      if(mode==="week"){
+        to=today;from=congNgayKho(to,-6);
+        prevTo=congNgayKho(from,-1);prevFrom=congNgayKho(prevTo,-6);
+      }else if(mode==="month"){
+        from=today.slice(0,7)+"-01";to=today;
+        const [y,m]=from.split("-").map(Number);
+        const p=new Date(Date.UTC(y,m-2,1));
+        prevFrom=p.toISOString().slice(0,10);
+        const elapsed=khoangNgayKho(from,to);
+        const lastDay=new Date(Date.UTC(p.getUTCFullYear(),p.getUTCMonth()+1,0)).getUTCDate();
+        prevTo=congNgayKho(prevFrom,Math.min(elapsed,lastDay)-1);
+      }else if(mode==="year"){
+        const year=Number(document.getElementById("dashboard-range-year").value);
+        if(!Number.isInteger(year)||year<2000||year>2100)return null;
+        from=year+"-01-01";
+        to=year===todayYear?today:year+"-12-31";
+        if(year>todayYear)return null;
+        prevFrom=(year-1)+"-01-01";
+        prevTo=year===todayYear?
+          (year-1)+"-"+today.slice(5): (year-1)+"-12-31";
+        // Feb 29 in a leap year maps to Feb 28 of previous year.
+        if(!ngayHistoryHopLe(prevTo))prevTo=(year-1)+"-02-28";
+      }else if(mode==="custom"){
+        from=document.getElementById("dashboard-range-from").value;
+        to=document.getElementById("dashboard-range-to").value;
+        if(!ngayHistoryHopLe(from)||!ngayHistoryHopLe(to)||from>to)return null;
+        const days=khoangNgayKho(from,to);
+        if(days>3653)return null;
+        prevTo=congNgayKho(from,-1);
+        prevFrom=congNgayKho(prevTo,-days+1);
+      }else return null;
+      return {mode,from,to,prevFrom,prevTo};
+    }
+
+    function doiKyPhanTichKho(){
+      const mode=document.getElementById("dashboard-range-mode").value;
+      document.getElementById("dashboard-range-year-field").hidden=mode!=="year";
+      document.getElementById("dashboard-range-from-field").hidden=mode!=="custom";
+      document.getElementById("dashboard-range-to-field").hidden=mode!=="custom";
+      const range=layKyPhanTichKho();
+      document.getElementById("dashboard-range-summary").textContent=range?
+        tuDien("dashboardTimeCurrent",{from:range.from,to:range.to}):
+        tuDien("dashboardTimeInvalid");
+      veSoSanhNhapXuatKho();
+      veTopVatTuXuatKho();
+      veBieuDoSuDungKho();
+      veBieuDoGiaTriKho();
+    }
+
+    function locGiaoDichKho(range,types=["in","out"]){
+      if(!historyLoaded||!range)return [];
+      return historyAll.filter(rec=>types.includes(rec.type)&&
+        ngayHistoryHopLe(rec.date)&&rec.date>=range.from&&rec.date<=range.to);
+    }
+
+    function cotGiaTriLichSuKho(){
+      return cotHistoryTheoTen(historyColumns,[
+        "Amt.In","Amt.in loc.cur.","Amt in local currency",
+        "Amount in local currency","Amount LC","Amount"]);
+    }
+    function cotMaSapLichSuKho(){
+      return cotHistoryTheoTen(historyColumns,[
+        "Material","SAP","SAP Code","Material Number","Material Code",
+        "Mã SAP","Mã vật tư"]);
+    }
+    function tongNhapXuatTrongKhoang(range,amountCol){
+      const sum={in:0,out:0,inCount:0,outCount:0,invalid:0};
+      if(!range||amountCol<0)return sum;
+      for(const rec of locGiaoDichKho(range)){
+        const raw=String(rec.cells[amountCol]??"").trim();
+        const value=raw?chuyenThanhSo(raw):NaN;
+        if(!Number.isFinite(value)){sum.invalid++;continue;}
+        sum[rec.type]+=Math.abs(value);
+        sum[rec.type+"Count"]++;
+      }
+      return sum;
+    }
+    function hienThiThayDoiKho(type,current,previous){
+      const amount=document.getElementById("dashboard-compare-"+type+"-current");
+      const change=document.getElementById("dashboard-compare-"+type+"-change");
+      const prior=document.getElementById("dashboard-compare-"+type+"-prior");
+      amount.textContent=dinhDangGiaTriKho(current);
+      prior.textContent=tuDien("dashboardComparePrevious")+": "+dinhDangGiaTriKho(previous);
+      change.dataset.change="none";
+      if(previous===0){
+        change.textContent=current>0?tuDien("dashboardCompareNew"):"—";
+        change.title=tuDien("dashboardCompareNoPrevious");
+      }else{
+        const percent=(current-previous)/previous*100;
+        change.textContent=(percent>0?"+":"")+
+          new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",
+            {maximumFractionDigits:1}).format(percent)+"%";
+        change.dataset.change=percent>0?"up":percent<0?"down":"none";
+        change.title=change.textContent;
+      }
+    }
+    function veSoSanhNhapXuatKho(){
+      const root=document.getElementById("dashboard-compare-note");
+      const header=document.getElementById("dashboard-compare-periods");
+      const range=layKyPhanTichKho();
+      if(!range){
+        header.textContent=tuDien("dashboardTimeInvalid");
+        root.textContent=tuDien("dashboardTimeInvalid");
+        for(const type of ["in","out"]){
+          document.getElementById("dashboard-compare-"+type+"-current").textContent="—";
+          document.getElementById("dashboard-compare-"+type+"-prior").textContent="";
+          document.getElementById("dashboard-compare-"+type+"-change").textContent="—";
+        }
+        return;
+      }
+      header.textContent=range.from+" – "+range.to+"  /  "+range.prevFrom+" – "+range.prevTo;
+      if(!historyLoaded){
+        root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardCompareNoHistory");
+        return;
+      }
+      const amountCol=cotGiaTriLichSuKho();
+      if(amountCol<0){root.textContent=tuDien("dashUsageNoQty");return;}
+      const now=tongNhapXuatTrongKhoang(range,amountCol);
+      const before=tongNhapXuatTrongKhoang({from:range.prevFrom,to:range.prevTo},amountCol);
+      hienThiThayDoiKho("in",now.in,before.in);
+      hienThiThayDoiKho("out",now.out,before.out);
+      root.textContent=tuDien("dashboardCompareNote")+
+        (now.invalid+before.invalid?" · "+
+        tuDien("dashboardCompareInvalid",{count:now.invalid+before.invalid}):"");
+    }
+
+    function maKhoTrongHTML(rec){
+      const material=duLieuTimKiem.find(v=>
+        chuanHoaMaSap(v.dong[0]).toLowerCase()===rec.sap.toLowerCase());
+      return material||null;
+    }
+    function moLichSuDashboardTheoSap(sap){
+      const item=duLieuTimKiem.find(v=>
+        chuanHoaMaSap(v.dong[0]).toLowerCase()===String(sap).toLowerCase());
+      if(item){moLichSuVatTu(item.chiSo);return;}
+      if(!historyLoaded)return;
+      // History can include material codes absent from current stock.
+      const dialog=document.getElementById("material-history-dialog");
+      materialHistorySap=String(sap);
+      materialHistoryStockIndex=-1;
+      materialHistoryPage=1;
+      materialHistorySortColumn=-2;
+      materialHistorySortDirection=-1;
+      document.getElementById("material-history-kind").value="all";
+      document.getElementById("material-history-from").value="";
+      document.getElementById("material-history-to").value="";
+      document.getElementById("material-history-cost").value="";
+      document.getElementById("material-history-sap").textContent=tuDien("sapCode",{code:sap});
+      materialHistoryReturnFocus=document.activeElement;
+      if(!dialog.open)dialog.showModal();
+      locLichSuVatTu();
+    }
+    function moLichSuBangDashboard(event){
+      const tr=event.target.closest("tr[data-sap]");
+      if(tr&&event.currentTarget.contains(tr))moLichSuDashboardTheoSap(tr.dataset.sap);
+    }
+    function bamPhimLichSuBangDashboard(event){
+      if(event.key!=="Enter")return;
+      const row=event.target.closest("tr[data-sap]");
+      if(!row)return;
+      event.preventDefault();moLichSuDashboardTheoSap(row.dataset.sap);
+    }
+
+    function phamViTopXuatKho(){
+      const mode=document.getElementById("dashboard-out-period").value;
+      const global=layKyPhanTichKho();
+      if(mode==="selected")return global;
+      const now=new Date(),today=ngayDiaPhuongISO(now);
+      if(mode==="week")return {from:congNgayKho(today,-6),to:today};
+      if(mode==="month")return {from:today.slice(0,7)+"-01",to:today};
+      if(mode==="year"){
+        const chosen=global?.mode==="year"?
+          Number(document.getElementById("dashboard-range-year").value):now.getFullYear();
+        const from=chosen+"-01-01";
+        return {from,to:chosen===now.getFullYear()?today:chosen+"-12-31"};
+      }
+      return global;
+    }
+    function thongKeTopVatTuXuatKho(range,limit=20){
+      const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
+      if(amountCol<0||sapCol<0)return null;
+      const grouped=new Map(),descCol=cotHistoryTheoTen(historyColumns,
+        ["Material Description","Description","Mô tả","Mô tả vật tư"]);
+      for(const rec of locGiaoDichKho(range,["out"])){
+        const sap=chuanHoaMaSap(rec.cells[sapCol]);
+        const raw=String(rec.cells[amountCol]??"").trim();
+        const amount=raw?chuyenThanhSo(raw):NaN;
+        if(!sap||!Number.isFinite(amount))continue;
+        let row=grouped.get(sap.toLowerCase());
+        if(!row){
+          const stock=duLieuTimKiem.find(v=>
+            chuanHoaMaSap(v.dong[0]).toLowerCase()===sap.toLowerCase());
+          row={sap,description:stock?String(stock.dong[1]??""):
+            descCol>=0?String(rec.cells[descCol]??""):"",value:0,count:0};
+          grouped.set(sap.toLowerCase(),row);
+        }
+        row.value+=Math.abs(amount);row.count++;
+      }
+      return [...grouped.values()].filter(rec=>rec.value>0)
+        .sort((a,b)=>b.value-a.value||a.sap.localeCompare(b.sap)).slice(0,limit);
+    }
+    function veTopVatTuXuatKho(){
+      const root=document.getElementById("dashboard-top-out");
+      const note=document.getElementById("dashboard-top-out-note");
+      if(!historyLoaded){
+        root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardTopOutEmpty");
+        note.textContent="";return;
+      }
+      const range=phamViTopXuatKho();
+      if(!range){root.textContent=tuDien("dashboardTimeInvalid");note.textContent="";return;}
+      const rows=thongKeTopVatTuXuatKho(range,20);
+      if(!rows){root.textContent=tuDien("dashboardTopOutMissing");note.textContent="";return;}
+      if(!rows.length){root.textContent=tuDien("dashboardTopOutEmpty");note.textContent=range.from+" – "+range.to;return;}
+      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardTopOutCount"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardTopOutValue"))+'</th></tr></thead>';
+      root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
+        rows.map(rec=>'<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
+          thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
+          thoatHTML(rec.sap)+'</span><span class="material-name">'+
+          thoatHTML(rec.description||"—")+'</span></td><td>'+
+          dinhDangSoLuong.format(rec.count)+'</td><td><strong>'+
+          thoatHTML(dinhDangGiaTriKho(rec.value))+'</strong></td></tr>').join("")+
+        '</tbody></table>';
+      note.textContent=range.from+" – "+range.to+" · "+tuDien("dashboardTopDoubleClick");
+    }
+
+    function thongKeVatTuTonLau(days,now=new Date()){
+      if(!historyLoaded)return null;
+      const sapCol=cotMaSapLichSuKho();
+      if(sapCol<0)return null;
+      const today=ngayDiaPhuongISO(now),stock=new Map();
+      const unitCol=cotHistoryTheoTen(tieuDeCot,[
+        "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
+      for(const item of duLieuTimKiem){
+        if(!Number.isFinite(item.soLuong)||item.soLuong<=0)continue;
+        const sap=chuanHoaMaSap(item.dong[0]),key=sap.toLowerCase();
+        if(!key)continue;
+        let row=stock.get(key);
+        const unit=unitCol>=0?String(item.dong[unitCol]??"").trim():"";
+        if(!row){
+          row={sap,description:String(item.dong[1]??""),quantity:0,
+            unit,quantityValid:!!unit,last:"",days:null};
+          stock.set(key,row);
+        }
+        if(!unit||row.unit!==unit)row.quantityValid=false;
+        if(row.quantityValid)row.quantity+=item.soLuong;
+      }
+      for(const rec of historyAll){
+        if(rec.type!=="out"||!ngayHistoryHopLe(rec.date)||rec.date>today)continue;
+        const key=chuanHoaMaSap(rec.cells[sapCol]).toLowerCase();
+        const material=stock.get(key);
+        if(material&&rec.date>material.last)material.last=rec.date;
+      }
+      const report=[];
+      for(const row of stock.values()){
+        row.days=row.last?khoangNgayKho(row.last,today)-1:null;
+        if(row.days===null||row.days>=days)report.push(row);
+      }
+      return report.sort((a,b)=>
+        (b.days??Number.MAX_SAFE_INTEGER)-(a.days??Number.MAX_SAFE_INTEGER)||
+        a.sap.localeCompare(b.sap));
+    }
+    function veVatTuTonLau(){
+      const root=document.getElementById("dashboard-dormant");
+      const note=document.getElementById("dashboard-dormant-note");
+      if(!historyLoaded){
+        root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory");
+        note.textContent="";return;
+      }
+      const days=Number(document.getElementById("dashboard-dormant-days").value)||90;
+      const rows=thongKeVatTuTonLau(days);
+      if(rows===null){
+        root.textContent=tuDien("dashboardDormantMissing");note.textContent="";return;
+      }
+      if(!rows.length){
+        root.textContent=tuDien("dashboardDormantEmpty");note.textContent="";return;
+      }
+      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardDormantStock"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardDormantLast"))+'</th><th>'+
+        thoatHTML(tuDien("dashboardDormantDaysOld"))+'</th></tr></thead>';
+      root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
+        rows.slice(0,100).map(rec=>{
+          const quantity=rec.quantityValid?
+            dinhDangSoLuong.format(rec.quantity)+" "+rec.unit:"—";
+          return '<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
+            thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
+            thoatHTML(rec.sap)+'</span><span class="material-name">'+
+            thoatHTML(rec.description||"—")+'</span></td><td>'+
+            thoatHTML(quantity)+'</td><td>'+thoatHTML(rec.last||tuDien("dashboardDormantNever"))+
+            '</td><td>'+thoatHTML(rec.days===null?"—":dinhDangSoLuong.format(rec.days))+
+            '</td></tr>';
+        }).join("")+'</tbody></table>';
+      note.textContent=tuDien("dashboardDormantMore",{
+        count:dinhDangSoLuong.format(Math.min(rows.length,100)),
+        total:dinhDangSoLuong.format(rows.length)
+      });
     }
 
     function veBieuDoSuDungKho(){
@@ -3399,6 +3721,9 @@
       for(const [sap,date] of lastOutput)ngayXuatCuoiTheoSap.set(sap,date);
       historyLoaded=true;
       capNhatCardNgayXuat();
+      veSoSanhNhapXuatKho();
+      veTopVatTuXuatKho();
+      veVatTuTonLau();
       veBieuDoSuDungKho();
       const total=indexed.length;
       const status=total?(origin==="existing"?"historyLoadedExisting":updated?"historyLoadedAt":"historyLoaded"):"historyEmpty";
@@ -3452,6 +3777,9 @@
     async function taiHistory(force=false) {
       if(historyLoading || (historyLoaded && !force))return;
       historyLoading=true;
+      veSoSanhNhapXuatKho();
+      veTopVatTuXuatKho();
+      veVatTuTonLau();
       const sequence=++historySeq;
       capNhatTrangThaiHistory("historyLoading");
       veBieuDoSuDungKho();
@@ -3478,6 +3806,9 @@
           locLichSuVatTu();
           capNhatCardNgayXuat();
           veBieuDoSuDungKho();
+          veSoSanhNhapXuatKho();
+          veTopVatTuXuatKho();
+          veVatTuTonLau();
         }
       }
     }
@@ -5448,6 +5779,18 @@
     const tabDuocLuu=docTuyChon("checking-active-tab");
     chuyenTab(CAC_TAB.includes(tabDuocLuu)?tabDuocLuu:"stock",{persist:false});
     khoiTaoLichNhacBaoCao();
+    const dashboardNow=new Date();
+    const dateInput=document.getElementById("dashboard-range-year");
+    dateInput.value=String(dashboardNow.getFullYear());
+    document.getElementById("dashboard-range-from").value=
+      ngayDiaPhuongISO(new Date(dashboardNow.getFullYear(),dashboardNow.getMonth(),1));
+    document.getElementById("dashboard-range-to").value=ngayDiaPhuongISO(dashboardNow);
+    for(const id of ["dashboard-top-out","dashboard-dormant"]){
+      const node=document.getElementById(id);
+      node.addEventListener("dblclick",moLichSuBangDashboard);
+      node.addEventListener("keydown",bamPhimLichSuBangDashboard);
+    }
+    doiKyPhanTichKho();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
     setInterval(kiemTraNhacBaoCao, 60000);
