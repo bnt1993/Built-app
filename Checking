@@ -3739,16 +3739,28 @@
       const today=ngayDiaPhuongISO(now),stock=new Map();
       const unitCol=cotHistoryTheoTen(tieuDeCot,[
         "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
+      const priceCol=cotHistoryTheoTen(tieuDeCot,["Price","Unit Price","Đơn giá","Giá"]);
       for(const item of duLieuTimKiem){
         if(!Number.isFinite(item.soLuong)||item.soLuong<=0)continue;
         const sap=chuanHoaMaSap(item.dong[0]),key=sap.toLowerCase();
         if(!key)continue;
         let row=stock.get(key);
         const unit=unitCol>=0?String(item.dong[unitCol]??"").trim():"";
+        const priceRaw=priceCol>=0?String(item.dong[priceCol]??"").trim():"";
+        const price=priceRaw?chuyenThanhSo(priceRaw):NaN;
+        const validPrice=Number.isFinite(price)&&price>=0;
         if(!row){
           row={sap,description:String(item.dong[1]??""),quantity:0,
-            unit,quantityValid:!!unit,last:"",days:null};
+            unit,quantityValid:!!unit,last:"",days:null,
+            price,priceValid:validPrice,priceMixed:false};
           stock.set(key,row);
+        }else{
+          if(!row.description)row.description=String(item.dong[1]??"");
+          if(!validPrice)row.priceValid=false;
+          else if(Number.isFinite(row.price)&&
+            Math.abs(row.price-price)>Math.max(.01,Math.abs(row.price)*1e-8)){
+            row.priceMixed=true;row.priceValid=false;
+          }
         }
         if(!unit||row.unit!==unit)row.quantityValid=false;
         if(row.quantityValid)row.quantity+=item.soLuong;
