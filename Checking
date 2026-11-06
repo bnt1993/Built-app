@@ -1385,6 +1385,77 @@
       #view-dashboard .dashboard-chart-filters { width:100%; }
       #view-dashboard .dashboard-top-table { font-size:10px; }
     }
+
+    #view-dashboard .dashboard-period-strip {
+      display:flex; flex-wrap:wrap; gap:8px 12px; align-items:flex-end;
+      background:var(--app-panel); border:1px solid var(--line);
+      padding:11px 14px; border-radius:12px; margin:0 0 12px;
+    }
+    #view-dashboard .dashboard-period-intro {
+      flex:1 1 180px; display:flex; flex-direction:column; gap:4px;
+      font-size:12px;
+    }
+    #view-dashboard .dashboard-period-strip > label,
+    #view-dashboard .dashboard-table-chart .dashboard-chart-heading label {
+      display:flex; flex-direction:column; gap:3px; font-size:11px;
+      color:var(--muted); font-weight:750;
+    }
+    #view-dashboard .dashboard-period-strip input,
+    #view-dashboard .dashboard-period-strip select,
+    #view-dashboard .dashboard-table-chart .dashboard-chart-heading select {
+      color:var(--ink); background:var(--app-field); border:1px solid var(--line);
+      border-radius:8px; padding:5px 9px; min-height:32px; max-width:200px;
+      font:inherit; font-size:12px;
+    }
+    #view-dashboard .dashboard-period-strip [hidden] { display:none !important; }
+    #view-dashboard .dashboard-compare-section {
+      background:var(--app-panel); border:1px solid var(--line);
+      border-radius:12px; padding:12px 14px; margin-bottom:12px;
+    }
+    #view-dashboard .dashboard-compare-section h2 { font-size:14px; margin:0; }
+    #view-dashboard .dashboard-compare-grid {
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:8px;
+    }
+    #view-dashboard .dashboard-compare-card {
+      border:1px solid var(--line); border-radius:10px; background:var(--app-field);
+      padding:10px 12px; display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px;
+    }
+    #view-dashboard .dashboard-compare-card h3 { margin:0; color:var(--muted); font-size:12px; flex:1 1 100%; }
+    #view-dashboard .dashboard-compare-card strong { font-size:19px; font-variant-numeric:tabular-nums; }
+    #view-dashboard .dashboard-compare-card small { color:var(--muted); font-size:11px; flex:1 1 100%; }
+    #view-dashboard .dashboard-compare-delta {
+      font-size:12px; font-weight:800; border-radius:7px; padding:3px 6px;
+      background:var(--app-panel); font-variant-numeric:tabular-nums;
+    }
+    #view-dashboard .dashboard-compare-delta[data-change="up"] { color:#c44b28; }
+    #view-dashboard .dashboard-compare-delta[data-change="down"] { color:#16875a; }
+    #view-dashboard .dashboard-table-chart { height:375px; }
+    #view-dashboard .dashboard-table-chart .dashboard-chart-body { overflow:auto; }
+    #view-dashboard .dashboard-detail-table { width:100%; border-collapse:collapse; font-size:11px; }
+    #view-dashboard .dashboard-detail-table th {
+      position:sticky; top:0; background:var(--app-panel); border-bottom:1px solid var(--line);
+      color:var(--muted); font-size:10px; font-weight:750; padding:8px 6px;
+      text-align:left; white-space:nowrap;
+    }
+    #view-dashboard .dashboard-detail-table td {
+      padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top;
+    }
+    #view-dashboard .dashboard-detail-table td:last-child,
+    #view-dashboard .dashboard-detail-table th:last-child { text-align:right; }
+    #view-dashboard .dashboard-detail-table tr[data-material-index] { cursor:pointer; }
+    #view-dashboard .dashboard-detail-table tr[data-material-index]:hover td { background:var(--app-hover); }
+    #view-dashboard .dashboard-detail-table tr[data-material-index]:focus-visible td {
+      outline:1px solid var(--blue);
+    }
+    #view-dashboard .dashboard-detail-table .material-name {
+      display:block; color:var(--muted); font-size:10px; overflow-wrap:anywhere;
+    }
+    #view-dashboard .dashboard-detail-table .material-sap { font-weight:800; }
+    @media(max-width:700px) {
+      #view-dashboard .dashboard-period-intro { flex:1 1 100%; }
+      #view-dashboard .dashboard-compare-grid { grid-template-columns:1fr; }
+      #view-dashboard .dashboard-table-chart { height:360px; }
+    }
   </style>
 </head>
 <body>
@@ -1540,7 +1611,24 @@
       </section>
 
       <section id="view-dashboard" class="view-pane" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
-        <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Phân tích kho</h1><p data-i18n="dashboardDesc">Giá trị tồn kho, cơ cấu vật tư, tình trạng tồn và biểu đồ tổng hợp.</p></div></div>
+        <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Phân tích kho</h1><p data-i18n="dashboardDesc">Theo dõi nhập xuất, vật tư tồn lâu và biến động giá trị kho.</p></div></div>
+      <section class="dashboard-period-strip" aria-label="Khoảng thời gian phân tích" data-i18n-aria="dashboardTimeTitle">
+        <div class="dashboard-period-intro"><strong data-i18n="dashboardTimeTitle">Khoảng thời gian phân tích</strong>
+          <span id="dashboard-range-summary" class="insight-note"></span></div>
+        <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
+          <select id="dashboard-range-mode" onchange="doiKyPhanTichKho()">
+            <option value="week" data-i18n="dashboardTimeWeek">7 ngày gần đây</option>
+            <option value="month" data-i18n="dashboardTimeMonth" selected>Tháng hiện tại</option>
+            <option value="year" data-i18n="dashboardTimeYear">Theo năm</option>
+            <option value="custom" data-i18n="dashboardTimeCustom">Tùy chọn ngày</option>
+          </select></label>
+        <label id="dashboard-range-year-field" hidden><span data-i18n="dashboardTimeYearLabel">Năm</span>
+          <input type="number" id="dashboard-range-year" min="2000" max="2100" step="1" onchange="doiKyPhanTichKho()"></label>
+        <label id="dashboard-range-from-field" hidden><span data-i18n="dashboardTimeFrom">Từ ngày</span>
+          <input id="dashboard-range-from" type="date" onchange="doiKyPhanTichKho()"></label>
+        <label id="dashboard-range-to-field" hidden><span data-i18n="dashboardTimeTo">Đến ngày</span>
+          <input id="dashboard-range-to" type="date" onchange="doiKyPhanTichKho()"></label>
+      </section>
       <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
         <div class="metric-card">
           <div class="metric-text"><div class="metric-label" data-i18n="dashTotalRows">Tổng dòng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="dashKpiNote">Toàn bộ dữ liệu kho</span></div>
@@ -1562,6 +1650,27 @@
           </div>
           <div class="metric-icon" aria-hidden="true">₫</div>
         </div>
+      </section>
+      <section class="dashboard-compare-section" aria-label="So sánh nhập xuất" data-i18n-aria="dashboardCompareTitle">
+        <div class="dashboard-chart-heading">
+          <h2 data-i18n="dashboardCompareTitle">So sánh nhập / xuất với kỳ trước</h2>
+          <p class="insight-note" id="dashboard-compare-periods"></p>
+        </div>
+        <div class="dashboard-compare-grid">
+          <article class="dashboard-compare-card">
+            <h3 data-i18n="dashboardCompareIn">Giá trị nhập</h3>
+            <strong id="dashboard-compare-in-current">—</strong>
+            <span class="dashboard-compare-delta" id="dashboard-compare-in-change">—</span>
+            <small id="dashboard-compare-in-prior"></small>
+          </article>
+          <article class="dashboard-compare-card">
+            <h3 data-i18n="dashboardCompareOut">Giá trị xuất</h3>
+            <strong id="dashboard-compare-out-current">—</strong>
+            <span class="dashboard-compare-delta" id="dashboard-compare-out-change">—</span>
+            <small id="dashboard-compare-out-prior"></small>
+          </article>
+        </div>
+        <p id="dashboard-compare-note" class="insight-note" role="status"></p>
       </section>
 
       <section class="insights-panel" id="insights-panel" aria-labelledby="dashboard-charts-heading">
@@ -1618,7 +1727,35 @@
             <div id="insight-value-trend" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashValueTrendTitle"></div>
             <p id="dashboard-value-trend-summary" class="insight-note" role="status"></p>
           </div>
-
+          <div class="insight-box dashboard-chart dashboard-table-chart">
+            <div class="dashboard-chart-heading">
+              <h3 data-i18n="dashboardTopOutTitle">Vật tư xuất nhiều nhất theo giá trị</h3>
+              <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
+                <select id="dashboard-out-period" onchange="veTopVatTuXuatKho()">
+                  <option value="selected" data-i18n="dashboardTimeCustom">Theo khoảng chọn</option>
+                  <option value="week" data-i18n="dashWeek">Hằng tuần</option>
+                  <option value="month" data-i18n="dashMonth" selected>Hằng tháng</option>
+                  <option value="year" data-i18n="dashYear">Hằng năm</option>
+                </select></label>
+            </div>
+            <p class="insight-note" data-i18n="dashboardTopOutNote">Xuất theo giá trị; nhấn đúp để xem lịch sử.</p>
+            <div id="dashboard-top-out" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardTopOutTitle"></div>
+            <p id="dashboard-top-out-note" class="insight-note" role="status"></p>
+          </div>
+          <div class="insight-box dashboard-chart dashboard-table-chart">
+            <div class="dashboard-chart-heading">
+              <h3 data-i18n="dashboardDormantTitle">Vật tư tồn lâu chưa xuất</h3>
+              <label><span data-i18n="dashboardDormantDays">Không xuất trong</span>
+                <select id="dashboard-dormant-days" onchange="veVatTuTonLau()">
+                  <option value="90" data-i18n="dashboardDormant90" selected>90 ngày</option>
+                  <option value="180" data-i18n="dashboardDormant180">180 ngày</option>
+                  <option value="365" data-i18n="dashboardDormant365">365 ngày</option>
+                </select></label>
+            </div>
+            <p class="insight-note" data-i18n="dashboardDormantNote">Xét tồn kho hiện tại và lịch sử giao dịch xuất.</p>
+            <div id="dashboard-dormant" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardDormantTitle"></div>
+            <p id="dashboard-dormant-note" class="insight-note" role="status"></p>
+          </div>
         </div>
         <div class="dashboard-utilities">
           <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><p class="insight-note" data-i18n="dashSnapshotNote">Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc phân tích kho.</p><div id="insight-history" class="history-grid"></div></div>
