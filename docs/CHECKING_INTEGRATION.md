@@ -142,3 +142,25 @@ Mức đáp ứng ROP dùng Stock/ROP khi Stock không âm và ROP > 0; dữ li�
 Lịch sử đồng bộ cục bộ vẫn là toàn kho, không áp dụng bộ lọc Dashboard. Nút XLSX hiện ghi rõ xuất kết quả tra Stock.
 
 Kiểm tra: `node tests/dashboard_logic.cjs`; `node tests/dashboard_browser.cjs` (Playwright + Chromium). Đã kiểm tra browser desktop 1440px, mobile 390px, VI/EN, sáng/tối, lọc, Top N, kết quả rỗng, kích thước card và tràn ngang bằng dữ liệu kiểm thử.
+
+
+## Value charts and audit regressions (November 2026)
+
+- The movement chart uses absolute transaction amounts from `Amt.in loc.cur.` / `Amt.In`, not quantity × the current stock price. Only `INPUT` and `OUTPUT` contribute, separately; other movement codes are excluded. Amounts are interpreted as VND, matching the history popup. This is gross movement value, not net change after reversals.
+- Weekly periods start Monday, including weeks spanning calendar years. Movement charts show 12 weeks, 12 months or 6 years ending in the current period. Inventory snapshots support 30 days, 12 weeks, 12 months or 6 years; each period uses its last recorded snapshot. Missing snapshots remain gaps.
+- Numeric inputs retain their decimal values. Canonical numeric strings use a decimal dot (`0.125`, `1.234`); a single dot is never guessed to be a thousands separator. Multi-group separators and mixed locale formats remain supported. Prefer JavaScript numbers or ungrouped decimal strings in source data to avoid locale ambiguity.
+- Selection is restored by SAP after refresh, details are rebuilt, and a removed material clears the selection. Top quantities include positive-stock rows with zero or missing prices; mixed units are flagged.
+- VLOOKUP preserves existing columns by suffixing conflicting fetched column names (`Price_2`, `Price_3`, …), and encodes multi-column keys without separator collisions. Internal match flags use a Symbol, so user columns are preserved.
+
+Regression checks (Node.js; Python with Pillow for images):
+
+```sh
+node tests/checking_logic.cjs
+node tests/dashboard_logic.cjs
+node tests/vlookup_logic.cjs
+python tests/test_material_images.py
+node tests/checking_browser.cjs
+node tests/dashboard_browser.cjs
+```
+
+Browser checks require Playwright and its Chromium browser. In environments using a Chromium helper, set `CHROMIUM_HELPER` to its ESM module path. They cover modal behavior, real History.js parsing, selection after reordered/deleted stock, paired VND charts, weekly snapshots, language switching and mobile overflow.

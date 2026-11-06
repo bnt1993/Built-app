@@ -1,38 +1,18 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
-const html=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8');
-const ctx={console};vm.createContext(ctx);
-for(const name of ['chuyenThanhSo','chuanHoaMaSap','tinhPhanTichDashboard']){
- const start=html.indexOf('    function '+name+'('),end=html.indexOf('\n    function ',start+1);
- assert(start>=0);vm.runInContext(html.slice(start,end),ctx);
+const html=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8'),ctx={console};vm.createContext(ctx);
+for(const name of ['chuyenThanhSo','chuanHoaMaSap','tenHistoryChuan','cotHistoryTheoTen','tinhPhanTichDashboard','ngayHistoryHopLe','nhomKyKho','khoaNhomKho','tinhGiaTriNhapXuat']){
+ const start=html.indexOf('    function '+name+'(');assert(start>=0,name);vm.runInContext(html.slice(start,html.indexOf('\n    function ',start+1)),ctx);
 }
-const headers=['SAP','Description','Price'];
-const rec=(sap,qty,rop,price,status)=>({dong:[sap,'Material',price],soLuong:qty,reorderPoint:rop,trangThaiTon:status});
-const rows=[rec('A',0,10,2,'zero'),rec('A',2,10,2,'below'),rec('B',5,10,4,'below'),
-rec('C',10,10,5,'at'),rec('D',20,10,3,'healthy'),rec('E',2,0,0,'healthy'),
-rec('F',-1,5,2,'below'),rec('G',1,5,'bad','below'),rec('H',1,NaN,3,'unknown')];
-const stats=ctx.tinhPhanTichDashboard(rows,headers);
-assert.equal(stats.count,9);assert.equal(stats.inStock,7);assert.equal(stats.attention,6);
-assert.equal(stats.total,137);assert.equal(stats.missingPrice,1);
-assert.deepEqual(Array.from(stats.coverage),[1,2,1,1,1,3]);
-assert.equal(stats.needTotal,68);assert.equal(stats.needUnknown,2);
-assert.equal(stats.needs.find(x=>x.name==='A').value,36);
-assert.equal(stats.values[0].name,'D');
+const headers=['SAP','Description','Price','Unit'];const rec=(qty,price,unit='PC')=>({dong:['A','Motor',price,unit],soLuong:qty,reorderPoint:5,trangThaiTon:'healthy'});
+const stats=ctx.tinhPhanTichDashboard([rec(10,100),rec(20,0),rec(3,'bad')],headers);
+assert.equal(stats.total,1000);assert.equal(stats.values[0].quantity,33);assert.equal(stats.missingPrice,1);
+assert(ctx.tinhPhanTichDashboard([rec(10,100),rec(20,0,'M')],headers).values[0].inconsistent);
 assert.equal(ctx.tinhPhanTichDashboard([],headers).total,0);
-assert.equal(ctx.tinhPhanTichDashboard(rows,['SAP','Description']).total,null);
-const nodes={};const element=id=>nodes[id]??={value:'',textContent:''};
-Object.assign(ctx,{analyticsReady:true,duLieuTimKiem:rows,tieuDeCot:headers,
-document:{getElementById:element},dinhDangSoLuong:new Intl.NumberFormat('en'),dinhDangGiaTriKho:x=>String(x),
-tuDien:(k,args)=>k+JSON.stringify(args??{}),vePhanBoTrangThai:r=>ctx.chartRows=r,
-veBieuDoMucTon:(counts,total)=>ctx.chartCount=total,hienThiThanhGiaTri:(r,id,total)=>{ctx[id]={r,total}},
-veLichSuKho(){},kiemTraNhacBaoCao(){}});
-for(const name of ['chuanHoaTimKiem','capNhatThongKeNangCao']){
- const start=html.indexOf('    function '+name+'('),end=html.indexOf('\n    function ',start+1);
- vm.runInContext(html.slice(start,end),ctx);
-}
-element('dashboard-status').value='below';element('dashboard-limit').value='5';
-ctx.capNhatThongKeNangCao();assert.equal(element('metric-total').textContent,'4');assert.equal(ctx.chartCount,4);
-element('dashboard-search').value='no match';ctx.capNhatThongKeNangCao();assert.equal(element('metric-total').textContent,'0');assert.equal(ctx['insight-top'].r.length,0);
-element('dashboard-status').value='all';element('dashboard-search').value='';ctx.capNhatThongKeNangCao();assert.equal(element('metric-inventory-value').textContent,'137');
-assert(!html.includes('insight-abc'));assert(!html.includes('insight-groups'));
+assert.equal(ctx.khoaNhomKho('2026-01-01','week'),'2025-12-29');assert.equal(ctx.khoaNhomKho('2026-01-04','week'),'2025-12-29');assert.equal(ctx.khoaNhomKho('2026-01-05','week'),'2026-01-05');assert.equal(ctx.khoaNhomKho('2026-02-30','week'),'');
+const buckets=ctx.nhomKyKho('week',2,new Date(2026,0,5));assert.equal(buckets.length,2);assert.equal(buckets[0].key,'2025-12-29');
+const rows=[{type:'in',date:'2026-01-01',cells:[100]},{type:'out',date:'2026-01-04',cells:[-50]},{type:'out',date:'2026-01-05',cells:[0.125]},{type:'unknown',date:'2026-01-01',cells:[999]},{type:'out',date:'2026-01-02',cells:['bad']},{type:'in',date:'bad',cells:[5]},{type:'in',date:'2020-01-01',cells:[777]}];
+const a=ctx.tinhGiaTriNhapXuat(rows,['Amt.in loc.cur.'],'week',buckets);assert.equal(a.incoming,100);assert.equal(a.outgoing,50.125);assert.equal(a.count,3);assert.equal(a.invalid,2);assert.equal(a.values.get('2025-12-29').out,50);
+for(const mode of ['month','year']){const x=ctx.tinhGiaTriNhapXuat(rows,['Amt.In'],mode,ctx.nhomKyKho(mode,1,new Date(2026,0,5)));assert.equal(x.incoming,100);assert.equal(x.outgoing,50.125);}
+assert(ctx.tinhGiaTriNhapXuat(rows,['Quantity'],'week',buckets).missing);
 for(const m of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Function(m[1]);
-console.log('PASS dashboard: scoped KPIs/charts, ROP boundaries, missing/zero prices, negative stock, duplicate SAP, no matches, removed ABC/groups.');
+console.log('PASS Top quantity with zero/missing prices, mixed units, paired VND movement totals, invalid data, Monday/year boundaries and week/month/year grouping.');

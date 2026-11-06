@@ -131,6 +131,10 @@ index
     <!-- Load file data.js do VBA xuất ra -->
     <script src="data.js"></script>
     <script>
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
         // Dữ liệu mẫu dự phòng nếu chưa có file data.js
         if (typeof window.appData === 'undefined') {
             window.appData = [
@@ -152,12 +156,12 @@ index
                 const tr = document.createElement('tr');
                 if (index === selectedIndex) tr.className = 'selected';
                 tr.innerHTML = `
-                    <td style="width: 100px;">${item.sap || ''}</td>
-                    <td>${item.description || ''}</td>
-                    <td style="width: 120px;">${item.partNumber || ''}</td>
-                    <td style="width: 80px;">${item.location || ''}</td>
-                    <td style="width: 70px; text-align: right;">${item.quantity ?? ''}</td>
-                    <td style="width: 50px;">${item.unit || 'PC'}</td>
+                    <td style="width: 100px;">${escapeHTML(item.sap || '')}</td>
+                    <td>${escapeHTML(item.description || '')}</td>
+                    <td style="width: 120px;">${escapeHTML(item.partNumber || '')}</td>
+                    <td style="width: 80px;">${escapeHTML(item.location || '')}</td>
+                    <td style="width: 70px; text-align: right;">${escapeHTML(item.quantity ?? '')}</td>
+                    <td style="width: 50px;">${escapeHTML(item.unit || 'PC')}</td>
                 `;
                 tr.onclick = () => selectRow(index, data);
                 tbody.appendChild(tr);
