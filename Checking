@@ -4087,6 +4087,167 @@
       return zip;
     }
 
+    // Export exactly the filtered + sorted History rows, not only the lazy-loaded
+    // 50 visible at a time. Reuse the local XLSX/ZIP writer, without external APIs.
+    async function taoBaoCaoLichSuXlsx() {
+      const records=materialHistoryRows.slice();
+      const columns=cotHienThiLichSuVatTu();
+      const columnCount=columns.length+1; // the synthesized IN/OUT/Other direction
+      const firstDataRow=7, lastRow=6+records.length;
+      if(records.length>1048570||columnCount>16384)
+        throw new Error("XLSX_EXCEL_LIMIT");
+      const sap=materialHistorySap;
+      const stockRow=dongStockLichSuVatTu();
+      const description=stockRow?String(stockRow[1]??"").trim():"";
+      const from=document.getElementById("material-history-from").value;
+      const to=document.getElementById("material-history-to").value;
+      const kind=document.getElementById("material-history-kind").value;
+      const cost=document.getElementById("material-history-cost");
+      const costName=cost.value?(cost.selectedOptions?.[0]?.textContent||cost.value):
+        tuDien("historyAny");
+      const kindName=tuDien({in:"historyInShort",out:"historyOutShort",
+        unknown:"historyOtherShort",all:"historyAny"}[kind]||"historyAny");
+      const dateIndex=cotNgayLichSuVatTu();
+      const selectedColumn=materialHistorySortColumn===-2?
+        dateIndex:materialHistorySortColumn;
+      const sortedBy=selectedColumn===-1?tuDien("historyDirection"):
+        selectedColumn>=0?tenCotHistoryDaDich(historyColumns[selectedColumn]):
+        tuDien("materialHistoryFrom");
+      const sortName=sortedBy+(materialHistorySortDirection<0?" ↓":" ↑");
+      const scope=[
+        tuDien("historyReportMovement")+": "+kindName,
+        tuDien("historyReportFrom")+": "+(from||tuDien("historyAny")),
+        tuDien("historyReportTo")+": "+(to||tuDien("historyAny")),
+        tuDien("historyReportCost")+": "+costName
+      ].join("   |   ");
+      const now=new Date().toLocaleString(ngonNguHienTai==="en"?"en-US":"vi-VN");
+      const merged=[],rows=[],lastColumn=tenCotXlsx(columnCount-1);
+      const bigRow=(index,text,style,height)=>{
+        rows.push(hangXlsx(index,[oChuXlsx(0,index,text,style)],height));
+        if(columnCount>1)merged.push("A"+index+":"+lastColumn+index);
+      };
+      bigRow(1,tuDien("historyReportTitle"),1,38);
+      bigRow(2,tuDien("historyReportMaterial")+": "+sap+
+        (description?" · "+description:""),2,25);
+      bigRow(3,tuDien("historyReportFilters")+": "+scope,2,27);
+      bigRow(4,tuDien("historyReportRows")+": "+records.length+"   |   "+
+        tuDien("historyReportSort")+": "+sortName+"   |   "+
+        tuDien("historyReportDate")+": "+now,2,26);
+      const titles=[tuDien("historyDirection"),...columns.map(col=>
+        tenCotHistoryDaDich(col.name))];
+      rows.push(hangXlsx(6,titles.map((name,col)=>oChuXlsx(col,6,name,7)),30));
+      const qtyColumn=cotHistoryTheoTen(historyColumns,[
+        "Qty in unit of entry","Quantity","Qty","Movement Qty",
+        "Số lượng","So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const amountColumn=cotHistoryTheoTen(historyColumns,[
+        "Amt.In","Amt.in loc.cur.","Amt in local currency","Amount in local currency",
+        "Amount LC","Amount"]);
+      const directionKeys={in:"historyInShort",out:"historyOutShort",unknown:"historyOtherShort"};
+      const widths=[16,...columns.map(col=>Math.min(31,Math.max(15,
+        String(tenCotHistoryDaDich(col.name)).length+5)))];
+      for(let i=0;i<records.length;i++){
+        if(i>0&&i%1600===0)await new Promise(resolve=>setTimeout(resolve,0));
+        const rec=records[i],row=i+firstDataRow,even=i%2===0;
+        const kindStyle=rec.type==="in"?20:rec.type==="out"?23:(even?8:9);
+        const cells=[oChuXlsx(0,row,tuDien(directionKeys[rec.type]||"historyOtherShort"),kindStyle)];
+        for(let n=0;n<columns.length;n++){
+          const sourceIndex=columns[n].index;
+          const raw=String(rec.cells[sourceIndex]??"");
+          const num=raw.trim()?chuyenThanhSo(raw):NaN;
+          if(sourceIndex===amountColumn&&Number.isFinite(num))
+            cells.push(oSoXlsx(n+1,row,num,even?10:11));
+          else if(sourceIndex===qtyColumn&&Number.isFinite(num))
+            cells.push(oSoXlsx(n+1,row,num,even?12:13));
+          else cells.push(oChuXlsx(n+1,row,raw,even?8:9));
+        }
+        rows.push(hangXlsx(row,cells,23));
+      }
+      const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+      const widthsXml=widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+
+        '" width="'+w+'" customWidth="1"/>').join("");
+      const sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+        '<worksheet xmlns="'+ns+'"><dimension ref="A1:'+lastColumn+Math.max(6,lastRow)+'"/>'+
+        '<sheetViews><sheetView showGridLines="0" workbookViewId="0">'+
+        '<pane ySplit="6" topLeftCell="A7" activePane="bottomLeft" state="frozen"/>'+
+        '<selection pane="bottomLeft" activeCell="A7" sqref="A7"/>'+
+        '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="22"/>'+
+        '<cols>'+widthsXml+'</cols><sheetData>'+rows.join("")+'</sheetData>'+
+        '<autoFilter ref="A6:'+lastColumn+Math.max(6,lastRow)+'"/>'+
+        '<mergeCells count="'+merged.length+'">'+
+        merged.map(m=>'<mergeCell ref="'+m+'"/>').join("")+'</mergeCells>'+
+        '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>'+
+        '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+      const workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+        '<workbook xmlns="'+ns+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+        '<bookViews><workbookView/></bookViews><sheets><sheet name="'+
+        (ngonNguHienTai==="en"?"Movements":"Giao dich")+
+        '" sheetId="1" r:id="rId1"/></sheets></workbook>';
+      const fileParts=[
+        {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+          '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+          '<Default Extension="xml" ContentType="application/xml"/>'+
+          '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+          '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+          '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'+
+          '</Types>'},
+        {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'+
+          '</Relationships>'},
+        {name:"xl/workbook.xml",data:workbook},
+        {name:"xl/_rels/workbook.xml.rels",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'+
+          '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+
+          '</Relationships>'},
+        {name:"xl/styles.xml",data:taoKieuXlsx()},
+        {name:"xl/worksheets/sheet1.xml",data:sheet}
+      ];
+      return new Blob([dongGoiZipXlsx(fileParts)],{
+        type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+    }
+
+    async function xuatExcelLichSuVatTu() {
+      if(materialHistoryExporting||historyLoading||!historyLoaded) {
+        alert(tuDien("historyExportBusy"));return;
+      }
+      if(!materialHistoryRows.length) {
+        alert(tuDien("historyExportEmpty"));return;
+      }
+      const button=document.getElementById("material-history-export");
+      const caption=button.querySelector('[data-i18n="historyExport"]');
+      const sap=materialHistorySap;
+      materialHistoryExporting=true;
+      button.disabled=true;
+      button.setAttribute("aria-busy","true");
+      caption.textContent=tuDien("exportGenerating");
+      try {
+        await new Promise(resolve=>setTimeout(resolve,0));
+        const blob=await taoBaoCaoLichSuXlsx();
+        const url=URL.createObjectURL(blob);
+        try {
+          const link=document.createElement("a");
+          link.href=url;
+          const safeSap=(sap||"vat_tu").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,70);
+          const timestamp=new Date().toLocaleDateString("sv-SE");
+          link.download="Lich_su_"+safeSap+"_"+timestamp+".xlsx";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        } finally {setTimeout(()=>URL.revokeObjectURL(url),1500);}
+      } catch(err) {
+        console.error("History XLSX export:",err);
+        alert(tuDien(err.message==="XLSX_EXCEL_LIMIT"?"historyExportLimit":"historyExportFailed"));
+      } finally {
+        materialHistoryExporting=false;
+        button.disabled=!historyLoaded||historyLoading||!materialHistoryRows.length;
+        button.removeAttribute("aria-busy");
+        caption.textContent=tuDien("historyExport");
+      }
+    }
+
     async function taoBaoCaoXlsx(danhSach, option = {}) {
       const src = danhSach;
       const locale = ngonNguHienTai === "en" ? "en-US" : "vi-VN";
