@@ -3116,7 +3116,7 @@
     function doiSapXepLichSuVatTu(column) {
       const dateIndex=cotNgayLichSuVatTu();
       if(column!==-1&&!cotHienThiLichSuVatTu().some(c=>c.index===column))return;
-      const current=materialHistorySortColumn===-2?dateIndex:materialHistorySortColumn;
+      const current=materialHistorySortColumn===-2&&dateIndex>=0?dateIndex:materialHistorySortColumn;
       if(current===column)materialHistorySortDirection*=-1;
       else {
         materialHistorySortColumn=column;
@@ -3192,7 +3192,7 @@
           '" aria-label="'+thoatHTML(sortTitle)+'"><span>'+thoatHTML(label)+
           '</span><span class="material-history-sort-arrow" aria-hidden="true">'+arrow+'</span></button></th>';
       };
-      const activeIndex=materialHistorySortColumn===-2?dateColumn:materialHistorySortColumn;
+      const activeIndex=materialHistorySortColumn===-2&&dateColumn>=0?dateColumn:materialHistorySortColumn;
       document.getElementById("material-history-head").innerHTML=historyColumns.length?
         "<tr>"+sortableHeader("",-1,activeIndex===-1)+
         visibleColumns.map(col=>sortableHeader(col.name,col.index,activeIndex===col.index)).join("")+"</tr>":"";
