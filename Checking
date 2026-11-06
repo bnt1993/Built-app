@@ -601,22 +601,31 @@
     .material-history-header { padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); }
     .material-history-header h2 { margin:0; font-size:18px; }
     .material-history-header p { margin:4px 0 0; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
-    .material-history-controls { padding:12px 20px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+    .material-history-controls { padding:7px 16px; display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
+    .material-history-controls .history-filter-field { display:flex; flex-direction:column; align-items:stretch; gap:3px; min-width:0; }
+    .material-history-controls input[type="date"] { min-width:138px; min-height:32px; padding:5px 7px;
+      border:1px solid var(--line); border-radius:7px; color:var(--ink); background:var(--app-field); font:inherit; font-size:12px; }
+    .material-history-controls .history-filter-cost { flex:1 1 140px; }
+    .material-history-controls .history-filter-cost select { width:100%; }
+    .material-history-controls select { min-height:32px; }
+    .material-history-controls button { min-height:32px; padding:6px 9px; }
+
     .material-history-controls label { display:flex; align-items:center; gap:8px; font-size:12px; }
     .material-history-controls select { padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--app-field); color:var(--ink); }
     #material-history-status { margin:0; padding:0 20px 12px; color:var(--muted); font-size:12px; }
     .material-history-table { min-height:120px; overflow:auto; flex:1; }
     .material-history-table tbody tr { cursor:default; }
-    .material-history-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:14px 20px 0; }
-    .material-history-stat { min-width:0; padding:12px 15px; border:1px solid var(--line); border-radius:12px; background:var(--app-field); }
-    .material-history-stat span { display:block; font-size:11px; color:var(--muted); margin-bottom:5px; }
-    .material-history-stat strong { display:block; font-size:clamp(19px,2.5vw,27px); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
-    .material-history-stat small { display:block; font-size:10px; line-height:1.35; color:var(--muted); margin-top:6px; overflow-wrap:anywhere; }
-    .material-history-stat.consumption strong { color:var(--blue); }
+    /* Six compact cards to leave more space for the transaction table. */
+    .material-history-stats { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; padding:8px 16px 4px; align-items:stretch; }
+    .material-history-stat { min-width:0; padding:7px 9px; border:1px solid var(--line); border-radius:9px; background:var(--app-field); }
+    .material-history-stat span { display:block; font-size:10px; line-height:1.2; color:var(--muted); margin-bottom:3px; }
+    .material-history-stat strong { display:block; font-size:clamp(15px,1.6vw,20px); line-height:1.15; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+    .material-history-stat small { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
+      overflow:hidden; font-size:9px; line-height:1.2; color:var(--muted); margin-top:3px; overflow-wrap:anywhere; }
+    .material-history-stat.stock strong,.material-history-stat.monthly strong { color:var(--blue); }
     .material-history-stat.coverage strong { color:var(--ink); }
-    .material-history-stats .material-history-stat { min-height:82px; }
-    @media(max-width:620px){.material-history-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-
+    @media(max-width:1000px) { .material-history-stats { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    @media(max-width:540px) { .material-history-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     .material-history-stat.in strong { color:#16814b; }
     .material-history-stat.out strong { color:#c12f45; }
     html[data-theme="dark"] .material-history-stat.in strong { color:#86efac; }
@@ -635,9 +644,13 @@
     @media(max-width:620px) {
       .material-history-dialog { width:calc(100vw - 16px); max-height:92vh; border-radius:12px; }
       .material-history-header, .material-history-controls { padding:12px; }
-      .material-history-stats { padding:10px 12px 0; gap:7px; }
-      .material-history-stat { padding:9px; }
-      .material-history-stat span { font-size:10px; }
+      .material-history-stats { padding:6px 10px 2px; gap:5px; }
+      .material-history-stat { padding:6px 7px; }
+      .material-history-stat span { font-size:9px; }
+      .material-history-stat strong { font-size:16px; }
+      .material-history-header { padding:10px 12px; }
+      .material-history-controls { padding:6px 10px; gap:6px; }
+      #material-history-status { padding:0 10px 6px; }
     }
 
     #view-dashboard .dashboard-filters { display:flex; flex-wrap:wrap; gap:14px; align-items:end; padding:16px; margin-bottom:16px; background:var(--app-panel); border:1px solid var(--line); border-radius:16px; }
@@ -883,33 +896,25 @@
       <div><h2 id="material-history-title" data-i18n="materialHistoryTitle">Lịch sử sử dụng vật tư</h2><p id="material-history-sap"></p></div>
       <button type="button" class="btn btn-secondary" onclick="dongLichSuVatTu()" data-i18n="materialHistoryClose" autofocus>Đóng</button>
     </div>
-    <div class="material-history-stats" aria-label="Transaction counts">
-      <div class="material-history-stat in"><span data-i18n="materialHistoryInCount">Số giao dịch nhập</span><strong id="material-history-in-count">—</strong></div>
-      <div class="material-history-stat out"><span data-i18n="materialHistoryOutCount">Số giao dịch xuất</span><strong id="material-history-out-count">—</strong></div>
-      <div class="material-history-stat"><span data-i18n="materialHistoryOtherCount">Số giao dịch khác</span><strong id="material-history-other-count">—</strong></div>
-      <div class="material-history-stat consumption">
-        <span data-i18n="materialHistoryConsumption">Consumption · Tổng lượng xuất</span>
-        <strong id="material-history-consumption">—</strong>
-        <small id="material-history-consumption-note" aria-live="polite"></small>
-      </div>
-      <div class="material-history-stat consumption">
-        <span data-i18n="materialHistoryMonthly">Sử dụng trung bình / tháng</span>
-        <strong id="material-history-monthly">—</strong>
-        <small id="material-history-monthly-note" aria-live="polite"></small>
-      </div>
-      <div class="material-history-stat coverage">
-        <span data-i18n="materialHistoryCoverage">Thời gian dùng theo Stock</span>
-        <strong id="material-history-coverage">—</strong>
-        <small id="material-history-coverage-note" aria-live="polite"></small>
-      </div>
+    <div class="material-history-stats" aria-label="Material quantity and stock coverage">
+      <div class="material-history-stat in"><span data-i18n="materialHistoryInCount">Số lượng nhập</span><strong id="material-history-in-count">—</strong><small id="material-history-in-note"></small></div>
+      <div class="material-history-stat out"><span data-i18n="materialHistoryOutCount">Số lượng xuất</span><strong id="material-history-out-count">—</strong><small id="material-history-out-note"></small></div>
+      <div class="material-history-stat"><span data-i18n="materialHistoryOtherCount">Số lượng khác</span><strong id="material-history-other-count">—</strong><small id="material-history-unknown-note"></small></div>
+      <div class="material-history-stat stock"><span data-i18n="materialHistoryStock">Tồn kho hiện tại</span><strong id="material-history-stock">—</strong><small id="material-history-stock-note"></small></div>
+      <div class="material-history-stat monthly"><span data-i18n="materialHistoryMonthly">TB sử dụng/tháng</span><strong id="material-history-monthly">—</strong><small id="material-history-monthly-note"></small></div>
+      <div class="material-history-stat coverage"><span data-i18n="materialHistoryCoverage">Thời gian sử dụng</span><strong id="material-history-coverage">—</strong><small id="material-history-coverage-note"></small></div>
     </div>
     <div class="material-history-controls">
-      <label><span data-i18n="historyType">Loại giao dịch</span><select id="material-history-kind" onchange="locLichSuVatTu()">
+      <label class="history-filter-field"><span data-i18n="historyType">Loại giao dịch</span><select id="material-history-kind" onchange="locLichSuVatTu()">
         <option value="all" data-i18n="historyAny">Tất cả</option>
         <option value="out" data-i18n="historyOutShort">Xuất</option>
         <option value="in" data-i18n="historyInShort">Nhập</option>
         <option value="unknown" data-i18n="historyOtherShort">Khác</option>
       </select></label>
+      <label class="history-filter-field"><span data-i18n="materialHistoryFrom">Posting Date từ</span><input id="material-history-from" type="date" onchange="locLichSuVatTu()"></label>
+      <label class="history-filter-field"><span data-i18n="materialHistoryTo">Posting Date đến</span><input id="material-history-to" type="date" onchange="locLichSuVatTu()"></label>
+      <label class="history-filter-field history-filter-cost"><span data-i18n="materialHistoryCostCenter">Cost Center</span><select id="material-history-cost" onchange="locLichSuVatTu()"><option value="" data-i18n="historyAny">Tất cả</option></select></label>
+      <button type="button" class="btn btn-soft" onclick="xoaLocLichSuVatTu()" data-i18n="historyClear">Xóa lọc</button>
       <button type="button" class="btn btn-soft" id="material-history-refresh" onclick="taiHistory(true)" data-i18n="historyRefresh">Tải lại History.js</button>
     </div>
     <p id="material-history-status" role="status" aria-live="polite"></p>
@@ -932,7 +937,7 @@
     const NGON_NGU = {
       vi: {
         tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu Stock",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
-        materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Trước",materialHistoryNext:"Sau",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số giao dịch nhập",materialHistoryOutCount:"Số giao dịch xuất",materialHistoryOtherCount:"Số giao dịch khác",materialHistoryConsumption:"Consumption · Tổng lượng xuất",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Stock dùng được (ước tính)",
+        materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Thu gọn",materialHistoryNext:"Tải thêm",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số lượng nhập",materialHistoryOutCount:"Số lượng xuất",materialHistoryOtherCount:"Số lượng khác",materialHistoryStock:"Tồn kho hiện tại",materialHistoryFrom:"Posting Date từ",materialHistoryTo:"Posting Date đến",materialHistoryCostCenter:"Cost Center",materialHistoryMissingCost:"Chưa có Cost Center",materialHistoryLoadedRows:"Đã xem {shown}/{total} dòng",materialHistoryQuantityMissing:"Không có cột số lượng",materialHistoryQuantityInvalid:"Có số lượng không hợp lệ",materialHistoryQuantityMixed:"Nhiều đơn vị tính, không thể cộng",materialHistoryQuantityUnit:"Chưa rõ đơn vị tính",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Stock dùng được (ước tính)",
         consumptionAll:"Tất cả giao dịch OUTPUT · {unit}",consumptionRecent:"12 tháng trọn vẹn · {period}",consumptionStock:"Stock: {amount} {unit}",consumptionMonths:"{count} tháng",consumptionNoHistory:"Chưa có dữ liệu lịch sử.",consumptionMissingQty:"Không có cột số lượng trong History.js.",consumptionMixedUnits:"Nhiều đơn vị tính, không thể cộng chung.",consumptionUnitUnknown:"Chưa xác định đơn vị tính.",consumptionPartial:"{count} dòng OUTPUT bị loại do thiếu hoặc sai đơn vị/số lượng.",consumptionNoDates:"Thiếu ngày hợp lệ để tính trung bình tháng.",consumptionNoAverage:"Không có lượng xuất trong 12 tháng trọn vẹn gần nhất.",consumptionNoStock:"Stock không hợp lệ hoặc chưa được tải.",consumptionUnitMismatch:"Đơn vị Stock không khớp History; không thể ước tính.",consumptionIncomplete:"History có dòng OUTPUT không hợp lệ hoặc nhiều đơn vị; chưa thể ước tính.",
         materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng Reorder Point",allInventoryNote:"Các chỉ số và 4 biểu đồ áp dụng bộ lọc Dashboard, độc lập tra cứu Stock. Top 5/10/20 chỉ giới hạn danh sách xếp hạng.",rowsLabel:"dòng",dashFilters:"Bộ lọc phân tích kho",dashSearch:"Tìm vật tư",dashSearchPlaceholder:"Mã SAP, mô tả, Part No...",dashRankLimit:"Số mã trên biểu đồ",dashTotalRows:"Tổng dòng vật tư",dashKpiNote:"Theo bộ lọc Dashboard",dashFilteredValue:"Giá trị tồn trong phạm vi lọc",dashCoverage:"Mức tồn so với Reorder Point",dashCoverageNote:"Tỷ lệ Stock / ROP; chỉ tính ROP lớn hơn 0 và Stock không âm.",dashReplenishment:"Ước tính bổ sung đến Reorder Point",dashReplenishmentNote:"Phần thiếu đến ROP × đơn giá; gộp theo mã SAP. Đây là ước tính, chưa gồm chi phí mua hàng khác.",dashTopValue:"Vật tư có giá trị tồn cao nhất",dashValueNote:"Gộp theo mã SAP; tỷ trọng so với tổng giá trị trong phạm vi lọc.",dashSnapshotNote:"Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc Dashboard.",dashStockExport:"Xuất kết quả tra Stock",dashMatch:"{count} / {total} dòng",dashCoverageUnknown:"Không đủ dữ liệu tính tỷ lệ",dashCoverageZero:"Hết hàng (0%)",dashCoverageLow:"Trên 0% đến dưới 50%",dashCoverageMid:"Từ 50% đến dưới 100%",dashCoverageAt:"Đúng 100%",dashCoverageHigh:"Trên 100%",dashEstimateSummary:"Chi phí tính được: {value} · {count} dòng không đủ dữ liệu tính chi phí.",dashNoValue:"Không có giá trị dương trong phạm vi lọc.",dashNoNeed:"Không có chi phí bổ sung dương tính được trong phạm vi lọc.",dashboardHeading:"Dashboard phân tích kho",dashboardDesc:"Theo dõi tình trạng tồn, mức đáp ứng Reorder Point và chi phí bổ sung ước tính.",
         historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu các giao dịch thực tế từ History.js, không suy diễn giao dịch từ tồn kho.",
@@ -1011,7 +1016,7 @@
       },
       en: {
         tabsAria:"Inventory workspaces",tabStock:"Stock lookup",tabDashboard:"Inventory dashboard",tabHistory:"In / Out history",
-        materialHistoryTitle:"Material usage history",materialHistoryClose:"Close",materialHistoryPrev:"Previous",materialHistoryNext:"Next",materialHistoryCount:"{count} transactions",materialHistoryInCount:"Inbound transactions",materialHistoryOutCount:"Outbound transactions",materialHistoryOtherCount:"Other transactions",materialHistoryConsumption:"Consumption · Total issued quantity",materialHistoryMonthly:"Average use per month",materialHistoryCoverage:"Estimated Stock coverage",
+        materialHistoryTitle:"Material usage history",materialHistoryClose:"Close",materialHistoryPrev:"Show less",materialHistoryNext:"Load more",materialHistoryCount:"{count} transactions",materialHistoryInCount:"Inbound quantity",materialHistoryOutCount:"Outbound quantity",materialHistoryOtherCount:"Other quantity",materialHistoryStock:"Current stock",materialHistoryFrom:"Posting Date from",materialHistoryTo:"Posting Date to",materialHistoryCostCenter:"Cost Center",materialHistoryMissingCost:"No Cost Center",materialHistoryLoadedRows:"Showing {shown}/{total} rows",materialHistoryQuantityMissing:"Quantity column missing",materialHistoryQuantityInvalid:"Invalid quantity",materialHistoryQuantityMixed:"Mixed units cannot be summed",materialHistoryQuantityUnit:"Unit unknown",materialHistoryMonthly:"Average use per month",materialHistoryCoverage:"Estimated Stock coverage",
         consumptionAll:"All OUTPUT records · {unit}",consumptionRecent:"12 complete months · {period}",consumptionStock:"Stock: {amount} {unit}",consumptionMonths:"{count} months",consumptionNoHistory:"No history data loaded.",consumptionMissingQty:"History.js has no quantity column.",consumptionMixedUnits:"Mixed units cannot be summed.",consumptionUnitUnknown:"Quantity unit is unknown.",consumptionPartial:"{count} OUTPUT rows excluded due to invalid quantity or unit.",consumptionNoDates:"Valid dates are missing; monthly average unavailable.",consumptionNoAverage:"No outbound quantity in the latest 12 full months.",consumptionNoStock:"Stock is invalid or not available.",consumptionUnitMismatch:"Stock and History units differ; cannot estimate coverage.",consumptionIncomplete:"OUTPUT data is incomplete or mixes units; estimate unavailable.",
         materialHistoryMissing:"No SAP material column in history data.",materialHistoryStale:"Showing previously loaded data.",historyExactSap:"History for exact SAP: {code}",issuedTitle:"Issued quantity",issuedScope:"All history · selected SAP · gross issues, before returns",issuedMissing:"Missing material / quantity columns",issuedPartial:"Some movements have invalid quantities",issuedUnitUnknown:"Unknown unit",issuedStale:"Previous data; refresh failed",attentionTitle:"Materials needing attention",attentionNote:"Zero stock, below or at Reorder Point",allInventoryNote:"KPIs and all four charts use Dashboard filters independently of Stock search. Top 5/10/20 only limits ranking lists.",rowsLabel:"rows",dashFilters:"Inventory dashboard filters",dashSearch:"Find materials",dashSearchPlaceholder:"SAP, description, part number...",dashRankLimit:"Chart ranking size",dashTotalRows:"Material rows",dashKpiNote:"Dashboard filter scope",dashFilteredValue:"Inventory value in scope",dashCoverage:"Stock coverage against Reorder Point",dashCoverageNote:"Stock / ROP; requires ROP above zero and non-negative stock.",dashReplenishment:"Estimated cost to reach Reorder Point",dashReplenishmentNote:"Shortfall to ROP × unit price, grouped by SAP. Estimate excludes other purchasing costs.",dashTopValue:"Highest inventory value materials",dashValueNote:"Grouped by SAP; share of total inventory value in the filter scope.",dashSnapshotNote:"Entire inventory on this device; Dashboard filters do not apply.",dashStockExport:"Export Stock search results",dashMatch:"{count} / {total} rows",dashCoverageUnknown:"Insufficient data for ratio",dashCoverageZero:"Out of stock (0%)",dashCoverageLow:"Above 0%, below 50%",dashCoverageMid:"50% to below 100%",dashCoverageAt:"Exactly 100%",dashCoverageHigh:"Above 100%",dashEstimateSummary:"Calculated cost: {value} · {count} rows lack data for cost estimation.",dashNoValue:"No positive inventory value in this scope.",dashNoNeed:"No calculable positive replenishment cost in this scope.",dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Explore stock health, Reorder Point coverage and estimated replenishment cost.",
         historyHeading:"Inbound / outbound history",historyDesc:"View actual transactions from History.js, without inferring movements from stock snapshots.",
@@ -1812,9 +1817,10 @@
       try {parsed=bienDoiHistory(source);}
       catch(err){capNhatTrangThaiHistory("historyInvalid");return false;}
       const columns=parsed.headers;
-      const dateColumn=cotHistoryTheoTen(columns,[
-        "Date","Posting Date","Document Date","Transaction Date","Datetime",
-        "Created At","Ngay","Ngày","Ngày giao dịch","Ngày hạch toán","PostingDate"]);
+      const postingColumn=cotHistoryTheoTen(columns,["Posting Date","PostingDate","Ngày hạch toán"]);
+      const dateColumn=postingColumn>=0?postingColumn:cotHistoryTheoTen(columns,[
+        "Date","Document Date","Transaction Date","Datetime",
+        "Created At","Ngay","Ngày","Ngày giao dịch"]);
       // Prioritize a literal "Movement" column, then the source's "Movement Type".
       const movementColumn=cotHistoryTheoTen(columns,["Movement"]);
       const typeColumn=movementColumn>=0?movementColumn:cotHistoryTheoTen(columns,[
@@ -1925,6 +1931,8 @@
     let materialHistoryPage=1;
     let materialHistoryReturnFocus=null;
     let materialHistoryStockIndex=-1;
+    let materialHistoryCostColumn=-1;
+    let materialHistoryScrollQueued=false;
     const MATERIAL_HISTORY_PAGE_SIZE=50;
 
     // Use calendar months that have fully ended, not the unfinished current month.
@@ -1981,53 +1989,98 @@
         summable};
     }
 
-    function hienThiConsumptionVatTu(sapRows) {
-      const candidate=tatCaDuLieu[materialHistoryStockIndex];
-      const exactSap=row=>Array.isArray(row)&&
-        chuanHoaMaSap(row[0]).toLowerCase()===materialHistorySap.toLowerCase();
-      const stockRow=exactSap(candidate)?candidate:tatCaDuLieu.find(exactSap);
-      const ids=["consumption","monthly","coverage"];
-      if(!historyLoaded) {
-        for(const id of ids) {
-          document.getElementById("material-history-"+id).textContent="—";
-          document.getElementById("material-history-"+id+"-note").textContent=tuDien("consumptionNoHistory");
+    function dongStockLichSuVatTu() {
+      const selected=tatCaDuLieu[materialHistoryStockIndex];
+      const valid=row=>Array.isArray(row)&&chuanHoaMaSap(row[0]).toLowerCase()===materialHistorySap.toLowerCase();
+      return valid(selected)?selected:tatCaDuLieu.find(valid);
+    }
+
+    function dinhDangLuongHistory(n) {
+      return new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",
+        {maximumFractionDigits:2}).format(n);
+    }
+
+    // Each direction is summed separately by quantity, not number of movements.
+    // Never sum different units or silently ignore invalid records.
+    function tongSoLuongHistory(rows) {
+      const qtyCol=cotHistoryTheoTen(historyColumns,[
+        "Qty in unit of entry","Quantity","Qty","Movement Qty","Số lượng",
+        "So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const unitCol=cotHistoryTheoTen(historyColumns,[
+        "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
+      if(qtyCol<0)return {value:NaN,unit:"",reason:"materialHistoryQuantityMissing"};
+      let total=0,unit="",invalid=false,mixed=false,missing=false;
+      for(const rec of rows) {
+        const raw=rec.cells[qtyCol],qty=chuyenThanhSo(raw);
+        if(!Number.isFinite(qty)){invalid=true;continue;}
+        total+=Math.abs(qty);
+        if(unitCol>=0) {
+          const entry=String(rec.cells[unitCol]??"").trim().toUpperCase();
+          if(!entry){missing=true;continue;}
+          if(unit&&unit!==entry)mixed=true;
+          if(!unit)unit=entry;
         }
+      }
+      if(invalid)return {value:NaN,unit:"",reason:"materialHistoryQuantityInvalid"};
+      if(mixed)return {value:NaN,unit:"",reason:"materialHistoryQuantityMixed"};
+      if(missing)return {value:NaN,unit:"",reason:"materialHistoryQuantityUnit"};
+      return {value:total,unit,reason:unitCol<0?"materialHistoryQuantityUnit":""};
+    }
+
+    function hienThiSoLuongVatTu(rowsForQuantity,allSapRows) {
+      const stockRow=dongStockLichSuVatTu();
+      const stockUnitCol=cotHistoryTheoTen(tieuDeCot,[
+        "Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
+      const unit=stockRow&&stockUnitCol>=0?String(stockRow[stockUnitCol]??"").trim().toUpperCase():"";
+      const stock=stockRow?chuyenThanhSo(stockRow[chiSoSoLuong]):NaN;
+      document.getElementById("material-history-stock").textContent=Number.isFinite(stock)?
+        dinhDangLuongHistory(stock)+(unit?" "+unit:""):"—";
+      document.getElementById("material-history-stock-note").textContent=Number.isFinite(stock)?
+        (unit||tuDien("materialHistoryQuantityUnit")):tuDien("consumptionNoStock");
+      for(const kind of ["in","out","unknown"]) {
+        const id=kind==="unknown"?"other":kind;
+        const val=document.getElementById("material-history-"+id+"-count");
+        const note=document.getElementById("material-history-"+kind+"-note");
+        if(!historyLoaded){val.textContent="—";note.textContent="";continue;}
+        const stat=tongSoLuongHistory(rowsForQuantity.filter(row=>row.type===kind));
+        val.textContent=Number.isFinite(stat.value)?
+          dinhDangLuongHistory(stat.value)+(stat.unit?" "+stat.unit:""):"—";
+        note.textContent=stat.reason?tuDien(stat.reason):stat.unit;
+        note.title=note.textContent;
+      }
+      const monthly=document.getElementById("material-history-monthly");
+      const monthlyNote=document.getElementById("material-history-monthly-note");
+      const coverage=document.getElementById("material-history-coverage");
+      const coverageNote=document.getElementById("material-history-coverage-note");
+      if(!historyLoaded) {
+        monthly.textContent=coverage.textContent="—";
+        monthlyNote.textContent=coverageNote.textContent=tuDien("consumptionNoHistory");
         return;
       }
-      const stats=thongKeConsumptionVatTu(sapRows,stockRow);
-      const locale=ngonNguHienTai==="en"?"en-US":"vi-VN";
-      const quantityText=n=>new Intl.NumberFormat(locale,{
-        maximumFractionDigits:n>0&&n<1?3:2
-      }).format(n);
-      const unit=stats.unit||tuDien("consumptionUnitUnknown");
+      // Average/coverage stay based on the complete history (12 completed months),
+      // regardless of table filters.
+      const stats=thongKeConsumptionVatTu(allSapRows,stockRow);
+      monthly.textContent=Number.isFinite(stats.average)?
+        dinhDangLuongHistory(stats.average)+(stats.unit?" "+stats.unit:""):"—";
+      coverage.textContent=Number.isFinite(stats.coverage)?tuDien("consumptionMonths",{
+        count:new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",
+          {maximumFractionDigits:1}).format(stats.coverage)}):"—";
       const countNote=stats.invalid?tuDien("consumptionPartial",{
         count:dinhDangSoLuong.format(stats.invalid)}):"";
-      const total=document.getElementById("material-history-consumption");
-      const monthly=document.getElementById("material-history-monthly");
-      const coverage=document.getElementById("material-history-coverage");
-      total.textContent=Number.isFinite(stats.consumption)?quantityText(stats.consumption)+" "+(stats.unit||""):"—";
-      monthly.textContent=Number.isFinite(stats.average)?quantityText(stats.average)+" "+(stats.unit||""):"—";
-      coverage.textContent=Number.isFinite(stats.coverage)?
-        tuDien("consumptionMonths",{count:new Intl.NumberFormat(locale,{maximumFractionDigits:1}).format(stats.coverage)}):"—";
-      document.getElementById("material-history-consumption-note").textContent=
-        !stats.hasQuantity?tuDien("consumptionMissingQty"):
-        !stats.summable?tuDien("consumptionMixedUnits"):
-        tuDien("consumptionAll",{unit})+(countNote?" · "+countNote:"");
-      document.getElementById("material-history-monthly-note").textContent=
-        !stats.hasQuantity?tuDien("consumptionMissingQty"):
+      monthlyNote.textContent=!stats.hasQuantity?tuDien("consumptionMissingQty"):
         !stats.summable?tuDien("consumptionMixedUnits"):
         !stats.hasDates?tuDien("consumptionNoDates"):
         tuDien("consumptionRecent",{period:stats.period})+(countNote?" · "+countNote:"");
-      document.getElementById("material-history-coverage-note").textContent=
-        !stats.hasQuantity?tuDien("consumptionMissingQty"):
+      coverageNote.textContent=!stats.hasQuantity?tuDien("consumptionMissingQty"):
         !stats.summable||stats.mixed||stats.invalid?tuDien("consumptionIncomplete"):
         !stats.hasDates?tuDien("consumptionNoDates"):
         !Number.isFinite(stats.stock)||stats.stock<0?tuDien("consumptionNoStock"):
         !Number.isFinite(stats.average)||stats.average===0?tuDien("consumptionNoAverage"):
         !stats.compatible?tuDien("consumptionUnitMismatch"):
-        tuDien("consumptionStock",{amount:quantityText(stats.stock),unit:stats.stockUnit});
+        tuDien("consumptionStock",{amount:dinhDangLuongHistory(stats.stock),unit:stats.stockUnit});
+      monthlyNote.title=monthlyNote.textContent;
+      coverageNote.title=coverageNote.textContent;
     }
-
 
     function moLichSuVatTu(index) {
       const row=tatCaDuLieu[index];
@@ -2038,6 +2091,9 @@
       materialHistoryStockIndex=index;
       materialHistoryPage=1;
       document.getElementById("material-history-kind").value="all";
+      document.getElementById("material-history-from").value="";
+      document.getElementById("material-history-to").value="";
+      document.getElementById("material-history-cost").value="";
       document.getElementById("material-history-sap").textContent=tuDien("sapCode",{code:sap})+
         (row[1]?" · "+String(row[1]):"");
       if(!dialog.open) {
@@ -2052,25 +2108,60 @@
       document.getElementById("material-history-dialog").close();
     }
 
+    // Populate Cost Center from the exact selected SAP (all its records, independent of active filters).
+    function capNhatLocCostCenter(sapRows) {
+      const combo=document.getElementById("material-history-cost");
+      materialHistoryCostColumn=cotHistoryTheoTen(historyColumns,[
+        "Cost Center","CostCenter","Trung tâm chi phí"]);
+      const previous=combo.value;
+      const values=materialHistoryCostColumn<0?[]:Array.from(new Set(sapRows.map(rec=>
+        String(rec.cells[materialHistoryCostColumn]??"").trim()))).sort((a,b)=>
+        a.localeCompare(b,ngonNguHienTai==="en"?"en":"vi",{numeric:true}));
+      const options=['<option value="">'+thoatHTML(tuDien("historyAny"))+'</option>'];
+      for(const v of values) {
+        const id=v||"__EMPTY_COST_CENTER__";
+        options.push('<option value="'+thoatHTML(id)+'">'+
+          thoatHTML(v||tuDien("materialHistoryMissingCost"))+'</option>');
+      }
+      const html=options.join("");
+      if(combo.innerHTML!==html)combo.innerHTML=html;
+      combo.disabled=materialHistoryCostColumn<0||sapRows.length===0;
+      combo.value=previous&&values.map(v=>v||"__EMPTY_COST_CENTER__").includes(previous)?previous:"";
+    }
+
+    function xoaLocLichSuVatTu() {
+      for(const id of ["material-history-from","material-history-to","material-history-cost"])
+        document.getElementById(id).value="";
+      document.getElementById("material-history-kind").value="all";
+      locLichSuVatTu();
+    }
+
     function locLichSuVatTu() {
       const dialog=document.getElementById("material-history-dialog");
       if(!dialog.open)return;
       const status=document.getElementById("material-history-status");
       const kind=document.getElementById("material-history-kind").value;
+      const from=document.getElementById("material-history-from").value;
+      const to=document.getElementById("material-history-to").value;
       document.getElementById("material-history-refresh").disabled=historyLoading;
       const sapCol=cotHistoryTheoTen(historyColumns,
         ["Material","SAP","SAP Code","Material Number","Mã SAP","Mã vật tư"]);
-      // Counts always cover all movements of the selected SAP, independent of dropdown.
       const sapRows=historyLoaded&&sapCol>=0?historyAll.filter(row=>
         chuanHoaMaSap(row.cells[sapCol]).toLowerCase()===materialHistorySap.toLowerCase()):[];
-      const counts={in:0,out:0,unknown:0};
-      for(const row of sapRows)counts[row.type]++;
-      hienThiConsumptionVatTu(sapRows);
-      for(const [kindKey,id] of [["in","material-history-in-count"],
-        ["out","material-history-out-count"],["unknown","material-history-other-count"]]) {
-        document.getElementById(id).textContent=historyLoaded?dinhDangSoLuong.format(counts[kindKey]):"—";
-      }
-      materialHistoryRows=kind==="all"?sapRows:sapRows.filter(row=>row.type===kind);
+      capNhatLocCostCenter(sapRows);
+      const cost=document.getElementById("material-history-cost").value;
+      const scopeRows=sapRows.filter(row=>{
+        if(from&&(!row.date||row.date<from))return false;
+        if(to&&(!row.date||row.date>to))return false;
+        if(cost&&materialHistoryCostColumn>=0) {
+          const center=String(row.cells[materialHistoryCostColumn]??"").trim();
+          if(cost==="__EMPTY_COST_CENTER__"?center!=="":center!==cost)return false;
+        }
+        return true;
+      });
+      // Quantity cards follow the date and Cost Center scope. Kind filters the table only.
+      hienThiSoLuongVatTu(scopeRows,sapRows);
+      materialHistoryRows=kind==="all"?scopeRows:scopeRows.filter(row=>row.type===kind);
       const failed=["historyNoSource","historyInvalid"].includes(historyStatusKey);
       status.textContent=historyLoading?tuDien("historyLoading"):failed?
         tuDien(historyStatusKey)+(historyLoaded?" "+tuDien("materialHistoryStale"):""):
@@ -2080,44 +2171,86 @@
       document.querySelector(".material-history-table").scrollTop=0;
     }
 
-    function veLichSuVatTu() {
-      const total=materialHistoryRows.length;
-      const pages=Math.max(1,Math.ceil(total/MATERIAL_HISTORY_PAGE_SIZE));
-      materialHistoryPage=Math.max(1,Math.min(pages,materialHistoryPage));
-      // Movement is only used for classification, never shown as a source column.
+    function htmlDongLichSuVatTu(rows) {
       const visibleColumns=historyColumns.map((name,index)=>({name,index}))
-        .filter(col=>col.index!==historyTypeColumn&&!["movement","movementtype"].includes(tenHistoryChuan(col.name)));
+        .filter(col=>col.index!==historyTypeColumn&&
+          !["movement","movementtype"].includes(tenHistoryChuan(col.name)));
       const amtColumn=cotHistoryTheoTen(historyColumns,[
         "Amt.In","Amt.in loc.cur.","Amt in local currency","Amount in local currency",
         "Amount LC","Amount"]);
+      return rows.map(row=>{
+        const label=tuDien({in:"historyInShort",out:"historyOutShort",unknown:"historyOtherShort"}[row.type]);
+        return '<tr class="material-history-'+row.type+'"><td><span class="history-kind '+row.type+'">'+thoatHTML(label)+
+          "</span></td>"+visibleColumns.map(col=>{
+            const raw=row.cells[col.index]??"";
+            const value=col.index===amtColumn&&Number.isFinite(chuyenThanhSo(raw))
+              ?dinhDangGiaTriKho(chuyenThanhSo(raw)):raw;
+            return '<td title="'+thoatHTML(raw)+'">'+thoatHTML(value)+'</td>';
+          }).join("")+"</tr>";
+      }).join("");
+    }
+
+    function capNhatPhanTrangLichSuVatTu() {
+      const total=materialHistoryRows.length;
+      const shown=Math.min(total,materialHistoryPage*MATERIAL_HISTORY_PAGE_SIZE);
+      document.getElementById("material-history-count").textContent=tuDien("materialHistoryCount",{
+        count:dinhDangSoLuong.format(total)});
+      document.getElementById("material-history-page").textContent=
+        tuDien("materialHistoryLoadedRows",{shown:dinhDangSoLuong.format(shown),
+          total:dinhDangSoLuong.format(total)});
+      document.getElementById("material-history-prev").disabled=materialHistoryPage<=1;
+      document.getElementById("material-history-next").disabled=
+        materialHistoryPage>=Math.max(1,Math.ceil(total/MATERIAL_HISTORY_PAGE_SIZE));
+    }
+
+    function veLichSuVatTu() {
+      const total=materialHistoryRows.length;
+      materialHistoryPage=Math.max(1,Math.min(materialHistoryPage,
+        Math.max(1,Math.ceil(total/MATERIAL_HISTORY_PAGE_SIZE))));
+      const visibleColumns=historyColumns.map((name,index)=>({name,index}))
+        .filter(col=>col.index!==historyTypeColumn&&
+          !["movement","movementtype"].includes(tenHistoryChuan(col.name)));
       document.getElementById("material-history-head").innerHTML=historyColumns.length?
         "<tr><th>"+thoatHTML(tuDien("historyDirection"))+"</th>"+
         visibleColumns.map(col=>"<th>"+thoatHTML(col.name)+"</th>").join("")+"</tr>":"";
-      const start=(materialHistoryPage-1)*MATERIAL_HISTORY_PAGE_SIZE;
       document.getElementById("material-history-body").innerHTML=
-        materialHistoryRows.slice(start,start+MATERIAL_HISTORY_PAGE_SIZE).map(row=>{
-          const label=tuDien({in:"historyInShort",out:"historyOutShort",unknown:"historyOtherShort"}[row.type]);
-          return '<tr class="material-history-'+row.type+'"><td><span class="history-kind '+row.type+'">'+thoatHTML(label)+
-            "</span></td>"+visibleColumns.map(col=>{
-              const raw=row.cells[col.index]??"";
-              const value=col.index===amtColumn&&Number.isFinite(chuyenThanhSo(raw))
-                ?dinhDangGiaTriKho(chuyenThanhSo(raw)):raw;
-              return '<td title="'+thoatHTML(raw)+'">'+thoatHTML(value)+'</td>';
-            }).join("")+"</tr>";
-        }).join("")||
+        htmlDongLichSuVatTu(materialHistoryRows.slice(0,
+          materialHistoryPage*MATERIAL_HISTORY_PAGE_SIZE))||
         '<tr><td class="empty-table" colspan="'+Math.max(1,visibleColumns.length+1)+'">'+
         thoatHTML(tuDien(historyLoading?"historyLoading":historyLoaded?"noResults":historyStatusKey))+"</td></tr>";
-      document.getElementById("material-history-count").textContent=tuDien("materialHistoryCount",{count:dinhDangSoLuong.format(total)});
-      document.getElementById("material-history-page").textContent=tuDien("page",{current:materialHistoryPage,total:pages});
-      document.getElementById("material-history-prev").disabled=materialHistoryPage<=1;
-      document.getElementById("material-history-next").disabled=materialHistoryPage>=pages;
+      capNhatPhanTrangLichSuVatTu();
     }
 
     function doiTrangLichSuVatTu(step) {
-      materialHistoryPage+=step;
-      veLichSuVatTu();
-      document.querySelector(".material-history-table").scrollTop=0;
+      const max=Math.max(1,Math.ceil(materialHistoryRows.length/MATERIAL_HISTORY_PAGE_SIZE));
+      const next=Math.max(1,Math.min(max,materialHistoryPage+step));
+      if(next===materialHistoryPage)return;
+      const table=document.querySelector(".material-history-table");
+      if(next>materialHistoryPage) {
+        const start=materialHistoryPage*MATERIAL_HISTORY_PAGE_SIZE;
+        document.getElementById("material-history-body").insertAdjacentHTML("beforeend",
+          htmlDongLichSuVatTu(materialHistoryRows.slice(start,
+            Math.min(next*MATERIAL_HISTORY_PAGE_SIZE,materialHistoryRows.length))));
+        materialHistoryPage=next;
+        capNhatPhanTrangLichSuVatTu();
+      } else {
+        materialHistoryPage=next;
+        veLichSuVatTu();
+        table.scrollTop=Math.max(0,Math.min(table.scrollTop,table.scrollHeight-table.clientHeight));
+      }
     }
+
+    function cuonTiepLichSuVatTu() {
+      const table=document.querySelector(".material-history-table");
+      if(materialHistoryScrollQueued||!document.getElementById("material-history-dialog").open)return;
+      materialHistoryScrollQueued=true;
+      requestAnimationFrame(()=>{
+        materialHistoryScrollQueued=false;
+        if(table.scrollHeight-table.scrollTop-table.clientHeight<=90)
+          doiTrangLichSuVatTu(1);
+      });
+    }
+
     function capNhatNgonNguHistory() {
       locLichSuVatTu();
     }
@@ -3230,6 +3363,7 @@
 
     document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonCuoiBang, { passive: true });
     document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
+    document.querySelector(".material-history-table").addEventListener("scroll",cuonTiepLichSuVatTu,{passive:true});
     document.getElementById("material-history-dialog").addEventListener("close",()=>{
       if(materialHistoryReturnFocus?.isConnected)materialHistoryReturnFocus.focus();
     });
