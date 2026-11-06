@@ -1204,6 +1204,64 @@
       #view-stock .image-viewer-box { height:280px; }
       .stock-row-menu button[role="menuitem"] { min-height:42px; font-size:13px; }
     }
+
+    /* One consistent brand/title and header toolbar in both desktop workspaces. */
+    @media(min-width:1100px) and (min-height:620px) {
+      body.stock-one-screen .app-header,
+      body.dashboard-one-screen .app-header {
+        box-sizing:border-box; height:56px; min-height:56px; flex:0 0 56px;
+        padding:0 clamp(12px,1.5vw,28px); gap:12px;
+      }
+      body.stock-one-screen .app-header .brand,
+      body.dashboard-one-screen .app-header .brand {
+        font-size:15px; font-weight:800; gap:9px;
+      }
+      body.stock-one-screen .app-header .brand-icon,
+      body.dashboard-one-screen .app-header .brand-icon {
+        width:34px; height:34px; font-size:19px; border-radius:10px;
+      }
+      body.stock-one-screen .app-header .brand-wordmark,
+      body.dashboard-one-screen .app-header .brand-wordmark { line-height:1.2; }
+      body.stock-one-screen .app-header .brand-wordmark small,
+      body.dashboard-one-screen .app-header .brand-wordmark small {
+        font-size:9px; margin-top:3px;
+      }
+      body.stock-one-screen .app-header .header-actions,
+      body.dashboard-one-screen .app-header .header-actions { gap:8px; }
+      body.stock-one-screen .app-header .header-actions .btn,
+      body.dashboard-one-screen .app-header .header-actions .btn {
+        min-height:34px; padding:6px 10px; font-size:11px;
+      }
+      body.stock-one-screen .app-header .online-pill,
+      body.dashboard-one-screen .app-header .online-pill {
+        padding:6px 10px; font-size:11px;
+      }
+    }
+    /* Small screens keep the same shared header rules regardless of tab. */
+    @media(max-width:620px) {
+      .app-header .brand { font-size:14px; }
+      .app-header .brand-icon { width:33px; height:33px; font-size:18px; }
+      .app-header .brand-wordmark small { font-size:8px; }
+      .app-header .header-actions { gap:5px; }
+    }
+    .material-history-table th { vertical-align:middle; }
+    .material-history-sort-trigger {
+      display:inline-flex; align-items:center; gap:6px; min-width:max-content;
+      border:0; background:transparent; padding:6px 4px;
+      color:inherit; font:inherit; font-weight:800; cursor:pointer;
+    }
+    .material-history-sort-trigger:hover { color:var(--blue); }
+    .material-history-sort-trigger:focus-visible {
+      outline:2px solid var(--blue); outline-offset:2px; border-radius:5px;
+    }
+    .material-history-sort-arrow { color:var(--muted); font-size:12px; }
+    .material-history-table th[aria-sort="ascending"] .material-history-sort-arrow,
+    .material-history-table th[aria-sort="descending"] .material-history-sort-arrow {
+      color:var(--blue);
+    }
+    .material-history-controls #material-history-export {
+      min-height:32px; padding:6px 12px; margin-left:auto;
+    }
   </style>
 </head>
 <body>
@@ -1484,6 +1542,9 @@
       <label class="history-filter-field history-filter-cost"><span data-i18n="materialHistoryCostCenter">Trung tâm chi phí</span><select id="material-history-cost" onchange="locLichSuVatTu()"><option value="" data-i18n="historyAny">Tất cả</option></select></label>
       <button type="button" class="btn btn-soft" onclick="xoaLocLichSuVatTu()" data-i18n="historyClear">Xóa lọc</button>
       <button type="button" class="btn btn-soft" id="material-history-refresh" onclick="taiHistory(true)" data-i18n="historyRefresh">Tải lại dữ liệu lịch sử</button>
+      <button type="button" class="btn btn-primary" id="material-history-export" onclick="xuatExcelLichSuVatTu()" data-i18n-title="historyExportTitle" title="Xuất toàn bộ lịch sử đang lọc" disabled>
+        <span aria-hidden="true">↓</span> <span data-i18n="historyExport">Xuất Excel</span>
+      </button>
     </div>
     <p id="material-history-status" role="status" aria-live="polite"></p>
     <div class="material-history-table" tabindex="0" role="region" data-i18n-aria="materialHistoryTitle" aria-label="Lịch sử sử dụng vật tư">
@@ -1504,6 +1565,18 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        historySortBy:"Sắp xếp theo {column}",historyExport:"Xuất Excel",
+        historyExportTitle:"Xuất toàn bộ giao dịch đang lọc (không chỉ các dòng đã tải)",
+        historyExportEmpty:"Không có giao dịch phù hợp để xuất Excel.",
+        historyExportBusy:"Đang tải hoặc xuất dữ liệu lịch sử, vui lòng thử lại.",
+        historyExportFailed:"Không thể tạo tệp Excel lịch sử. Vui lòng thử lại.",
+        historyExportLimit:"Số giao dịch vượt giới hạn dòng của Excel.",
+        historyReportTitle:"BÁO CÁO LỊCH SỬ NHẬP XUẤT",
+        historyReportFilters:"Bộ lọc",historyReportMaterial:"Vật tư",
+        historyReportRows:"Số giao dịch",historyReportSort:"Sắp xếp",
+        historyReportFrom:"Từ ngày",historyReportTo:"Đến ngày",
+        historyReportCost:"Trung tâm chi phí",historyReportMovement:"Loại giao dịch",
+        historyReportDate:"Ngày tạo báo cáo",
         stockRowMenuAria:"Thao tác với vật tư",stockMenuHistory:"Xem lịch sử",
         stockMenuCopySap:"Sao chép mã SAP",stockMenuCopyPart:"Sao chép mã phụ tùng",
         stockMenuExport:"Xuất vật tư",stockMenuCopied:"Đã sao chép {value}",
@@ -1619,6 +1692,18 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        historySortBy:"Sort by {column}",historyExport:"Export Excel",
+        historyExportTitle:"Export all matching transactions (not just loaded rows)",
+        historyExportEmpty:"No matching transactions to export.",
+        historyExportBusy:"History is loading or exporting. Please try again.",
+        historyExportFailed:"Unable to create the history Excel file. Please try again.",
+        historyExportLimit:"Transaction count exceeds Excel's worksheet limit.",
+        historyReportTitle:"MATERIAL MOVEMENT HISTORY",
+        historyReportFilters:"Filters",historyReportMaterial:"Material",
+        historyReportRows:"Transactions",historyReportSort:"Sorted by",
+        historyReportFrom:"From date",historyReportTo:"To date",
+        historyReportCost:"Cost Center",historyReportMovement:"Movement type",
+        historyReportDate:"Report generated",
         stockRowMenuAria:"Material actions",stockMenuHistory:"View history",
         stockMenuCopySap:"Copy SAP code",stockMenuCopyPart:"Copy part number",
         stockMenuExport:"Export material",stockMenuCopied:"Copied {value}",
@@ -2734,6 +2819,9 @@
     let materialHistoryStockIndex=-1;
     let materialHistoryCostColumn=-1;
     let materialHistoryScrollQueued=false;
+    let materialHistorySortColumn=-2; // -2 = Posting Date; -1 = transaction direction
+    let materialHistorySortDirection=-1; // latest first by default
+    let materialHistoryExporting=false;
     const MATERIAL_HISTORY_PAGE_SIZE=50;
 
     // Use calendar months that have fully ended, not the unfinished current month.
@@ -2891,6 +2979,8 @@
       materialHistorySap=sap;
       materialHistoryStockIndex=index;
       materialHistoryPage=1;
+      materialHistorySortColumn=-2;
+      materialHistorySortDirection=-1;
       document.getElementById("material-history-kind").value="all";
       document.getElementById("material-history-from").value="";
       document.getElementById("material-history-to").value="";
@@ -2963,6 +3053,9 @@
       // Quantity cards follow the date and Cost Center scope. Kind filters the table only.
       hienThiSoLuongVatTu(scopeRows,sapRows);
       materialHistoryRows=kind==="all"?scopeRows:scopeRows.filter(row=>row.type===kind);
+      sapXepLichSuVatTu();
+      document.getElementById("material-history-export").disabled=
+        !historyLoaded||historyLoading||materialHistoryExporting||materialHistoryRows.length===0;
       const failed=["historyNoSource","historyInvalid"].includes(historyStatusKey);
       status.textContent=historyLoading?tuDien("historyLoading"):failed?
         tuDien(historyStatusKey)+(historyLoaded?" "+tuDien("materialHistoryStale"):""):
@@ -2972,10 +3065,89 @@
       document.querySelector(".material-history-table").scrollTop=0;
     }
 
-    function htmlDongLichSuVatTu(rows) {
-      const visibleColumns=historyColumns.map((name,index)=>({name,index}))
+    // Sorting follows the currently filtered result, not just the 50 rendered rows.
+    // Row numbers are used as a stable tie-breaker; invalid dates stay last.
+    function cotNgayLichSuVatTu() {
+      return cotHistoryTheoTen(historyColumns,[
+        "Posting Date","PostingDate","Ngày hạch toán",
+        "Date","Document Date","Transaction Date","Datetime",
+        "Created At","Ngay","Ngày","Ngày giao dịch"
+      ]);
+    }
+
+    function sapXepLichSuVatTu() {
+      const dateIndex=cotNgayLichSuVatTu();
+      const column=materialHistorySortColumn;
+      const descending=materialHistorySortDirection<0;
+      const collator=new Intl.Collator(ngonNguHienTai==="en"?"en":"vi",{
+        numeric:true,sensitivity:"base"
+      });
+      const isDate=column===-2||(column>=0&&column===dateIndex)||
+        (column>=0&&/date|ngay/.test(tenHistoryChuan(historyColumns[column])));
+      const isNumeric=column>=0&&/qty|quantity|amount|amt|value|price|soluong|giatri/.test(
+        tenHistoryChuan(historyColumns[column]));
+      const sortVal=rec=>{
+        if(column===-1)return tuDien({
+          in:"historyInShort",out:"historyOutShort",unknown:"historyOtherShort"
+        }[rec.type]);
+        if(isDate) {
+          const date=(column===-2||column===dateIndex)?
+            rec.date:ngayHistoryISO(rec.cells[column]);
+          return ngayHistoryHopLe(date)?date:"";
+        }
+        return String(rec.cells[column]??"").trim();
+      };
+      materialHistoryRows.sort((a,b)=>{
+        const av=sortVal(a),bv=sortVal(b);
+        if(av===""||bv==="") {
+          if(av!==bv)return av===""?1:-1;
+          return a.number-b.number;
+        }
+        let comparison=0;
+        if(isNumeric){
+          const na=chuyenThanhSo(av),nb=chuyenThanhSo(bv);
+          comparison=Number.isFinite(na)&&Number.isFinite(nb)?
+            Math.sign(na-nb):collator.compare(av,bv);
+        }else comparison=collator.compare(av,bv);
+        return (descending?-comparison:comparison)||(a.number-b.number);
+      });
+    }
+
+    function doiSapXepLichSuVatTu(column) {
+      const dateIndex=cotNgayLichSuVatTu();
+      if(column!==-1&&!cotHienThiLichSuVatTu().some(c=>c.index===column))return;
+      const current=materialHistorySortColumn===-2&&dateIndex>=0?dateIndex:materialHistorySortColumn;
+      if(current===column)materialHistorySortDirection*=-1;
+      else {
+        materialHistorySortColumn=column;
+        materialHistorySortDirection=column===dateIndex?-1:1;
+      }
+      if(materialHistorySortColumn===-2&&column!==dateIndex)materialHistorySortColumn=column;
+      if(materialHistorySortColumn===-2&&column===dateIndex)materialHistorySortColumn=column;
+      materialHistoryPage=1;
+      sapXepLichSuVatTu();
+      veLichSuVatTu();
+      document.querySelector(".material-history-table").scrollTop=0;
+    }
+
+    // The selected SAP code and material description are already shown in the
+    // popup title; hide those duplicate columns only in the rendered table.
+    // All original History.js columns remain available for filtering and KPIs.
+    function cotHienThiLichSuVatTu() {
+      const hiddenNames=new Set([
+        "Material","SAP","SAP Code","Material Number","Material Code",
+        "Mã SAP","Mã vật tư",
+        "Material Description","Material Desc","Material Text",
+        "Description","Mô tả","Mô tả vật tư","Tên vật tư"
+      ].map(tenHistoryChuan));
+      return historyColumns.map((name,index)=>({name,index}))
         .filter(col=>col.index!==historyTypeColumn&&
-          !["movement","movementtype"].includes(tenHistoryChuan(col.name)));
+          !["movement","movementtype"].includes(tenHistoryChuan(col.name))&&
+          !hiddenNames.has(tenHistoryChuan(col.name)));
+    }
+
+    function htmlDongLichSuVatTu(rows) {
+      const visibleColumns=cotHienThiLichSuVatTu();
       const amtColumn=cotHistoryTheoTen(historyColumns,[
         "Amt.In","Amt.in loc.cur.","Amt in local currency","Amount in local currency",
         "Amount LC","Amount"]);
@@ -3008,12 +3180,22 @@
       const total=materialHistoryRows.length;
       materialHistoryPage=Math.max(1,Math.min(materialHistoryPage,
         Math.max(1,Math.ceil(total/MATERIAL_HISTORY_PAGE_SIZE))));
-      const visibleColumns=historyColumns.map((name,index)=>({name,index}))
-        .filter(col=>col.index!==historyTypeColumn&&
-          !["movement","movementtype"].includes(tenHistoryChuan(col.name)));
+      const visibleColumns=cotHienThiLichSuVatTu();
+      const dateColumn=cotNgayLichSuVatTu();
+      const sortableHeader=(name,index,active)=>{
+        const label=index===-1?tuDien("historyDirection"):tenCotHistoryDaDich(name);
+        const sortTitle=tuDien("historySortBy",{column:label});
+        const order=active?(materialHistorySortDirection<0?"descending":"ascending"):"none";
+        const arrow=active?(materialHistorySortDirection<0?"↓":"↑"):"↕";
+        return '<th aria-sort="'+order+'"><button type="button" class="material-history-sort-trigger" '+
+          'onclick="doiSapXepLichSuVatTu('+index+')" title="'+thoatHTML(sortTitle)+
+          '" aria-label="'+thoatHTML(sortTitle)+'"><span>'+thoatHTML(label)+
+          '</span><span class="material-history-sort-arrow" aria-hidden="true">'+arrow+'</span></button></th>';
+      };
+      const activeIndex=materialHistorySortColumn===-2&&dateColumn>=0?dateColumn:materialHistorySortColumn;
       document.getElementById("material-history-head").innerHTML=historyColumns.length?
-        "<tr><th>"+thoatHTML(tuDien("historyDirection"))+"</th>"+
-        visibleColumns.map(col=>"<th title='"+thoatHTML(col.name)+"'>"+thoatHTML(tenCotHistoryDaDich(col.name))+"</th>").join("")+"</tr>":"";
+        "<tr>"+sortableHeader("",-1,activeIndex===-1)+
+        visibleColumns.map(col=>sortableHeader(col.name,col.index,activeIndex===col.index)).join("")+"</tr>":"";
       document.getElementById("material-history-body").innerHTML=
         htmlDongLichSuVatTu(materialHistoryRows.slice(0,
           materialHistoryPage*MATERIAL_HISTORY_PAGE_SIZE))||
@@ -3903,6 +4085,167 @@
       write32(offset+12, centralSize); write32(offset+16, centralStart);
       write16(offset+20, 0);
       return zip;
+    }
+
+    // Export exactly the filtered + sorted History rows, not only the lazy-loaded
+    // 50 visible at a time. Reuse the local XLSX/ZIP writer, without external APIs.
+    async function taoBaoCaoLichSuXlsx() {
+      const records=materialHistoryRows.slice();
+      const columns=cotHienThiLichSuVatTu();
+      const columnCount=columns.length+1; // the synthesized IN/OUT/Other direction
+      const firstDataRow=7, lastRow=6+records.length;
+      if(records.length>1048570||columnCount>16384)
+        throw new Error("XLSX_EXCEL_LIMIT");
+      const sap=materialHistorySap;
+      const stockRow=dongStockLichSuVatTu();
+      const description=stockRow?String(stockRow[1]??"").trim():"";
+      const from=document.getElementById("material-history-from").value;
+      const to=document.getElementById("material-history-to").value;
+      const kind=document.getElementById("material-history-kind").value;
+      const cost=document.getElementById("material-history-cost");
+      const costName=cost.value?(cost.selectedOptions?.[0]?.textContent||cost.value):
+        tuDien("historyAny");
+      const kindName=tuDien({in:"historyInShort",out:"historyOutShort",
+        unknown:"historyOtherShort",all:"historyAny"}[kind]||"historyAny");
+      const dateIndex=cotNgayLichSuVatTu();
+      const selectedColumn=materialHistorySortColumn===-2?
+        dateIndex:materialHistorySortColumn;
+      const sortedBy=selectedColumn===-1?tuDien("historyDirection"):
+        selectedColumn>=0?tenCotHistoryDaDich(historyColumns[selectedColumn]):
+        tuDien("materialHistoryFrom");
+      const sortName=sortedBy+(materialHistorySortDirection<0?" ↓":" ↑");
+      const scope=[
+        tuDien("historyReportMovement")+": "+kindName,
+        tuDien("historyReportFrom")+": "+(from||tuDien("historyAny")),
+        tuDien("historyReportTo")+": "+(to||tuDien("historyAny")),
+        tuDien("historyReportCost")+": "+costName
+      ].join("   |   ");
+      const now=new Date().toLocaleString(ngonNguHienTai==="en"?"en-US":"vi-VN");
+      const merged=[],rows=[],lastColumn=tenCotXlsx(columnCount-1);
+      const bigRow=(index,text,style,height)=>{
+        rows.push(hangXlsx(index,[oChuXlsx(0,index,text,style)],height));
+        if(columnCount>1)merged.push("A"+index+":"+lastColumn+index);
+      };
+      bigRow(1,tuDien("historyReportTitle"),1,38);
+      bigRow(2,tuDien("historyReportMaterial")+": "+sap+
+        (description?" · "+description:""),2,25);
+      bigRow(3,tuDien("historyReportFilters")+": "+scope,2,27);
+      bigRow(4,tuDien("historyReportRows")+": "+records.length+"   |   "+
+        tuDien("historyReportSort")+": "+sortName+"   |   "+
+        tuDien("historyReportDate")+": "+now,2,26);
+      const titles=[tuDien("historyDirection"),...columns.map(col=>
+        tenCotHistoryDaDich(col.name))];
+      rows.push(hangXlsx(6,titles.map((name,col)=>oChuXlsx(col,6,name,7)),30));
+      const qtyColumn=cotHistoryTheoTen(historyColumns,[
+        "Qty in unit of entry","Quantity","Qty","Movement Qty",
+        "Số lượng","So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const amountColumn=cotHistoryTheoTen(historyColumns,[
+        "Amt.In","Amt.in loc.cur.","Amt in local currency","Amount in local currency",
+        "Amount LC","Amount"]);
+      const directionKeys={in:"historyInShort",out:"historyOutShort",unknown:"historyOtherShort"};
+      const widths=[16,...columns.map(col=>Math.min(31,Math.max(15,
+        String(tenCotHistoryDaDich(col.name)).length+5)))];
+      for(let i=0;i<records.length;i++){
+        if(i>0&&i%1600===0)await new Promise(resolve=>setTimeout(resolve,0));
+        const rec=records[i],row=i+firstDataRow,even=i%2===0;
+        const kindStyle=rec.type==="in"?20:rec.type==="out"?23:(even?8:9);
+        const cells=[oChuXlsx(0,row,tuDien(directionKeys[rec.type]||"historyOtherShort"),kindStyle)];
+        for(let n=0;n<columns.length;n++){
+          const sourceIndex=columns[n].index;
+          const raw=String(rec.cells[sourceIndex]??"");
+          const num=raw.trim()?chuyenThanhSo(raw):NaN;
+          if(sourceIndex===amountColumn&&Number.isFinite(num))
+            cells.push(oSoXlsx(n+1,row,num,even?10:11));
+          else if(sourceIndex===qtyColumn&&Number.isFinite(num))
+            cells.push(oSoXlsx(n+1,row,num,even?12:13));
+          else cells.push(oChuXlsx(n+1,row,raw,even?8:9));
+        }
+        rows.push(hangXlsx(row,cells,23));
+      }
+      const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+      const widthsXml=widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+
+        '" width="'+w+'" customWidth="1"/>').join("");
+      const sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+        '<worksheet xmlns="'+ns+'"><dimension ref="A1:'+lastColumn+Math.max(6,lastRow)+'"/>'+
+        '<sheetViews><sheetView showGridLines="0" workbookViewId="0">'+
+        '<pane ySplit="6" topLeftCell="A7" activePane="bottomLeft" state="frozen"/>'+
+        '<selection pane="bottomLeft" activeCell="A7" sqref="A7"/>'+
+        '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="22"/>'+
+        '<cols>'+widthsXml+'</cols><sheetData>'+rows.join("")+'</sheetData>'+
+        '<autoFilter ref="A6:'+lastColumn+Math.max(6,lastRow)+'"/>'+
+        '<mergeCells count="'+merged.length+'">'+
+        merged.map(m=>'<mergeCell ref="'+m+'"/>').join("")+'</mergeCells>'+
+        '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>'+
+        '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+      const workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+        '<workbook xmlns="'+ns+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+        '<bookViews><workbookView/></bookViews><sheets><sheet name="'+
+        (ngonNguHienTai==="en"?"Movements":"Giao dich")+
+        '" sheetId="1" r:id="rId1"/></sheets></workbook>';
+      const fileParts=[
+        {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+          '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+          '<Default Extension="xml" ContentType="application/xml"/>'+
+          '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+          '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+          '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'+
+          '</Types>'},
+        {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'+
+          '</Relationships>'},
+        {name:"xl/workbook.xml",data:workbook},
+        {name:"xl/_rels/workbook.xml.rels",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'+
+          '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+
+          '</Relationships>'},
+        {name:"xl/styles.xml",data:taoKieuXlsx()},
+        {name:"xl/worksheets/sheet1.xml",data:sheet}
+      ];
+      return new Blob([dongGoiZipXlsx(fileParts)],{
+        type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+    }
+
+    async function xuatExcelLichSuVatTu() {
+      if(materialHistoryExporting||historyLoading||!historyLoaded) {
+        alert(tuDien("historyExportBusy"));return;
+      }
+      if(!materialHistoryRows.length) {
+        alert(tuDien("historyExportEmpty"));return;
+      }
+      const button=document.getElementById("material-history-export");
+      const caption=button.querySelector('[data-i18n="historyExport"]');
+      const sap=materialHistorySap;
+      materialHistoryExporting=true;
+      button.disabled=true;
+      button.setAttribute("aria-busy","true");
+      caption.textContent=tuDien("exportGenerating");
+      try {
+        await new Promise(resolve=>setTimeout(resolve,0));
+        const blob=await taoBaoCaoLichSuXlsx();
+        const url=URL.createObjectURL(blob);
+        try {
+          const link=document.createElement("a");
+          link.href=url;
+          const safeSap=(sap||"vat_tu").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,70);
+          const timestamp=new Date().toLocaleDateString("sv-SE");
+          link.download="Lich_su_"+safeSap+"_"+timestamp+".xlsx";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        } finally {setTimeout(()=>URL.revokeObjectURL(url),1500);}
+      } catch(err) {
+        console.error("History XLSX export:",err);
+        alert(tuDien(err.message==="XLSX_EXCEL_LIMIT"?"historyExportLimit":"historyExportFailed"));
+      } finally {
+        materialHistoryExporting=false;
+        button.disabled=!historyLoaded||historyLoading||!materialHistoryRows.length;
+        button.removeAttribute("aria-busy");
+        caption.textContent=tuDien("historyExport");
+      }
     }
 
     async function taoBaoCaoXlsx(danhSach, option = {}) {
