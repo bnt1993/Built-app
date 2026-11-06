@@ -1862,6 +1862,7 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        colLeadTime:"Thời gian cung ứng",colSupplier:"Nhà cung cấp",colMaxStock:"Tồn kho tối đa",
         dashboardTimeSelected:"Theo khoảng đã chọn",
         dashboardTruncated:"Chỉ hiển thị {count} kỳ gần cuối của khoảng chọn",
         colOrderType:"Loại đặt hàng",
@@ -1889,7 +1890,7 @@
         dashboardTimeCurrent:"{from} – {to}",
         dashboardTimeInvalid:"Khoảng ngày không hợp lệ",
         dashboardTopOutTitle:"Vật tư xuất nhiều nhất theo giá trị",
-        dashboardTopOutNote:"Giá trị xuất lấy từ Amt.In của giao dịch OUTPUT; nhấn đúp để xem lịch sử.",
+        dashboardTopOutNote:"Cộng giá trị giao dịch xuất theo mã SAP trong kỳ đã chọn. Nhấn đúp để xem lịch sử.",
         dashboardTopOutEmpty:"Không có giao dịch xuất hợp lệ trong giai đoạn",
         dashboardTopOutMissing:"Thiếu cột mã vật tư hoặc giá trị trong lịch sử",
         dashboardTopOutValue:"Giá trị xuất",
@@ -1910,7 +1911,7 @@
         dashboardDormantMore:"Hiển thị {count}/{total} vật tư · Nhấn đúp để xem lịch sử",
         dashboardTopDoubleClick:"Nhấn đúp để xem lịch sử",
         dashboardHistoryLoading:"Đang tải lịch sử giao dịch…",
-        dashboardPeriodNote:"Khoảng thời gian áp dụng cho so sánh, Top vật tư xuất và biểu đồ thời gian.",
+        dashboardPeriodNote:"Khoảng thời gian áp dụng cho so sánh, xếp hạng vật tư xuất và biểu đồ thời gian.",
         dashTopMissingQty:"—",
         dashTopMixedUnits:"Nhiều đơn vị",
         dashTopValueColumn:"Giá trị tồn",
@@ -1940,7 +1941,7 @@
         dashWeek:"Hằng tuần",
         dashUsagePeriod:"Chu kỳ",
         dashUsageTitle:"Giá trị nhập / xuất kho",
-        rankTop50:"Top 50",
+        rankTop50:"50 vật tư",
         historySortBy:"Sắp xếp theo {column}",historyExport:"Xuất Excel",
         historyExportTitle:"Xuất toàn bộ giao dịch đang lọc (không chỉ các dòng đã tải)",
         historyExportEmpty:"Không có giao dịch phù hợp để xuất Excel.",
@@ -1987,8 +1988,8 @@
         pageLabel:"Trang",
         pageTotal:"/ {total}",
         rankTop5:"5 mã",
-        rankTop10:"10 mã",
-        rankTop20:"20 mã",
+        rankTop10:"10 vật tư",
+        rankTop20:"20 vật tư",
         tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu tồn kho",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
         materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Thu gọn",materialHistoryNext:"Tải thêm",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số lượng nhập",materialHistoryOutCount:"Số lượng xuất",materialHistoryOtherCount:"Số lượng khác",materialHistoryStock:"Tồn kho hiện tại",materialHistoryFrom:"Ngày hạch toán từ",materialHistoryTo:"Ngày hạch toán đến",materialHistoryCostCenter:"Trung tâm chi phí",materialHistoryMissingCost:"Không có trung tâm chi phí",materialHistoryLoadedRows:"Đã xem {shown}/{total} dòng",materialHistoryQuantityMissing:"Không có cột số lượng",materialHistoryQuantityInvalid:"Có số lượng không hợp lệ",materialHistoryQuantityMixed:"Nhiều đơn vị tính, không thể cộng",materialHistoryQuantityUnit:"Chưa rõ đơn vị tính",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Thời gian sử dụng ước tính",
         consumptionAll:"Tất cả giao dịch xuất · {unit}",consumptionRecent:"12 tháng trọn vẹn · {period}",consumptionStock:"Tồn kho: {amount} {unit}",consumptionMonths:"{count} tháng",consumptionNoHistory:"Chưa có dữ liệu lịch sử.",consumptionMissingQty:"Không có cột số lượng trong dữ liệu lịch sử.",consumptionMixedUnits:"Nhiều đơn vị tính, không thể cộng chung.",consumptionUnitUnknown:"Chưa xác định đơn vị tính.",consumptionPartial:"{count} dòng xuất bị loại do thiếu hoặc sai đơn vị/số lượng.",consumptionNoDates:"Thiếu ngày hợp lệ để tính trung bình tháng.",consumptionNoAverage:"Không có lượng xuất trong 12 tháng trọn vẹn gần nhất.",consumptionNoStock:"Tồn kho không hợp lệ hoặc chưa được tải.",consumptionUnitMismatch:"Đơn vị tồn kho không khớp đơn vị giao dịch; không thể ước tính.",consumptionIncomplete:"Dữ liệu xuất không hợp lệ hoặc có nhiều đơn vị; chưa thể ước tính.",
@@ -2068,6 +2069,7 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        colLeadTime:"Lead time",colSupplier:"Supplier",colMaxStock:"Maximum stock",
         dashboardTimeSelected:"Selected date range",
         dashboardTruncated:"Only the most recent {count} periods in this range are shown",
         colOrderType:"Order type",
@@ -2311,7 +2313,10 @@
         "cost center":"colCostCenter","posting date":"colPostingDate",
         "type order":"colOrderType","order type":"colOrderType","type of order":"colOrderType",
         "min lot":"colMinLot","min. lot":"colMinLot","min lot size":"colMinLot",
-        "minimum lot":"colMinLot","minimum lot size":"colMinLot"
+        "minimum lot":"colMinLot","minimum lot size":"colMinLot",
+        "lead time":"colLeadTime","delivery time":"colLeadTime",
+        "supplier":"colSupplier","vendor":"colSupplier",
+        "max stock":"colMaxStock","maximum stock":"colMaxStock"
       }[k];
       return key ? tuDien(key) : ten;
     }
@@ -3359,7 +3364,9 @@
     function thongKeTopVatTuXuatKho(range,limit=20){
       const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
       if(amountCol<0||sapCol<0)return null;
-      const grouped=new Map(),descCol=cotHistoryTheoTen(historyColumns,
+      const grouped=new Map(),stockBySap=new Map(duLieuTimKiem.map(item=>
+        [chuanHoaMaSap(item.dong[0]).toLowerCase(),item]));
+      const descCol=cotHistoryTheoTen(historyColumns,
         ["Material Description","Description","Mô tả","Mô tả vật tư"]);
       for(const rec of locGiaoDichKho(range,["out"])){
         const sap=chuanHoaMaSap(rec.cells[sapCol]);
@@ -3368,8 +3375,7 @@
         if(!sap||!Number.isFinite(amount))continue;
         let row=grouped.get(sap.toLowerCase());
         if(!row){
-          const stock=duLieuTimKiem.find(v=>
-            chuanHoaMaSap(v.dong[0]).toLowerCase()===sap.toLowerCase());
+          const stock=stockBySap.get(sap.toLowerCase());
           row={sap,description:stock?String(stock.dong[1]??""):
             descCol>=0?String(rec.cells[descCol]??""):"",value:0,count:0};
           grouped.set(sap.toLowerCase(),row);
