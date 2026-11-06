@@ -1125,6 +1125,14 @@
           </div>
           <div class="image-thumbs" id="image-thumbnails" aria-label="Image thumbnails"></div>
           <div class="detail-placeholder" id="chi-tiet-trong" data-i18n="emptyDetails">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
+          <div class="detail-kpi-grid" aria-label="Thông tin tổng quan vật tư" data-i18n-aria="detailKpiAria">
+            <div class="detail-kpi-card value"><span data-i18n="detailStockValue">Giá trị tồn kho</span>
+              <strong id="detail-stock-value">—</strong><small id="detail-stock-value-note"></small></div>
+            <div class="detail-kpi-card status"><span data-i18n="detailStockStatus">Trạng thái tồn kho</span>
+              <strong id="detail-stock-status">—</strong><small id="detail-stock-status-note"></small></div>
+            <div class="detail-kpi-card last-out"><span data-i18n="detailLastOutput">Ngày xuất gần nhất</span>
+              <strong id="detail-last-output">—</strong><small id="detail-last-output-note"></small></div>
+          </div>
           <div class="detail-grid" id="luoi-chi-tiet"></div>
           <div class="bm-no-card" id="bm-no-card">
             <div class="bm-no-card-title">BM No</div>
@@ -2100,6 +2108,63 @@
     let historySeq=0;
     let historyStatusKey="historyIdle";
     let historyTypeColumn=-1;
+    const ngayXuatCuoiTheoSap=new Map();
+    let daThuTaiHistoryChoCard=false;
+
+    function ngayHistoryHopLe(iso) {
+      const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||"");
+      if(!m)return false;
+      const d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+      return d.getUTCFullYear()===+m[1]&&d.getUTCMonth()===+m[2]-1&&d.getUTCDate()===+m[3];
+    }
+    function dinhDangNgayXuat(iso) {
+      if(!ngayHistoryHopLe(iso))return "—";
+      const [year,month,day]=iso.split("-");
+      return ngonNguHienTai==="en"?month+"/"+day+"/"+year:day+"/"+month+"/"+year;
+    }
+    function capNhatCardNgayXuat() {
+      const value=document.getElementById("detail-last-output");
+      const note=document.getElementById("detail-last-output-note");
+      if(dongDangChonIndex<0||!tatCaDuLieu[dongDangChonIndex]) {
+        value.textContent="—";note.textContent="";return;
+      }
+      if(!historyLoaded) {
+        value.textContent="—";
+        note.textContent=tuDien(historyLoading?"historyLoading":
+          ["historyInvalid","historyNoSource"].includes(historyStatusKey)?"detailHistoryUnavailable":"detailHistoryNotLoaded");
+        return;
+      }
+      const sap=chuanHoaMaSap(tatCaDuLieu[dongDangChonIndex][0]).toLowerCase();
+      const date=ngayXuatCuoiTheoSap.get(sap)||"";
+      value.textContent=dinhDangNgayXuat(date);
+      note.textContent= date?tuDien("detailFromPostingDate"):tuDien("detailNoOutput");
+      value.title=note.textContent;
+    }
+    function hienThiCardTongQuanVatTu(dongData) {
+      const stock=chuyenThanhSo(dongData[chiSoSoLuong]);
+      const priceCol=tieuDeCot.findIndex(name=>["price","unit price","đơn giá","giá"].includes(
+        String(name??"").trim().toLowerCase()));
+      const price=priceCol>=0?chuyenThanhSo(dongData[priceCol]):NaN;
+      const amount=document.getElementById("detail-stock-value");
+      const valid=Number.isFinite(stock)&&stock>=0&&Number.isFinite(price)&&price>=0;
+      amount.textContent=valid?dinhDangGiaTriKho(stock*price):"—";
+      const unitValue=valid?dinhDangSoLuong.format(stock)+" × "+dinhDangGiaTriKho(price):tuDien("detailInvalidPriceQty");
+      document.getElementById("detail-stock-value-note").textContent=unitValue;
+      amount.title=tuDien("detailStockValueTitle",{calc:unitValue});
+      const reorder=chiSoReorderPoint>=0?chuyenThanhSo(dongData[chiSoReorderPoint]):NaN;
+      const status=trangThaiTheoReorderPoint(stock,reorder);
+      const statusEl=document.getElementById("detail-stock-status");
+      statusEl.textContent=tenTrangThaiTon(status);
+      statusEl.dataset.status=status;
+      const statusNote=Number.isFinite(reorder)&&reorder>=0?
+        tuDien("detailReorderValue",{value:dinhDangSoLuong.format(reorder)}):tuDien("detailNoReorder");
+      document.getElementById("detail-stock-status-note").textContent=statusNote;
+      statusEl.title=tuDien("detailStatusTooltip",{status:tenTrangThaiTon(status),
+        stock:Number.isFinite(stock)?dinhDangSoLuong.format(stock):"—",
+        reorder:Number.isFinite(reorder)?dinhDangSoLuong.format(reorder):"—"});
+      capNhatCardNgayXuat();
+    }
+
 
     function timNguonHistory() {
       const candidates=[
@@ -2217,14 +2282,19 @@
         return false;
       }
       const indexed=[];
+      const sapCol=cotHistoryTheoTen(columns,["Material","SAP","SAP Code","Material Number","Mã SAP","Mã vật tư"]);
+      const lastOutput=new Map();
       for(let i=0;i<parsed.rows.length;i++) {
         if(sequence!==historySeq)return false;
         const row=parsed.rows[i];
         const cells=row.map(v=>v!==null&&typeof v==="object"?JSON.stringify(v):String(v??""));
-        indexed.push({
-          cells,number:i,date:dateColumn>=0?ngayHistoryISO(row[dateColumn]):"",
-          type:loaiHistory(typeColumn>=0?row[typeColumn]:"")
-        });
+        const date=dateColumn>=0?ngayHistoryISO(row[dateColumn]):"";
+        const type=loaiHistory(typeColumn>=0?row[typeColumn]:"");
+        indexed.push({cells,number:i,date,type});
+        if(sapCol>=0&&type==="out"&&ngayHistoryHopLe(date)) {
+          const sap=chuanHoaMaSap(row[sapCol]).toLowerCase();
+          if(sap&&(!lastOutput.has(sap)||date>lastOutput.get(sap)))lastOutput.set(sap,date);
+        }
         if(i>0 && i%1600===0)await new Promise(resolve=>setTimeout(resolve,0));
       }
       if(sequence!==historySeq)return false;
@@ -2232,7 +2302,10 @@
       historyColumns=columns;
       historyTypeColumn=typeColumn;
       historyAll=indexed;
+      ngayXuatCuoiTheoSap.clear();
+      for(const [sap,date] of lastOutput)ngayXuatCuoiTheoSap.set(sap,date);
       historyLoaded=true;
+      capNhatCardNgayXuat();
       const total=indexed.length;
       const status=total?(origin==="existing"?"historyLoadedExisting":updated?"historyLoadedAt":"historyLoaded"):"historyEmpty";
       capNhatTrangThaiHistory(status);
@@ -2308,6 +2381,7 @@
         if(sequence===historySeq) {
           historyLoading=false;
           locLichSuVatTu();
+          capNhatCardNgayXuat();
         }
       }
     }
@@ -2937,6 +3011,7 @@
       luoiChiTiet.innerHTML = htmlChiTiet;
       luoiChiTiet.appendChild(cardBmNo);
       capNhatCardBmNo(dongData);
+      hienThiCardTongQuanVatTu(dongData);
     }
 
     function chonDong(index, element) {
@@ -2955,6 +3030,11 @@
 
       // Keep image/navigation state intact when re-rendering translated details.
       hienThiChiTiet(dongData);
+      // Load history lazily once after the first Stock selection, for the last OUTPUT date.
+      if(!daThuTaiHistoryChoCard&&!historyLoaded) {
+        daThuTaiHistoryChoCard=true;
+        taiHistory(false);
+      }
 
       // Tải hình ảnh tương ứng với Mã SAP
       taiBoSuuTapAnh(maSap);
