@@ -828,6 +828,167 @@
         flex:0 0 auto; padding:5px 0 0; font-size:10px; gap:5px; line-height:1.2;
       }
     }
+
+    /*
+     * Balanced desktop sizing based on the actual Stock screen.
+     * Keep the "Tìm trong" choices legible and give photos priority over
+     * unused whitespace; align Dashboard controls and cards with Stock.
+     */
+    :root {
+      --checking-control-height:38px;
+      --checking-control-font:12px;
+      --checking-filter-font:13px;
+    }
+    .view-tabs { gap:4px; border-radius:11px; }
+    .view-tab { min-height:36px; padding:7px 14px; font-size:12px; }
+    #view-stock .toolbar-filters .filter-label {
+      font-size:12px; font-weight:800; color:var(--ink);
+    }
+    #view-stock .toolbar-filters .radio-group { gap:4px; align-items:center; }
+    #view-stock .toolbar-filters .radio-group span {
+      font-size:var(--checking-filter-font); font-weight:700;
+      padding:6px 11px; border-radius:8px;
+    }
+    #view-stock .quick-stock-select { font-size:12px; }
+    #view-stock .quick-stock-select select { font-size:var(--checking-control-font); }
+    #view-stock .quick-filters .checkbox-group label { font-size:12px; }
+    #view-stock .image-viewer-box { height:clamp(245px,30vh,350px); }
+    #view-dashboard .pane-heading { margin:5px 0 12px; }
+    #view-dashboard .pane-heading h1 { font-size:clamp(21px,2vw,26px); }
+    #view-dashboard .dashboard-filters {
+      gap:9px 12px; padding:12px 14px; margin-bottom:12px; border-radius:12px;
+    }
+    #view-dashboard .dashboard-filters label {
+      gap:4px; font-size:12px; font-weight:750; min-width:135px;
+    }
+    #view-dashboard .dashboard-filters input,
+    #view-dashboard .dashboard-filters select {
+      min-height:var(--checking-control-height); padding:7px 10px;
+      font-size:var(--checking-filter-font); border-radius:8px;
+    }
+    #view-dashboard .metric-grid { gap:10px; margin-bottom:11px; }
+    #view-dashboard .metric-card { min-height:114px; padding:13px 15px; border-radius:12px; }
+    #view-dashboard .metric-label { font-size:12px; }
+    #view-dashboard .metric-value { font-size:clamp(21px,2vw,28px); }
+    #view-dashboard .metric-note { font-size:10px; }
+    #view-dashboard .metric-money { font-size:clamp(18px,1.7vw,26px); }
+    #view-dashboard .insights-panel { padding:12px; border-radius:12px; }
+    #view-dashboard .insight-grid, #view-dashboard .dashboard-utilities { gap:12px; }
+    #view-dashboard .dashboard-chart { height:365px; padding:15px; border-radius:12px; }
+    #view-dashboard .dashboard-chart h3 { font-size:13px; margin-bottom:5px; }
+    #view-dashboard .dashboard-chart > .insight-note { margin:0 0 8px; }
+
+    @media(min-width:1100px) and (min-height:620px) {
+      /* Same fixed shell in both tabs; Dashboard scrolls within its own panel. */
+      body.dashboard-one-screen { height:100dvh; min-height:0; overflow:hidden; }
+      body.dashboard-one-screen .app-shell {
+        height:100dvh; min-height:0; display:flex; flex-direction:column; overflow:hidden;
+      }
+      body.dashboard-one-screen .app-header {
+        height:56px; min-height:56px; flex:0 0 56px;
+        padding-inline:clamp(12px,1.5vw,28px);
+      }
+      body.dashboard-one-screen .workspace {
+        width:100%; flex:1 1 auto; min-height:0; max-width:none;
+        display:flex; flex-direction:column; overflow:hidden;
+        padding:6px clamp(12px,1.5vw,28px);
+      }
+      body.dashboard-one-screen .breadcrumbs { display:none; }
+      body.dashboard-one-screen .view-tabs {
+        flex:0 0 auto; margin:0 0 7px; padding:2px; gap:3px; border-radius:10px;
+      }
+      body.dashboard-one-screen .view-tab {
+        min-height:35px; padding:6px 13px; font-size:12px; border-radius:7px;
+      }
+      body.dashboard-one-screen #view-dashboard {
+        flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden;
+        overscroll-behavior:contain; padding-right:4px; padding-bottom:8px;
+      }
+      body.dashboard-one-screen .footer-bar {
+        flex:0 0 auto; padding:5px 0 0; font-size:10px; gap:5px; line-height:1.2;
+      }
+
+      /* Stock and Dashboard share control heights and clearer typography. */
+      body.stock-one-screen .app-header {
+        height:56px; min-height:56px; flex-basis:56px;
+      }
+      body.stock-one-screen .view-tab {
+        min-height:35px; padding:6px 13px; font-size:12px;
+      }
+      body.stock-one-screen #view-stock .toolbar {
+        padding:8px 11px; gap:6px; margin-bottom:7px;
+      }
+      body.stock-one-screen #view-stock .search-input input {
+        height:var(--checking-control-height); font-size:13px;
+      }
+      body.stock-one-screen #view-stock .search-box-group > .btn {
+        min-height:var(--checking-control-height); font-size:12px;
+      }
+      body.stock-one-screen #view-stock .quick-stock-select {
+        gap:2px; font-size:11px;
+      }
+      body.stock-one-screen #view-stock .quick-stock-select select {
+        min-height:var(--checking-control-height);
+        height:var(--checking-control-height); font-size:12px;
+      }
+      body.stock-one-screen #view-stock .quick-filters .checkbox-group label {
+        font-size:11px; gap:5px;
+      }
+      body.stock-one-screen #view-stock .quick-filters .checkbox-group input {
+        width:15px; height:15px;
+      }
+      body.stock-one-screen #view-stock .toolbar-primary > #btn-xuat-excel {
+        min-height:var(--checking-control-height); font-size:11px;
+      }
+      body.stock-one-screen #view-stock .toolbar-filters {
+        padding-top:6px; gap:8px;
+      }
+      body.stock-one-screen #view-stock .toolbar-filters .filter-label {
+        font-size:12px;
+      }
+      body.stock-one-screen #view-stock .toolbar-filters .radio-group {
+        gap:5px;
+      }
+      body.stock-one-screen #view-stock .toolbar-filters .radio-group span {
+        font-size:13px; padding:6px 12px; line-height:1.2;
+        border-radius:7px;
+      }
+      body.stock-one-screen #view-stock .main-container {
+        grid-template-columns:minmax(0,1.65fr) minmax(340px,1fr);
+        gap:10px;
+      }
+      body.stock-one-screen #view-stock .image-viewer-box {
+        height:clamp(215px,28dvh,290px);
+        min-height:215px; margin-bottom:6px;
+      }
+      body.stock-one-screen #view-stock .image-thumb {
+        flex:0 0 42px; width:42px; height:42px;
+      }
+      body.stock-one-screen #view-stock #luoi-chi-tiet {
+        gap:6px;
+      }
+      body.stock-one-screen #view-stock #luoi-chi-tiet .detail-item,
+      body.stock-one-screen #view-stock #luoi-chi-tiet .bm-no-card {
+        padding:7px 8px; gap:3px;
+      }
+      body.stock-one-screen #view-stock #luoi-chi-tiet .detail-item label {
+        font-size:10px;
+      }
+      body.stock-one-screen #view-stock #luoi-chi-tiet .detail-item span {
+        font-size:12px;
+      }
+    }
+    @media(max-width:900px) {
+      #view-stock .image-viewer-box { height:clamp(255px,32vh,350px); }
+    }
+    @media(max-width:620px) {
+      #view-stock .toolbar-filters .radio-group span { font-size:12px; padding:5px 8px; }
+      #view-stock .quick-stock-select { font-size:11px; }
+      #view-stock .image-viewer-box { height:260px; }
+      #view-dashboard .dashboard-filters { padding:10px; }
+      #view-dashboard .metric-card { min-height:112px; padding:12px; }
+      #view-dashboard .dashboard-chart { height:350px; padding:13px; }
+    }
   </style>
 </head>
 <body>
@@ -1337,6 +1498,7 @@
       tabHienTai=tab;
       // Enable viewport-fitting layout only for Stock; Dashboard retains normal scrolling.
       document.body.classList.toggle("stock-one-screen",tab==="stock");
+      document.body.classList.toggle("dashboard-one-screen",tab==="dashboard");
       for(const name of CAC_TAB){
         const pane=document.getElementById("view-"+name);
         const button=document.getElementById("tab-"+name);
