@@ -1067,7 +1067,7 @@
     <header class="app-header">
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">▦</div>
-        <div class="brand-wordmark"><span data-i18n="brandName">Quản lý kho SAP</span><small data-i18n="brandSubtitle">OPERATIONS WORKSPACE</small></div>
+        <div class="brand-wordmark"><span data-i18n="brandName">Quản lý kho SAP</span><small data-i18n="brandSubtitle">KHÔNG GIAN QUẢN LÝ</small></div>
       </div>
       <div class="header-actions">
         <div class="preference-group" role="group" data-i18n-aria="themeSettings" aria-label="Giao diện"><button type="button" id="theme-toggle" onclick="doiGiaoDien()" aria-pressed="false" aria-label="Chuyển sang giao diện tối" title="Chuyển sang giao diện tối">☾</button></div>
@@ -1078,8 +1078,8 @@
     </header>
 
     <main class="workspace">
-      <div class="breadcrumbs"><span>Workspace</span><span>/</span><span class="active" data-i18n="breadcrumb">Tổng quan vật tư</span></div>
-      <nav class="view-tabs" aria-label="Inventory workspace tabs" data-i18n-aria="tabsAria" role="tablist">
+      <div class="breadcrumbs"><span data-i18n="workspaceName">Không gian làm việc</span><span>/</span><span class="active" data-i18n="breadcrumb">Tổng quan vật tư</span></div>
+      <nav class="view-tabs" aria-label="Các màn hình quản lý kho" data-i18n-aria="tabsAria" role="tablist">
         <button type="button" id="tab-stock" class="view-tab active" role="tab" aria-selected="true" aria-controls="view-stock" tabindex="0" onclick="chuyenTab('stock')"><span aria-hidden="true">▤</span><span data-i18n="tabStock">Tra cứu tồn kho</span></button>
         <button type="button" id="tab-dashboard" class="view-tab" role="tab" aria-selected="false" aria-controls="view-dashboard" tabindex="-1" onclick="chuyenTab('dashboard')"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Phân tích kho</span></button>
       </nav>
@@ -1095,8 +1095,8 @@
           <div class="search-box-group">
             <div class="search-input">
               <input type="search" id="o-tim-kiem" autocomplete="off" data-i18n-aria="searchAria"
-                aria-label="Tìm mã SAP, mô tả, Part No" data-i18n-placeholder="searchPlaceholder"
-                placeholder="Tìm SAP001, SAP002 hoặc mô tả, Part No..."
+                aria-label="Tìm mã SAP, mô tả, mã phụ tùng" data-i18n-aria="searchAria" data-i18n-placeholder="searchPlaceholder"
+                placeholder="Tìm SAP001, SAP002 hoặc mô tả, mã phụ tùng..."
                 oninput="yeuCauLocDuLieu()" onpaste="xuLyDanTimKiem(event)">
               <span class="search-hint" aria-hidden="true">/</span>
             </div>
@@ -1104,9 +1104,9 @@
             <button type="button" class="btn btn-secondary" onclick="lamMoi()" data-i18n="clear">Xóa</button>
           </div>
 
-          <div class="quick-filters" role="group" data-i18n-aria="stockStatus" aria-label="Tồn kho so với Reorder Point">
+          <div class="quick-filters" role="group" data-i18n-aria="stockStatus" aria-label="Tồn kho so với điểm đặt hàng lại">
             <label class="quick-stock-select">
-              <span data-i18n="stockStatus">Tồn kho so với Reorder Point</span>
+              <span data-i18n="stockStatus">Tồn kho so với điểm đặt hàng lại</span>
               <select id="loc-canh-bao" onchange="yeuCauLocDuLieu()">
                 <option value="all" data-i18n="stockAny">Tất cả trạng thái</option>
                 <option value="healthy" data-i18n="stockAbove">Trên định mức</option>
@@ -1126,7 +1126,7 @@
             </div>
           </div>
 
-          <button type="button" id="btn-xuat-excel" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo Excel (.xlsx)</span></button>
+          <button type="button" id="btn-xuat-excel" class="btn btn-soft" onclick="xuatExcel()">↓ <span data-i18n="export">Xuất báo cáo bảng tính (.xlsx)</span></button>
         </div>
         <div class="toolbar-filters">
           <span class="filter-label" data-i18n="searchIn">Tìm trong</span>
@@ -1135,7 +1135,7 @@
             <label><input type="radio" name="truongTim" value="sap" onchange="yeuCauLocDuLieu()"><span data-i18n="searchSap">Mã SAP</span></label>
             <label><input type="radio" name="truongTim" value="desc" onchange="yeuCauLocDuLieu()"><span data-i18n="searchDesc">Mô tả</span></label>
             <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"><span data-i18n="searchPart">Mã phụ tùng</span></label>
-            <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span data-i18n="searchBm">BM No</span></label>
+            <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span data-i18n="searchBm">Mã BM</span></label>
           </div>
         </div>
       </section>
@@ -1158,7 +1158,7 @@
           <div class="table-bottom">
             <div class="page-size-controls">
               <label for="so-dong-moi-trang" data-i18n="rowsPerPage">Số dòng/trang</label>
-              <select id="so-dong-moi-trang" onchange="chonSoDongMoiTrang(this.value)" aria-label="Chọn số dòng mỗi trang">
+              <select id="so-dong-moi-trang" onchange="chonSoDongMoiTrang(this.value)" data-i18n-aria="rowsPerPage" aria-label="Số dòng mỗi trang">
                 <option value="25">25</option><option value="50">50</option>
                 <option value="75" selected>75</option><option value="100">100</option>
                 <option value="200">200</option><option value="500">500</option>
@@ -1169,7 +1169,7 @@
                 data-i18n-aria="customRowsAria" aria-label="Nhập số dòng mỗi trang">
             </div>
             <div class="pagination" data-i18n-aria="paginationAria" aria-label="Chuyển trang">
-              <button type="button" class="btn btn-secondary" id="btn-trang-dau" onclick="denTrang(1)" data-i18n-title="firstPage" title="Về trang đầu" aria-label="Về trang đầu">«</button>
+              <button type="button" class="btn btn-secondary" id="btn-trang-dau" onclick="denTrang(1)" data-i18n-title="firstPage" title="Về trang đầu" data-i18n-aria="firstPage" aria-label="Về trang đầu">«</button>
               <button type="button" class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)" disabled>‹ <span data-i18n="prev">Trước</span></button>
               <label for="nhap-so-trang" data-i18n="pageLabel">Trang</label>
               <input id="nhap-so-trang" type="number" inputmode="numeric" min="1" step="1" value="1"
@@ -1177,7 +1177,7 @@
                 data-i18n-aria="jumpPageAria" aria-label="Nhập số trang muốn đến">
               <span id="thong-tin-trang" aria-live="polite">/ 1</span>
               <button type="button" class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)" disabled><span data-i18n="next">Sau</span> ›</button>
-              <button type="button" class="btn btn-secondary" id="btn-trang-cuoi" onclick="denTrang(Math.max(1,Math.ceil(ketQuaLoc.length/SO_DONG_MOI_TRANG)))" data-i18n-title="lastPage" title="Đến trang cuối" aria-label="Đến trang cuối">»</button>
+              <button type="button" class="btn btn-secondary" id="btn-trang-cuoi" onclick="denTrang(Math.max(1,Math.ceil(ketQuaLoc.length/SO_DONG_MOI_TRANG)))" data-i18n-title="lastPage" title="Đến trang cuối" data-i18n-aria="lastPage" aria-label="Đến trang cuối">»</button>
             </div>
           </div>
         </section>
@@ -1217,8 +1217,8 @@
       <section id="view-dashboard" class="view-pane" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
         <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Phân tích kho</h1><p data-i18n="dashboardDesc">Giá trị tồn kho, cơ cấu vật tư, tình trạng tồn và biểu đồ tổng hợp.</p></div></div>
       <div class="dashboard-filters" role="search" data-i18n-aria="dashFilters" aria-label="Bộ lọc phân tích kho">
-        <label class="dashboard-search"><span data-i18n="dashSearch">Tìm vật tư</span><input id="dashboard-search" type="search" data-i18n-placeholder="dashSearchPlaceholder" placeholder="Mã SAP, mô tả, Part No..." oninput="yeuCauLocDashboard()"></label>
-        <label><span data-i18n="stockStatus">Stock so với Reorder Point</span><select id="dashboard-status" onchange="capNhatThongKeNangCao()">
+        <label class="dashboard-search"><span data-i18n="dashSearch">Tìm vật tư</span><input id="dashboard-search" type="search" data-i18n-placeholder="dashSearchPlaceholder" placeholder="Mã SAP, mô tả, mã phụ tùng..." oninput="yeuCauLocDashboard()"></label>
+        <label><span data-i18n="stockStatus">Tồn kho so với điểm đặt hàng lại</span><select id="dashboard-status" onchange="capNhatThongKeNangCao()">
           <option value="all" data-i18n="stockAny">Tất cả trạng thái</option><option value="healthy" data-i18n="stockAbove">Trên định mức</option>
           <option value="at" data-i18n="stockEqual">Bằng định mức</option><option value="below" data-i18n="stockBelow">Dưới định mức</option>
           <option value="zero" data-i18n="stockZero">Hết hàng (= 0)</option><option value="unknown" data-i18n="stockUnknown">Chưa có định mức</option>
@@ -1228,7 +1228,7 @@
       </div>
       <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
         <div class="metric-card">
-          <div class="metric-text"><div class="metric-label" data-i18n="dashTotalRows">Tổng dòng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="dashKpiNote">Theo bộ lọc Dashboard</span></div>
+          <div class="metric-text"><div class="metric-label" data-i18n="dashTotalRows">Tổng dòng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="dashKpiNote">Theo bộ lọc phân tích kho</span></div>
           <div class="metric-icon" aria-hidden="true">▦</div>
         </div>
         <div class="metric-card">
@@ -1236,7 +1236,7 @@
           <div class="metric-icon" aria-hidden="true">✓</div>
         </div>
         <div class="metric-card">
-          <div class="metric-text"><div class="metric-label" data-i18n="attentionTitle">Vật tư cần chú ý</div><strong class="metric-value" id="metric-attention">—</strong><span class="metric-note" data-i18n="attentionNote">Hết hàng, dưới hoặc bằng Reorder Point</span></div>
+          <div class="metric-text"><div class="metric-label" data-i18n="attentionTitle">Vật tư cần chú ý</div><strong class="metric-value" id="metric-attention">—</strong><span class="metric-note" data-i18n="attentionNote">Hết hàng, dưới hoặc bằng điểm đặt hàng lại</span></div>
           <div class="metric-icon" aria-hidden="true">!</div>
         </div>
         <div class="metric-card metric-card-value">
@@ -1254,12 +1254,12 @@
         <p class="insight-note" data-i18n="allInventoryNote"></p>
         <div class="insight-grid">
           <div class="insight-box dashboard-chart"><h3 data-i18n="stockDistribution">Phân bố trạng thái tồn kho</h3><div id="insight-stock-distribution" class="stock-distribution dashboard-chart-body"></div></div>
-          <div class="insight-box dashboard-chart"><h3 data-i18n="dashCoverage">Mức tồn so với Reorder Point</h3><p class="insight-note" data-i18n="dashCoverageNote">Tỷ lệ Stock / ROP; chỉ tính ROP lớn hơn 0 và Stock không âm.</p><div id="insight-coverage" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashCoverage"></div></div>
+          <div class="insight-box dashboard-chart"><h3 data-i18n="dashCoverage">Mức tồn so với điểm đặt hàng lại</h3><p class="insight-note" data-i18n="dashCoverageNote">Tỷ lệ tồn kho / điểm đặt hàng lại với dữ liệu hợp lệ.</p><div id="insight-coverage" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashCoverage"></div></div>
           <div class="insight-box dashboard-chart"><h3 data-i18n="dashTopValue">Vật tư có giá trị tồn cao nhất</h3><p class="insight-note" data-i18n="dashValueNote">Gộp theo mã SAP; tỷ trọng so với tổng giá trị trong phạm vi lọc.</p><div id="insight-top" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashTopValue"></div></div>
-          <div class="insight-box dashboard-chart"><h3 data-i18n="dashReplenishment">Ước tính bổ sung đến Reorder Point</h3><p class="insight-note" data-i18n="dashReplenishmentNote">Phần thiếu đến ROP × đơn giá; gộp theo mã SAP.</p><div id="insight-replenishment" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashReplenishment"></div><p id="dashboard-replenishment-note" class="insight-note"></p></div>
+          <div class="insight-box dashboard-chart"><h3 data-i18n="dashReplenishment">Ước tính bổ sung đến điểm đặt hàng lại</h3><p class="insight-note" data-i18n="dashReplenishmentNote">Phần thiếu đến ROP × đơn giá; gộp theo mã SAP.</p><div id="insight-replenishment" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashReplenishment"></div><p id="dashboard-replenishment-note" class="insight-note"></p></div>
         </div>
         <div class="dashboard-utilities">
-          <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><p class="insight-note" data-i18n="dashSnapshotNote">Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc Dashboard.</p><div id="insight-history" class="history-grid"></div></div>
+          <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><p class="insight-note" data-i18n="dashSnapshotNote">Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc phân tích kho.</p><div id="insight-history" class="history-grid"></div></div>
           <div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
             <div class="advanced-controls" style="padding-top:0">
               <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
@@ -1267,7 +1267,7 @@
                 <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
                 <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
               </select>
-              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="dashStockExport">Xuất kết quả tra Stock</button>
+              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="dashStockExport">Xuất kết quả tra cứu tồn kho</button>
             </div>
             <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
           </div>
@@ -1302,7 +1302,7 @@
       <div><h2 id="material-history-title" data-i18n="materialHistoryTitle">Lịch sử sử dụng vật tư</h2><p id="material-history-sap"></p></div>
       <button type="button" class="btn btn-secondary" onclick="dongLichSuVatTu()" data-i18n="materialHistoryClose" autofocus>Đóng</button>
     </div>
-    <div class="material-history-stats" aria-label="Material quantity and stock coverage">
+    <div class="material-history-stats" data-i18n-aria="detailKpiAria" aria-label="Các chỉ số vật tư được chọn">
       <div class="material-history-stat in"><span data-i18n="materialHistoryInCount">Số lượng nhập</span><strong id="material-history-in-count">—</strong><small id="material-history-in-note"></small></div>
       <div class="material-history-stat out"><span data-i18n="materialHistoryOutCount">Số lượng xuất</span><strong id="material-history-out-count">—</strong><small id="material-history-out-note"></small></div>
       <div class="material-history-stat"><span data-i18n="materialHistoryOtherCount">Số lượng khác</span><strong id="material-history-other-count">—</strong><small id="material-history-unknown-note"></small></div>
@@ -1321,7 +1321,7 @@
       <label class="history-filter-field"><span data-i18n="materialHistoryTo">Ngày hạch toán đến</span><input id="material-history-to" type="date" onchange="locLichSuVatTu()"></label>
       <label class="history-filter-field history-filter-cost"><span data-i18n="materialHistoryCostCenter">Trung tâm chi phí</span><select id="material-history-cost" onchange="locLichSuVatTu()"><option value="" data-i18n="historyAny">Tất cả</option></select></label>
       <button type="button" class="btn btn-soft" onclick="xoaLocLichSuVatTu()" data-i18n="historyClear">Xóa lọc</button>
-      <button type="button" class="btn btn-soft" id="material-history-refresh" onclick="taiHistory(true)" data-i18n="historyRefresh">Tải lại History.js</button>
+      <button type="button" class="btn btn-soft" id="material-history-refresh" onclick="taiHistory(true)" data-i18n="historyRefresh">Tải lại dữ liệu lịch sử</button>
     </div>
     <p id="material-history-status" role="status" aria-live="polite"></p>
     <div class="material-history-table" tabindex="0" role="region" data-i18n-aria="materialHistoryTitle" aria-label="Lịch sử sử dụng vật tư">
@@ -1343,7 +1343,7 @@
     const NGON_NGU = {
       vi: {
         pageTitle:"Quản lý kho SAP · Tra cứu tồn kho",
-        brandName:"Quản lý kho SAP",colReorder:"Điểm đặt hàng lại",colStorageBin:"Vị trí lưu kho",colStorageLoc:"Kho lưu trữ",colMaterialType:"Loại vật tư",colCostCenter:"Trung tâm chi phí",colPostingDate:"Ngày hạch toán",colStockQty:"Tồn kho khả dụng",
+        brandName:"Quản lý kho SAP",workspaceName:"Không gian làm việc",colReorder:"Điểm đặt hàng lại",colStorageBin:"Vị trí lưu kho",colStorageLoc:"Kho lưu trữ",colMaterialType:"Loại vật tư",colCostCenter:"Trung tâm chi phí",colPostingDate:"Ngày hạch toán",colStockQty:"Tồn kho khả dụng",
         detailKpiAria:"Các chỉ số vật tư được chọn",
         detailStockValue:"Giá trị tồn kho",
         detailStockStatus:"Trạng thái tồn kho",
@@ -1450,7 +1450,7 @@
       },
       en: {
         pageTitle:"SAP Inventory · Stock lookup",
-        brandName:"SAP Inventory",colReorder:"Reorder point",colStorageBin:"Storage bin",colStorageLoc:"Storage location",colMaterialType:"Material type",colCostCenter:"Cost center",colPostingDate:"Posting date",colStockQty:"Available stock",
+        brandName:"SAP Inventory",workspaceName:"Workspace",colReorder:"Reorder point",colStorageBin:"Storage bin",colStorageLoc:"Storage location",colMaterialType:"Material type",colCostCenter:"Cost center",colPostingDate:"Posting date",colStockQty:"Available stock",
         detailKpiAria:"Selected material metrics",
         detailStockValue:"Inventory value",
         detailStockStatus:"Stock status",
