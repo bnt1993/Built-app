@@ -3709,7 +3709,8 @@
         root.textContent=tuDien("dashboardTopOutEmpty");
       }else{
         const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
-          '</th><th>'+thoatHTML(tuDien("dashboardTopOutCount"))+
+          '</th><th title="'+thoatHTML(tuDien("dashboardTopOutQtyMissingNote"))+'">'+
+          thoatHTML(tuDien("dashboardTopOutCount"))+
           '</th><th>'+thoatHTML(tuDien("dashboardTopOutUnit"))+
           '</th><th>'+thoatHTML(tuDien("dashboardTopOutValue"))+'</th></tr></thead>';
         root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
@@ -3762,7 +3763,10 @@
             row.priceMixed=true;row.priceValid=false;
           }
         }
-        if(!unit||row.unit!==unit)row.quantityValid=false;
+        if(!unit||row.unit!==unit){
+          row.quantityValid=false;
+          if(row.unit&&unit&&row.unit!==unit)row.priceMixed=true;
+        }
         if(row.quantityValid)row.quantity+=item.soLuong;
       }
       for(const rec of historyAll){
