@@ -1385,6 +1385,77 @@
       #view-dashboard .dashboard-chart-filters { width:100%; }
       #view-dashboard .dashboard-top-table { font-size:10px; }
     }
+
+    #view-dashboard .dashboard-period-strip {
+      display:flex; flex-wrap:wrap; gap:8px 12px; align-items:flex-end;
+      background:var(--app-panel); border:1px solid var(--line);
+      padding:11px 14px; border-radius:12px; margin:0 0 12px;
+    }
+    #view-dashboard .dashboard-period-intro {
+      flex:1 1 180px; display:flex; flex-direction:column; gap:4px;
+      font-size:12px;
+    }
+    #view-dashboard .dashboard-period-strip > label,
+    #view-dashboard .dashboard-table-chart .dashboard-chart-heading label {
+      display:flex; flex-direction:column; gap:3px; font-size:11px;
+      color:var(--muted); font-weight:750;
+    }
+    #view-dashboard .dashboard-period-strip input,
+    #view-dashboard .dashboard-period-strip select,
+    #view-dashboard .dashboard-table-chart .dashboard-chart-heading select {
+      color:var(--ink); background:var(--app-field); border:1px solid var(--line);
+      border-radius:8px; padding:5px 9px; min-height:32px; max-width:200px;
+      font:inherit; font-size:12px;
+    }
+    #view-dashboard .dashboard-period-strip [hidden] { display:none !important; }
+    #view-dashboard .dashboard-compare-section {
+      background:var(--app-panel); border:1px solid var(--line);
+      border-radius:12px; padding:12px 14px; margin-bottom:12px;
+    }
+    #view-dashboard .dashboard-compare-section h2 { font-size:14px; margin:0; }
+    #view-dashboard .dashboard-compare-grid {
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:8px;
+    }
+    #view-dashboard .dashboard-compare-card {
+      border:1px solid var(--line); border-radius:10px; background:var(--app-field);
+      padding:10px 12px; display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px;
+    }
+    #view-dashboard .dashboard-compare-card h3 { margin:0; color:var(--muted); font-size:12px; flex:1 1 100%; }
+    #view-dashboard .dashboard-compare-card strong { font-size:19px; font-variant-numeric:tabular-nums; }
+    #view-dashboard .dashboard-compare-card small { color:var(--muted); font-size:11px; flex:1 1 100%; }
+    #view-dashboard .dashboard-compare-delta {
+      font-size:12px; font-weight:800; border-radius:7px; padding:3px 6px;
+      background:var(--app-panel); font-variant-numeric:tabular-nums;
+    }
+    #view-dashboard .dashboard-compare-delta[data-change="up"] { color:#c44b28; }
+    #view-dashboard .dashboard-compare-delta[data-change="down"] { color:#16875a; }
+    #view-dashboard .dashboard-table-chart { height:375px; }
+    #view-dashboard .dashboard-table-chart .dashboard-chart-body { overflow:auto; }
+    #view-dashboard .dashboard-detail-table { width:100%; border-collapse:collapse; font-size:11px; }
+    #view-dashboard .dashboard-detail-table th {
+      position:sticky; top:0; background:var(--app-panel); border-bottom:1px solid var(--line);
+      color:var(--muted); font-size:10px; font-weight:750; padding:8px 6px;
+      text-align:left; white-space:nowrap;
+    }
+    #view-dashboard .dashboard-detail-table td {
+      padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top;
+    }
+    #view-dashboard .dashboard-detail-table td:last-child,
+    #view-dashboard .dashboard-detail-table th:last-child { text-align:right; }
+    #view-dashboard .dashboard-detail-table tr[data-material-index] { cursor:pointer; }
+    #view-dashboard .dashboard-detail-table tr[data-material-index]:hover td { background:var(--app-hover); }
+    #view-dashboard .dashboard-detail-table tr[data-material-index]:focus-visible td {
+      outline:1px solid var(--blue);
+    }
+    #view-dashboard .dashboard-detail-table .material-name {
+      display:block; color:var(--muted); font-size:10px; overflow-wrap:anywhere;
+    }
+    #view-dashboard .dashboard-detail-table .material-sap { font-weight:800; }
+    @media(max-width:700px) {
+      #view-dashboard .dashboard-period-intro { flex:1 1 100%; }
+      #view-dashboard .dashboard-compare-grid { grid-template-columns:1fr; }
+      #view-dashboard .dashboard-table-chart { height:360px; }
+    }
   </style>
 </head>
 <body>
@@ -1540,7 +1611,24 @@
       </section>
 
       <section id="view-dashboard" class="view-pane" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
-        <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Phân tích kho</h1><p data-i18n="dashboardDesc">Giá trị tồn kho, cơ cấu vật tư, tình trạng tồn và biểu đồ tổng hợp.</p></div></div>
+        <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Phân tích kho</h1><p data-i18n="dashboardDesc">Theo dõi nhập xuất, vật tư tồn lâu và biến động giá trị kho.</p></div></div>
+      <section class="dashboard-period-strip" aria-label="Khoảng thời gian phân tích" data-i18n-aria="dashboardTimeTitle">
+        <div class="dashboard-period-intro"><strong data-i18n="dashboardTimeTitle">Khoảng thời gian phân tích</strong>
+          <span id="dashboard-range-summary" class="insight-note"></span></div>
+        <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
+          <select id="dashboard-range-mode" onchange="doiKyPhanTichKho()">
+            <option value="week" data-i18n="dashboardTimeWeek">7 ngày gần đây</option>
+            <option value="month" data-i18n="dashboardTimeMonth" selected>Tháng hiện tại</option>
+            <option value="year" data-i18n="dashboardTimeYear">Theo năm</option>
+            <option value="custom" data-i18n="dashboardTimeCustom">Tùy chọn ngày</option>
+          </select></label>
+        <label id="dashboard-range-year-field" hidden><span data-i18n="dashboardTimeYearLabel">Năm</span>
+          <input type="number" id="dashboard-range-year" min="2000" max="2100" step="1" onchange="doiKyPhanTichKho()"></label>
+        <label id="dashboard-range-from-field" hidden><span data-i18n="dashboardTimeFrom">Từ ngày</span>
+          <input id="dashboard-range-from" type="date" onchange="doiKyPhanTichKho()"></label>
+        <label id="dashboard-range-to-field" hidden><span data-i18n="dashboardTimeTo">Đến ngày</span>
+          <input id="dashboard-range-to" type="date" onchange="doiKyPhanTichKho()"></label>
+      </section>
       <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
         <div class="metric-card">
           <div class="metric-text"><div class="metric-label" data-i18n="dashTotalRows">Tổng dòng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="dashKpiNote">Toàn bộ dữ liệu kho</span></div>
@@ -1562,6 +1650,27 @@
           </div>
           <div class="metric-icon" aria-hidden="true">₫</div>
         </div>
+      </section>
+      <section class="dashboard-compare-section" aria-label="So sánh nhập xuất" data-i18n-aria="dashboardCompareTitle">
+        <div class="dashboard-chart-heading">
+          <h2 data-i18n="dashboardCompareTitle">So sánh nhập / xuất với kỳ trước</h2>
+          <p class="insight-note" id="dashboard-compare-periods"></p>
+        </div>
+        <div class="dashboard-compare-grid">
+          <article class="dashboard-compare-card">
+            <h3 data-i18n="dashboardCompareIn">Giá trị nhập</h3>
+            <strong id="dashboard-compare-in-current">—</strong>
+            <span class="dashboard-compare-delta" id="dashboard-compare-in-change">—</span>
+            <small id="dashboard-compare-in-prior"></small>
+          </article>
+          <article class="dashboard-compare-card">
+            <h3 data-i18n="dashboardCompareOut">Giá trị xuất</h3>
+            <strong id="dashboard-compare-out-current">—</strong>
+            <span class="dashboard-compare-delta" id="dashboard-compare-out-change">—</span>
+            <small id="dashboard-compare-out-prior"></small>
+          </article>
+        </div>
+        <p id="dashboard-compare-note" class="insight-note" role="status"></p>
       </section>
 
       <section class="insights-panel" id="insights-panel" aria-labelledby="dashboard-charts-heading">
@@ -1618,7 +1727,35 @@
             <div id="insight-value-trend" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashValueTrendTitle"></div>
             <p id="dashboard-value-trend-summary" class="insight-note" role="status"></p>
           </div>
-
+          <div class="insight-box dashboard-chart dashboard-table-chart">
+            <div class="dashboard-chart-heading">
+              <h3 data-i18n="dashboardTopOutTitle">Vật tư xuất nhiều nhất theo giá trị</h3>
+              <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
+                <select id="dashboard-out-period" onchange="veTopVatTuXuatKho()">
+                  <option value="selected" data-i18n="dashboardTimeSelected" selected>Theo khoảng đã chọn</option>
+                  <option value="week" data-i18n="dashWeek">Hằng tuần</option>
+                  <option value="month" data-i18n="dashMonth">Hằng tháng</option>
+                  <option value="year" data-i18n="dashYear">Hằng năm</option>
+                </select></label>
+            </div>
+            <p class="insight-note" data-i18n="dashboardTopOutNote">Xuất theo giá trị; nhấn đúp để xem lịch sử.</p>
+            <div id="dashboard-top-out" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardTopOutTitle"></div>
+            <p id="dashboard-top-out-note" class="insight-note" role="status"></p>
+          </div>
+          <div class="insight-box dashboard-chart dashboard-table-chart">
+            <div class="dashboard-chart-heading">
+              <h3 data-i18n="dashboardDormantTitle">Vật tư tồn lâu chưa xuất</h3>
+              <label><span data-i18n="dashboardDormantDays">Không xuất trong</span>
+                <select id="dashboard-dormant-days" onchange="veVatTuTonLau()">
+                  <option value="90" data-i18n="dashboardDormant90" selected>90 ngày</option>
+                  <option value="180" data-i18n="dashboardDormant180">180 ngày</option>
+                  <option value="365" data-i18n="dashboardDormant365">365 ngày</option>
+                </select></label>
+            </div>
+            <p class="insight-note" data-i18n="dashboardDormantNote">Xét tồn kho hiện tại và lịch sử giao dịch xuất.</p>
+            <div id="dashboard-dormant" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardDormantTitle"></div>
+            <p id="dashboard-dormant-note" class="insight-note" role="status"></p>
+          </div>
         </div>
         <div class="dashboard-utilities">
           <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><p class="insight-note" data-i18n="dashSnapshotNote">Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc phân tích kho.</p><div id="insight-history" class="history-grid"></div></div>
@@ -1725,6 +1862,56 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        colLeadTime:"Thời gian cung ứng",colSupplier:"Nhà cung cấp",colMaxStock:"Tồn kho tối đa",
+        dashboardTimeSelected:"Theo khoảng đã chọn",
+        dashboardTruncated:"Chỉ hiển thị {count} kỳ gần cuối của khoảng chọn",
+        colOrderType:"Loại đặt hàng",
+        colMinLot:"Lô đặt hàng tối thiểu",
+        dashboardCompareTitle:"So sánh nhập / xuất với kỳ trước",
+        dashboardCompareCurrent:"Kỳ đang chọn",
+        dashboardComparePrevious:"Kỳ trước",
+        dashboardCompareIn:"Giá trị nhập",
+        dashboardCompareOut:"Giá trị xuất",
+        dashboardCompareChange:"Thay đổi",
+        dashboardCompareNoPrevious:"Không có giá trị kỳ trước để tính tỷ lệ",
+        dashboardCompareNoHistory:"Chưa có dữ liệu giao dịch để so sánh",
+        dashboardCompareInvalid:"Bỏ qua {count} giao dịch thiếu ngày hoặc giá trị",
+        dashboardCompareNew:"Phát sinh mới",
+        dashboardCompareNote:"So sánh giá trị nhập và xuất với kỳ liền trước có cùng số ngày.",
+        dashboardTimeTitle:"Khoảng thời gian phân tích",
+        dashboardTimeMode:"Chọn kỳ",
+        dashboardTimeWeek:"7 ngày gần đây",
+        dashboardTimeMonth:"Tháng hiện tại",
+        dashboardTimeYear:"Theo năm",
+        dashboardTimeCustom:"Tùy chọn ngày",
+        dashboardTimeYearLabel:"Năm",
+        dashboardTimeFrom:"Từ ngày",
+        dashboardTimeTo:"Đến ngày",
+        dashboardTimeCurrent:"{from} – {to}",
+        dashboardTimeInvalid:"Khoảng ngày không hợp lệ",
+        dashboardTopOutTitle:"Vật tư xuất nhiều nhất theo giá trị",
+        dashboardTopOutNote:"Cộng giá trị giao dịch xuất theo mã SAP trong kỳ đã chọn. Nhấn đúp để xem lịch sử.",
+        dashboardTopOutEmpty:"Không có giao dịch xuất hợp lệ trong giai đoạn",
+        dashboardTopOutMissing:"Thiếu cột mã vật tư hoặc giá trị trong lịch sử",
+        dashboardTopOutValue:"Giá trị xuất",
+        dashboardTopOutCount:"Lượt xuất",
+        dashboardDormantTitle:"Vật tư tồn lâu chưa xuất",
+        dashboardDormantDays:"Không xuất trong",
+        dashboardDormant90:"90 ngày",
+        dashboardDormant180:"180 ngày",
+        dashboardDormant365:"365 ngày",
+        dashboardDormantNote:"Xét vật tư đang còn tồn và lần xuất cuối trong lịch sử khả dụng; nguồn lịch sử có thể chưa đầy đủ.",
+        dashboardDormantLast:"Ngày xuất cuối",
+        dashboardDormantStock:"Tồn kho",
+        dashboardDormantDaysOld:"Số ngày chưa xuất",
+        dashboardDormantNever:"Chưa ghi nhận",
+        dashboardDormantNoHistory:"Chưa có dữ liệu lịch sử để phân tích",
+        dashboardDormantMissing:"Thiếu cột mã SAP trong lịch sử",
+        dashboardDormantEmpty:"Không có vật tư đáp ứng ngưỡng đã chọn",
+        dashboardDormantMore:"Hiển thị {count}/{total} vật tư · Nhấn đúp để xem lịch sử",
+        dashboardTopDoubleClick:"Nhấn đúp để xem lịch sử",
+        dashboardHistoryLoading:"Đang tải lịch sử giao dịch…",
+        dashboardPeriodNote:"Khoảng thời gian áp dụng cho so sánh, xếp hạng vật tư xuất và biểu đồ thời gian.",
         dashTopMissingQty:"—",
         dashTopMixedUnits:"Nhiều đơn vị",
         dashTopValueColumn:"Giá trị tồn",
@@ -1754,7 +1941,7 @@
         dashWeek:"Hằng tuần",
         dashUsagePeriod:"Chu kỳ",
         dashUsageTitle:"Giá trị nhập / xuất kho",
-        rankTop50:"Top 50",
+        rankTop50:"50 vật tư",
         historySortBy:"Sắp xếp theo {column}",historyExport:"Xuất Excel",
         historyExportTitle:"Xuất toàn bộ giao dịch đang lọc (không chỉ các dòng đã tải)",
         historyExportEmpty:"Không có giao dịch phù hợp để xuất Excel.",
@@ -1801,8 +1988,8 @@
         pageLabel:"Trang",
         pageTotal:"/ {total}",
         rankTop5:"5 mã",
-        rankTop10:"10 mã",
-        rankTop20:"20 mã",
+        rankTop10:"10 vật tư",
+        rankTop20:"20 vật tư",
         tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu tồn kho",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
         materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Thu gọn",materialHistoryNext:"Tải thêm",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số lượng nhập",materialHistoryOutCount:"Số lượng xuất",materialHistoryOtherCount:"Số lượng khác",materialHistoryStock:"Tồn kho hiện tại",materialHistoryFrom:"Ngày hạch toán từ",materialHistoryTo:"Ngày hạch toán đến",materialHistoryCostCenter:"Trung tâm chi phí",materialHistoryMissingCost:"Không có trung tâm chi phí",materialHistoryLoadedRows:"Đã xem {shown}/{total} dòng",materialHistoryQuantityMissing:"Không có cột số lượng",materialHistoryQuantityInvalid:"Có số lượng không hợp lệ",materialHistoryQuantityMixed:"Nhiều đơn vị tính, không thể cộng",materialHistoryQuantityUnit:"Chưa rõ đơn vị tính",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Thời gian sử dụng ước tính",
         consumptionAll:"Tất cả giao dịch xuất · {unit}",consumptionRecent:"12 tháng trọn vẹn · {period}",consumptionStock:"Tồn kho: {amount} {unit}",consumptionMonths:"{count} tháng",consumptionNoHistory:"Chưa có dữ liệu lịch sử.",consumptionMissingQty:"Không có cột số lượng trong dữ liệu lịch sử.",consumptionMixedUnits:"Nhiều đơn vị tính, không thể cộng chung.",consumptionUnitUnknown:"Chưa xác định đơn vị tính.",consumptionPartial:"{count} dòng xuất bị loại do thiếu hoặc sai đơn vị/số lượng.",consumptionNoDates:"Thiếu ngày hợp lệ để tính trung bình tháng.",consumptionNoAverage:"Không có lượng xuất trong 12 tháng trọn vẹn gần nhất.",consumptionNoStock:"Tồn kho không hợp lệ hoặc chưa được tải.",consumptionUnitMismatch:"Đơn vị tồn kho không khớp đơn vị giao dịch; không thể ước tính.",consumptionIncomplete:"Dữ liệu xuất không hợp lệ hoặc có nhiều đơn vị; chưa thể ước tính.",
@@ -1882,6 +2069,56 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        colLeadTime:"Lead time",colSupplier:"Supplier",colMaxStock:"Maximum stock",
+        dashboardTimeSelected:"Selected date range",
+        dashboardTruncated:"Only the most recent {count} periods in this range are shown",
+        colOrderType:"Order type",
+        colMinLot:"Minimum lot size",
+        dashboardCompareTitle:"Inbound / outbound vs prior period",
+        dashboardCompareCurrent:"Selected period",
+        dashboardComparePrevious:"Prior period",
+        dashboardCompareIn:"Inbound value",
+        dashboardCompareOut:"Outbound value",
+        dashboardCompareChange:"Change",
+        dashboardCompareNoPrevious:"No prior period baseline to calculate percentage",
+        dashboardCompareNoHistory:"No transaction data for comparison",
+        dashboardCompareInvalid:"Skipped {count} transactions without valid date/value",
+        dashboardCompareNew:"New activity",
+        dashboardCompareNote:"Compare inbound and outbound with the immediately prior period of the same length.",
+        dashboardTimeTitle:"Analysis date range",
+        dashboardTimeMode:"Period",
+        dashboardTimeWeek:"Last 7 days",
+        dashboardTimeMonth:"Current month",
+        dashboardTimeYear:"Calendar year",
+        dashboardTimeCustom:"Custom dates",
+        dashboardTimeYearLabel:"Year",
+        dashboardTimeFrom:"From",
+        dashboardTimeTo:"To",
+        dashboardTimeCurrent:"{from} – {to}",
+        dashboardTimeInvalid:"Invalid date range",
+        dashboardTopOutTitle:"Top materials by outbound value",
+        dashboardTopOutNote:"Outbound value from Amt.In of OUTPUT movements; double-click for history.",
+        dashboardTopOutEmpty:"No valid outbound transactions in this period",
+        dashboardTopOutMissing:"Missing SAP or amount history column",
+        dashboardTopOutValue:"Outbound value",
+        dashboardTopOutCount:"Issues",
+        dashboardDormantTitle:"Slow-moving materials",
+        dashboardDormantDays:"No issues for",
+        dashboardDormant90:"90 days",
+        dashboardDormant180:"180 days",
+        dashboardDormant365:"365 days",
+        dashboardDormantNote:"Based on current stock and last outgoing movement in available history; history may be incomplete.",
+        dashboardDormantLast:"Last issued",
+        dashboardDormantStock:"Stock",
+        dashboardDormantDaysOld:"Days since last issue",
+        dashboardDormantNever:"Not recorded",
+        dashboardDormantNoHistory:"No history available",
+        dashboardDormantMissing:"Missing SAP material column in history",
+        dashboardDormantEmpty:"No materials meet this threshold",
+        dashboardDormantMore:"Showing {count}/{total} materials · Double-click for history",
+        dashboardTopDoubleClick:"Double-click to view history",
+        dashboardHistoryLoading:"Loading transaction history…",
+        dashboardPeriodNote:"Date range applies to comparisons, top outbound materials and timeline charts.",
         dashTopMissingQty:"—",
         dashTopMixedUnits:"Mixed units",
         dashTopValueColumn:"Inventory value",
@@ -2035,7 +2272,7 @@
         reportNoSort:"Source order",reportLineValue:"Line value (VND)",
         reportNote:"Inventory value = positive stock quantity × valid unit price; invalid prices are excluded.",
         reportDisclaimer:"Source: internal SAP data · Includes only records matching the current filters.",
-        colSap:"BM No", colDescription:"Description", colPart:"Part No",
+        colSap:"SAP code", colDescription:"Description", colPart:"Part No",
         colQuantity:"Quantity", colPrice:"Price", colBm:"BM No", colUnit:"Unit", colGroup:"Group"
       }
     };
@@ -2073,7 +2310,13 @@
         "material group":"colGroup","material type":"colMaterialType",
         "reorder point":"colReorder","re-order point":"colReorder","rop":"colReorder",
         "storage bin":"colStorageBin","storage location":"colStorageLoc",
-        "cost center":"colCostCenter","posting date":"colPostingDate"
+        "cost center":"colCostCenter","posting date":"colPostingDate",
+        "type order":"colOrderType","order type":"colOrderType","type of order":"colOrderType",
+        "min lot":"colMinLot","min. lot":"colMinLot","min lot size":"colMinLot",
+        "minimum lot":"colMinLot","minimum lot size":"colMinLot",
+        "lead time":"colLeadTime","delivery time":"colLeadTime",
+        "supplier":"colSupplier","vendor":"colSupplier",
+        "max stock":"colMaxStock","maximum stock":"colMaxStock"
       }[k];
       return key ? tuDien(key) : ten;
     }
@@ -2473,7 +2716,7 @@
     function capNhatCardBmNo(dongData) {
       const card = document.getElementById("bm-no-card");
       const danhSach = document.getElementById("bm-no-list");
-      const chiSoBmNo=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
+      const chiSoBmNo=chiSoCotBmChinhXac();
       const giaTri = chiSoBmNo >= 0 ? String(dongData[chiSoBmNo] ?? "").trim() : "";
       const maBmNo = giaTri.split(/[,\n;|]+/).map(value => value.trim()).filter(Boolean);
 
@@ -2572,6 +2815,23 @@
       const accepted=new Set(aliases.map(normalize));
       const index=tieuDeCot.findIndex(name=>accepted.has(normalize(name)));
       return index>=0?index:(fallback>=0&&fallback<tieuDeCot.length?fallback:-1);
+    }
+
+    // BM comes from a named source column. No index fallback to unrelated fields.
+    function chiSoCotBmChinhXac() {
+      const aliases=["BM No","BM No.","BM Number","BM Code","BM",
+        "B/M No","B.M. No","BM Material","BM Material No","Mã BM","Mã số BM"];
+      const normalize=name=>chuanHoaTimKiem(name).replace(/[^a-z0-9]/g,"");
+      const accepted=new Set(aliases.map(normalize));
+      const candidates=tieuDeCot.map((name,index)=>({name:normalize(name),index}))
+        .filter(x=>accepted.has(x.name));
+      if(!candidates.length)return -1;
+      if(candidates.length===1)return candidates[0].index;
+      const sample=tatCaDuLieu.slice(1,Math.min(tatCaDuLieu.length,201));
+      const score=index=>sample.reduce((count,row)=>
+        count+(Array.isArray(row)&&String(row[index]??"").trim()?1:0),0);
+      candidates.sort((a,b)=>score(b.index)-score(a.index)||a.index-b.index);
+      return candidates[0].index;
     }
 
     function khopTuKhoaVatTu(muc,term,scope,ganDung) {
@@ -2736,6 +2996,9 @@
       veBangTopGiaTriVatTu(stats.values,limit);
       veBieuDoSuDungKho();
       veBieuDoGiaTriKho();
+      veSoSanhNhapXuatKho();
+      veTopVatTuXuatKho();
+      veVatTuTonLau();
       veLichSuKho();
       kiemTraNhacBaoCao();
     }
@@ -2827,6 +3090,40 @@
       return number.format(n);
     }
 
+
+    function nhomKyTrongKhoangKho(mode,range){
+      if(!range)return [];
+      const byKey=new Map();
+      let cursor=range.from,iterations=0;
+      while(cursor<=range.to&&iterations++<3654){
+        const key=khoaNhomKho(cursor,mode);
+        if(!byKey.has(key)){
+          let label="",title="";
+          if(mode==="week"){
+            const start=new Date(key+"T00:00:00Z");
+            const thursday=new Date(start);thursday.setUTCDate(thursday.getUTCDate()+3);
+            const year=thursday.getUTCFullYear();
+            const week=Math.ceil(((thursday-new Date(Date.UTC(year,0,1)))/86400000+1)/7);
+            label=(ngonNguHienTai==="en"?"Week ":"Tuần ")+week;
+            const finish=congNgayKho(key,6);
+            title=key+" – "+finish;
+          }else if(mode==="month"){
+            const [y,m]=key.split("-");
+            label=m+"/"+y;title=label;
+          }else if(mode==="year"){label=key;title=key;}
+          else{
+            const [y,m,d]=key.split("-");label=d+"/"+m;title=d+"/"+m+"/"+y;
+          }
+          byKey.set(key,{key,label,title});
+        }
+        cursor=congNgayKho(cursor,1);
+      }
+      const all=[...byKey.values()];
+      const limit=mode==="day"?366:mode==="week"?260:mode==="month"?120:50;
+      const selected=all.slice(-limit);
+      selected.truncated=all.length>limit;
+      return selected;
+    }
     function veCotTheoThoiGianKho(id,periods,values,kind){
       const money=kind==="money",usage=kind==="usage";
       const series=periods.map(p=>({...p,value:values.has(p.key)?values.get(p.key):usage?0:null}));
@@ -2867,6 +3164,326 @@
       return {missing:false,values,count,invalid,incoming,outgoing};
     }
 
+
+    function ngayDiaPhuongISO(date=new Date()){
+      return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+
+        "-"+String(date.getDate()).padStart(2,"0");
+    }
+    function congNgayKho(iso,days){
+      const [y,m,d]=iso.split("-").map(Number);
+      const date=new Date(Date.UTC(y,m-1,d+days));
+      return date.toISOString().slice(0,10);
+    }
+    function khoangNgayKho(from,to){
+      const a=new Date(from+"T00:00:00Z"),b=new Date(to+"T00:00:00Z");
+      return Math.round((b-a)/86400000)+1;
+    }
+
+    function layKyPhanTichKho(now=new Date()){
+      const today=ngayDiaPhuongISO(now),todayYear=now.getFullYear();
+      const mode=document.getElementById("dashboard-range-mode").value;
+      let from="",to="",prevFrom="",prevTo="";
+      if(mode==="week"){
+        to=today;from=congNgayKho(to,-6);
+        prevTo=congNgayKho(from,-1);prevFrom=congNgayKho(prevTo,-6);
+      }else if(mode==="month"){
+        from=today.slice(0,7)+"-01";to=today;
+        const [y,m]=from.split("-").map(Number);
+        const p=new Date(Date.UTC(y,m-2,1));
+        prevFrom=p.toISOString().slice(0,10);
+        const elapsed=khoangNgayKho(from,to);
+        const lastDay=new Date(Date.UTC(p.getUTCFullYear(),p.getUTCMonth()+1,0)).getUTCDate();
+        prevTo=congNgayKho(prevFrom,Math.min(elapsed,lastDay)-1);
+      }else if(mode==="year"){
+        const year=Number(document.getElementById("dashboard-range-year").value);
+        if(!Number.isInteger(year)||year<2000||year>2100)return null;
+        from=year+"-01-01";
+        to=year===todayYear?today:year+"-12-31";
+        if(year>todayYear)return null;
+        prevFrom=(year-1)+"-01-01";
+        prevTo=year===todayYear?
+          (year-1)+"-"+today.slice(5): (year-1)+"-12-31";
+        // Feb 29 in a leap year maps to Feb 28 of previous year.
+        if(!ngayHistoryHopLe(prevTo))prevTo=(year-1)+"-02-28";
+      }else if(mode==="custom"){
+        from=document.getElementById("dashboard-range-from").value;
+        to=document.getElementById("dashboard-range-to").value;
+        if(!ngayHistoryHopLe(from)||!ngayHistoryHopLe(to)||from>to)return null;
+        const days=khoangNgayKho(from,to);
+        if(days>3653)return null;
+        prevTo=congNgayKho(from,-1);
+        prevFrom=congNgayKho(prevTo,-days+1);
+      }else return null;
+      return {mode,from,to,prevFrom,prevTo};
+    }
+
+    function doiKyPhanTichKho(){
+      const mode=document.getElementById("dashboard-range-mode").value;
+      document.getElementById("dashboard-range-year-field").hidden=mode!=="year";
+      document.getElementById("dashboard-range-from-field").hidden=mode!=="custom";
+      document.getElementById("dashboard-range-to-field").hidden=mode!=="custom";
+      const range=layKyPhanTichKho();
+      document.getElementById("dashboard-range-summary").textContent=range?
+        tuDien("dashboardTimeCurrent",{from:range.from,to:range.to}):
+        tuDien("dashboardTimeInvalid");
+      veSoSanhNhapXuatKho();
+      veTopVatTuXuatKho();
+      veBieuDoSuDungKho();
+      veBieuDoGiaTriKho();
+    }
+
+    function locGiaoDichKho(range,types=["in","out"]){
+      if(!historyLoaded||!range)return [];
+      return historyAll.filter(rec=>types.includes(rec.type)&&
+        ngayHistoryHopLe(rec.date)&&rec.date>=range.from&&rec.date<=range.to);
+    }
+
+    function cotGiaTriLichSuKho(){
+      return cotHistoryTheoTen(historyColumns,[
+        "Amt.In","Amt.in loc.cur.","Amt in local currency",
+        "Amount in local currency","Amount LC","Amount"]);
+    }
+    function cotMaSapLichSuKho(){
+      return cotHistoryTheoTen(historyColumns,[
+        "Material","SAP","SAP Code","Material Number","Material Code",
+        "Mã SAP","Mã vật tư"]);
+    }
+    function tongNhapXuatTrongKhoang(range,amountCol){
+      const sum={in:0,out:0,inCount:0,outCount:0,invalid:0};
+      if(!range||amountCol<0)return sum;
+      for(const rec of locGiaoDichKho(range)){
+        const raw=String(rec.cells[amountCol]??"").trim();
+        const value=raw?chuyenThanhSo(raw):NaN;
+        if(!Number.isFinite(value)){sum.invalid++;continue;}
+        sum[rec.type]+=Math.abs(value);
+        sum[rec.type+"Count"]++;
+      }
+      return sum;
+    }
+    function hienThiThayDoiKho(type,current,previous){
+      const amount=document.getElementById("dashboard-compare-"+type+"-current");
+      const change=document.getElementById("dashboard-compare-"+type+"-change");
+      const prior=document.getElementById("dashboard-compare-"+type+"-prior");
+      amount.textContent=dinhDangGiaTriKho(current);
+      prior.textContent=tuDien("dashboardComparePrevious")+": "+dinhDangGiaTriKho(previous);
+      change.dataset.change="none";
+      if(previous===0){
+        change.textContent=current>0?tuDien("dashboardCompareNew"):"—";
+        change.title=tuDien("dashboardCompareNoPrevious");
+      }else{
+        const percent=(current-previous)/previous*100;
+        change.textContent=(percent>0?"+":"")+
+          new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",
+            {maximumFractionDigits:1}).format(percent)+"%";
+        change.dataset.change=percent>0?"up":percent<0?"down":"none";
+        change.title=change.textContent;
+      }
+    }
+    function veSoSanhNhapXuatKho(){
+      const root=document.getElementById("dashboard-compare-note");
+      const header=document.getElementById("dashboard-compare-periods");
+      const range=layKyPhanTichKho();
+      if(!range){
+        header.textContent=tuDien("dashboardTimeInvalid");
+        root.textContent=tuDien("dashboardTimeInvalid");
+        for(const type of ["in","out"]){
+          document.getElementById("dashboard-compare-"+type+"-current").textContent="—";
+          document.getElementById("dashboard-compare-"+type+"-prior").textContent="";
+          document.getElementById("dashboard-compare-"+type+"-change").textContent="—";
+        }
+        return;
+      }
+      header.textContent=range.from+" – "+range.to+"  /  "+range.prevFrom+" – "+range.prevTo;
+      if(!historyLoaded){
+        root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardCompareNoHistory");
+        return;
+      }
+      const amountCol=cotGiaTriLichSuKho();
+      if(amountCol<0){root.textContent=tuDien("dashUsageNoQty");return;}
+      const now=tongNhapXuatTrongKhoang(range,amountCol);
+      const before=tongNhapXuatTrongKhoang({from:range.prevFrom,to:range.prevTo},amountCol);
+      hienThiThayDoiKho("in",now.in,before.in);
+      hienThiThayDoiKho("out",now.out,before.out);
+      root.textContent=tuDien("dashboardCompareNote")+
+        (now.invalid+before.invalid?" · "+
+        tuDien("dashboardCompareInvalid",{count:now.invalid+before.invalid}):"");
+    }
+
+    function maKhoTrongHTML(rec){
+      const material=duLieuTimKiem.find(v=>
+        chuanHoaMaSap(v.dong[0]).toLowerCase()===rec.sap.toLowerCase());
+      return material||null;
+    }
+    function moLichSuDashboardTheoSap(sap){
+      const item=duLieuTimKiem.find(v=>
+        chuanHoaMaSap(v.dong[0]).toLowerCase()===String(sap).toLowerCase());
+      if(item){moLichSuVatTu(item.chiSo);return;}
+      if(!historyLoaded)return;
+      // History can include material codes absent from current stock.
+      const dialog=document.getElementById("material-history-dialog");
+      materialHistorySap=String(sap);
+      materialHistoryStockIndex=-1;
+      materialHistoryPage=1;
+      materialHistorySortColumn=-2;
+      materialHistorySortDirection=-1;
+      document.getElementById("material-history-kind").value="all";
+      document.getElementById("material-history-from").value="";
+      document.getElementById("material-history-to").value="";
+      document.getElementById("material-history-cost").value="";
+      document.getElementById("material-history-sap").textContent=tuDien("sapCode",{code:sap});
+      materialHistoryReturnFocus=document.activeElement;
+      if(!dialog.open)dialog.showModal();
+      locLichSuVatTu();
+    }
+    function moLichSuBangDashboard(event){
+      const tr=event.target.closest("tr[data-sap]");
+      if(tr&&event.currentTarget.contains(tr))moLichSuDashboardTheoSap(tr.dataset.sap);
+    }
+    function bamPhimLichSuBangDashboard(event){
+      if(event.key!=="Enter")return;
+      const row=event.target.closest("tr[data-sap]");
+      if(!row)return;
+      event.preventDefault();moLichSuDashboardTheoSap(row.dataset.sap);
+    }
+
+    function phamViTopXuatKho(){
+      const mode=document.getElementById("dashboard-out-period").value;
+      const global=layKyPhanTichKho();
+      if(mode==="selected")return global;
+      const now=new Date(),today=ngayDiaPhuongISO(now);
+      if(mode==="week")return {from:congNgayKho(today,-6),to:today};
+      if(mode==="month")return {from:today.slice(0,7)+"-01",to:today};
+      if(mode==="year"){
+        const chosen=global?.mode==="year"?
+          Number(document.getElementById("dashboard-range-year").value):now.getFullYear();
+        const from=chosen+"-01-01";
+        return {from,to:chosen===now.getFullYear()?today:chosen+"-12-31"};
+      }
+      return global;
+    }
+    function thongKeTopVatTuXuatKho(range,limit=20){
+      const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
+      if(amountCol<0||sapCol<0)return null;
+      const grouped=new Map(),stockBySap=new Map(duLieuTimKiem.map(item=>
+        [chuanHoaMaSap(item.dong[0]).toLowerCase(),item]));
+      const descCol=cotHistoryTheoTen(historyColumns,
+        ["Material Description","Description","Mô tả","Mô tả vật tư"]);
+      for(const rec of locGiaoDichKho(range,["out"])){
+        const sap=chuanHoaMaSap(rec.cells[sapCol]);
+        const raw=String(rec.cells[amountCol]??"").trim();
+        const amount=raw?chuyenThanhSo(raw):NaN;
+        if(!sap||!Number.isFinite(amount))continue;
+        let row=grouped.get(sap.toLowerCase());
+        if(!row){
+          const stock=stockBySap.get(sap.toLowerCase());
+          row={sap,description:stock?String(stock.dong[1]??""):
+            descCol>=0?String(rec.cells[descCol]??""):"",value:0,count:0};
+          grouped.set(sap.toLowerCase(),row);
+        }
+        row.value+=Math.abs(amount);row.count++;
+      }
+      return [...grouped.values()].filter(rec=>rec.value>0)
+        .sort((a,b)=>b.value-a.value||a.sap.localeCompare(b.sap)).slice(0,limit);
+    }
+    function veTopVatTuXuatKho(){
+      const root=document.getElementById("dashboard-top-out");
+      const note=document.getElementById("dashboard-top-out-note");
+      if(!historyLoaded){
+        root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardTopOutEmpty");
+        note.textContent="";return;
+      }
+      const range=phamViTopXuatKho();
+      if(!range){root.textContent=tuDien("dashboardTimeInvalid");note.textContent="";return;}
+      const rows=thongKeTopVatTuXuatKho(range,20);
+      if(!rows){root.textContent=tuDien("dashboardTopOutMissing");note.textContent="";return;}
+      if(!rows.length){root.textContent=tuDien("dashboardTopOutEmpty");note.textContent=range.from+" – "+range.to;return;}
+      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardTopOutCount"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardTopOutValue"))+'</th></tr></thead>';
+      root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
+        rows.map(rec=>'<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
+          thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
+          thoatHTML(rec.sap)+'</span><span class="material-name">'+
+          thoatHTML(rec.description||"—")+'</span></td><td>'+
+          dinhDangSoLuong.format(rec.count)+'</td><td><strong>'+
+          thoatHTML(dinhDangGiaTriKho(rec.value))+'</strong></td></tr>').join("")+
+        '</tbody></table>';
+      note.textContent=range.from+" – "+range.to+" · "+tuDien("dashboardTopDoubleClick");
+    }
+
+    function thongKeVatTuTonLau(days,now=new Date()){
+      if(!historyLoaded)return null;
+      const sapCol=cotMaSapLichSuKho();
+      if(sapCol<0)return null;
+      const today=ngayDiaPhuongISO(now),stock=new Map();
+      const unitCol=cotHistoryTheoTen(tieuDeCot,[
+        "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
+      for(const item of duLieuTimKiem){
+        if(!Number.isFinite(item.soLuong)||item.soLuong<=0)continue;
+        const sap=chuanHoaMaSap(item.dong[0]),key=sap.toLowerCase();
+        if(!key)continue;
+        let row=stock.get(key);
+        const unit=unitCol>=0?String(item.dong[unitCol]??"").trim():"";
+        if(!row){
+          row={sap,description:String(item.dong[1]??""),quantity:0,
+            unit,quantityValid:!!unit,last:"",days:null};
+          stock.set(key,row);
+        }
+        if(!unit||row.unit!==unit)row.quantityValid=false;
+        if(row.quantityValid)row.quantity+=item.soLuong;
+      }
+      for(const rec of historyAll){
+        if(rec.type!=="out"||!ngayHistoryHopLe(rec.date)||rec.date>today)continue;
+        const key=chuanHoaMaSap(rec.cells[sapCol]).toLowerCase();
+        const material=stock.get(key);
+        if(material&&rec.date>material.last)material.last=rec.date;
+      }
+      const report=[];
+      for(const row of stock.values()){
+        row.days=row.last?khoangNgayKho(row.last,today)-1:null;
+        if(row.days===null||row.days>=days)report.push(row);
+      }
+      return report.sort((a,b)=>
+        (b.days??Number.MAX_SAFE_INTEGER)-(a.days??Number.MAX_SAFE_INTEGER)||
+        a.sap.localeCompare(b.sap));
+    }
+    function veVatTuTonLau(){
+      const root=document.getElementById("dashboard-dormant");
+      const note=document.getElementById("dashboard-dormant-note");
+      if(!historyLoaded){
+        root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory");
+        note.textContent="";return;
+      }
+      const days=Number(document.getElementById("dashboard-dormant-days").value)||90;
+      const rows=thongKeVatTuTonLau(days);
+      if(rows===null){
+        root.textContent=tuDien("dashboardDormantMissing");note.textContent="";return;
+      }
+      if(!rows.length){
+        root.textContent=tuDien("dashboardDormantEmpty");note.textContent="";return;
+      }
+      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardDormantStock"))+
+        '</th><th>'+thoatHTML(tuDien("dashboardDormantLast"))+'</th><th>'+
+        thoatHTML(tuDien("dashboardDormantDaysOld"))+'</th></tr></thead>';
+      root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
+        rows.slice(0,100).map(rec=>{
+          const quantity=rec.quantityValid?
+            dinhDangSoLuong.format(rec.quantity)+" "+rec.unit:"—";
+          return '<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
+            thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
+            thoatHTML(rec.sap)+'</span><span class="material-name">'+
+            thoatHTML(rec.description||"—")+'</span></td><td>'+
+            thoatHTML(quantity)+'</td><td>'+thoatHTML(rec.last||tuDien("dashboardDormantNever"))+
+            '</td><td>'+thoatHTML(rec.days===null?"—":dinhDangSoLuong.format(rec.days))+
+            '</td></tr>';
+        }).join("")+'</tbody></table>';
+      note.textContent=tuDien("dashboardDormantMore",{
+        count:dinhDangSoLuong.format(Math.min(rows.length,100)),
+        total:dinhDangSoLuong.format(rows.length)
+      });
+    }
+
     function veBieuDoSuDungKho(){
       const chart=document.getElementById("insight-usage");
       const summary=document.getElementById("dashboard-usage-summary");
@@ -2875,7 +3492,12 @@
         summary.textContent="";return;
       }
       const mode=document.getElementById("dashboard-usage-period").value;
-      const buckets=nhomKyKho(mode,mode==="year"?6:12);
+      const range=layKyPhanTichKho();
+      if(!range) {
+        chart.textContent=tuDien("dashboardTimeInvalid");
+        summary.textContent="";return;
+      }
+      const buckets=nhomKyTrongKhoangKho(mode,range);
       const stats=tinhGiaTriNhapXuat(historyAll,historyColumns,mode,buckets);
       if(stats.missing){chart.textContent=tuDien("dashUsageNoQty");summary.textContent="";return;}
       const max=Math.max(0,...[...stats.values.values()].flatMap(v=>[v.in,v.out]));
@@ -2898,13 +3520,21 @@
         outgoing:dinhDangGiaTriKho(stats.outgoing),
         period:tuDien({week:"dashWeek",month:"dashMonth",year:"dashYear"}[mode])
       }):tuDien("dashUsageNoData"))+
+        (buckets.truncated?" · "+tuDien("dashboardTruncated",{count:buckets.length}):"")+
         (stats.invalid?" · "+tuDien("dashUsageInvalid",{count:stats.invalid}):"")+
         (["historyInvalid","historyNoSource"].includes(historyStatusKey)?" · "+tuDien("materialHistoryStale"):"");
     }
 
     function veBieuDoGiaTriKho(){
       const mode=document.getElementById("dashboard-value-period").value;
-      const buckets=nhomKyKho(mode,mode==="day"?30:mode==="year"?6:12);
+      const range=layKyPhanTichKho();
+      const chart=document.getElementById("insight-value-trend");
+      const summary=document.getElementById("dashboard-value-trend-summary");
+      if(!range){
+        chart.textContent=tuDien("dashboardTimeInvalid");
+        summary.textContent="";return;
+      }
+      const buckets=nhomKyTrongKhoangKho(mode,range);
       const keys=new Set(buckets.map(x=>x.key)),latest=new Map();
       for(const rec of layAnhChupKho()){
         if(rec.hasPrice===false||!ngayHistoryHopLe(rec.date)||
@@ -2914,8 +3544,6 @@
         const previous=latest.get(key);
         if(!previous||rec.date>=previous.date)latest.set(key,rec);
       }
-      const chart=document.getElementById("insight-value-trend");
-      const summary=document.getElementById("dashboard-value-trend-summary");
       if(!latest.size){
         chart.textContent=tuDien("dashValueTrendEmpty");
         summary.textContent=tuDien("dashValueTrendNote");return;
@@ -2925,7 +3553,7 @@
       summary.textContent=tuDien("dashValueTrendSummary",{
         count:dinhDangSoLuong.format(latest.size),
         period:tuDien({day:"dashDay",week:"dashWeek",month:"dashMonth",year:"dashYear"}[mode])
-      });
+      })+(buckets.truncated?" · "+tuDien("dashboardTruncated",{count:buckets.length}):"");
     }
 
     // History.js is a real optional source, loaded on demand. There is no
@@ -3159,6 +3787,9 @@
       for(const [sap,date] of lastOutput)ngayXuatCuoiTheoSap.set(sap,date);
       historyLoaded=true;
       capNhatCardNgayXuat();
+      veSoSanhNhapXuatKho();
+      veTopVatTuXuatKho();
+      veVatTuTonLau();
       veBieuDoSuDungKho();
       const total=indexed.length;
       const status=total?(origin==="existing"?"historyLoadedExisting":updated?"historyLoadedAt":"historyLoaded"):"historyEmpty";
@@ -3212,6 +3843,9 @@
     async function taiHistory(force=false) {
       if(historyLoading || (historyLoaded && !force))return;
       historyLoading=true;
+      veSoSanhNhapXuatKho();
+      veTopVatTuXuatKho();
+      veVatTuTonLau();
       const sequence=++historySeq;
       capNhatTrangThaiHistory("historyLoading");
       veBieuDoSuDungKho();
@@ -3238,6 +3872,9 @@
           locLichSuVatTu();
           capNhatCardNgayXuat();
           veBieuDoSuDungKho();
+          veSoSanhNhapXuatKho();
+          veTopVatTuXuatKho();
+          veVatTuTonLau();
         }
       }
     }
@@ -3695,7 +4332,7 @@
     // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
       const lanHienTai = ++lanLapChiMuc;
-      const chiSoBmNo=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
+      const chiSoBmNo=chiSoCotBmChinhXac();
       const chiSoPart=cotTheoTenTimKiem([
         "Part No","Part No.","Part Number","Part Nr","Part #",
         "Part Code","Mã phụ tùng","Mã phụ kiện"
@@ -3976,7 +4613,7 @@
 
     function hienThiChiTiet(dongData) {
       let htmlChiTiet = "";
-      const chiSoBm=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
+      const chiSoBm=chiSoCotBmChinhXac();
       for (let c = 0; c < tieuDeCot.length; c++) {
         if(c===chiSoBm)continue;
         htmlChiTiet+='<div class="detail-item" data-col-index="'+c+'"><label>'+
@@ -5208,6 +5845,18 @@
     const tabDuocLuu=docTuyChon("checking-active-tab");
     chuyenTab(CAC_TAB.includes(tabDuocLuu)?tabDuocLuu:"stock",{persist:false});
     khoiTaoLichNhacBaoCao();
+    const dashboardNow=new Date();
+    const dateInput=document.getElementById("dashboard-range-year");
+    dateInput.value=String(dashboardNow.getFullYear());
+    document.getElementById("dashboard-range-from").value=
+      ngayDiaPhuongISO(new Date(dashboardNow.getFullYear(),dashboardNow.getMonth(),1));
+    document.getElementById("dashboard-range-to").value=ngayDiaPhuongISO(dashboardNow);
+    for(const id of ["dashboard-top-out","dashboard-dormant"]){
+      const node=document.getElementById(id);
+      node.addEventListener("dblclick",moLichSuBangDashboard);
+      node.addEventListener("keydown",bamPhimLichSuBangDashboard);
+    }
+    doiKyPhanTichKho();
     taiDuLieu();
     setInterval(taiDuLieu, 30000);
     setInterval(kiemTraNhacBaoCao, 60000);
