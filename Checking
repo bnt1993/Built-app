@@ -1732,9 +1732,9 @@
               <h3 data-i18n="dashboardTopOutTitle">Vật tư xuất nhiều nhất theo giá trị</h3>
               <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
                 <select id="dashboard-out-period" onchange="veTopVatTuXuatKho()">
-                  <option value="selected" data-i18n="dashboardTimeCustom">Theo khoảng chọn</option>
+                  <option value="selected" data-i18n="dashboardTimeSelected" selected>Theo khoảng đã chọn</option>
                   <option value="week" data-i18n="dashWeek">Hằng tuần</option>
-                  <option value="month" data-i18n="dashMonth" selected>Hằng tháng</option>
+                  <option value="month" data-i18n="dashMonth">Hằng tháng</option>
                   <option value="year" data-i18n="dashYear">Hằng năm</option>
                 </select></label>
             </div>
@@ -1862,6 +1862,7 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        dashboardTimeSelected:"Theo khoảng đã chọn",
         dashboardTruncated:"Chỉ hiển thị {count} kỳ gần cuối của khoảng chọn",
         colOrderType:"Loại đặt hàng",
         colMinLot:"Lô đặt hàng tối thiểu",
@@ -2067,6 +2068,7 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        dashboardTimeSelected:"Selected date range",
         dashboardTruncated:"Only the most recent {count} periods in this range are shown",
         colOrderType:"Order type",
         colMinLot:"Minimum lot size",
@@ -2812,8 +2814,19 @@
 
     // BM comes from a named source column. No index fallback to unrelated fields.
     function chiSoCotBmChinhXac() {
-      return cotTheoTenTimKiem(["BM No","BM No.","BM Number","BM Code","BM",
-        "B/M No","B.M. No","BM Material","BM Material No","Mã BM","Mã số BM"],-1);
+      const aliases=["BM No","BM No.","BM Number","BM Code","BM",
+        "B/M No","B.M. No","BM Material","BM Material No","Mã BM","Mã số BM"];
+      const normalize=name=>chuanHoaTimKiem(name).replace(/[^a-z0-9]/g,"");
+      const accepted=new Set(aliases.map(normalize));
+      const candidates=tieuDeCot.map((name,index)=>({name:normalize(name),index}))
+        .filter(x=>accepted.has(x.name));
+      if(!candidates.length)return -1;
+      if(candidates.length===1)return candidates[0].index;
+      const sample=tatCaDuLieu.slice(1,Math.min(tatCaDuLieu.length,201));
+      const score=index=>sample.reduce((count,row)=>
+        count+(Array.isArray(row)&&String(row[index]??"").trim()?1:0),0);
+      candidates.sort((a,b)=>score(b.index)-score(a.index)||a.index-b.index);
+      return candidates[0].index;
     }
 
     function khopTuKhoaVatTu(muc,term,scope,ganDung) {
