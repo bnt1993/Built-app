@@ -1456,6 +1456,20 @@
       #view-dashboard .dashboard-compare-grid { grid-template-columns:1fr; }
       #view-dashboard .dashboard-table-chart { height:360px; }
     }
+
+    #view-dashboard #dashboard-range-year-field input,
+    #view-dashboard #dashboard-range-year-end-field input {
+      width:96px; min-width:88px; max-width:96px;
+      font-variant-numeric:tabular-nums;
+    }
+    @media(max-width:620px){
+      #view-dashboard #dashboard-range-year-field,
+      #view-dashboard #dashboard-range-year-end-field { flex:0 1 calc(50% - 6px); }
+      #view-dashboard #dashboard-range-year-field input,
+      #view-dashboard #dashboard-range-year-end-field input {
+        width:100%; max-width:130px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1622,8 +1636,10 @@
             <option value="year" data-i18n="dashboardTimeYear">Theo năm</option>
             <option value="custom" data-i18n="dashboardTimeCustom">Tùy chọn ngày</option>
           </select></label>
-        <label id="dashboard-range-year-field" hidden><span data-i18n="dashboardTimeYearLabel">Năm</span>
-          <input type="number" id="dashboard-range-year" min="2000" max="2100" step="1" onchange="doiKyPhanTichKho()"></label>
+        <label id="dashboard-range-year-field" hidden><span data-i18n="dashboardTimeYearFrom">Từ năm</span>
+          <input type="number" id="dashboard-range-year-from" min="2000" max="2100" step="1" inputmode="numeric" onchange="doiKyPhanTichKho()"></label>
+        <label id="dashboard-range-year-end-field" hidden><span data-i18n="dashboardTimeYearTo">Đến năm</span>
+          <input type="number" id="dashboard-range-year-to" min="2000" max="2100" step="1" inputmode="numeric" onchange="doiKyPhanTichKho()"></label>
         <label id="dashboard-range-from-field" hidden><span data-i18n="dashboardTimeFrom">Từ ngày</span>
           <input id="dashboard-range-from" type="date" onchange="doiKyPhanTichKho()"></label>
         <label id="dashboard-range-to-field" hidden><span data-i18n="dashboardTimeTo">Đến ngày</span>
@@ -1862,6 +1878,9 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        dashboardTimeYearLimit:"Chọn tối đa 10 năm liên tiếp.",
+        dashboardTimeYearTo:"Đến năm",
+        dashboardTimeYearFrom:"Từ năm",
         colLeadTime:"Thời gian cung ứng",colSupplier:"Nhà cung cấp",colMaxStock:"Tồn kho tối đa",
         dashboardTimeSelected:"Theo khoảng đã chọn",
         dashboardTruncated:"Chỉ hiển thị {count} kỳ gần cuối của khoảng chọn",
@@ -1877,12 +1896,12 @@
         dashboardCompareNoHistory:"Chưa có dữ liệu giao dịch để so sánh",
         dashboardCompareInvalid:"Bỏ qua {count} giao dịch thiếu ngày hoặc giá trị",
         dashboardCompareNew:"Phát sinh mới",
-        dashboardCompareNote:"So sánh giá trị nhập và xuất với kỳ liền trước có cùng số ngày.",
+        dashboardCompareNote:"So sánh giá trị nhập và xuất với kỳ tương ứng liền trước.",
         dashboardTimeTitle:"Khoảng thời gian phân tích",
         dashboardTimeMode:"Chọn kỳ",
         dashboardTimeWeek:"7 ngày gần đây",
         dashboardTimeMonth:"Tháng hiện tại",
-        dashboardTimeYear:"Theo năm",
+        dashboardTimeYear:"Theo năm / nhiều năm",
         dashboardTimeCustom:"Tùy chọn ngày",
         dashboardTimeYearLabel:"Năm",
         dashboardTimeFrom:"Từ ngày",
@@ -2069,6 +2088,9 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        dashboardTimeYearLimit:"Select up to 10 consecutive years.",
+        dashboardTimeYearTo:"To year",
+        dashboardTimeYearFrom:"From year",
         colLeadTime:"Lead time",colSupplier:"Supplier",colMaxStock:"Maximum stock",
         dashboardTimeSelected:"Selected date range",
         dashboardTruncated:"Only the most recent {count} periods in this range are shown",
@@ -2084,12 +2106,12 @@
         dashboardCompareNoHistory:"No transaction data for comparison",
         dashboardCompareInvalid:"Skipped {count} transactions without valid date/value",
         dashboardCompareNew:"New activity",
-        dashboardCompareNote:"Compare inbound and outbound with the immediately prior period of the same length.",
+        dashboardCompareNote:"Compare inbound and outbound values with the preceding comparable period.",
         dashboardTimeTitle:"Analysis date range",
         dashboardTimeMode:"Period",
         dashboardTimeWeek:"Last 7 days",
         dashboardTimeMonth:"Current month",
-        dashboardTimeYear:"Calendar year",
+        dashboardTimeYear:"Year / multiple years",
         dashboardTimeCustom:"Custom dates",
         dashboardTimeYearLabel:"Year",
         dashboardTimeFrom:"From",
@@ -3195,16 +3217,21 @@
         const lastDay=new Date(Date.UTC(p.getUTCFullYear(),p.getUTCMonth()+1,0)).getUTCDate();
         prevTo=congNgayKho(prevFrom,Math.min(elapsed,lastDay)-1);
       }else if(mode==="year"){
-        const year=Number(document.getElementById("dashboard-range-year").value);
-        if(!Number.isInteger(year)||year<2000||year>2100)return null;
-        from=year+"-01-01";
-        to=year===todayYear?today:year+"-12-31";
-        if(year>todayYear)return null;
-        prevFrom=(year-1)+"-01-01";
-        prevTo=year===todayYear?
-          (year-1)+"-"+today.slice(5): (year-1)+"-12-31";
-        // Feb 29 in a leap year maps to Feb 28 of previous year.
-        if(!ngayHistoryHopLe(prevTo))prevTo=(year-1)+"-02-28";
+        const yearFrom=Number(document.getElementById("dashboard-range-year-from").value);
+        const yearTo=Number(document.getElementById("dashboard-range-year-to").value);
+        const yearSpan=yearTo-yearFrom+1;
+        if(!Number.isInteger(yearFrom)||!Number.isInteger(yearTo)||
+          yearFrom<2000||yearTo>2100||yearTo>todayYear||
+          yearFrom>yearTo||yearSpan>10)return null;
+        from=yearFrom+"-01-01";
+        to=yearTo===todayYear?today:yearTo+"-12-31";
+        // Compare with the immediately preceding, equally many calendar years.
+        // For an ongoing year, cap the comparison at the same month and day.
+        const priorEndYear=yearFrom-1;
+        prevFrom=(yearFrom-yearSpan)+"-01-01";
+        prevTo=yearTo===todayYear?
+          priorEndYear+"-"+today.slice(5):priorEndYear+"-12-31";
+        if(!ngayHistoryHopLe(prevTo))prevTo=priorEndYear+"-02-28";
       }else if(mode==="custom"){
         from=document.getElementById("dashboard-range-from").value;
         to=document.getElementById("dashboard-range-to").value;
@@ -3220,12 +3247,17 @@
     function doiKyPhanTichKho(){
       const mode=document.getElementById("dashboard-range-mode").value;
       document.getElementById("dashboard-range-year-field").hidden=mode!=="year";
+      document.getElementById("dashboard-range-year-end-field").hidden=mode!=="year";
       document.getElementById("dashboard-range-from-field").hidden=mode!=="custom";
       document.getElementById("dashboard-range-to-field").hidden=mode!=="custom";
       const range=layKyPhanTichKho();
+      const startYear=Number(document.getElementById("dashboard-range-year-from").value);
+      const endYear=Number(document.getElementById("dashboard-range-year-to").value);
+      const beyondLimit=mode==="year"&&Number.isInteger(startYear)&&
+        Number.isInteger(endYear)&&endYear-startYear+1>10;
       document.getElementById("dashboard-range-summary").textContent=range?
         tuDien("dashboardTimeCurrent",{from:range.from,to:range.to}):
-        tuDien("dashboardTimeInvalid");
+        tuDien(beyondLimit?"dashboardTimeYearLimit":"dashboardTimeInvalid");
       veSoSanhNhapXuatKho();
       veTopVatTuXuatKho();
       veBieuDoSuDungKho();
@@ -3354,10 +3386,8 @@
       if(mode==="week")return {from:congNgayKho(today,-6),to:today};
       if(mode==="month")return {from:today.slice(0,7)+"-01",to:today};
       if(mode==="year"){
-        const chosen=global?.mode==="year"?
-          Number(document.getElementById("dashboard-range-year").value):now.getFullYear();
-        const from=chosen+"-01-01";
-        return {from,to:chosen===now.getFullYear()?today:chosen+"-12-31"};
+        if(global?.mode==="year")return global;
+        return {from:now.getFullYear()+"-01-01",to:today};
       }
       return global;
     }
@@ -5846,8 +5876,9 @@
     chuyenTab(CAC_TAB.includes(tabDuocLuu)?tabDuocLuu:"stock",{persist:false});
     khoiTaoLichNhacBaoCao();
     const dashboardNow=new Date();
-    const dateInput=document.getElementById("dashboard-range-year");
-    dateInput.value=String(dashboardNow.getFullYear());
+    const selectedYear=String(dashboardNow.getFullYear());
+    document.getElementById("dashboard-range-year-from").value=selectedYear;
+    document.getElementById("dashboard-range-year-to").value=selectedYear;
     document.getElementById("dashboard-range-from").value=
       ngayDiaPhuongISO(new Date(dashboardNow.getFullYear(),dashboardNow.getMonth(),1));
     document.getElementById("dashboard-range-to").value=ngayDiaPhuongISO(dashboardNow);
