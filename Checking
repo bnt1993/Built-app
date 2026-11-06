@@ -2030,6 +2030,8 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        dashboardHallUnknownStock:"Storage Location của dữ liệu tồn kho chưa có giá trị Hall 1/Hall 2 nhận diện được.",
+        dashboardHallUnknownHistory:"Giá trị Storage Location chưa nhận diện được Hall 1/Hall 2. Cần đối chiếu mã kho thực tế trong History.js.",
         dashboardQuantitySource:"Số lượng nhập/xuất lấy từ Qty in unit of entry, giá trị tiền lấy từ Amt.in loc.cur.",
         dashboardSortHint:"Nhấn tiêu đề cột để sắp xếp",
         dashboardSortDesc:"Sắp xếp giảm dần",
@@ -2265,6 +2267,8 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        dashboardHallUnknownStock:"Stock Storage Location has no recognized Hall 1/Hall 2 values.",
+        dashboardHallUnknownHistory:"Storage Location codes do not match Hall 1/Hall 2; confirm the source mapping.",
         dashboardQuantitySource:"Inbound/outbound quantities use Qty in unit of entry; monetary values use Amt.in loc.cur.",
         dashboardSortHint:"Click a column heading to sort",
         dashboardSortDesc:"Sort descending",
@@ -3280,10 +3284,10 @@
       if(stats===null){
         for(const id of ["metric-total","metric-instock","metric-attention","metric-inventory-value"])
           document.getElementById(id).textContent="—";
-        document.getElementById("metric-value-note").textContent=tuDien("dashboardHallNoStockColumn");
-        document.getElementById("insight-stock-distribution").textContent=tuDien("dashboardHallNoStockColumn");
+        document.getElementById("metric-value-note").textContent=tuDien(loiCotHall("stock"));
+        document.getElementById("insight-stock-distribution").textContent=tuDien(loiCotHall("stock"));
         dashboardTopValueCache=[];
-        document.getElementById("insight-top").textContent=tuDien("dashboardHallNoStockColumn");
+        document.getElementById("insight-top").textContent=tuDien(loiCotHall("stock"));
       }else{
         for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
           document.getElementById(id).textContent=dinhDangSoLuong.format(value);
@@ -3579,10 +3583,12 @@
       if(index<0)return null;
       if(historyHallCache&&historyHallCache.records===historyAll&&
         historyHallCache.index===index&&historyHallCache.hall===hall)
-        return historyHallCache.rows;
+        return historyHallCache.unrecognized?null:historyHallCache.rows;
       const rows=historyAll.filter(rec=>hallTuStorageLocation(rec.cells[index])===hall);
-      historyHallCache={records:historyAll,index,hall,rows};
-      return rows;
+      const hasKnown=rows.length>0||historyAll.some(rec=>
+        !!hallTuStorageLocation(rec.cells[index]));
+      historyHallCache={records:historyAll,index,hall,rows,unrecognized:!hasKnown};
+      return hasKnown?rows:null;
     }
     function tonKhoTheoHall(){
       const hall=hallDangLoc();
@@ -3591,18 +3597,26 @@
       if(index<0)return null;
       if(stockHallCache&&stockHallCache.records===duLieuTimKiem&&
         stockHallCache.index===index&&stockHallCache.hall===hall)
-        return stockHallCache.rows;
+        return stockHallCache.unrecognized?null:stockHallCache.rows;
       const rows=duLieuTimKiem.filter(rec=>hallTuStorageLocation(rec.dong[index])===hall);
-      stockHallCache={records:duLieuTimKiem,index,hall,rows};
-      return rows;
+      const hasKnown=rows.length>0||duLieuTimKiem.some(rec=>
+        !!hallTuStorageLocation(rec.dong[index]));
+      stockHallCache={records:duLieuTimKiem,index,hall,rows,unrecognized:!hasKnown};
+      return hasKnown?rows:null;
+    }
+    function loiCotHall(loai){
+      if(loai==="stock")return coCotStockHall()?
+        "dashboardHallUnknownStock":"dashboardHallNoStockColumn";
+      return coCotHistoryHall()?
+        "dashboardHallUnknownHistory":"dashboardHallNoHistoryColumn";
     }
     function capNhatTrangThaiHall(){
       const note=document.getElementById("dashboard-hall-status");
       const hall=hallDangLoc();
       if(hall==="all"){note.textContent="";return;}
       const alerts=[];
-      if(!coCotStockHall())alerts.push(tuDien("dashboardHallNoStockColumn"));
-      if(historyLoaded&&!coCotHistoryHall())alerts.push(tuDien("dashboardHallNoHistoryColumn"));
+      if(analyticsReady&&tonKhoTheoHall()===null)alerts.push(tuDien(loiCotHall("stock")));
+      if(historyLoaded&&lichSuTheoHall()===null)alerts.push(tuDien(loiCotHall("history")));
       note.textContent=alerts.join(" · ")||tuDien("dashboardQuantitySource");
     }
     function doiLocHallPhanTich(){
@@ -3690,7 +3704,7 @@
         return;
       }
       if(!lichSuTheoHall()){
-        root.textContent=tuDien("dashboardHallNoHistoryColumn");
+        root.textContent=tuDien(loiCotHall("history"));
         for(const type of ["in","out"]){
           document.getElementById("dashboard-compare-"+type+"-current").textContent="—";
           document.getElementById("dashboard-compare-"+type+"-prior").textContent="";
@@ -3891,8 +3905,8 @@
         capNhatPhanTrangBangKho("out",0);return;
       }
       const range=phamViTopXuatKho();
-      if(hallDangLoc()!=="all"&&!coCotHistoryHall()){
-        root.textContent=tuDien("dashboardHallNoHistoryColumn");
+      if(hallDangLoc()!=="all"&&lichSuTheoHall()===null){
+        root.textContent=tuDien(loiCotHall("history"));
         note.textContent="";slider.disabled=true;amountText.textContent="—";
         capNhatPhanTrangBangKho("out",0);return;
       }
@@ -4031,8 +4045,8 @@
       const rows=dashboardDormantCache.rows;
       if(rows===null){
         root.textContent=tuDien(hallDangLoc()!=="all"&&!coCotStockHall()?
-          "dashboardHallNoStockColumn":hallDangLoc()!=="all"&&!coCotHistoryHall()?
-          "dashboardHallNoHistoryColumn":"dashboardDormantMissing");
+          loiCotHall("stock"):hallDangLoc()!=="all"&&lichSuTheoHall()===null?
+          loiCotHall("history"):"dashboardDormantMissing");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       if(!rows.length){
@@ -4081,7 +4095,7 @@
       const buckets=nhomKyTrongKhoangKho(mode,range);
       const scope=lichSuTheoHall();
       if(!scope){
-        chart.textContent=tuDien("dashboardHallNoHistoryColumn");
+        chart.textContent=tuDien(loiCotHall("history"));
         summary.textContent="";return;
       }
       const stats=tinhGiaTriNhapXuat(scope,historyColumns,mode,buckets);
