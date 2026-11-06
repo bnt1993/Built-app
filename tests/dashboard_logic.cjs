@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
-const html=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8'),ctx={console};vm.createContext(ctx);
+const html=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8'),ctx={console,ngonNguHienTai:"vi"};vm.createContext(ctx);
 for(const name of ['chuyenThanhSo','chuanHoaMaSap','tenHistoryChuan','cotHistoryTheoTen','tinhPhanTichDashboard','ngayHistoryHopLe','nhomKyKho','khoaNhomKho','tinhGiaTriNhapXuat']){
  const start=html.indexOf('    function '+name+'(');assert(start>=0,name);vm.runInContext(html.slice(start,html.indexOf('\n    function ',start+1)),ctx);
 }
@@ -16,3 +16,11 @@ for(const mode of ['month','year']){const x=ctx.tinhGiaTriNhapXuat(rows,['Amt.In
 assert(ctx.tinhGiaTriNhapXuat(rows,['Quantity'],'week',buckets).missing);
 for(const m of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Function(m[1]);
 console.log('PASS Top quantity with zero/missing prices, mixed units, paired VND movement totals, invalid data, Monday/year boundaries and week/month/year grouping.');
+
+assert.equal(ctx.nhomKyKho('week',1,new Date(2026,10,6))[0].label,'Tuần 45');
+assert.equal(ctx.nhomKyKho('week',1,new Date(2026,9,30))[0].label,'Tuần 44');
+assert.equal(ctx.nhomKyKho('week',1,new Date(2021,0,1))[0].label,'Tuần 53');
+assert(ctx.nhomKyKho('week',1,new Date(2021,0,1))[0].title.includes('/ 2020'));
+ctx.ngonNguHienTai='en';assert.equal(ctx.nhomKyKho('week',1,new Date(2026,0,1))[0].label,'Week 1');
+assert(!html.includes('insight-replenishment'));
+console.log('PASS ISO week labels 44/45, week 53 and week-year boundaries; removed replenishment card.');

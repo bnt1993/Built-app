@@ -1618,12 +1618,7 @@
             <div id="insight-value-trend" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashValueTrendTitle"></div>
             <p id="dashboard-value-trend-summary" class="insight-note" role="status"></p>
           </div>
-          <div class="insight-box dashboard-chart dashboard-replenishment-card">
-            <h3 data-i18n="dashReplenishment">Ước tính bổ sung đến điểm đặt hàng lại</h3>
-            <p class="insight-note" data-i18n="dashReplenishmentNote">Phần thiếu đến điểm đặt hàng lại × đơn giá; gộp theo mã SAP.</p>
-            <div id="insight-replenishment" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashReplenishment"></div>
-            <p id="dashboard-replenishment-note" class="insight-note"></p>
-          </div>
+
         </div>
         <div class="dashboard-utilities">
           <div class="insight-box"><h3 data-i18n="inventoryHistory">Các lần đồng bộ</h3><p class="insight-note" data-i18n="dashSnapshotNote">Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc phân tích kho.</p><div id="insight-history" class="history-grid"></div></div>
@@ -1811,7 +1806,7 @@
         tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu tồn kho",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
         materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Thu gọn",materialHistoryNext:"Tải thêm",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số lượng nhập",materialHistoryOutCount:"Số lượng xuất",materialHistoryOtherCount:"Số lượng khác",materialHistoryStock:"Tồn kho hiện tại",materialHistoryFrom:"Ngày hạch toán từ",materialHistoryTo:"Ngày hạch toán đến",materialHistoryCostCenter:"Trung tâm chi phí",materialHistoryMissingCost:"Không có trung tâm chi phí",materialHistoryLoadedRows:"Đã xem {shown}/{total} dòng",materialHistoryQuantityMissing:"Không có cột số lượng",materialHistoryQuantityInvalid:"Có số lượng không hợp lệ",materialHistoryQuantityMixed:"Nhiều đơn vị tính, không thể cộng",materialHistoryQuantityUnit:"Chưa rõ đơn vị tính",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Thời gian sử dụng ước tính",
         consumptionAll:"Tất cả giao dịch xuất · {unit}",consumptionRecent:"12 tháng trọn vẹn · {period}",consumptionStock:"Tồn kho: {amount} {unit}",consumptionMonths:"{count} tháng",consumptionNoHistory:"Chưa có dữ liệu lịch sử.",consumptionMissingQty:"Không có cột số lượng trong dữ liệu lịch sử.",consumptionMixedUnits:"Nhiều đơn vị tính, không thể cộng chung.",consumptionUnitUnknown:"Chưa xác định đơn vị tính.",consumptionPartial:"{count} dòng xuất bị loại do thiếu hoặc sai đơn vị/số lượng.",consumptionNoDates:"Thiếu ngày hợp lệ để tính trung bình tháng.",consumptionNoAverage:"Không có lượng xuất trong 12 tháng trọn vẹn gần nhất.",consumptionNoStock:"Tồn kho không hợp lệ hoặc chưa được tải.",consumptionUnitMismatch:"Đơn vị tồn kho không khớp đơn vị giao dịch; không thể ước tính.",consumptionIncomplete:"Dữ liệu xuất không hợp lệ hoặc có nhiều đơn vị; chưa thể ước tính.",
-        materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng điểm đặt hàng lại",allInventoryNote:"Số liệu tồn kho theo nguồn SAP hiện tại; giá trị nhập / xuất từ lịch sử giao dịch và giá trị tồn lịch sử từ các lần đồng bộ được lưu trên thiết bị.",rowsLabel:"dòng",dashFilters:"Bộ lọc phân tích kho",dashSearch:"Tìm vật tư",dashSearchPlaceholder:"Mã SAP, mô tả, mã phụ tùng...",dashRankLimit:"Số vật tư",dashTotalRows:"Tổng dòng vật tư",dashKpiNote:"Toàn bộ dữ liệu kho",dashFilteredValue:"Tổng giá trị tồn kho",dashCoverage:"Mức tồn so với điểm đặt hàng lại",dashCoverageNote:"Tỷ lệ tồn kho / điểm đặt hàng lại; chỉ tính điểm đặt hàng lại dương và tồn kho không âm.",dashReplenishment:"Ước tính bổ sung đến điểm đặt hàng lại",dashReplenishmentNote:"Phần thiếu đến điểm đặt hàng lại × đơn giá; gộp theo mã SAP. Chưa gồm chi phí mua hàng khác.",dashTopValue:"Vật tư có giá trị tồn cao nhất",dashValueNote:"Giá trị tồn = số lượng × đơn giá, gộp theo mã SAP.",dashSnapshotNote:"Các mốc đã đồng bộ và lưu trên trình duyệt này; không phải lịch sử tồn kho đầy đủ.",dashStockExport:"Xuất kết quả tra cứu tồn kho",dashMatch:"{count} / {total} dòng",dashCoverageUnknown:"Không đủ dữ liệu tính tỷ lệ",dashCoverageZero:"Hết hàng (0%)",dashCoverageLow:"Trên 0% đến dưới 50%",dashCoverageMid:"Từ 50% đến dưới 100%",dashCoverageAt:"Đúng 100%",dashCoverageHigh:"Trên 100%",dashEstimateSummary:"Chi phí tính được: {value} · {count} dòng không đủ dữ liệu tính chi phí.",dashNoValue:"Không có giá trị dương trong phạm vi lọc.",dashNoNeed:"Không có chi phí bổ sung dương tính được trong phạm vi lọc.",dashboardHeading:"Phân tích kho",dashboardDesc:"Phân tích giá trị nhập / xuất, giá trị tồn kho và các vật tư có giá trị cao.",
+        materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng điểm đặt hàng lại",allInventoryNote:"Số liệu tồn kho theo nguồn SAP hiện tại; giá trị nhập / xuất từ lịch sử giao dịch và giá trị tồn lịch sử từ các lần đồng bộ được lưu trên thiết bị.",rowsLabel:"dòng",dashFilters:"Bộ lọc phân tích kho",dashSearch:"Tìm vật tư",dashSearchPlaceholder:"Mã SAP, mô tả, mã phụ tùng...",dashRankLimit:"Số vật tư",dashTotalRows:"Tổng dòng vật tư",dashKpiNote:"Toàn bộ dữ liệu kho",dashFilteredValue:"Tổng giá trị tồn kho",dashCoverage:"Mức tồn so với điểm đặt hàng lại",dashCoverageNote:"Tỷ lệ tồn kho / điểm đặt hàng lại; chỉ tính điểm đặt hàng lại dương và tồn kho không âm.",dashTopValue:"Vật tư có giá trị tồn cao nhất",dashValueNote:"Giá trị tồn = số lượng × đơn giá, gộp theo mã SAP.",dashSnapshotNote:"Các mốc đã đồng bộ và lưu trên trình duyệt này; không phải lịch sử tồn kho đầy đủ.",dashStockExport:"Xuất kết quả tra cứu tồn kho",dashMatch:"{count} / {total} dòng",dashCoverageUnknown:"Không đủ dữ liệu tính tỷ lệ",dashCoverageZero:"Hết hàng (0%)",dashCoverageLow:"Trên 0% đến dưới 50%",dashCoverageMid:"Từ 50% đến dưới 100%",dashCoverageAt:"Đúng 100%",dashCoverageHigh:"Trên 100%",dashNoValue:"Không có giá trị dương trong phạm vi lọc.",dashboardHeading:"Phân tích kho",dashboardDesc:"Phân tích giá trị nhập / xuất, giá trị tồn kho và các vật tư có giá trị cao.",
         historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu giao dịch thực tế từ tệp lịch sử, không suy diễn từ tồn kho.",
         stockDistribution:"Phân bố trạng thái tồn kho",stockDistributionTotal:"Dòng vật tư", stockUnknownLabel:"Chưa có định mức",
         historyRefresh:"Tải lại dữ liệu lịch sử",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
@@ -1968,7 +1963,7 @@
         tabsAria:"Inventory workspaces",tabStock:"Stock lookup",tabDashboard:"Inventory dashboard",tabHistory:"In / Out history",
         materialHistoryTitle:"Material usage history",materialHistoryClose:"Close",materialHistoryPrev:"Show less",materialHistoryNext:"Load more",materialHistoryCount:"{count} transactions",materialHistoryInCount:"Inbound quantity",materialHistoryOutCount:"Outbound quantity",materialHistoryOtherCount:"Other quantity",materialHistoryStock:"Current stock",materialHistoryFrom:"Posting Date from",materialHistoryTo:"Posting Date to",materialHistoryCostCenter:"Cost Center",materialHistoryMissingCost:"No Cost Center",materialHistoryLoadedRows:"Showing {shown}/{total} rows",materialHistoryQuantityMissing:"Quantity column missing",materialHistoryQuantityInvalid:"Invalid quantity",materialHistoryQuantityMixed:"Mixed units cannot be summed",materialHistoryQuantityUnit:"Unit unknown",materialHistoryMonthly:"Average use per month",materialHistoryCoverage:"Estimated Stock coverage",
         consumptionAll:"All OUTPUT records · {unit}",consumptionRecent:"12 complete months · {period}",consumptionStock:"Stock: {amount} {unit}",consumptionMonths:"{count} months",consumptionNoHistory:"No history data loaded.",consumptionMissingQty:"History.js has no quantity column.",consumptionMixedUnits:"Mixed units cannot be summed.",consumptionUnitUnknown:"Quantity unit is unknown.",consumptionPartial:"{count} OUTPUT rows excluded due to invalid quantity or unit.",consumptionNoDates:"Valid dates are missing; monthly average unavailable.",consumptionNoAverage:"No outbound quantity in the latest 12 full months.",consumptionNoStock:"Stock is invalid or not available.",consumptionUnitMismatch:"Stock and History units differ; cannot estimate coverage.",consumptionIncomplete:"OUTPUT data is incomplete or mixes units; estimate unavailable.",
-        materialHistoryMissing:"No SAP material column in history data.",materialHistoryStale:"Showing previously loaded data.",historyExactSap:"History for exact SAP: {code}",issuedTitle:"Issued quantity",issuedScope:"All history · selected SAP · gross issues, before returns",issuedMissing:"Missing material / quantity columns",issuedPartial:"Some movements have invalid quantities",issuedUnitUnknown:"Unknown unit",issuedStale:"Previous data; refresh failed",attentionTitle:"Materials needing attention",attentionNote:"Zero stock, below or at Reorder Point",allInventoryNote:"Current stock from SAP; inbound / outbound values from transactions and historical inventory value from snapshots stored on this device.",rowsLabel:"rows",dashFilters:"Inventory dashboard filters",dashSearch:"Find materials",dashSearchPlaceholder:"SAP, description, part number...",dashRankLimit:"Materials",dashTotalRows:"Material rows",dashKpiNote:"Full inventory",dashFilteredValue:"Total inventory value",dashCoverage:"Stock coverage against Reorder Point",dashCoverageNote:"Stock / ROP; requires ROP above zero and non-negative stock.",dashReplenishment:"Estimated cost to reach Reorder Point",dashReplenishmentNote:"Shortfall to ROP × unit price, grouped by SAP. Estimate excludes other purchasing costs.",dashTopValue:"Highest inventory value materials",dashValueNote:"Inventory value = quantity × unit price, grouped by SAP.",dashSnapshotNote:"Snapshots saved in this browser; not a complete inventory ledger.",dashStockExport:"Export Stock search results",dashMatch:"{count} / {total} rows",dashCoverageUnknown:"Insufficient data for ratio",dashCoverageZero:"Out of stock (0%)",dashCoverageLow:"Above 0%, below 50%",dashCoverageMid:"50% to below 100%",dashCoverageAt:"Exactly 100%",dashCoverageHigh:"Above 100%",dashEstimateSummary:"Calculated cost: {value} · {count} rows lack data for cost estimation.",dashNoValue:"No positive inventory value in this scope.",dashNoNeed:"No calculable positive replenishment cost in this scope.",dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Analyze inbound / outbound value, inventory value and highest-value materials.",
+        materialHistoryMissing:"No SAP material column in history data.",materialHistoryStale:"Showing previously loaded data.",historyExactSap:"History for exact SAP: {code}",issuedTitle:"Issued quantity",issuedScope:"All history · selected SAP · gross issues, before returns",issuedMissing:"Missing material / quantity columns",issuedPartial:"Some movements have invalid quantities",issuedUnitUnknown:"Unknown unit",issuedStale:"Previous data; refresh failed",attentionTitle:"Materials needing attention",attentionNote:"Zero stock, below or at Reorder Point",allInventoryNote:"Current stock from SAP; inbound / outbound values from transactions and historical inventory value from snapshots stored on this device.",rowsLabel:"rows",dashFilters:"Inventory dashboard filters",dashSearch:"Find materials",dashSearchPlaceholder:"SAP, description, part number...",dashRankLimit:"Materials",dashTotalRows:"Material rows",dashKpiNote:"Full inventory",dashFilteredValue:"Total inventory value",dashCoverage:"Stock coverage against Reorder Point",dashCoverageNote:"Stock / ROP; requires ROP above zero and non-negative stock.",dashTopValue:"Highest inventory value materials",dashValueNote:"Inventory value = quantity × unit price, grouped by SAP.",dashSnapshotNote:"Snapshots saved in this browser; not a complete inventory ledger.",dashStockExport:"Export Stock search results",dashMatch:"{count} / {total} rows",dashCoverageUnknown:"Insufficient data for ratio",dashCoverageZero:"Out of stock (0%)",dashCoverageLow:"Above 0%, below 50%",dashCoverageMid:"50% to below 100%",dashCoverageAt:"Exactly 100%",dashCoverageHigh:"Above 100%",dashNoValue:"No positive inventory value in this scope.",dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Analyze inbound / outbound value, inventory value and highest-value materials.",
         historyHeading:"Inbound / outbound history",historyDesc:"View actual transactions from History.js, without inferring movements from stock snapshots.",
         stockDistribution:"Stock status distribution",stockDistributionTotal:"Material rows",stockUnknownLabel:"No reorder point",
         historyRefresh:"Reload History.js",historyTotal:"Total transactions",historyIn:"Inbound",historyOut:"Outbound",
@@ -2666,10 +2661,10 @@
       const priceCol=cotHistoryTheoTen(headers,["Price","Unit Price","Đơn giá","Giá"]);
       const unitCol=cotHistoryTheoTen(headers,["Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       const descCol=cotHistoryTheoTen(headers,["Material Description","Description","Mô tả","Mô tả vật tư"]);
-      const valueBySap=new Map(),detailsBySap=new Map(),needBySap=new Map();
-      let total=0,missingPrice=0,needTotal=0,needUnknown=0,inStock=0,attention=0;
+      const valueBySap=new Map(),detailsBySap=new Map();
+      let total=0,missingPrice=0,inStock=0,attention=0;
       for(const rec of rows) {
-        const qty=rec.soLuong,rop=rec.reorderPoint;
+        const qty=rec.soLuong;
         const price=priceCol>=0?chuyenThanhSo(rec.dong[priceCol]):NaN;
         const validPrice=Number.isFinite(price)&&price>=0;
         const sap=chuanHoaMaSap(rec.dong[0])||"—";
@@ -2696,20 +2691,13 @@
           } else missingPrice++;
         }
         if(["zero","below","at"].includes(rec.trangThaiTon))attention++;
-        if(!Number.isFinite(qty)||!Number.isFinite(rop)||rop<0){needUnknown++;continue;}
-        const gap=Math.max(0,rop-qty);
-        if(gap>0) {
-          const value=gap*price;
-          if(!validPrice||!Number.isFinite(value)){needUnknown++;continue;}
-          needTotal+=value;
-          if(value>0)needBySap.set(sap,(needBySap.get(sap)||0)+value);
-        }
+
       }
       const rank=map=>[...map].map(([name,value])=>({name,value})).sort(
         (a,b)=>b.value-a.value||a.name.localeCompare(b.name));
       const values=rank(valueBySap).map(x=>({...x,...detailsBySap.get(x.name)}));
       return {count:rows.length,inStock,attention,total:priceCol<0?null:total,missingPrice,
-        values,needs:rank(needBySap),needTotal,needUnknown};
+        values};
     }
 
     function veBangTopGiaTriVatTu(values,limit) {
@@ -2746,11 +2734,6 @@
         tuDien("inventoryValuePartial",{count:stats.missingPrice}):tuDien("inventoryValueNote");
       vePhanBoTrangThai(duLieuTimKiem);
       veBangTopGiaTriVatTu(stats.values,limit);
-      hienThiThanhGiaTri(stats.needs.slice(0,10),"insight-replenishment",stats.needTotal,"money");
-      if(!stats.needs.length)document.getElementById("insight-replenishment").textContent=tuDien("dashNoNeed");
-      document.getElementById("dashboard-replenishment-note").textContent=tuDien("dashEstimateSummary",{
-        value:dinhDangGiaTriKho(stats.needTotal),
-        count:dinhDangSoLuong.format(stats.needUnknown)});
       veBieuDoSuDungKho();
       veBieuDoGiaTriKho();
       veLichSuKho();
@@ -2794,12 +2777,17 @@
       const result=[];
       const today=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
       for(let i=count-1;i>=0;i--){
-        let date=new Date(today),key="",label="";
+        let date=new Date(today),key="",label="",title="";
         if(mode==="week"){
           date.setUTCDate(date.getUTCDate()-(date.getUTCDay()+6)%7-i*7);
           key=date.toISOString().slice(0,10);
-          label=String(date.getUTCDate()).padStart(2,"0")+"/"+
-            String(date.getUTCMonth()+1).padStart(2,"0");
+          // ISO week number: the Thursday determines the week-year.
+          const thursday=new Date(date);thursday.setUTCDate(thursday.getUTCDate()+3);
+          const weekYear=thursday.getUTCFullYear();
+          const week=Math.ceil(((thursday-new Date(Date.UTC(weekYear,0,1)))/86400000+1)/7);
+          label=(ngonNguHienTai==="en"?"Week ":"Tuần ")+week;
+          const end=new Date(date);end.setUTCDate(end.getUTCDate()+6);
+          title=label+" / "+weekYear+" · "+key+" – "+end.toISOString().slice(0,10);
         }else if(mode==="month"){
           date=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth()-i,1));
           key=date.toISOString().slice(0,7);
@@ -2812,7 +2800,7 @@
           label=String(date.getUTCDate()).padStart(2,"0")+"/"+
             String(date.getUTCMonth()+1).padStart(2,"0");
         }
-        result.push({key,label});
+        result.push({key,label,title:title||label});
       }
       return result;
     }
@@ -2848,7 +2836,7 @@
         const exact=missing?tuDien("dashValueTrendGap"):
           money?dinhDangGiaTriKho(p.value):dinhDangLuongHistory(p.value);
         const percentage=missing?12:max>0?Math.max(0,100*p.value/max):0;
-        return '<div class="trend-column" title="'+thoatHTML(p.label+" · "+exact)+'">'+
+        return '<div class="trend-column" title="'+thoatHTML(p.title+" · "+exact)+'">'+
           '<span class="trend-amount">'+thoatHTML(missing?"—":dinhDangRutGonKho(p.value))+
           '</span><div class="trend-chart-bar-wrap"><div class="trend-chart-bar'+
           (missing?" missing":usage?" usage":"")+'" style="height:'+
@@ -2898,7 +2886,7 @@
           const value=stats.values.get(p.key);
           return '<div class="trend-column"><div class="movement-pair">'+["in","out"].map(type=>{
             const exact=label(type)+": "+dinhDangGiaTriKho(value[type]);
-            return '<div class="movement-series" title="'+thoatHTML(p.key+" · "+exact)+'" aria-label="'+thoatHTML(p.key+" · "+exact)+'">'+
+            return '<div class="movement-series" title="'+thoatHTML(p.title+" · "+exact)+'" aria-label="'+thoatHTML(p.title+" · "+exact)+'">'+
               '<span class="trend-amount">'+thoatHTML(dinhDangRutGonKho(value[type]))+'</span>'+
               '<div class="trend-chart-bar-wrap"><div class="trend-chart-bar movement-'+type+'" style="height:'+
               (max?100*value[type]/max:0).toFixed(2)+'%"></div></div></div>';
