@@ -1303,13 +1303,13 @@
       body.stock-one-screen #view-stock .toolbar-primary > #btn-xuat-excel {
         align-self:center; min-height:38px; font-size:11px;
       }
-      @media(max-width:1499px) {
-        body.stock-one-screen #view-stock .toolbar-primary {
-          grid-template-columns:minmax(280px,1fr) minmax(0,auto);
-        }
-        body.stock-one-screen #view-stock .toolbar-primary > #btn-xuat-excel {
-          grid-column:2; justify-self:end;
-        }
+    }
+    @media(min-width:1100px) and (max-width:1499px) and (min-height:620px) {
+      body.stock-one-screen #view-stock .toolbar-primary {
+        grid-template-columns:minmax(280px,1fr) minmax(0,auto);
+      }
+      body.stock-one-screen #view-stock .toolbar-primary > #btn-xuat-excel {
+        grid-column:2; justify-self:end;
       }
     }
     @media(max-width:1099px) {
@@ -2305,7 +2305,7 @@
     function capNhatCardBmNo(dongData) {
       const card = document.getElementById("bm-no-card");
       const danhSach = document.getElementById("bm-no-list");
-      const chiSoBmNo = timCotTheoTen("BM No");
+      const chiSoBmNo=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
       const giaTri = chiSoBmNo >= 0 ? String(dongData[chiSoBmNo] ?? "").trim() : "";
       const maBmNo = giaTri.split(/[,\n;|]+/).map(value => value.trim()).filter(Boolean);
 
@@ -3642,7 +3642,7 @@
 
     function hienThiChiTiet(dongData) {
       let htmlChiTiet = "";
-      const chiSoBm = timCotTheoTen("BM No");
+      const chiSoBm=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
       for (let c = 0; c < tieuDeCot.length; c++) {
         if(c===chiSoBm)continue;
         htmlChiTiet+='<div class="detail-item" data-col-index="'+c+'"><label>'+
