@@ -4488,9 +4488,7 @@
     // Use calendar months that have fully ended, not the unfinished current month.
     // Consumption sums all OUTPUT quantities; the monthly average uses 12 full months.
     function thongKeConsumptionVatTu(sapRows,stockRow) {
-      const qtyColumn=cotHistoryTheoTen(historyColumns,[
-        "Qty in unit of entry","Quantity","Qty","Movement Qty","Số lượng",
-        "So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const qtyColumn=cotSoLuongHistoryDungCot();
       const unitColumn=cotHistoryTheoTen(historyColumns,[
         "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       const stockUnitColumn=cotHistoryTheoTen(tieuDeCot,[
@@ -5834,9 +5832,7 @@
       const titles=[tuDien("historyDirection"),...columns.map(col=>
         tenCotHistoryDaDich(col.name))];
       rows.push(hangXlsx(6,titles.map((name,col)=>oChuXlsx(col,6,name,7)),30));
-      const qtyColumn=cotHistoryTheoTen(historyColumns,[
-        "Qty in unit of entry","Quantity","Qty","Movement Qty",
-        "Số lượng","So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const qtyColumn=cotSoLuongHistoryDungCot();
       const amountColumn=cotHistoryTheoTen(historyColumns,[
         "Amt.In","Amt.in loc.cur.","Amt in local currency","Amount in local currency",
         "Amount LC","Amount"]);
