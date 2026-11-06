@@ -2972,10 +2972,24 @@
       document.querySelector(".material-history-table").scrollTop=0;
     }
 
-    function htmlDongLichSuVatTu(rows) {
-      const visibleColumns=historyColumns.map((name,index)=>({name,index}))
+    // The selected SAP code and material description are already shown in the
+    // popup title; hide those duplicate columns only in the rendered table.
+    // All original History.js columns remain available for filtering and KPIs.
+    function cotHienThiLichSuVatTu() {
+      const hiddenNames=new Set([
+        "Material","SAP","SAP Code","Material Number","Material Code",
+        "Mã SAP","Mã vật tư",
+        "Material Description","Material Desc","Material Text",
+        "Description","Mô tả","Mô tả vật tư","Tên vật tư"
+      ].map(tenHistoryChuan));
+      return historyColumns.map((name,index)=>({name,index}))
         .filter(col=>col.index!==historyTypeColumn&&
-          !["movement","movementtype"].includes(tenHistoryChuan(col.name)));
+          !["movement","movementtype"].includes(tenHistoryChuan(col.name))&&
+          !hiddenNames.has(tenHistoryChuan(col.name)));
+    }
+
+    function htmlDongLichSuVatTu(rows) {
+      const visibleColumns=cotHienThiLichSuVatTu();
       const amtColumn=cotHistoryTheoTen(historyColumns,[
         "Amt.In","Amt.in loc.cur.","Amt in local currency","Amount in local currency",
         "Amount LC","Amount"]);
@@ -3008,9 +3022,7 @@
       const total=materialHistoryRows.length;
       materialHistoryPage=Math.max(1,Math.min(materialHistoryPage,
         Math.max(1,Math.ceil(total/MATERIAL_HISTORY_PAGE_SIZE))));
-      const visibleColumns=historyColumns.map((name,index)=>({name,index}))
-        .filter(col=>col.index!==historyTypeColumn&&
-          !["movement","movementtype"].includes(tenHistoryChuan(col.name)));
+      const visibleColumns=cotHienThiLichSuVatTu();
       document.getElementById("material-history-head").innerHTML=historyColumns.length?
         "<tr><th>"+thoatHTML(tuDien("historyDirection"))+"</th>"+
         visibleColumns.map(col=>"<th title='"+thoatHTML(col.name)+"'>"+thoatHTML(tenCotHistoryDaDich(col.name))+"</th>").join("")+"</tr>":"";
