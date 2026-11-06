@@ -1791,8 +1791,9 @@
         "Date","Posting Date","Document Date","Transaction Date","Datetime",
         "Created At","Ngay","Ngày","Ngày giao dịch","Ngày hạch toán","PostingDate"]);
       // Prioritize a literal "Movement" column, then the source's "Movement Type".
-      const typeColumn=cotHistoryTheoTen(columns,[
-        "Movement","Movement Type","Type","IN/OUT","Transaction Type",
+      const movementColumn=cotHistoryTheoTen(columns,["Movement"]);
+      const typeColumn=movementColumn>=0?movementColumn:cotHistoryTheoTen(columns,[
+        "Movement Type","Type","IN/OUT","Transaction Type",
         "Loai","Loại","Loại giao dịch","Nhập/Xuất","Action"]);
       if(!columns.length) {
         capNhatTrangThaiHistory("historyInvalid");
