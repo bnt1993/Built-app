@@ -31,7 +31,7 @@ HTML
       flex: 1; padding: 8px 12px; font-size: 15px; border: 1px solid #8a8886; border-radius: 4px; outline: none;
     }
     .search-box-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
-    
+
     .radio-group, .checkbox-group { display: flex; gap: 12px; align-items: center; font-size: 14px; }
     .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
     .btn-primary { background: var(--primary); color: #fff; }
@@ -41,7 +41,7 @@ HTML
 
     /* Khu vực chính chia đôi: Bảng bên trái, Chi tiết + Hình ảnh bên phải */
     .main-container { display: flex; flex: 1; overflow: hidden; gap: 10px; padding: 10px; }
-    
+
     .table-section {
       flex: 2; background: #fff; border-radius: 6px; border: 1px solid var(--border);
       display: flex; flex-direction: column; overflow: hidden;
@@ -60,7 +60,7 @@ HTML
       display: flex; flex-direction: column; padding: 15px; overflow-y: auto; min-width: 350px;
     }
     .detail-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
-    
+
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 13px; }
     .detail-item { background: #faf9f8; padding: 8px; border-radius: 4px; border: 1px solid var(--border); }
     .detail-item label { display: block; color: #605e5c; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
@@ -86,7 +86,7 @@ HTML
     }
 
     .meta-info { font-size: 12px; color: #605e5c; background: #faf9f8; padding: 10px; border-radius: 4px; border: 1px solid var(--border); margin-top: auto; }
-    
+
     /* Footer trạng thái */
     .footer-bar {
       background: #fff; padding: 8px 20px; border-top: 1px solid var(--border);
@@ -139,7 +139,7 @@ HTML
     <!-- Khung chi tiết tương tự UserForm trong hình -->
     <div class="detail-section">
       <div class="detail-title">Thông tin chi tiết mã SAP</div>
-      
+
       <!-- Khung xem ảnh tích hợp bộ sưu tập _01, _02 -->
       <div class="image-viewer-box" id="khung-anh">
         <img id="anh-chinh" src="" alt="Chưa có hình ảnh" onclick="phongToAnh()">
@@ -171,6 +171,10 @@ HTML
   </div>
 
   <script>
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
     // ================= CẤU HÌNH THƯ MỤC Ổ MẠNG =================
     const duongDanOMang = "data.js";
     const THU_MUC_HINH = "HinhAnh/"; // Thư mục chứa ảnh trên ổ mạng
@@ -208,7 +212,7 @@ HTML
     }
 
     function veTieuDe() {
-      document.getElementById("dau-bang").innerHTML = "<tr>" + tieuDeCot.map(c => `<th>${c}</th>`).join("") + "</tr>";
+      document.getElementById("dau-bang").innerHTML = "<tr>" + tieuDeCot.map(c => `<th>${escapeHTML(c)}</th>`).join("") + "</tr>";
     }
 
     function locDuLieu() {
@@ -245,8 +249,8 @@ HTML
         if (khop) {
           soBanGhiTimThay++;
           let selectedClass = (i === dongDangChonIndex) ? "selected" : "";
-          html += `<tr class="${selectedClass}" onclick="chonDong(${i}, this)">` + 
-                  dong.map(cell => `<td>${cell}</td>`).join("") + 
+          html += `<tr class="${selectedClass}" onclick="chonDong(${i}, this)">` +
+                  dong.map(cell => `<td>${escapeHTML(cell)}</td>`).join("") +
                   `</tr>`;
         }
       }
@@ -266,14 +270,14 @@ HTML
       // Hiển thị thông tin chi tiết sang panel bên phải
       let htmlChiTiet = "";
       for (let c = 0; c < tieuDeCot.length; c++) {
-        htmlChiTiet += `<div class="detail-item"><label>${tieuDeCot[c]}</label><span>${dongData[c] || ""}</span></div>`;
+        htmlChiTiet += `<div class="detail-item"><label>${escapeHTML(tieuDeCot[c])}</label><span>${escapeHTML(dongData[c] ?? '')}</span></div>`;
       }
       document.getElementById("luoi-chi-tiet").innerHTML = htmlChiTiet;
 
       // Tải hình ảnh tương ứng với Mã SAP
       taiBoSuuTapAnh(maSap);
 
-      document.getElementById("thong-tin-meta").innerHTML = `User: Hệ thống nội bộ<br>Last update: ${mocCapNhatCu}`;
+      document.getElementById("thong-tin-meta").innerHTML = `User: Hệ thống nội bộ<br>Last update: ${escapeHTML(mocCapNhatCu)}`;
     }
 
     // Tải bộ sưu tập ảnh _01, _02...
@@ -289,7 +293,7 @@ HTML
         const hauTo = k < 10 ? "0" + k : "" + k;
         kiemTraVaThemAnh(`${maSap}_${hauTo}.jpg`, `${maSap}_${hauTo}.png`);
       }
-      
+
       // Kiểm tra thêm ảnh gốc không có hậu tố
       kiemTraVaThemAnh(`${maSap}.jpg`, `${maSap}.png`);
     }
@@ -297,7 +301,7 @@ HTML
     function kiemTraVaThemAnh(tenJpg, tenPng) {
       const imgTest = new Image();
       const urlJpg = THU_MUC_HINH + encodeURIComponent(tenJpg);
-      
+
       imgTest.onload = function() {
         if (!danhSachAnhDangXem.includes(urlJpg)) {
           danhSachAnhDangXem.push(urlJpg);
@@ -331,7 +335,7 @@ HTML
         if (viTriAnhDangXem >= tong) viTriAnhHienTai = 0;
         imgEl.src = danhSachAnhDangXem[viTriAnhHienTai];
         counterEl.textContent = `${viTriAnhHienTai + 1} / ${tong} images`;
-        
+
         const hienNut = tong > 1 ? "block" : "none";
         btnPrev.style.display = hienNut;
         btnNext.style.display = hienNut;

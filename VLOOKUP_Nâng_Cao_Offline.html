@@ -459,6 +459,7 @@
   <!-- JavaScript Code logic -->
   <script>
     // State application storage
+    const MATCHED=Symbol('vlookupMatched');
     const state = {
       targetFile: { file: null, workbook: null, sheetName: '', data: [], headers: [] },
       sourceFile: { file: null, workbook: null, sheetName: '', data: [], headers: [] },
@@ -784,7 +785,7 @@
 
       state.sourceFile.data.forEach(row => {
         const keyParts = sourceKeys.map(k => normalize(row[k]));
-        const compositeKeyStr = keyParts.join('___');
+        const compositeKeyStr = JSON.stringify(keyParts);
 
         if (!sourceMap.has(compositeKeyStr)) {
           sourceMap.set(compositeKeyStr, []);
@@ -793,7 +794,14 @@
       });
 
       // Prepare Headers for Final Result
-      const addedHeaders = fetchCols.map(col => `${prefix}${col}`);
+      const usedNames=new Set(state.targetFile.headers);
+      const outputNames=new Map();
+      const addedHeaders=fetchCols.map(col=>{
+        const base=`${prefix}${col}`;
+        let name=base,n=2;
+        while(usedNames.has(name))name=`${base}_${n++}`;
+        usedNames.add(name);outputNames.set(col,name);return name;
+      });
       state.resultHeaders = [...state.targetFile.headers, ...addedHeaders];
 
       // Perform Matching over Target File Rows
@@ -802,7 +810,7 @@
 
       state.resultData = state.targetFile.data.map(targetRow => {
         // Build Target Search Key
-        const targetKeyStr = targetKeys.map(k => normalize(targetRow[k])).join('___');
+        const targetKeyStr = JSON.stringify(targetKeys.map(k => normalize(targetRow[k])));
         
         const matchedSourceRows = sourceMap.get(targetKeyStr);
 
@@ -812,7 +820,7 @@
           matchedCount++;
 
           fetchCols.forEach(col => {
-            const targetColName = `${prefix}${col}`;
+            const targetColName = outputNames.get(col);
 
             if (duplicateHandling === 'first') {
               newRow[targetColName] = matchedSourceRows[0][col] ?? defaultValue;
@@ -823,14 +831,14 @@
               newRow[targetColName] = allVals.length > 0 ? allVals.join(', ') : defaultValue;
             }
           });
-          newRow._isMatched = true;
+          newRow[MATCHED] = true;
         } else {
           unmatchedCount++;
           fetchCols.forEach(col => {
-            const targetColName = `${prefix}${col}`;
+            const targetColName = outputNames.get(col);
             newRow[targetColName] = defaultValue;
           });
-          newRow._isMatched = false;
+          newRow[MATCHED] = false;
         }
 
         return newRow;
@@ -880,9 +888,9 @@
       // Filter rows for preview (limit 50 rows for performant preview)
       let displayData = state.resultData;
       if (filter === 'matched') {
-        displayData = displayData.filter(r => r._isMatched);
+        displayData = displayData.filter(r => r[MATCHED]);
       } else if (filter === 'unmatched') {
-        displayData = displayData.filter(r => !r._isMatched);
+        displayData = displayData.filter(r => !r[MATCHED]);
       }
 
       const previewRows = displayData.slice(0, 50);
@@ -895,7 +903,7 @@
       // Render Rows
       previewRows.forEach(row => {
         const tr = document.createElement('tr');
-        tr.className = row._isMatched 
+        tr.className = row[MATCHED]
           ? 'hover:bg-slate-50 dark:hover:bg-slate-700/40' 
           : 'bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 dark:hover:bg-rose-950/40';
 
@@ -917,10 +925,10 @@
         return;
       }
 
-      // Clean internal meta property `_isMatched`
+      // Remove internal match metadata without deleting user columns
       const cleanData = state.resultData.map(row => {
         const copy = { ...row };
-        delete copy._isMatched;
+        delete copy[MATCHED];
         return copy;
       });
 
