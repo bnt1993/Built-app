@@ -1811,7 +1811,7 @@
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashboardTopOutTitle">Vật tư xuất nhiều nhất theo giá trị</h3>
               <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
-                <select id="dashboard-out-period" onchange="veTopVatTuXuatKho()">
+                <select id="dashboard-out-period" onchange="doiLocTopXuatKho()">
                   <option value="selected" data-i18n="dashboardTimeSelected" selected>Theo khoảng đã chọn</option>
                   <option value="week" data-i18n="dashWeek">Hằng tuần</option>
                   <option value="month" data-i18n="dashMonth">Hằng tháng</option>
@@ -1858,7 +1858,7 @@
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashboardDormantTitle">Vật tư tồn lâu chưa xuất</h3>
               <label><span data-i18n="dashboardDormantDays">Không xuất trong</span>
-                <select id="dashboard-dormant-days" onchange="veVatTuTonLau()">
+                <select id="dashboard-dormant-days" onchange="doiLocTonLauKho()">
                   <option value="90" data-i18n="dashboardDormant90" selected>90 ngày</option>
                   <option value="180" data-i18n="dashboardDormant180">180 ngày</option>
                   <option value="365" data-i18n="dashboardDormant365">365 ngày</option>
@@ -3538,6 +3538,85 @@
       }
       return global;
     }
+
+    // Separate paging from the Stock lookup; both analytics tables remember
+    // their own page and page size, with the same controls as stock search.
+    const dashboardTableState={
+      out:{page:1,size:25},dormant:{page:1,size:25}
+    };
+    let dashboardOutCache=null;
+    let dashboardDormantCache=null;
+
+    function bangKhoPrefix(kind){
+      return kind==="out"?"dashboard-out":kind==="dormant"?"dashboard-dormant":"";
+    }
+    function capNhatPhanTrangBangKho(kind,total){
+      const state=dashboardTableState[kind],prefix=bangKhoPrefix(kind);
+      if(!state||!prefix)return {start:0,end:0,total:0};
+      const maxPage=Math.max(1,Math.ceil(total/state.size));
+      state.page=Math.max(1,Math.min(maxPage,state.page));
+      const start=(state.page-1)*state.size,end=Math.min(total,start+state.size);
+      const presets=["25","50","75","100","200","500"];
+      document.getElementById(prefix+"-size").value=
+        presets.includes(String(state.size))?String(state.size):"custom";
+      document.getElementById(prefix+"-custom").value=String(state.size);
+      const pageInput=document.getElementById(prefix+"-page");
+      pageInput.value=String(state.page);pageInput.max=String(maxPage);
+      document.getElementById(prefix+"-pages").textContent="/ "+dinhDangSoLuong.format(maxPage);
+      for(const suffix of ["first","prev"])
+        document.getElementById(prefix+"-"+suffix).disabled=state.page<=1;
+      for(const suffix of ["next","last"])
+        document.getElementById(prefix+"-"+suffix).disabled=state.page>=maxPage;
+      return {start,end,total};
+    }
+    function veBangKhoTheoLoai(kind){
+      if(kind==="out")veTopVatTuXuatKho();
+      else if(kind==="dormant")veVatTuTonLau();
+    }
+    function datSoDongBangKho(kind,value){
+      const state=dashboardTableState[kind];if(!state)return;
+      const count=Number(value);
+      if(!Number.isInteger(count)||count<1){
+        veBangKhoTheoLoai(kind);return;
+      }
+      const nextSize=Math.min(count,5000);
+      const firstIndex=(state.page-1)*state.size;
+      state.size=nextSize;state.page=Math.floor(firstIndex/nextSize)+1;
+      veBangKhoTheoLoai(kind);
+    }
+    function chonSoDongBangKho(kind,value){
+      if(!dashboardTableState[kind])return;
+      if(value==="custom"){
+        const input=document.getElementById(bangKhoPrefix(kind)+"-custom");
+        input.focus();input.select();return;
+      }
+      datSoDongBangKho(kind,value);
+    }
+    function denTrangBangKho(kind,target){
+      const state=dashboardTableState[kind];if(!state)return;
+      const prefix=bangKhoPrefix(kind);
+      const pageInput=document.getElementById(prefix+"-page");
+      const max=Math.max(1,Number(pageInput.max)||1);
+      const page=target==="first"?1:target==="last"?max:
+        target==="prev"?state.page-1:target==="next"?state.page+1:Number(target);
+      if(!Number.isInteger(page)){pageInput.value=String(state.page);return;}
+      state.page=Math.max(1,Math.min(max,page));
+      veBangKhoTheoLoai(kind);
+      document.getElementById(kind==="out"?"dashboard-top-out":"dashboard-dormant").scrollTop=0;
+    }
+    function doiLocTopXuatKho(){
+      dashboardTableState.out.page=1;
+      dashboardOutCache=null;
+      document.getElementById("dashboard-out-min").value="0";
+      veTopVatTuXuatKho();
+    }
+    function doiNguongXuatKho(){
+      dashboardTableState.out.page=1;veTopVatTuXuatKho();
+    }
+    function doiLocTonLauKho(){
+      dashboardTableState.dormant.page=1;veVatTuTonLau();
+    }
+
     function thongKeTopVatTuXuatKho(range,limit=20){
       const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
       if(amountCol<0||sapCol<0)return null;
