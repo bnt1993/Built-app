@@ -3561,6 +3561,9 @@
         "Amt.In","Amt.in loc.cur.","Amt in local currency",
         "Amount in local currency","Amount LC","Amount"]);
     }
+    function cotSoLuongHistoryDungCot(){
+      return cotHistoryTheoTen(historyColumns,["Qty in unit of entry"]);
+    }
     function cotMaSapLichSuKho(){
       return cotHistoryTheoTen(historyColumns,[
         "Material","SAP","SAP Code","Material Number","Material Code",
@@ -3769,15 +3772,12 @@
     function thongKeTopVatTuXuatKho(range){
       const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
       if(amountCol<0||sapCol<0)return null;
-      const qtyCol=cotHistoryTheoTen(historyColumns,[
-        "Qty in unit of entry","Quantity","Qty","Movement Qty",
-        "Số lượng","So luong","Quantity Change","Qty Out",
-        "Outbound","Số lượng xuất"]);
+      const qtyCol=cotSoLuongHistoryDungCot();
       const unitCol=cotHistoryTheoTen(historyColumns,[
         "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       const descCol=cotHistoryTheoTen(historyColumns,[
         "Material Description","Description","Mô tả","Mô tả vật tư"]);
-      const stockBySap=new Map(duLieuTimKiem.map(item=>
+      const stockBySap=new Map((tonKhoTheoHall()||[]).map(item=>
         [chuanHoaMaSap(item.dong[0]).toLowerCase(),item]));
       const grouped=new Map();
       for(const rec of locGiaoDichKho(range,["out"])){
@@ -3821,12 +3821,17 @@
         capNhatPhanTrangBangKho("out",0);return;
       }
       const range=phamViTopXuatKho();
+      if(hallDangLoc()!=="all"&&!coCotHistoryHall()){
+        root.textContent=tuDien("dashboardHallNoHistoryColumn");
+        note.textContent="";slider.disabled=true;amountText.textContent="—";
+        capNhatPhanTrangBangKho("out",0);return;
+      }
       if(!range){
         root.textContent=tuDien("dashboardTimeInvalid");note.textContent="";
         slider.disabled=true;amountText.textContent="—";
         capNhatPhanTrangBangKho("out",0);return;
       }
-      const key=range.from+"|"+range.to;
+      const key=range.from+"|"+range.to+"|"+hallDangLoc();
       if(!dashboardOutCache||dashboardOutCache.key!==key||
         dashboardOutCache.history!==historyAll||
         dashboardOutCache.stock!==duLieuTimKiem){
@@ -3886,10 +3891,12 @@
       const sapCol=cotMaSapLichSuKho();
       if(sapCol<0)return null;
       const today=ngayDiaPhuongISO(now),stock=new Map();
+      const hallStock=tonKhoTheoHall(),hallHistory=lichSuTheoHall();
+      if(!hallStock||!hallHistory)return null;
       const unitCol=cotHistoryTheoTen(tieuDeCot,[
         "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
       const priceCol=cotHistoryTheoTen(tieuDeCot,["Price","Unit Price","Đơn giá","Giá"]);
-      for(const item of duLieuTimKiem){
+      for(const item of hallStock){
         if(!Number.isFinite(item.soLuong)||item.soLuong<=0)continue;
         const sap=chuanHoaMaSap(item.dong[0]),key=sap.toLowerCase();
         if(!key)continue;
@@ -3917,7 +3924,7 @@
         }
         if(row.quantityValid)row.quantity+=item.soLuong;
       }
-      for(const rec of historyAll){
+      for(const rec of hallHistory){
         if(rec.type!=="out"||!ngayHistoryHopLe(rec.date)||rec.date>today)continue;
         const key=chuanHoaMaSap(rec.cells[sapCol]).toLowerCase();
         const material=stock.get(key);
@@ -3944,15 +3951,18 @@
       const today=ngayDiaPhuongISO();
       if(!dashboardDormantCache||dashboardDormantCache.days!==days||
         dashboardDormantCache.today!==today||
+        dashboardDormantCache.hall!==hallDangLoc()||
         dashboardDormantCache.history!==historyAll||
         dashboardDormantCache.stock!==duLieuTimKiem){
         const rows=thongKeVatTuTonLau(days);
-        dashboardDormantCache={days,today,history:historyAll,stock:duLieuTimKiem,rows};
+        dashboardDormantCache={days,today,hall:hallDangLoc(),history:historyAll,stock:duLieuTimKiem,rows};
         dashboardTableState.dormant.page=1;
       }
       const rows=dashboardDormantCache.rows;
       if(rows===null){
-        root.textContent=tuDien("dashboardDormantMissing");
+        root.textContent=tuDien(hallDangLoc()!=="all"&&!coCotStockHall()?
+          "dashboardHallNoStockColumn":hallDangLoc()!=="all"&&!coCotHistoryHall()?
+          "dashboardHallNoHistoryColumn":"dashboardDormantMissing");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       if(!rows.length){
@@ -4472,9 +4482,7 @@
     // Each direction is summed separately by quantity, not number of movements.
     // Never sum different units or silently ignore invalid records.
     function tongSoLuongHistory(rows) {
-      const qtyCol=cotHistoryTheoTen(historyColumns,[
-        "Qty in unit of entry","Quantity","Qty","Movement Qty","Số lượng",
-        "So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const qtyCol=cotSoLuongHistoryDungCot();
       const unitCol=cotHistoryTheoTen(historyColumns,[
         "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       if(qtyCol<0)return {value:NaN,unit:"",reason:"materialHistoryQuantityMissing"};
