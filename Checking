@@ -1534,6 +1534,28 @@
       #view-dashboard .dashboard-table-chart { height:430px; }
       #view-dashboard .dashboard-mini-size { flex:1 1 100%; }
     }
+
+    #view-dashboard .dashboard-hall-control select {
+      min-width:132px; max-width:170px; border-color:var(--blue);
+    }
+    #view-dashboard .dashboard-hall-status {
+      width:100%; margin:0; font-size:11px; line-height:1.35;
+    }
+    #view-dashboard .dashboard-hall-status:empty { display:none; }
+    #view-dashboard .dashboard-sort-button {
+      display:inline-flex; align-items:center; gap:4px; justify-content:inherit;
+      font:inherit; font-size:inherit; color:inherit; font-weight:750;
+      text-align:inherit; background:transparent; border:none;
+      padding:0; cursor:pointer; white-space:nowrap;
+    }
+    #view-dashboard .dashboard-sort-button:hover,
+    #view-dashboard .dashboard-sort-button[aria-sort="ascending"],
+    #view-dashboard .dashboard-sort-button[aria-sort="descending"] { color:var(--blue); }
+    #view-dashboard .dashboard-sort-button:focus-visible {
+      outline:2px solid var(--blue); outline-offset:3px; border-radius:3px;
+    }
+    #view-dashboard .dashboard-sort-icon { display:inline-block; opacity:.6; min-width:9px; }
+    #view-dashboard .dashboard-sort-button[data-active="true"] .dashboard-sort-icon { opacity:1; }
   </style>
 </head>
 <body>
@@ -1693,6 +1715,12 @@
       <section class="dashboard-period-strip" aria-label="Khoảng thời gian phân tích" data-i18n-aria="dashboardTimeTitle">
         <div class="dashboard-period-intro"><strong data-i18n="dashboardTimeTitle">Khoảng thời gian phân tích</strong>
           <span id="dashboard-range-summary" class="insight-note"></span></div>
+        <label class="dashboard-hall-control"><span data-i18n="dashboardHallFilter">Khu vực kho</span>
+          <select id="dashboard-hall" onchange="doiLocHallPhanTich()">
+            <option value="all" data-i18n="dashboardHallAll">Tất cả khu vực</option>
+            <option value="hall1" data-i18n="dashboardHall1">Hall 1</option>
+            <option value="hall2" data-i18n="dashboardHall2">Hall 2</option>
+          </select></label>
         <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
           <select id="dashboard-range-mode" onchange="doiKyPhanTichKho()">
             <option value="week" data-i18n="dashboardTimeWeek">7 ngày gần đây</option>
@@ -1708,6 +1736,7 @@
           <input id="dashboard-range-from" type="date" onchange="doiKyPhanTichKho()"></label>
         <label id="dashboard-range-to-field" hidden><span data-i18n="dashboardTimeTo">Đến ngày</span>
           <input id="dashboard-range-to" type="date" onchange="doiKyPhanTichKho()"></label>
+        <p id="dashboard-hall-status" class="dashboard-hall-status insight-note" role="status" aria-live="polite"></p>
       </section>
       <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
         <div class="metric-card">
@@ -2001,6 +2030,21 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        dashboardHallUnknownStock:"Storage Location của dữ liệu tồn kho chưa có giá trị Hall 1/Hall 2 nhận diện được.",
+        dashboardHallUnknownHistory:"Giá trị Storage Location chưa nhận diện được Hall 1/Hall 2. Cần đối chiếu mã kho thực tế trong History.js.",
+        dashboardQuantitySource:"Số lượng nhập/xuất lấy từ Qty in unit of entry, giá trị tiền lấy từ Amt.in loc.cur.",
+        dashboardSortHint:"Nhấn tiêu đề cột để sắp xếp",
+        dashboardSortDesc:"Sắp xếp giảm dần",
+        dashboardSortAsc:"Sắp xếp tăng dần",
+        dashboardHallNoMatches:"Không có dữ liệu cho Hall đã chọn.",
+        dashboardHallUnavailableValue:"Lịch sử giá trị kho theo từng Hall chưa được lưu; chỉ có bản ghi tổng kho.",
+        dashboardHallNoHistoryRecords:"Không có giao dịch thuộc Hall đã chọn trong dữ liệu lịch sử.",
+        dashboardHallNoStockColumn:"Dữ liệu tồn kho chưa có cột Storage Location; chưa thể tính số tồn theo Hall.",
+        dashboardHallNoHistoryColumn:"History.js chưa có cột Storage Location; không thể lọc giao dịch theo khu vực kho.",
+        dashboardHall2:"Hall 2",
+        dashboardHall1:"Hall 1",
+        dashboardHallAll:"Tất cả khu vực",
+        dashboardHallFilter:"Khu vực kho",
         dashboardTopOutQtyMissingNote:"Số lượng xuất chỉ được cộng khi đơn vị tính giống nhau; dữ liệu thiếu hoặc khác đơn vị hiển thị dấu —.",
         dashboardOutMinSummary:"Giá trị xuất từ {amount}",
         dashboardPagerSummary:"{from}–{to} / {total} vật tư",
@@ -2223,6 +2267,21 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        dashboardHallUnknownStock:"Stock Storage Location has no recognized Hall 1/Hall 2 values.",
+        dashboardHallUnknownHistory:"Storage Location codes do not match Hall 1/Hall 2; confirm the source mapping.",
+        dashboardQuantitySource:"Inbound/outbound quantities use Qty in unit of entry; monetary values use Amt.in loc.cur.",
+        dashboardSortHint:"Click a column heading to sort",
+        dashboardSortDesc:"Sort descending",
+        dashboardSortAsc:"Sort ascending",
+        dashboardHallNoMatches:"No data for the selected Hall.",
+        dashboardHallUnavailableValue:"Historical Hall-level inventory values were not saved; only full-warehouse snapshots exist.",
+        dashboardHallNoHistoryRecords:"No matching movements for the selected Hall.",
+        dashboardHallNoStockColumn:"Stock source has no Storage Location column; Hall-specific balances are unavailable.",
+        dashboardHallNoHistoryColumn:"History.js has no Storage Location column; movements cannot be filtered by area.",
+        dashboardHall2:"Hall 2",
+        dashboardHall1:"Hall 1",
+        dashboardHallAll:"All areas",
+        dashboardHallFilter:"Warehouse area",
         dashboardTopOutQtyMissingNote:"Issued quantities are combined only for matching units; missing or mixed units show —.",
         dashboardOutMinSummary:"Outbound value from {amount}",
         dashboardPagerSummary:"{from}–{to} / {total} materials",
@@ -3129,14 +3188,82 @@
         values};
     }
 
+    const dashboardSortState={
+      value:{column:"value",direction:-1},
+      out:{column:"value",direction:-1},
+      dormant:{column:"last",direction:1}
+    };
+    let dashboardTopValueCache=[];
+    function giaTriSapXepKho(rec,column){
+      switch(column){
+        case "material":return rec.name??rec.sap??"";
+        case "quantity":return rec.inconsistent||rec.quantityValid===false||
+          rec.mixed||rec.missing||!rec.unit?null:rec.quantity;
+        case "unit":return rec.inconsistent||rec.mixed||!rec.unit?null:rec.unit;
+        case "stock":return rec.quantityValid&&rec.unit?rec.quantity:null;
+        case "last":return rec.last||null;
+        case "price":return rec.priceValid&&!rec.priceMixed?rec.price:null;
+        case "value":return rec.value;
+        default:return null;
+      }
+    }
+    function sapXepBangPhanTich(rows,kind){
+      const sorting=dashboardSortState[kind];
+      if(!sorting)return rows.slice();
+      const by=sorting.column,dir=sorting.direction;
+      const collator=new Intl.Collator(ngonNguHienTai==="en"?"en":"vi",{
+        sensitivity:"base",numeric:true
+      });
+      return rows.map((rec,index)=>({rec,index})).sort((a,b)=>{
+        const x=giaTriSapXepKho(a.rec,by),y=giaTriSapXepKho(b.rec,by);
+        const noX=x===null||x===undefined||x==="",noY=y===null||y===undefined||y==="";
+        if(noX||noY)return noX===noY?a.index-b.index:noX?1:-1;
+        const compare=typeof x==="number"&&typeof y==="number"?
+          x-y:collator.compare(String(x),String(y));
+        return compare?dir*compare:a.index-b.index;
+      }).map(x=>x.rec);
+    }
+    function tieuDeSapXepPhanTich(kind,column,key){
+      const state=dashboardSortState[kind],selected=state.column===column;
+      const isAscending=selected&&state.direction>0;
+      const direction=selected?(isAscending?"ascending":"descending"):"none";
+      const title=tuDien(selected&&isAscending?"dashboardSortDesc":"dashboardSortAsc");
+      const arrow=selected?(isAscending?"↑":"↓"):"↕";
+      return '<th aria-sort="'+direction+'"><button type="button" class="dashboard-sort-button" '+
+        'data-active="'+String(selected)+'" title="'+thoatHTML(title)+'" '+
+        'onclick="doiSapXepBangPhanTich(\''+kind+'\',\''+column+'\')">'+
+        thoatHTML(tuDien(key))+' <span class="dashboard-sort-icon" aria-hidden="true">'+arrow+
+        '</span></button></th>';
+    }
+    function doiSapXepBangPhanTich(kind,column){
+      const state=dashboardSortState[kind];
+      if(!state)return;
+      if(state.column===column)state.direction*=-1;
+      else{
+        state.column=column;
+        state.direction=["quantity","stock","price","value"].includes(column)?-1:1;
+      }
+      if(kind==="value"){
+        const limit=Number(document.getElementById("dashboard-limit").value)||10;
+        veBangTopGiaTriVatTu(dashboardTopValueCache,limit);
+      }else if(kind==="out"){
+        dashboardTableState.out.page=1;veTopVatTuXuatKho();
+      }else if(kind==="dormant"){
+        dashboardTableState.dormant.page=1;veVatTuTonLau();
+      }
+    }
+
     function veBangTopGiaTriVatTu(values,limit) {
       const root=document.getElementById("insight-top");
       if(!values.length) {root.textContent=tuDien("dashNoValue");return;}
-      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
-        '</th><th>'+thoatHTML(tuDien("dashTopQuantity"))+'</th><th>'+
-        thoatHTML(tuDien("dashTopUnit"))+'</th><th>'+
-        thoatHTML(tuDien("dashTopValueColumn"))+'</th></tr></thead>';
-      const body=values.slice(0,limit).map(rec=>{
+      const header='<thead><tr>'+
+        tieuDeSapXepPhanTich("value","material","dashTopMaterial")+
+        tieuDeSapXepPhanTich("value","quantity","dashTopQuantity")+
+        tieuDeSapXepPhanTich("value","unit","dashTopUnit")+
+        tieuDeSapXepPhanTich("value","value","dashTopValueColumn")+
+        '</tr></thead>';
+      // Top N means the N highest-value SAPs. Sort only within that shortlist.
+      const body=sapXepBangPhanTich(values.slice(0,limit),"value").map(rec=>{
         const valid=rec.unit&&!rec.inconsistent&&Number.isFinite(rec.quantity);
         const quantity=valid?dinhDangSoLuong.format(rec.quantity):"—";
         const unit=rec.mixed?tuDien("dashTopMixedUnits"):
@@ -3152,17 +3279,29 @@
     function capNhatThongKeNangCao() {
       if(!analyticsReady)return;
       const limit=Number(document.getElementById("dashboard-limit").value)||10;
-      const stats=tinhPhanTichDashboard(duLieuTimKiem,tieuDeCot);
-      for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
-        document.getElementById(id).textContent=dinhDangSoLuong.format(value);
+      const filteredStock=tonKhoTheoHall();
+      const stats=filteredStock===null?null:tinhPhanTichDashboard(filteredStock,tieuDeCot);
+      if(stats===null){
+        for(const id of ["metric-total","metric-instock","metric-attention","metric-inventory-value"])
+          document.getElementById(id).textContent="—";
+        document.getElementById("metric-value-note").textContent=tuDien(loiCotHall("stock"));
+        document.getElementById("insight-stock-distribution").textContent=tuDien(loiCotHall("stock"));
+        dashboardTopValueCache=[];
+        document.getElementById("insight-top").textContent=tuDien(loiCotHall("stock"));
+      }else{
+        for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
+          document.getElementById(id).textContent=dinhDangSoLuong.format(value);
       const money=document.getElementById("metric-inventory-value");
       money.textContent=stats.total===null?"—":dinhDangGiaTriKho(stats.total);
       money.title=money.textContent;
       document.getElementById("metric-value-note").textContent=stats.total===null?
         tuDien("inventoryValueNoPrice"):stats.missingPrice?
         tuDien("inventoryValuePartial",{count:stats.missingPrice}):tuDien("inventoryValueNote");
-      vePhanBoTrangThai(duLieuTimKiem);
+      vePhanBoTrangThai(filteredStock);
+      dashboardTopValueCache=stats.values;
       veBangTopGiaTriVatTu(stats.values,limit);
+      }
+      capNhatTrangThaiHall();
       veBieuDoSuDungKho();
       veBieuDoGiaTriKho();
       veSoSanhNhapXuatKho();
@@ -3194,6 +3333,9 @@
     function veLichSuKho() {
       const snapshots=layAnhChupKho();
       const node=document.getElementById("insight-history");
+      if(hallDangLoc()!=="all"){
+        node.textContent=tuDien("dashboardHallUnavailableValue");return;
+      }
       if (!snapshots.length) {node.textContent=tuDien("noAnalytics");return;}
       node.innerHTML=snapshots.slice(-12).reverse().map(rec=>
         '<div class="insight-row"><span class="name">'+thoatHTML(rec.date)+'</span>'+
@@ -3411,9 +3553,90 @@
       veBieuDoGiaTriKho();
     }
 
+    // Storage Location is resolved by header, never by position: History.js may
+    // insert this column before Posting Date. Unknown codes stay unclassified.
+    function cotStorageLocation(headers){
+      return cotHistoryTheoTen(headers,["Storage Location","Storage Loc.","StorageLoc",
+        "SLoc","Storage Location Code","Vị trí kho","Kho lưu trữ","Khu vực kho"]);
+    }
+    function hallTuStorageLocation(value){
+      const key=tenHistoryChuan(value);
+      if(["hall1","h1","khu1","nhakho1"].includes(key))return "hall1";
+      if(["hall2","h2","khu2","nhakho2"].includes(key))return "hall2";
+      return "";
+    }
+    function hallDangLoc(){
+      return document.getElementById("dashboard-hall").value||"all";
+    }
+    function coCotHistoryHall(){
+      return cotStorageLocation(historyColumns)>=0;
+    }
+    function coCotStockHall(){
+      return cotStorageLocation(tieuDeCot)>=0;
+    }
+    let historyHallCache=null;
+    let stockHallCache=null;
+    function lichSuTheoHall(){
+      const hall=hallDangLoc();
+      if(hall==="all")return historyAll;
+      const index=cotStorageLocation(historyColumns);
+      if(index<0)return null;
+      if(historyHallCache&&historyHallCache.records===historyAll&&
+        historyHallCache.index===index&&historyHallCache.hall===hall)
+        return historyHallCache.unrecognized?null:historyHallCache.rows;
+      const rows=historyAll.filter(rec=>hallTuStorageLocation(rec.cells[index])===hall);
+      const hasKnown=rows.length>0||historyAll.some(rec=>
+        !!hallTuStorageLocation(rec.cells[index]));
+      historyHallCache={records:historyAll,index,hall,rows,unrecognized:!hasKnown};
+      return hasKnown?rows:null;
+    }
+    function tonKhoTheoHall(){
+      const hall=hallDangLoc();
+      if(hall==="all")return duLieuTimKiem;
+      const index=cotStorageLocation(tieuDeCot);
+      if(index<0)return null;
+      if(stockHallCache&&stockHallCache.records===duLieuTimKiem&&
+        stockHallCache.index===index&&stockHallCache.hall===hall)
+        return stockHallCache.unrecognized?null:stockHallCache.rows;
+      const rows=duLieuTimKiem.filter(rec=>hallTuStorageLocation(rec.dong[index])===hall);
+      const hasKnown=rows.length>0||duLieuTimKiem.some(rec=>
+        !!hallTuStorageLocation(rec.dong[index]));
+      stockHallCache={records:duLieuTimKiem,index,hall,rows,unrecognized:!hasKnown};
+      return hasKnown?rows:null;
+    }
+    function loiCotHall(loai){
+      if(loai==="stock")return coCotStockHall()?
+        "dashboardHallUnknownStock":"dashboardHallNoStockColumn";
+      return coCotHistoryHall()?
+        "dashboardHallUnknownHistory":"dashboardHallNoHistoryColumn";
+    }
+    function capNhatTrangThaiHall(){
+      const note=document.getElementById("dashboard-hall-status");
+      const hall=hallDangLoc();
+      if(hall==="all"){note.textContent="";return;}
+      const alerts=[];
+      if(analyticsReady&&tonKhoTheoHall()===null)alerts.push(tuDien(loiCotHall("stock")));
+      if(historyLoaded&&lichSuTheoHall()===null)alerts.push(tuDien(loiCotHall("history")));
+      note.textContent=alerts.join(" · ")||tuDien("dashboardQuantitySource");
+    }
+    function doiLocHallPhanTich(){
+      historyHallCache=null;stockHallCache=null;
+      dashboardOutCache=null;dashboardDormantCache=null;
+      dashboardTableState.out.page=1;dashboardTableState.dormant.page=1;
+      document.getElementById("dashboard-out-min").value="0";
+      capNhatTrangThaiHall();
+      if(analyticsReady)capNhatThongKeNangCao();
+      else {
+        veSoSanhNhapXuatKho();veTopVatTuXuatKho();
+        veVatTuTonLau();veBieuDoSuDungKho();veBieuDoGiaTriKho();
+      }
+    }
+
     function locGiaoDichKho(range,types=["in","out"]){
       if(!historyLoaded||!range)return [];
-      return historyAll.filter(rec=>types.includes(rec.type)&&
+      const scope=lichSuTheoHall();
+      if(!scope)return [];
+      return scope.filter(rec=>types.includes(rec.type)&&
         ngayHistoryHopLe(rec.date)&&rec.date>=range.from&&rec.date<=range.to);
     }
 
@@ -3421,6 +3644,9 @@
       return cotHistoryTheoTen(historyColumns,[
         "Amt.In","Amt.in loc.cur.","Amt in local currency",
         "Amount in local currency","Amount LC","Amount"]);
+    }
+    function cotSoLuongHistoryDungCot(){
+      return cotHistoryTheoTen(historyColumns,["Qty in unit of entry"]);
     }
     function cotMaSapLichSuKho(){
       return cotHistoryTheoTen(historyColumns,[
@@ -3475,6 +3701,15 @@
       header.textContent=range.from+" – "+range.to+"  /  "+range.prevFrom+" – "+range.prevTo;
       if(!historyLoaded){
         root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardCompareNoHistory");
+        return;
+      }
+      if(!lichSuTheoHall()){
+        root.textContent=tuDien(loiCotHall("history"));
+        for(const type of ["in","out"]){
+          document.getElementById("dashboard-compare-"+type+"-current").textContent="—";
+          document.getElementById("dashboard-compare-"+type+"-prior").textContent="";
+          document.getElementById("dashboard-compare-"+type+"-change").textContent="—";
+        }
         return;
       }
       const amountCol=cotGiaTriLichSuKho();
@@ -3621,15 +3856,12 @@
     function thongKeTopVatTuXuatKho(range){
       const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
       if(amountCol<0||sapCol<0)return null;
-      const qtyCol=cotHistoryTheoTen(historyColumns,[
-        "Qty in unit of entry","Quantity","Qty","Movement Qty",
-        "Số lượng","So luong","Quantity Change","Qty Out",
-        "Outbound","Số lượng xuất"]);
+      const qtyCol=cotSoLuongHistoryDungCot();
       const unitCol=cotHistoryTheoTen(historyColumns,[
         "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       const descCol=cotHistoryTheoTen(historyColumns,[
         "Material Description","Description","Mô tả","Mô tả vật tư"]);
-      const stockBySap=new Map(duLieuTimKiem.map(item=>
+      const stockBySap=new Map((tonKhoTheoHall()||[]).map(item=>
         [chuanHoaMaSap(item.dong[0]).toLowerCase(),item]));
       const grouped=new Map();
       for(const rec of locGiaoDichKho(range,["out"])){
@@ -3673,12 +3905,17 @@
         capNhatPhanTrangBangKho("out",0);return;
       }
       const range=phamViTopXuatKho();
+      if(hallDangLoc()!=="all"&&lichSuTheoHall()===null){
+        root.textContent=tuDien(loiCotHall("history"));
+        note.textContent="";slider.disabled=true;amountText.textContent="—";
+        capNhatPhanTrangBangKho("out",0);return;
+      }
       if(!range){
         root.textContent=tuDien("dashboardTimeInvalid");note.textContent="";
         slider.disabled=true;amountText.textContent="—";
         capNhatPhanTrangBangKho("out",0);return;
       }
-      const key=range.from+"|"+range.to;
+      const key=range.from+"|"+range.to+"|"+hallDangLoc();
       if(!dashboardOutCache||dashboardOutCache.key!==key||
         dashboardOutCache.history!==historyAll||
         dashboardOutCache.stock!==duLieuTimKiem){
@@ -3708,13 +3945,13 @@
       if(!filtered.length){
         root.textContent=tuDien("dashboardTopOutEmpty");
       }else{
-        const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
-          '</th><th title="'+thoatHTML(tuDien("dashboardTopOutQtyMissingNote"))+'">'+
-          thoatHTML(tuDien("dashboardTopOutCount"))+
-          '</th><th>'+thoatHTML(tuDien("dashboardTopOutUnit"))+
-          '</th><th>'+thoatHTML(tuDien("dashboardTopOutValue"))+'</th></tr></thead>';
+        const header='<thead><tr>'+
+          tieuDeSapXepPhanTich("out","material","dashTopMaterial")+
+          tieuDeSapXepPhanTich("out","quantity","dashboardTopOutCount")+
+          tieuDeSapXepPhanTich("out","unit","dashboardTopOutUnit")+
+          tieuDeSapXepPhanTich("out","value","dashboardTopOutValue")+'</tr></thead>';
         root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-          filtered.slice(page.start,page.end).map(rec=>{
+          sapXepBangPhanTich(filtered,"out").slice(page.start,page.end).map(rec=>{
             const qty=rec.quantityValid&&!rec.mixed&&rec.unit?
               dinhDangSoLuong.format(rec.quantity):"—";
             const unit=rec.mixed?tuDien("dashboardOutMixedUnits"):(rec.unit||"—");
@@ -3738,10 +3975,12 @@
       const sapCol=cotMaSapLichSuKho();
       if(sapCol<0)return null;
       const today=ngayDiaPhuongISO(now),stock=new Map();
+      const hallStock=tonKhoTheoHall(),hallHistory=lichSuTheoHall();
+      if(!hallStock||!hallHistory)return null;
       const unitCol=cotHistoryTheoTen(tieuDeCot,[
         "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
       const priceCol=cotHistoryTheoTen(tieuDeCot,["Price","Unit Price","Đơn giá","Giá"]);
-      for(const item of duLieuTimKiem){
+      for(const item of hallStock){
         if(!Number.isFinite(item.soLuong)||item.soLuong<=0)continue;
         const sap=chuanHoaMaSap(item.dong[0]),key=sap.toLowerCase();
         if(!key)continue;
@@ -3769,7 +4008,7 @@
         }
         if(row.quantityValid)row.quantity+=item.soLuong;
       }
-      for(const rec of historyAll){
+      for(const rec of hallHistory){
         if(rec.type!=="out"||!ngayHistoryHopLe(rec.date)||rec.date>today)continue;
         const key=chuanHoaMaSap(rec.cells[sapCol]).toLowerCase();
         const material=stock.get(key);
@@ -3796,15 +4035,18 @@
       const today=ngayDiaPhuongISO();
       if(!dashboardDormantCache||dashboardDormantCache.days!==days||
         dashboardDormantCache.today!==today||
+        dashboardDormantCache.hall!==hallDangLoc()||
         dashboardDormantCache.history!==historyAll||
         dashboardDormantCache.stock!==duLieuTimKiem){
         const rows=thongKeVatTuTonLau(days);
-        dashboardDormantCache={days,today,history:historyAll,stock:duLieuTimKiem,rows};
+        dashboardDormantCache={days,today,hall:hallDangLoc(),history:historyAll,stock:duLieuTimKiem,rows};
         dashboardTableState.dormant.page=1;
       }
       const rows=dashboardDormantCache.rows;
       if(rows===null){
-        root.textContent=tuDien("dashboardDormantMissing");
+        root.textContent=tuDien(hallDangLoc()!=="all"&&!coCotStockHall()?
+          loiCotHall("stock"):hallDangLoc()!=="all"&&lichSuTheoHall()===null?
+          loiCotHall("history"):"dashboardDormantMissing");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       if(!rows.length){
@@ -3812,12 +4054,13 @@
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       const page=capNhatPhanTrangBangKho("dormant",rows.length);
-      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardDormantStock"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardDormantLast"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardDormantUnitPrice"))+'</th></tr></thead>';
+      const header='<thead><tr>'+
+        tieuDeSapXepPhanTich("dormant","material","dashTopMaterial")+
+        tieuDeSapXepPhanTich("dormant","stock","dashboardDormantStock")+
+        tieuDeSapXepPhanTich("dormant","last","dashboardDormantLast")+
+        tieuDeSapXepPhanTich("dormant","price","dashboardDormantUnitPrice")+'</tr></thead>';
       root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-        rows.slice(page.start,page.end).map(rec=>{
+        sapXepBangPhanTich(rows,"dormant").slice(page.start,page.end).map(rec=>{
           const quantity=rec.quantityValid?
             dinhDangSoLuong.format(rec.quantity)+" "+rec.unit:"—";
           const price=rec.priceMixed?tuDien("dashboardDormantMultiplePrices"):
@@ -3850,7 +4093,12 @@
         summary.textContent="";return;
       }
       const buckets=nhomKyTrongKhoangKho(mode,range);
-      const stats=tinhGiaTriNhapXuat(historyAll,historyColumns,mode,buckets);
+      const scope=lichSuTheoHall();
+      if(!scope){
+        chart.textContent=tuDien(loiCotHall("history"));
+        summary.textContent="";return;
+      }
+      const stats=tinhGiaTriNhapXuat(scope,historyColumns,mode,buckets);
       if(stats.missing){chart.textContent=tuDien("dashUsageNoQty");summary.textContent="";return;}
       const max=Math.max(0,...[...stats.values.values()].flatMap(v=>[v.in,v.out]));
       const label=type=>tuDien(type==="in"?"historyInShort":"historyOutShort");
@@ -3878,6 +4126,12 @@
     }
 
     function veBieuDoGiaTriKho(){
+      if(hallDangLoc()!=="all"){
+        document.getElementById("insight-value-trend").textContent=
+          tuDien("dashboardHallUnavailableValue");
+        document.getElementById("dashboard-value-trend-summary").textContent="";
+        return;
+      }
       const mode=document.getElementById("dashboard-value-period").value;
       const range=layKyPhanTichKho();
       const chart=document.getElementById("insight-value-trend");
@@ -4133,11 +4387,13 @@
       if(sequence!==historySeq)return false;
       indexed.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
       historyColumns=columns;
+      historyHallCache=null;
       historyTypeColumn=typeColumn;
       historyAll=indexed;
       ngayXuatCuoiTheoSap.clear();
       for(const [sap,date] of lastOutput)ngayXuatCuoiTheoSap.set(sap,date);
       historyLoaded=true;
+      capNhatTrangThaiHall();
       capNhatCardNgayXuat();
       veSoSanhNhapXuatKho();
       veTopVatTuXuatKho();
@@ -4246,9 +4502,7 @@
     // Use calendar months that have fully ended, not the unfinished current month.
     // Consumption sums all OUTPUT quantities; the monthly average uses 12 full months.
     function thongKeConsumptionVatTu(sapRows,stockRow) {
-      const qtyColumn=cotHistoryTheoTen(historyColumns,[
-        "Qty in unit of entry","Quantity","Qty","Movement Qty","Số lượng",
-        "So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const qtyColumn=cotSoLuongHistoryDungCot();
       const unitColumn=cotHistoryTheoTen(historyColumns,[
         "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       const stockUnitColumn=cotHistoryTheoTen(tieuDeCot,[
@@ -4311,9 +4565,7 @@
     // Each direction is summed separately by quantity, not number of movements.
     // Never sum different units or silently ignore invalid records.
     function tongSoLuongHistory(rows) {
-      const qtyCol=cotHistoryTheoTen(historyColumns,[
-        "Qty in unit of entry","Quantity","Qty","Movement Qty","Số lượng",
-        "So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const qtyCol=cotSoLuongHistoryDungCot();
       const unitCol=cotHistoryTheoTen(historyColumns,[
         "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       if(qtyCol<0)return {value:NaN,unit:"",reason:"materialHistoryQuantityMissing"};
@@ -5594,9 +5846,7 @@
       const titles=[tuDien("historyDirection"),...columns.map(col=>
         tenCotHistoryDaDich(col.name))];
       rows.push(hangXlsx(6,titles.map((name,col)=>oChuXlsx(col,6,name,7)),30));
-      const qtyColumn=cotHistoryTheoTen(historyColumns,[
-        "Qty in unit of entry","Quantity","Qty","Movement Qty",
-        "Số lượng","So luong","Quantity Change","Qty Out","Outbound","Số lượng xuất"]);
+      const qtyColumn=cotSoLuongHistoryDungCot();
       const amountColumn=cotHistoryTheoTen(historyColumns,[
         "Amt.In","Amt.in loc.cur.","Amt in local currency","Amount in local currency",
         "Amount LC","Amount"]);
