@@ -1725,6 +1725,53 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        colOrderType:"Loại đặt hàng",
+        colMinLot:"Lô đặt hàng tối thiểu",
+        dashboardCompareTitle:"So sánh nhập / xuất với kỳ trước",
+        dashboardCompareCurrent:"Kỳ đang chọn",
+        dashboardComparePrevious:"Kỳ trước",
+        dashboardCompareIn:"Giá trị nhập",
+        dashboardCompareOut:"Giá trị xuất",
+        dashboardCompareChange:"Thay đổi",
+        dashboardCompareNoPrevious:"Không có giá trị kỳ trước để tính tỷ lệ",
+        dashboardCompareNoHistory:"Chưa có dữ liệu giao dịch để so sánh",
+        dashboardCompareInvalid:"Bỏ qua {count} giao dịch thiếu ngày hoặc giá trị",
+        dashboardCompareNew:"Phát sinh mới",
+        dashboardCompareNote:"So sánh giá trị nhập và xuất với kỳ liền trước có cùng số ngày.",
+        dashboardTimeTitle:"Khoảng thời gian phân tích",
+        dashboardTimeMode:"Chọn kỳ",
+        dashboardTimeWeek:"7 ngày gần đây",
+        dashboardTimeMonth:"Tháng hiện tại",
+        dashboardTimeYear:"Theo năm",
+        dashboardTimeCustom:"Tùy chọn ngày",
+        dashboardTimeYearLabel:"Năm",
+        dashboardTimeFrom:"Từ ngày",
+        dashboardTimeTo:"Đến ngày",
+        dashboardTimeCurrent:"{from} – {to}",
+        dashboardTimeInvalid:"Khoảng ngày không hợp lệ",
+        dashboardTopOutTitle:"Vật tư xuất nhiều nhất theo giá trị",
+        dashboardTopOutNote:"Giá trị xuất lấy từ Amt.In của giao dịch OUTPUT; nhấn đúp để xem lịch sử.",
+        dashboardTopOutEmpty:"Không có giao dịch xuất hợp lệ trong giai đoạn",
+        dashboardTopOutMissing:"Thiếu cột mã vật tư hoặc giá trị trong lịch sử",
+        dashboardTopOutValue:"Giá trị xuất",
+        dashboardTopOutCount:"Lượt xuất",
+        dashboardDormantTitle:"Vật tư tồn lâu chưa xuất",
+        dashboardDormantDays:"Không xuất trong",
+        dashboardDormant90:"90 ngày",
+        dashboardDormant180:"180 ngày",
+        dashboardDormant365:"365 ngày",
+        dashboardDormantNote:"Xét vật tư đang còn tồn và lần xuất cuối trong lịch sử khả dụng; nguồn lịch sử có thể chưa đầy đủ.",
+        dashboardDormantLast:"Ngày xuất cuối",
+        dashboardDormantStock:"Tồn kho",
+        dashboardDormantDaysOld:"Số ngày chưa xuất",
+        dashboardDormantNever:"Chưa ghi nhận",
+        dashboardDormantNoHistory:"Chưa có dữ liệu lịch sử để phân tích",
+        dashboardDormantMissing:"Thiếu cột mã SAP trong lịch sử",
+        dashboardDormantEmpty:"Không có vật tư đáp ứng ngưỡng đã chọn",
+        dashboardDormantMore:"Hiển thị {count}/{total} vật tư · Nhấn đúp để xem lịch sử",
+        dashboardTopDoubleClick:"Nhấn đúp để xem lịch sử",
+        dashboardHistoryLoading:"Đang tải lịch sử giao dịch…",
+        dashboardPeriodNote:"Khoảng thời gian áp dụng cho so sánh, Top vật tư xuất và biểu đồ thời gian.",
         dashTopMissingQty:"—",
         dashTopMixedUnits:"Nhiều đơn vị",
         dashTopValueColumn:"Giá trị tồn",
@@ -1882,6 +1929,53 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        colOrderType:"Order type",
+        colMinLot:"Minimum lot size",
+        dashboardCompareTitle:"Inbound / outbound vs prior period",
+        dashboardCompareCurrent:"Selected period",
+        dashboardComparePrevious:"Prior period",
+        dashboardCompareIn:"Inbound value",
+        dashboardCompareOut:"Outbound value",
+        dashboardCompareChange:"Change",
+        dashboardCompareNoPrevious:"No prior period baseline to calculate percentage",
+        dashboardCompareNoHistory:"No transaction data for comparison",
+        dashboardCompareInvalid:"Skipped {count} transactions without valid date/value",
+        dashboardCompareNew:"New activity",
+        dashboardCompareNote:"Compare inbound and outbound with the immediately prior period of the same length.",
+        dashboardTimeTitle:"Analysis date range",
+        dashboardTimeMode:"Period",
+        dashboardTimeWeek:"Last 7 days",
+        dashboardTimeMonth:"Current month",
+        dashboardTimeYear:"Calendar year",
+        dashboardTimeCustom:"Custom dates",
+        dashboardTimeYearLabel:"Year",
+        dashboardTimeFrom:"From",
+        dashboardTimeTo:"To",
+        dashboardTimeCurrent:"{from} – {to}",
+        dashboardTimeInvalid:"Invalid date range",
+        dashboardTopOutTitle:"Top materials by outbound value",
+        dashboardTopOutNote:"Outbound value from Amt.In of OUTPUT movements; double-click for history.",
+        dashboardTopOutEmpty:"No valid outbound transactions in this period",
+        dashboardTopOutMissing:"Missing SAP or amount history column",
+        dashboardTopOutValue:"Outbound value",
+        dashboardTopOutCount:"Issues",
+        dashboardDormantTitle:"Slow-moving materials",
+        dashboardDormantDays:"No issues for",
+        dashboardDormant90:"90 days",
+        dashboardDormant180:"180 days",
+        dashboardDormant365:"365 days",
+        dashboardDormantNote:"Based on current stock and last outgoing movement in available history; history may be incomplete.",
+        dashboardDormantLast:"Last issued",
+        dashboardDormantStock:"Stock",
+        dashboardDormantDaysOld:"Days since last issue",
+        dashboardDormantNever:"Not recorded",
+        dashboardDormantNoHistory:"No history available",
+        dashboardDormantMissing:"Missing SAP material column in history",
+        dashboardDormantEmpty:"No materials meet this threshold",
+        dashboardDormantMore:"Showing {count}/{total} materials · Double-click for history",
+        dashboardTopDoubleClick:"Double-click to view history",
+        dashboardHistoryLoading:"Loading transaction history…",
+        dashboardPeriodNote:"Date range applies to comparisons, top outbound materials and timeline charts.",
         dashTopMissingQty:"—",
         dashTopMixedUnits:"Mixed units",
         dashTopValueColumn:"Inventory value",
@@ -2035,7 +2129,7 @@
         reportNoSort:"Source order",reportLineValue:"Line value (VND)",
         reportNote:"Inventory value = positive stock quantity × valid unit price; invalid prices are excluded.",
         reportDisclaimer:"Source: internal SAP data · Includes only records matching the current filters.",
-        colSap:"BM No", colDescription:"Description", colPart:"Part No",
+        colSap:"SAP code", colDescription:"Description", colPart:"Part No",
         colQuantity:"Quantity", colPrice:"Price", colBm:"BM No", colUnit:"Unit", colGroup:"Group"
       }
     };
@@ -2073,7 +2167,10 @@
         "material group":"colGroup","material type":"colMaterialType",
         "reorder point":"colReorder","re-order point":"colReorder","rop":"colReorder",
         "storage bin":"colStorageBin","storage location":"colStorageLoc",
-        "cost center":"colCostCenter","posting date":"colPostingDate"
+        "cost center":"colCostCenter","posting date":"colPostingDate",
+        "type order":"colOrderType","order type":"colOrderType","type of order":"colOrderType",
+        "min lot":"colMinLot","min. lot":"colMinLot","min lot size":"colMinLot",
+        "minimum lot":"colMinLot","minimum lot size":"colMinLot"
       }[k];
       return key ? tuDien(key) : ten;
     }
@@ -2473,7 +2570,7 @@
     function capNhatCardBmNo(dongData) {
       const card = document.getElementById("bm-no-card");
       const danhSach = document.getElementById("bm-no-list");
-      const chiSoBmNo=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
+      const chiSoBmNo=chiSoCotBmChinhXac();
       const giaTri = chiSoBmNo >= 0 ? String(dongData[chiSoBmNo] ?? "").trim() : "";
       const maBmNo = giaTri.split(/[,\n;|]+/).map(value => value.trim()).filter(Boolean);
 
@@ -2572,6 +2669,12 @@
       const accepted=new Set(aliases.map(normalize));
       const index=tieuDeCot.findIndex(name=>accepted.has(normalize(name)));
       return index>=0?index:(fallback>=0&&fallback<tieuDeCot.length?fallback:-1);
+    }
+
+    // BM comes from a named source column. No index fallback to unrelated fields.
+    function chiSoCotBmChinhXac() {
+      return cotTheoTenTimKiem(["BM No","BM No.","BM Number","BM Code","BM",
+        "B/M No","B.M. No","BM Material","BM Material No","Mã BM","Mã số BM"],-1);
     }
 
     function khopTuKhoaVatTu(muc,term,scope,ganDung) {
@@ -3695,7 +3798,7 @@
     // Lập chỉ mục theo nhóm, tránh khóa giao diện với bảng dữ liệu lớn.
     function taoChiMucTimKiem() {
       const lanHienTai = ++lanLapChiMuc;
-      const chiSoBmNo=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
+      const chiSoBmNo=chiSoCotBmChinhXac();
       const chiSoPart=cotTheoTenTimKiem([
         "Part No","Part No.","Part Number","Part Nr","Part #",
         "Part Code","Mã phụ tùng","Mã phụ kiện"
@@ -3976,7 +4079,7 @@
 
     function hienThiChiTiet(dongData) {
       let htmlChiTiet = "";
-      const chiSoBm=cotTheoTenTimKiem(["BM No","BM No.","BM Number","Mã BM"]);
+      const chiSoBm=chiSoCotBmChinhXac();
       for (let c = 0; c < tieuDeCot.length; c++) {
         if(c===chiSoBm)continue;
         htmlChiTiet+='<div class="detail-item" data-col-index="'+c+'"><label>'+
