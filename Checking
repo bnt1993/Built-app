@@ -1204,6 +1204,64 @@
       #view-stock .image-viewer-box { height:280px; }
       .stock-row-menu button[role="menuitem"] { min-height:42px; font-size:13px; }
     }
+
+    /* One consistent brand/title and header toolbar in both desktop workspaces. */
+    @media(min-width:1100px) and (min-height:620px) {
+      body.stock-one-screen .app-header,
+      body.dashboard-one-screen .app-header {
+        box-sizing:border-box; height:56px; min-height:56px; flex:0 0 56px;
+        padding:0 clamp(12px,1.5vw,28px); gap:12px;
+      }
+      body.stock-one-screen .app-header .brand,
+      body.dashboard-one-screen .app-header .brand {
+        font-size:15px; font-weight:800; gap:9px;
+      }
+      body.stock-one-screen .app-header .brand-icon,
+      body.dashboard-one-screen .app-header .brand-icon {
+        width:34px; height:34px; font-size:19px; border-radius:10px;
+      }
+      body.stock-one-screen .app-header .brand-wordmark,
+      body.dashboard-one-screen .app-header .brand-wordmark { line-height:1.2; }
+      body.stock-one-screen .app-header .brand-wordmark small,
+      body.dashboard-one-screen .app-header .brand-wordmark small {
+        font-size:9px; margin-top:3px;
+      }
+      body.stock-one-screen .app-header .header-actions,
+      body.dashboard-one-screen .app-header .header-actions { gap:8px; }
+      body.stock-one-screen .app-header .header-actions .btn,
+      body.dashboard-one-screen .app-header .header-actions .btn {
+        min-height:34px; padding:6px 10px; font-size:11px;
+      }
+      body.stock-one-screen .app-header .online-pill,
+      body.dashboard-one-screen .app-header .online-pill {
+        padding:6px 10px; font-size:11px;
+      }
+    }
+    /* Small screens keep the same shared header rules regardless of tab. */
+    @media(max-width:620px) {
+      .app-header .brand { font-size:14px; }
+      .app-header .brand-icon { width:33px; height:33px; font-size:18px; }
+      .app-header .brand-wordmark small { font-size:8px; }
+      .app-header .header-actions { gap:5px; }
+    }
+    .material-history-table th { vertical-align:middle; }
+    .material-history-sort-trigger {
+      display:inline-flex; align-items:center; gap:6px; min-width:max-content;
+      border:0; background:transparent; padding:6px 4px;
+      color:inherit; font:inherit; font-weight:800; cursor:pointer;
+    }
+    .material-history-sort-trigger:hover { color:var(--blue); }
+    .material-history-sort-trigger:focus-visible {
+      outline:2px solid var(--blue); outline-offset:2px; border-radius:5px;
+    }
+    .material-history-sort-arrow { color:var(--muted); font-size:12px; }
+    .material-history-table th[aria-sort="ascending"] .material-history-sort-arrow,
+    .material-history-table th[aria-sort="descending"] .material-history-sort-arrow {
+      color:var(--blue);
+    }
+    .material-history-controls #material-history-export {
+      min-height:32px; padding:6px 12px; margin-left:auto;
+    }
   </style>
 </head>
 <body>
@@ -1484,6 +1542,9 @@
       <label class="history-filter-field history-filter-cost"><span data-i18n="materialHistoryCostCenter">Trung tâm chi phí</span><select id="material-history-cost" onchange="locLichSuVatTu()"><option value="" data-i18n="historyAny">Tất cả</option></select></label>
       <button type="button" class="btn btn-soft" onclick="xoaLocLichSuVatTu()" data-i18n="historyClear">Xóa lọc</button>
       <button type="button" class="btn btn-soft" id="material-history-refresh" onclick="taiHistory(true)" data-i18n="historyRefresh">Tải lại dữ liệu lịch sử</button>
+      <button type="button" class="btn btn-primary" id="material-history-export" onclick="xuatExcelLichSuVatTu()" data-i18n-title="historyExportTitle" title="Xuất toàn bộ lịch sử đang lọc" disabled>
+        <span aria-hidden="true">↓</span> <span data-i18n="historyExport">Xuất Excel</span>
+      </button>
     </div>
     <p id="material-history-status" role="status" aria-live="polite"></p>
     <div class="material-history-table" tabindex="0" role="region" data-i18n-aria="materialHistoryTitle" aria-label="Lịch sử sử dụng vật tư">
@@ -1504,6 +1565,18 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        historySortBy:"Sắp xếp theo {column}",historyExport:"Xuất Excel",
+        historyExportTitle:"Xuất toàn bộ giao dịch đang lọc (không chỉ các dòng đã tải)",
+        historyExportEmpty:"Không có giao dịch phù hợp để xuất Excel.",
+        historyExportBusy:"Đang tải hoặc xuất dữ liệu lịch sử, vui lòng thử lại.",
+        historyExportFailed:"Không thể tạo tệp Excel lịch sử. Vui lòng thử lại.",
+        historyExportLimit:"Số giao dịch vượt giới hạn dòng của Excel.",
+        historyReportTitle:"BÁO CÁO LỊCH SỬ NHẬP XUẤT",
+        historyReportFilters:"Bộ lọc",historyReportMaterial:"Vật tư",
+        historyReportRows:"Số giao dịch",historyReportSort:"Sắp xếp",
+        historyReportFrom:"Từ ngày",historyReportTo:"Đến ngày",
+        historyReportCost:"Trung tâm chi phí",historyReportMovement:"Loại giao dịch",
+        historyReportDate:"Ngày tạo báo cáo",
         stockRowMenuAria:"Thao tác với vật tư",stockMenuHistory:"Xem lịch sử",
         stockMenuCopySap:"Sao chép mã SAP",stockMenuCopyPart:"Sao chép mã phụ tùng",
         stockMenuExport:"Xuất vật tư",stockMenuCopied:"Đã sao chép {value}",
@@ -1619,6 +1692,18 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        historySortBy:"Sort by {column}",historyExport:"Export Excel",
+        historyExportTitle:"Export all matching transactions (not just loaded rows)",
+        historyExportEmpty:"No matching transactions to export.",
+        historyExportBusy:"History is loading or exporting. Please try again.",
+        historyExportFailed:"Unable to create the history Excel file. Please try again.",
+        historyExportLimit:"Transaction count exceeds Excel's worksheet limit.",
+        historyReportTitle:"MATERIAL MOVEMENT HISTORY",
+        historyReportFilters:"Filters",historyReportMaterial:"Material",
+        historyReportRows:"Transactions",historyReportSort:"Sorted by",
+        historyReportFrom:"From date",historyReportTo:"To date",
+        historyReportCost:"Cost Center",historyReportMovement:"Movement type",
+        historyReportDate:"Report generated",
         stockRowMenuAria:"Material actions",stockMenuHistory:"View history",
         stockMenuCopySap:"Copy SAP code",stockMenuCopyPart:"Copy part number",
         stockMenuExport:"Export material",stockMenuCopied:"Copied {value}",
@@ -2734,6 +2819,9 @@
     let materialHistoryStockIndex=-1;
     let materialHistoryCostColumn=-1;
     let materialHistoryScrollQueued=false;
+    let materialHistorySortColumn=-2; // -2 = Posting Date; -1 = transaction direction
+    let materialHistorySortDirection=-1; // latest first by default
+    let materialHistoryExporting=false;
     const MATERIAL_HISTORY_PAGE_SIZE=50;
 
     // Use calendar months that have fully ended, not the unfinished current month.
@@ -2891,6 +2979,8 @@
       materialHistorySap=sap;
       materialHistoryStockIndex=index;
       materialHistoryPage=1;
+      materialHistorySortColumn=-2;
+      materialHistorySortDirection=-1;
       document.getElementById("material-history-kind").value="all";
       document.getElementById("material-history-from").value="";
       document.getElementById("material-history-to").value="";
@@ -2963,11 +3053,79 @@
       // Quantity cards follow the date and Cost Center scope. Kind filters the table only.
       hienThiSoLuongVatTu(scopeRows,sapRows);
       materialHistoryRows=kind==="all"?scopeRows:scopeRows.filter(row=>row.type===kind);
+      sapXepLichSuVatTu();
+      document.getElementById("material-history-export").disabled=
+        !historyLoaded||historyLoading||materialHistoryExporting||materialHistoryRows.length===0;
       const failed=["historyNoSource","historyInvalid"].includes(historyStatusKey);
       status.textContent=historyLoading?tuDien("historyLoading"):failed?
         tuDien(historyStatusKey)+(historyLoaded?" "+tuDien("materialHistoryStale"):""):
         !historyLoaded?tuDien("historyIdle"):sapCol<0?tuDien("materialHistoryMissing"):"";
       materialHistoryPage=1;
+      veLichSuVatTu();
+      document.querySelector(".material-history-table").scrollTop=0;
+    }
+
+    // Sorting follows the currently filtered result, not just the 50 rendered rows.
+    // Row numbers are used as a stable tie-breaker; invalid dates stay last.
+    function cotNgayLichSuVatTu() {
+      return cotHistoryTheoTen(historyColumns,[
+        "Posting Date","PostingDate","Ngày hạch toán",
+        "Date","Document Date","Transaction Date","Datetime",
+        "Created At","Ngay","Ngày","Ngày giao dịch"
+      ]);
+    }
+
+    function sapXepLichSuVatTu() {
+      const dateIndex=cotNgayLichSuVatTu();
+      const column=materialHistorySortColumn;
+      const descending=materialHistorySortDirection<0;
+      const collator=new Intl.Collator(ngonNguHienTai==="en"?"en":"vi",{
+        numeric:true,sensitivity:"base"
+      });
+      const isDate=column===-2||(column>=0&&column===dateIndex)||
+        (column>=0&&/date|ngay/.test(tenHistoryChuan(historyColumns[column])));
+      const isNumeric=column>=0&&/qty|quantity|amount|amt|value|price|soluong|giatri/.test(
+        tenHistoryChuan(historyColumns[column]));
+      const sortVal=rec=>{
+        if(column===-1)return tuDien({
+          in:"historyInShort",out:"historyOutShort",unknown:"historyOtherShort"
+        }[rec.type]);
+        if(isDate) {
+          const date=(column===-2||column===dateIndex)?
+            rec.date:ngayHistoryISO(rec.cells[column]);
+          return ngayHistoryHopLe(date)?date:"";
+        }
+        return String(rec.cells[column]??"").trim();
+      };
+      materialHistoryRows.sort((a,b)=>{
+        const av=sortVal(a),bv=sortVal(b);
+        if(av===""||bv==="") {
+          if(av!==bv)return av===""?1:-1;
+          return a.number-b.number;
+        }
+        let comparison=0;
+        if(isNumeric){
+          const na=chuyenThanhSo(av),nb=chuyenThanhSo(bv);
+          comparison=Number.isFinite(na)&&Number.isFinite(nb)?
+            Math.sign(na-nb):collator.compare(av,bv);
+        }else comparison=collator.compare(av,bv);
+        return (descending?-comparison:comparison)||(a.number-b.number);
+      });
+    }
+
+    function doiSapXepLichSuVatTu(column) {
+      const dateIndex=cotNgayLichSuVatTu();
+      if(column!==-1&&!cotHienThiLichSuVatTu().some(c=>c.index===column))return;
+      const current=materialHistorySortColumn===-2?dateIndex:materialHistorySortColumn;
+      if(current===column)materialHistorySortDirection*=-1;
+      else {
+        materialHistorySortColumn=column;
+        materialHistorySortDirection=column===dateIndex?-1:1;
+      }
+      if(materialHistorySortColumn===-2&&column!==dateIndex)materialHistorySortColumn=column;
+      if(materialHistorySortColumn===-2&&column===dateIndex)materialHistorySortColumn=column;
+      materialHistoryPage=1;
+      sapXepLichSuVatTu();
       veLichSuVatTu();
       document.querySelector(".material-history-table").scrollTop=0;
     }
@@ -3023,9 +3181,21 @@
       materialHistoryPage=Math.max(1,Math.min(materialHistoryPage,
         Math.max(1,Math.ceil(total/MATERIAL_HISTORY_PAGE_SIZE))));
       const visibleColumns=cotHienThiLichSuVatTu();
+      const dateColumn=cotNgayLichSuVatTu();
+      const sortableHeader=(name,index,active)=>{
+        const label=index===-1?tuDien("historyDirection"):tenCotHistoryDaDich(name);
+        const sortTitle=tuDien("historySortBy",{column:label});
+        const order=active?(materialHistorySortDirection<0?"descending":"ascending"):"none";
+        const arrow=active?(materialHistorySortDirection<0?"↓":"↑"):"↕";
+        return '<th aria-sort="'+order+'"><button type="button" class="material-history-sort-trigger" '+
+          'onclick="doiSapXepLichSuVatTu('+index+')" title="'+thoatHTML(sortTitle)+
+          '" aria-label="'+thoatHTML(sortTitle)+'"><span>'+thoatHTML(label)+
+          '</span><span class="material-history-sort-arrow" aria-hidden="true">'+arrow+'</span></button></th>';
+      };
+      const activeIndex=materialHistorySortColumn===-2?dateColumn:materialHistorySortColumn;
       document.getElementById("material-history-head").innerHTML=historyColumns.length?
-        "<tr><th>"+thoatHTML(tuDien("historyDirection"))+"</th>"+
-        visibleColumns.map(col=>"<th title='"+thoatHTML(col.name)+"'>"+thoatHTML(tenCotHistoryDaDich(col.name))+"</th>").join("")+"</tr>":"";
+        "<tr>"+sortableHeader("",-1,activeIndex===-1)+
+        visibleColumns.map(col=>sortableHeader(col.name,col.index,activeIndex===col.index)).join("")+"</tr>":"";
       document.getElementById("material-history-body").innerHTML=
         htmlDongLichSuVatTu(materialHistoryRows.slice(0,
           materialHistoryPage*MATERIAL_HISTORY_PAGE_SIZE))||
