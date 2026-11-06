@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SAP Inventory · Operations Workspace</title>
+  <title>Quản lý kho SAP · Tra cứu tồn kho</title>
   <style>
 
     :root {
@@ -996,7 +996,7 @@
     <header class="app-header">
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">▦</div>
-        <div class="brand-wordmark">SAP Inventory<small data-i18n="brandSubtitle">OPERATIONS WORKSPACE</small></div>
+        <div class="brand-wordmark"><span data-i18n="brandName">Quản lý kho SAP</span><small data-i18n="brandSubtitle">OPERATIONS WORKSPACE</small></div>
       </div>
       <div class="header-actions">
         <div class="preference-group" role="group" data-i18n-aria="themeSettings" aria-label="Giao diện"><button type="button" id="theme-toggle" onclick="doiGiaoDien()" aria-pressed="false" aria-label="Chuyển sang giao diện tối" title="Chuyển sang giao diện tối">☾</button></div>
@@ -1009,7 +1009,7 @@
     <main class="workspace">
       <div class="breadcrumbs"><span>Workspace</span><span>/</span><span class="active" data-i18n="breadcrumb">Tổng quan vật tư</span></div>
       <nav class="view-tabs" aria-label="Inventory workspace tabs" data-i18n-aria="tabsAria" role="tablist">
-        <button type="button" id="tab-stock" class="view-tab active" role="tab" aria-selected="true" aria-controls="view-stock" tabindex="0" onclick="chuyenTab('stock')"><span aria-hidden="true">▤</span><span data-i18n="tabStock">Tra cứu Stock</span></button>
+        <button type="button" id="tab-stock" class="view-tab active" role="tab" aria-selected="true" aria-controls="view-stock" tabindex="0" onclick="chuyenTab('stock')"><span aria-hidden="true">▤</span><span data-i18n="tabStock">Tra cứu tồn kho</span></button>
         <button type="button" id="tab-dashboard" class="view-tab" role="tab" aria-selected="false" aria-controls="view-dashboard" tabindex="-1" onclick="chuyenTab('dashboard')"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Phân tích kho</span></button>
       </nav>
 
@@ -1063,7 +1063,7 @@
             <label><input type="radio" name="truongTim" value="all" onchange="yeuCauLocDuLieu()" checked><span data-i18n="searchAll">Tất cả</span></label>
             <label><input type="radio" name="truongTim" value="sap" onchange="yeuCauLocDuLieu()"><span data-i18n="searchSap">Mã SAP</span></label>
             <label><input type="radio" name="truongTim" value="desc" onchange="yeuCauLocDuLieu()"><span data-i18n="searchDesc">Mô tả</span></label>
-            <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"><span data-i18n="searchPart">Part No</span></label>
+            <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"><span data-i18n="searchPart">Mã phụ tùng</span></label>
             <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span data-i18n="searchBm">BM No</span></label>
           </div>
         </div>
@@ -1135,7 +1135,7 @@
           </div>
           <div class="detail-grid" id="luoi-chi-tiet"></div>
           <div class="bm-no-card" id="bm-no-card">
-            <div class="bm-no-card-title">BM No</div>
+            <div class="bm-no-card-title" data-i18n="colBm">Mã BM</div>
             <div class="bm-no-list" id="bm-no-list"></div>
           </div>
         </aside>
@@ -1144,7 +1144,7 @@
       </section>
 
       <section id="view-dashboard" class="view-pane" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
-        <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Dashboard phân tích kho</h1><p data-i18n="dashboardDesc">Giá trị tồn kho, cơ cấu vật tư, tình trạng tồn và biểu đồ tổng hợp.</p></div></div>
+        <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Phân tích kho</h1><p data-i18n="dashboardDesc">Giá trị tồn kho, cơ cấu vật tư, tình trạng tồn và biểu đồ tổng hợp.</p></div></div>
       <div class="dashboard-filters" role="search" data-i18n-aria="dashFilters" aria-label="Bộ lọc phân tích kho">
         <label class="dashboard-search"><span data-i18n="dashSearch">Tìm vật tư</span><input id="dashboard-search" type="search" data-i18n-placeholder="dashSearchPlaceholder" placeholder="Mã SAP, mô tả, Part No..." oninput="yeuCauLocDashboard()"></label>
         <label><span data-i18n="stockStatus">Stock so với Reorder Point</span><select id="dashboard-status" onchange="capNhatThongKeNangCao()">
@@ -1152,7 +1152,7 @@
           <option value="at" data-i18n="stockEqual">Bằng định mức</option><option value="below" data-i18n="stockBelow">Dưới định mức</option>
           <option value="zero" data-i18n="stockZero">Hết hàng (= 0)</option><option value="unknown" data-i18n="stockUnknown">Chưa có định mức</option>
         </select></label>
-        <label><span data-i18n="dashRankLimit">Số mã trên biểu đồ</span><select id="dashboard-limit" onchange="capNhatThongKeNangCao()"><option value="5">Top 5</option><option value="10" selected>Top 10</option><option value="20">Top 20</option></select></label>
+        <label><span data-i18n="dashRankLimit">Số mã trên biểu đồ</span><select id="dashboard-limit" onchange="capNhatThongKeNangCao()"><option value="5" data-i18n="rankTop5">5 mã</option><option value="10" data-i18n="rankTop10" selected>10 mã</option><option value="20" data-i18n="rankTop20">20 mã</option></select></label>
         <span id="dashboard-filter-summary" class="record-count" role="status"></span>
       </div>
       <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
@@ -1206,7 +1206,7 @@
       </section>
 
       <footer class="footer-bar">
-        <span data-i18n="footer">SAP Inventory · Giao diện tối ưu cho tra cứu và quản lý tồn kho</span>
+        <span data-i18n="footer">Quản lý tồn kho SAP · Tra cứu và theo dõi vật tư</span>
         <span id="trang-thai-cap-nhat" role="status" aria-live="polite">Đang tải nguồn dữ liệu...</span>
       </footer>
     </main>
@@ -1237,7 +1237,7 @@
       <div class="material-history-stat"><span data-i18n="materialHistoryOtherCount">Số lượng khác</span><strong id="material-history-other-count">—</strong><small id="material-history-unknown-note"></small></div>
       <div class="material-history-stat stock"><span data-i18n="materialHistoryStock">Tồn kho hiện tại</span><strong id="material-history-stock">—</strong><small id="material-history-stock-note"></small></div>
       <div class="material-history-stat monthly"><span data-i18n="materialHistoryMonthly">TB sử dụng/tháng</span><strong id="material-history-monthly">—</strong><small id="material-history-monthly-note"></small></div>
-      <div class="material-history-stat coverage"><span data-i18n="materialHistoryCoverage">Thời gian sử dụng</span><strong id="material-history-coverage">—</strong><small id="material-history-coverage-note"></small></div>
+      <div class="material-history-stat coverage"><span data-i18n="materialHistoryCoverage">Thời gian sử dụng ước tính</span><strong id="material-history-coverage">—</strong><small id="material-history-coverage-note"></small></div>
     </div>
     <div class="material-history-controls">
       <label class="history-filter-field"><span data-i18n="historyType">Loại giao dịch</span><select id="material-history-kind" onchange="locLichSuVatTu()">
@@ -1246,9 +1246,9 @@
         <option value="in" data-i18n="historyInShort">Nhập</option>
         <option value="unknown" data-i18n="historyOtherShort">Khác</option>
       </select></label>
-      <label class="history-filter-field"><span data-i18n="materialHistoryFrom">Posting Date từ</span><input id="material-history-from" type="date" onchange="locLichSuVatTu()"></label>
-      <label class="history-filter-field"><span data-i18n="materialHistoryTo">Posting Date đến</span><input id="material-history-to" type="date" onchange="locLichSuVatTu()"></label>
-      <label class="history-filter-field history-filter-cost"><span data-i18n="materialHistoryCostCenter">Cost Center</span><select id="material-history-cost" onchange="locLichSuVatTu()"><option value="" data-i18n="historyAny">Tất cả</option></select></label>
+      <label class="history-filter-field"><span data-i18n="materialHistoryFrom">Ngày hạch toán từ</span><input id="material-history-from" type="date" onchange="locLichSuVatTu()"></label>
+      <label class="history-filter-field"><span data-i18n="materialHistoryTo">Ngày hạch toán đến</span><input id="material-history-to" type="date" onchange="locLichSuVatTu()"></label>
+      <label class="history-filter-field history-filter-cost"><span data-i18n="materialHistoryCostCenter">Trung tâm chi phí</span><select id="material-history-cost" onchange="locLichSuVatTu()"><option value="" data-i18n="historyAny">Tất cả</option></select></label>
       <button type="button" class="btn btn-soft" onclick="xoaLocLichSuVatTu()" data-i18n="historyClear">Xóa lọc</button>
       <button type="button" class="btn btn-soft" id="material-history-refresh" onclick="taiHistory(true)" data-i18n="historyRefresh">Tải lại History.js</button>
     </div>
@@ -1271,19 +1271,47 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
-        tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu Stock",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
-        materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Thu gọn",materialHistoryNext:"Tải thêm",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số lượng nhập",materialHistoryOutCount:"Số lượng xuất",materialHistoryOtherCount:"Số lượng khác",materialHistoryStock:"Tồn kho hiện tại",materialHistoryFrom:"Posting Date từ",materialHistoryTo:"Posting Date đến",materialHistoryCostCenter:"Cost Center",materialHistoryMissingCost:"Chưa có Cost Center",materialHistoryLoadedRows:"Đã xem {shown}/{total} dòng",materialHistoryQuantityMissing:"Không có cột số lượng",materialHistoryQuantityInvalid:"Có số lượng không hợp lệ",materialHistoryQuantityMixed:"Nhiều đơn vị tính, không thể cộng",materialHistoryQuantityUnit:"Chưa rõ đơn vị tính",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Stock dùng được (ước tính)",
-        consumptionAll:"Tất cả giao dịch OUTPUT · {unit}",consumptionRecent:"12 tháng trọn vẹn · {period}",consumptionStock:"Stock: {amount} {unit}",consumptionMonths:"{count} tháng",consumptionNoHistory:"Chưa có dữ liệu lịch sử.",consumptionMissingQty:"Không có cột số lượng trong History.js.",consumptionMixedUnits:"Nhiều đơn vị tính, không thể cộng chung.",consumptionUnitUnknown:"Chưa xác định đơn vị tính.",consumptionPartial:"{count} dòng OUTPUT bị loại do thiếu hoặc sai đơn vị/số lượng.",consumptionNoDates:"Thiếu ngày hợp lệ để tính trung bình tháng.",consumptionNoAverage:"Không có lượng xuất trong 12 tháng trọn vẹn gần nhất.",consumptionNoStock:"Stock không hợp lệ hoặc chưa được tải.",consumptionUnitMismatch:"Đơn vị Stock không khớp History; không thể ước tính.",consumptionIncomplete:"History có dòng OUTPUT không hợp lệ hoặc nhiều đơn vị; chưa thể ước tính.",
-        materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng Reorder Point",allInventoryNote:"Các chỉ số và 4 biểu đồ áp dụng bộ lọc Dashboard, độc lập tra cứu Stock. Top 5/10/20 chỉ giới hạn danh sách xếp hạng.",rowsLabel:"dòng",dashFilters:"Bộ lọc phân tích kho",dashSearch:"Tìm vật tư",dashSearchPlaceholder:"Mã SAP, mô tả, Part No...",dashRankLimit:"Số mã trên biểu đồ",dashTotalRows:"Tổng dòng vật tư",dashKpiNote:"Theo bộ lọc Dashboard",dashFilteredValue:"Giá trị tồn trong phạm vi lọc",dashCoverage:"Mức tồn so với Reorder Point",dashCoverageNote:"Tỷ lệ Stock / ROP; chỉ tính ROP lớn hơn 0 và Stock không âm.",dashReplenishment:"Ước tính bổ sung đến Reorder Point",dashReplenishmentNote:"Phần thiếu đến ROP × đơn giá; gộp theo mã SAP. Đây là ước tính, chưa gồm chi phí mua hàng khác.",dashTopValue:"Vật tư có giá trị tồn cao nhất",dashValueNote:"Gộp theo mã SAP; tỷ trọng so với tổng giá trị trong phạm vi lọc.",dashSnapshotNote:"Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc Dashboard.",dashStockExport:"Xuất kết quả tra Stock",dashMatch:"{count} / {total} dòng",dashCoverageUnknown:"Không đủ dữ liệu tính tỷ lệ",dashCoverageZero:"Hết hàng (0%)",dashCoverageLow:"Trên 0% đến dưới 50%",dashCoverageMid:"Từ 50% đến dưới 100%",dashCoverageAt:"Đúng 100%",dashCoverageHigh:"Trên 100%",dashEstimateSummary:"Chi phí tính được: {value} · {count} dòng không đủ dữ liệu tính chi phí.",dashNoValue:"Không có giá trị dương trong phạm vi lọc.",dashNoNeed:"Không có chi phí bổ sung dương tính được trong phạm vi lọc.",dashboardHeading:"Dashboard phân tích kho",dashboardDesc:"Theo dõi tình trạng tồn, mức đáp ứng Reorder Point và chi phí bổ sung ước tính.",
-        historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu các giao dịch thực tế từ History.js, không suy diễn giao dịch từ tồn kho.",
+        pageTitle:"Quản lý kho SAP · Tra cứu tồn kho",
+        brandName:"Quản lý kho SAP",
+        detailKpiAria:"Các chỉ số vật tư được chọn",
+        detailStockValue:"Giá trị tồn kho",
+        detailStockStatus:"Trạng thái tồn kho",
+        detailLastOutput:"Ngày xuất gần nhất",
+        detailStockValueTitle:"Giá trị tồn kho: {calc}",
+        detailInvalidPriceQty:"Thiếu số lượng tồn hoặc đơn giá hợp lệ",
+        detailReorderValue:"Điểm đặt hàng lại: {value}",
+        detailNoReorder:"Chưa có điểm đặt hàng lại",
+        detailStatusTooltip:"Trạng thái: {status} · Tồn kho: {stock} · Điểm đặt hàng lại: {reorder}",
+        detailFromPostingDate:"Theo ngày hạch toán trong lịch sử giao dịch",
+        detailNoOutput:"Chưa ghi nhận giao dịch xuất hợp lệ",
+        detailHistoryNotLoaded:"Đang chờ dữ liệu giao dịch",
+        detailHistoryUnavailable:"Không thể đọc dữ liệu giao dịch",
+        sapTooltip:"Mã SAP: {code} · Nhấn để xem chi tiết, nhấn đúp để xem lịch sử",
+        statusTooltip:"{status} · Điểm đặt hàng lại: {reorder}",
+        rowsPerPage:"Số dòng/trang",
+        customAmount:"Tự nhập",
+        customRowsAria:"Nhập số dòng hiển thị trên mỗi trang",
+        jumpPageAria:"Nhập số trang cần đến",
+        firstPage:"Về trang đầu",
+        lastPage:"Đến trang cuối",
+        pageLabel:"Trang",
+        pageTotal:"/ {total}",
+        rankTop5:"5 mã",
+        rankTop10:"10 mã",
+        rankTop20:"20 mã",
+        tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu tồn kho",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
+        materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Thu gọn",materialHistoryNext:"Tải thêm",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số lượng nhập",materialHistoryOutCount:"Số lượng xuất",materialHistoryOtherCount:"Số lượng khác",materialHistoryStock:"Tồn kho hiện tại",materialHistoryFrom:"Ngày hạch toán từ",materialHistoryTo:"Ngày hạch toán đến",materialHistoryCostCenter:"Trung tâm chi phí",materialHistoryMissingCost:"Không có trung tâm chi phí",materialHistoryLoadedRows:"Đã xem {shown}/{total} dòng",materialHistoryQuantityMissing:"Không có cột số lượng",materialHistoryQuantityInvalid:"Có số lượng không hợp lệ",materialHistoryQuantityMixed:"Nhiều đơn vị tính, không thể cộng",materialHistoryQuantityUnit:"Chưa rõ đơn vị tính",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Thời gian sử dụng ước tính",
+        consumptionAll:"Tất cả giao dịch xuất · {unit}",consumptionRecent:"12 tháng trọn vẹn · {period}",consumptionStock:"Tồn kho: {amount} {unit}",consumptionMonths:"{count} tháng",consumptionNoHistory:"Chưa có dữ liệu lịch sử.",consumptionMissingQty:"Không có cột số lượng trong dữ liệu lịch sử.",consumptionMixedUnits:"Nhiều đơn vị tính, không thể cộng chung.",consumptionUnitUnknown:"Chưa xác định đơn vị tính.",consumptionPartial:"{count} dòng xuất bị loại do thiếu hoặc sai đơn vị/số lượng.",consumptionNoDates:"Thiếu ngày hợp lệ để tính trung bình tháng.",consumptionNoAverage:"Không có lượng xuất trong 12 tháng trọn vẹn gần nhất.",consumptionNoStock:"Tồn kho không hợp lệ hoặc chưa được tải.",consumptionUnitMismatch:"Đơn vị tồn kho không khớp đơn vị giao dịch; không thể ước tính.",consumptionIncomplete:"Dữ liệu xuất không hợp lệ hoặc có nhiều đơn vị; chưa thể ước tính.",
+        materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng điểm đặt hàng lại",allInventoryNote:"Các chỉ số và bốn biểu đồ áp dụng bộ lọc trang phân tích kho, độc lập với tra cứu tồn kho. Giới hạn 5/10/20 chỉ áp dụng danh sách xếp hạng.",rowsLabel:"dòng",dashFilters:"Bộ lọc phân tích kho",dashSearch:"Tìm vật tư",dashSearchPlaceholder:"Mã SAP, mô tả, mã phụ tùng...",dashRankLimit:"Số mã trên biểu đồ",dashTotalRows:"Tổng dòng vật tư",dashKpiNote:"Theo bộ lọc phân tích kho",dashFilteredValue:"Giá trị tồn trong phạm vi lọc",dashCoverage:"Mức tồn so với điểm đặt hàng lại",dashCoverageNote:"Tỷ lệ tồn kho / điểm đặt hàng lại; chỉ tính điểm đặt hàng lại dương và tồn kho không âm.",dashReplenishment:"Ước tính bổ sung đến điểm đặt hàng lại",dashReplenishmentNote:"Phần thiếu đến điểm đặt hàng lại × đơn giá; gộp theo mã SAP. Chưa gồm chi phí mua hàng khác.",dashTopValue:"Vật tư có giá trị tồn cao nhất",dashValueNote:"Gộp theo mã SAP; tỷ trọng so với tổng giá trị trong phạm vi lọc.",dashSnapshotNote:"Toàn bộ kho trên thiết bị này; không áp dụng bộ lọc phân tích kho.",dashStockExport:"Xuất kết quả tra cứu tồn kho",dashMatch:"{count} / {total} dòng",dashCoverageUnknown:"Không đủ dữ liệu tính tỷ lệ",dashCoverageZero:"Hết hàng (0%)",dashCoverageLow:"Trên 0% đến dưới 50%",dashCoverageMid:"Từ 50% đến dưới 100%",dashCoverageAt:"Đúng 100%",dashCoverageHigh:"Trên 100%",dashEstimateSummary:"Chi phí tính được: {value} · {count} dòng không đủ dữ liệu tính chi phí.",dashNoValue:"Không có giá trị dương trong phạm vi lọc.",dashNoNeed:"Không có chi phí bổ sung dương tính được trong phạm vi lọc.",dashboardHeading:"Phân tích kho",dashboardDesc:"Theo dõi tình trạng tồn, mức đáp ứng điểm đặt hàng lại và chi phí bổ sung ước tính.",
+        historyHeading:"Lịch sử nhập / xuất kho",historyDesc:"Tra cứu giao dịch thực tế từ tệp lịch sử, không suy diễn từ tồn kho.",
         stockDistribution:"Phân bố trạng thái tồn kho",stockDistributionTotal:"Dòng vật tư", stockUnknownLabel:"Chưa có định mức",
-        historyRefresh:"Tải lại History.js",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
+        historyRefresh:"Tải lại dữ liệu lịch sử",historyTotal:"Tổng giao dịch",historyIn:"Giao dịch nhập",historyOut:"Giao dịch xuất",
         historyMatching:"Kết quả lọc",historyInShort:"Nhập",historyOutShort:"Xuất",historyOtherShort:"Khác",historySearchLabel:"Tìm mã SAP, mô tả, chứng từ...",historySearchPlaceholder:"SAP, mô tả, số chứng từ...",
         historyType:"Loại giao dịch",historyAny:"Tất cả",historyOther:"Khác / chưa rõ",historyFrom:"Từ ngày",historyTo:"Đến ngày",
-        historyClear:"Xóa lọc",historyDirection:"Phân loại",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị tất cả cột có trong History.js, không tự tạo số liệu.",
-        historyIdle:"Chưa tải History.js",historyLoading:"Đang tải History.js...",historyNoSource:"Không thể tải History.js (giữ dữ liệu lịch sử trước đó nếu có).",
-        historyInvalid:"History.js không có cấu trúc bảng giao dịch hợp lệ.",historyEmpty:"History.js không có giao dịch.",
-        historyLoaded:"Đã tải {count} giao dịch từ History.js",historyLoadedAt:"Đã tải {count} giao dịch từ History.js · Nguồn cập nhật: {time}",historyLoadedExisting:"Đã đọc {count} giao dịch từ dữ liệu SAP đã có",historyPage:"Trang {current} / {total}",
+        historyClear:"Xóa lọc",historyDirection:"Phân loại",historyTable:"Danh sách giao dịch",historyTableNote:"Hiển thị các cột trong dữ liệu lịch sử, không tự tạo số liệu.",
+        historyIdle:"Chưa tải dữ liệu lịch sử",historyLoading:"Đang tải dữ liệu lịch sử...",historyNoSource:"Không thể tải dữ liệu lịch sử (giữ dữ liệu lần tải trước nếu có).",
+        historyInvalid:"Dữ liệu lịch sử không có cấu trúc bảng hợp lệ.",historyEmpty:"Không có giao dịch trong dữ liệu lịch sử.",
+        historyLoaded:"Đã tải {count} giao dịch từ dữ liệu lịch sử",historyLoadedAt:"Đã tải {count} giao dịch · Nguồn cập nhật: {time}",historyLoadedExisting:"Đã đọc {count} giao dịch từ dữ liệu SAP đã có",historyPage:"Trang {current} / {total}",
         historyNoResults:"Không tìm thấy giao dịch phù hợp với bộ lọc.",historyCount:"{count} / {total} giao dịch",
         brandSubtitle:"KHÔNG GIAN QUẢN LÝ", themeSettings:"Giao diện", themeToLight:"Chuyển sang giao diện sáng",
         themeToDark:"Chuyển sang giao diện tối", refresh:"Đồng bộ", refreshTitle:"Đồng bộ dữ liệu từ nguồn",
@@ -1295,14 +1323,14 @@
         inventoryValueNoPrice:"Không tìm thấy cột giá trong dữ liệu",
         inventoryValuePartial:"Bỏ qua {count} dòng thiếu số lượng/đơn giá",
         resultNote:"Theo tìm kiếm hiện tại", searchFilters:"Tìm kiếm và bộ lọc",
-        searchAria:"Tìm mã SAP, mô tả, part no", searchPlaceholder:"Tìm mã SAP001, SAP002 hoặc mô tả, Part No...",
-        search:"Tìm kiếm", clear:"Xóa", export:"Xuất báo cáo Excel (.xlsx)", searchIn:"Tìm trong",
-        stockStatus:"Tồn kho so với Reorder Point",
+        searchAria:"Tìm mã SAP, mô tả, mã phụ tùng", searchPlaceholder:"Tìm mã SAP001, SAP002 hoặc mô tả, mã phụ tùng...",
+        search:"Tìm kiếm", clear:"Xóa", export:"Xuất báo cáo bảng tính (.xlsx)", searchIn:"Tìm trong",
+        stockStatus:"Tồn kho so với điểm đặt hàng lại",
         stockAny:"Tất cả trạng thái",stockAbove:"Trên định mức",stockEqual:"Bằng định mức",stockBelow:"Dưới định mức",stockZero:"Hết hàng (= 0)",stockUnknown:"Chưa có định mức",
         fuzzySearch:"Tìm gần đúng",
-        inventoryInsights:"Tình trạng tồn và nhu cầu bổ sung",topTen:"Top 10 vật tư giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất XLSX ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi app đang mở",scheduleDue:"Đến lịch xuất báo cáo Excel. Bấm Xuất XLSX ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột Reorder Point",noAnalytics:"Chưa có dữ liệu phân tích",
+        inventoryInsights:"Tình trạng tồn và nhu cầu bổ sung",topTen:"10 vật tư có giá trị cao",inventoryHistory:"Lịch sử đồng bộ trên thiết bị",transactionHistory:"Lịch sử nhập/xuất từ SAP",transactionUnavailable:"Chưa kết nối dữ liệu giao dịch nhập/xuất",scheduleTitle:"Nhắc xuất báo cáo khi ứng dụng đang mở",scheduleOff:"Tắt nhắc",scheduleDaily:"Mỗi ngày sau 9:00",scheduleWeekly:"Thứ Hai sau 9:00",scheduleDownload:"Xuất bảng tính ngay",scheduleWaiting:"Lịch nhắc chỉ chạy khi ứng dụng đang mở",scheduleDue:"Đến lịch xuất báo cáo. Bấm xuất bảng tính ngay.",insightNote:"Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất kho.",noReorder:"Chưa có cột điểm đặt hàng lại",noAnalytics:"Chưa có dữ liệu phân tích",
         searchScopeAria:"Phạm vi tìm kiếm", searchAll:"Tất cả", searchSap:"Mã SAP",
-        searchDesc:"Mô tả", searchPart:"Part No", searchBm:"BM No", onlyStock:"Chỉ hiển thị còn hàng",
+        searchDesc:"Mô tả", searchPart:"Mã phụ tùng", searchBm:"Mã BM", onlyStock:"Chỉ hiển thị còn hàng",
         materialsList:"Danh sách vật tư", rowHint:"Nhấn một lần để xem chi tiết; nhấn đúp để mở cửa sổ lịch sử",
         outOfStock:"Hết hàng", loadingData:"Đang kết nối dữ liệu...", tableAria:"Bảng vật tư, có thể cuộn ngang",
         keyboardHint:"Cuộn cuối bảng để sang trang tiếp · ↑ ↓ chọn dòng · / tìm kiếm", paginationAria:"Chuyển trang",
@@ -1310,7 +1338,7 @@
         noSelectedSap:"Chưa chọn mã SAP", selectSapImage:"Chọn một mã SAP để xem hình ảnh",
         imageAlt:"Hình ảnh vật tư", prevImage:"Ảnh trước", nextImage:"Ảnh sau",
         emptyDetails:"Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.",
-        footer:"SAP Inventory · Giao diện tối ưu cho tra cứu và quản lý tồn kho",
+        footer:"Quản lý tồn kho SAP · Tra cứu và theo dõi vật tư",
         lightboxAria:"Xem ảnh vật tư", lightboxAlt:"Ảnh vật tư phóng to",
         close:"Đóng", zoomOut:"Thu nhỏ", zoomIn:"Phóng to", resetZoom:"Đặt lại",
         statusConnecting:"Đang kết nối", statusLoading:"Đang đồng bộ", statusOnline:"Đã kết nối",
@@ -1329,7 +1357,7 @@
         noExport:"Không có dữ liệu phù hợp để xuất.",
         exportBusy:"Dữ liệu đang xử lý hoặc tìm kiếm. Vui lòng xuất khi kết quả đã cập nhật.",
         exportGenerating:"Đang tạo báo cáo...",
-        exportTooMany:"Báo cáo vượt quá giới hạn số dòng của Excel (.xlsx).",
+        exportTooMany:"Báo cáo vượt quá giới hạn số dòng của tệp bảng tính.",
         exportFailed:"Không thể tạo báo cáo Excel. Vui lòng thử lại.",
         reportTitle:"BÁO CÁO TỒN KHO SAP",
         reportSubtitle:"Báo cáo theo kết quả tìm kiếm và bộ lọc",
@@ -1343,13 +1371,41 @@
         reportSort:"Sắp xếp",reportUpdated:"Dữ liệu cập nhật",reportGenerated:"Ngày xuất báo cáo",
         reportStockStatus:"Trạng thái tồn kho",reportBatchSap:"Danh sách mã SAP",reportFuzzy:"Tìm gần đúng",
         reportAll:"Tất cả",reportNone:"Không nhập từ khóa",reportYes:"Có",reportNo:"Không",
-        reportNoSort:"Theo dữ liệu gốc",reportLineValue:"Thành tiền (VND)",
+        reportNoSort:"Theo dữ liệu gốc",reportLineValue:"Thành tiền (đồng)",
         reportNote:"Giá trị kho = số lượng tồn dương × đơn giá hợp lệ; bỏ qua dòng không có giá hợp lệ.",
         reportDisclaimer:"Nguồn: dữ liệu SAP nội bộ · Chỉ bao gồm các mã phù hợp với bộ lọc hiện tại.",
-        colSap:"Mã BM", colDescription:"Mô tả", colPart:"Part No",
-        colQuantity:"Số lượng", colPrice:"Giá", colBm:"BM No", colUnit:"Đơn vị", colGroup:"Nhóm"
+        colSap:"Mã BM", colDescription:"Mô tả", colPart:"Mã phụ tùng",
+        colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        pageTitle:"SAP Inventory · Stock lookup",
+        brandName:"SAP Inventory",
+        detailKpiAria:"Selected material metrics",
+        detailStockValue:"Inventory value",
+        detailStockStatus:"Stock status",
+        detailLastOutput:"Last issue date",
+        detailStockValueTitle:"Inventory value: {calc}",
+        detailInvalidPriceQty:"Missing valid stock quantity or unit price",
+        detailReorderValue:"Reorder point: {value}",
+        detailNoReorder:"No reorder point",
+        detailStatusTooltip:"Status: {status} · Stock: {stock} · Reorder point: {reorder}",
+        detailFromPostingDate:"Based on posting date in transaction history",
+        detailNoOutput:"No valid outgoing transactions",
+        detailHistoryNotLoaded:"Waiting for transaction data",
+        detailHistoryUnavailable:"Transaction data unavailable",
+        sapTooltip:"SAP: {code} · Click for details, double-click for history",
+        statusTooltip:"{status} · Reorder point: {reorder}",
+        rowsPerPage:"Rows/page",
+        customAmount:"Custom",
+        customRowsAria:"Enter the number of rows per page",
+        jumpPageAria:"Enter a page number",
+        firstPage:"First page",
+        lastPage:"Last page",
+        pageLabel:"Page",
+        pageTotal:"/ {total}",
+        rankTop5:"Top 5",
+        rankTop10:"Top 10",
+        rankTop20:"Top 20",
         tabsAria:"Inventory workspaces",tabStock:"Stock lookup",tabDashboard:"Inventory dashboard",tabHistory:"In / Out history",
         materialHistoryTitle:"Material usage history",materialHistoryClose:"Close",materialHistoryPrev:"Show less",materialHistoryNext:"Load more",materialHistoryCount:"{count} transactions",materialHistoryInCount:"Inbound quantity",materialHistoryOutCount:"Outbound quantity",materialHistoryOtherCount:"Other quantity",materialHistoryStock:"Current stock",materialHistoryFrom:"Posting Date from",materialHistoryTo:"Posting Date to",materialHistoryCostCenter:"Cost Center",materialHistoryMissingCost:"No Cost Center",materialHistoryLoadedRows:"Showing {shown}/{total} rows",materialHistoryQuantityMissing:"Quantity column missing",materialHistoryQuantityInvalid:"Invalid quantity",materialHistoryQuantityMixed:"Mixed units cannot be summed",materialHistoryQuantityUnit:"Unit unknown",materialHistoryMonthly:"Average use per month",materialHistoryCoverage:"Estimated Stock coverage",
         consumptionAll:"All OUTPUT records · {unit}",consumptionRecent:"12 complete months · {period}",consumptionStock:"Stock: {amount} {unit}",consumptionMonths:"{count} months",consumptionNoHistory:"No history data loaded.",consumptionMissingQty:"History.js has no quantity column.",consumptionMixedUnits:"Mixed units cannot be summed.",consumptionUnitUnknown:"Quantity unit is unknown.",consumptionPartial:"{count} OUTPUT rows excluded due to invalid quantity or unit.",consumptionNoDates:"Valid dates are missing; monthly average unavailable.",consumptionNoAverage:"No outbound quantity in the latest 12 full months.",consumptionNoStock:"Stock is invalid or not available.",consumptionUnitMismatch:"Stock and History units differ; cannot estimate coverage.",consumptionIncomplete:"OUTPUT data is incomplete or mixes units; estimate unavailable.",
@@ -1461,6 +1517,7 @@
 
     function apDungNgonNgu() {
       document.documentElement.lang = ngonNguHienTai;
+      document.title=tuDien("pageTitle");
       document.querySelectorAll("[data-i18n]").forEach(el => {
         el.textContent = tuDien(el.dataset.i18n);
       });
