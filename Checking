@@ -1534,6 +1534,28 @@
       #view-dashboard .dashboard-table-chart { height:430px; }
       #view-dashboard .dashboard-mini-size { flex:1 1 100%; }
     }
+
+    #view-dashboard .dashboard-hall-control select {
+      min-width:132px; max-width:170px; border-color:var(--blue);
+    }
+    #view-dashboard .dashboard-hall-status {
+      width:100%; margin:0; font-size:11px; line-height:1.35;
+    }
+    #view-dashboard .dashboard-hall-status:empty { display:none; }
+    #view-dashboard .dashboard-sort-button {
+      display:inline-flex; align-items:center; gap:4px; justify-content:inherit;
+      font:inherit; font-size:inherit; color:inherit; font-weight:750;
+      text-align:inherit; background:transparent; border:none;
+      padding:0; cursor:pointer; white-space:nowrap;
+    }
+    #view-dashboard .dashboard-sort-button:hover,
+    #view-dashboard .dashboard-sort-button[aria-sort="ascending"],
+    #view-dashboard .dashboard-sort-button[aria-sort="descending"] { color:var(--blue); }
+    #view-dashboard .dashboard-sort-button:focus-visible {
+      outline:2px solid var(--blue); outline-offset:3px; border-radius:3px;
+    }
+    #view-dashboard .dashboard-sort-icon { display:inline-block; opacity:.6; min-width:9px; }
+    #view-dashboard .dashboard-sort-button[data-active="true"] .dashboard-sort-icon { opacity:1; }
   </style>
 </head>
 <body>
@@ -1693,6 +1715,12 @@
       <section class="dashboard-period-strip" aria-label="Khoảng thời gian phân tích" data-i18n-aria="dashboardTimeTitle">
         <div class="dashboard-period-intro"><strong data-i18n="dashboardTimeTitle">Khoảng thời gian phân tích</strong>
           <span id="dashboard-range-summary" class="insight-note"></span></div>
+        <label class="dashboard-hall-control"><span data-i18n="dashboardHallFilter">Khu vực kho</span>
+          <select id="dashboard-hall" onchange="doiLocHallPhanTich()">
+            <option value="all" data-i18n="dashboardHallAll">Tất cả khu vực</option>
+            <option value="hall1" data-i18n="dashboardHall1">Hall 1</option>
+            <option value="hall2" data-i18n="dashboardHall2">Hall 2</option>
+          </select></label>
         <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
           <select id="dashboard-range-mode" onchange="doiKyPhanTichKho()">
             <option value="week" data-i18n="dashboardTimeWeek">7 ngày gần đây</option>
@@ -1708,6 +1736,7 @@
           <input id="dashboard-range-from" type="date" onchange="doiKyPhanTichKho()"></label>
         <label id="dashboard-range-to-field" hidden><span data-i18n="dashboardTimeTo">Đến ngày</span>
           <input id="dashboard-range-to" type="date" onchange="doiKyPhanTichKho()"></label>
+        <p id="dashboard-hall-status" class="dashboard-hall-status insight-note" role="status" aria-live="polite"></p>
       </section>
       <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
         <div class="metric-card">
@@ -2001,6 +2030,19 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        dashboardQuantitySource:"Số lượng nhập/xuất lấy từ Qty in unit of entry, giá trị tiền lấy từ Amt.in loc.cur.",
+        dashboardSortHint:"Nhấn tiêu đề cột để sắp xếp",
+        dashboardSortDesc:"Sắp xếp giảm dần",
+        dashboardSortAsc:"Sắp xếp tăng dần",
+        dashboardHallNoMatches:"Không có dữ liệu cho Hall đã chọn.",
+        dashboardHallUnavailableValue:"Lịch sử giá trị kho theo từng Hall chưa được lưu; chỉ có bản ghi tổng kho.",
+        dashboardHallNoHistoryRecords:"Không có giao dịch thuộc Hall đã chọn trong dữ liệu lịch sử.",
+        dashboardHallNoStockColumn:"Dữ liệu tồn kho chưa có cột Storage Location; chưa thể tính số tồn theo Hall.",
+        dashboardHallNoHistoryColumn:"History.js chưa có cột Storage Location; không thể lọc giao dịch theo khu vực kho.",
+        dashboardHall2:"Hall 2",
+        dashboardHall1:"Hall 1",
+        dashboardHallAll:"Tất cả khu vực",
+        dashboardHallFilter:"Khu vực kho",
         dashboardTopOutQtyMissingNote:"Số lượng xuất chỉ được cộng khi đơn vị tính giống nhau; dữ liệu thiếu hoặc khác đơn vị hiển thị dấu —.",
         dashboardOutMinSummary:"Giá trị xuất từ {amount}",
         dashboardPagerSummary:"{from}–{to} / {total} vật tư",
@@ -2223,6 +2265,19 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        dashboardQuantitySource:"Inbound/outbound quantities use Qty in unit of entry; monetary values use Amt.in loc.cur.",
+        dashboardSortHint:"Click a column heading to sort",
+        dashboardSortDesc:"Sort descending",
+        dashboardSortAsc:"Sort ascending",
+        dashboardHallNoMatches:"No data for the selected Hall.",
+        dashboardHallUnavailableValue:"Historical Hall-level inventory values were not saved; only full-warehouse snapshots exist.",
+        dashboardHallNoHistoryRecords:"No matching movements for the selected Hall.",
+        dashboardHallNoStockColumn:"Stock source has no Storage Location column; Hall-specific balances are unavailable.",
+        dashboardHallNoHistoryColumn:"History.js has no Storage Location column; movements cannot be filtered by area.",
+        dashboardHall2:"Hall 2",
+        dashboardHall1:"Hall 1",
+        dashboardHallAll:"All areas",
+        dashboardHallFilter:"Warehouse area",
         dashboardTopOutQtyMissingNote:"Issued quantities are combined only for matching units; missing or mixed units show —.",
         dashboardOutMinSummary:"Outbound value from {amount}",
         dashboardPagerSummary:"{from}–{to} / {total} materials",
