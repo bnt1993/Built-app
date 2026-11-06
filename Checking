@@ -2670,11 +2670,13 @@
               const unit=unitCol>=0?String(rec.dong[unitCol]??"").trim().toUpperCase():"";
               let d=detailsBySap.get(sap);
               if(!d) {
-                d={description,quantity:0,unit:unit||"",inconsistent:false};
+                d={description,quantity:0,unit:unit||"",inconsistent:false,mixed:false,missing:false};
                 detailsBySap.set(sap,d);
               }
               if(!d.description&&description)d.description=description;
-              if(!d.unit||!unit||d.unit!==unit)d.inconsistent=true;
+              if(!unit)d.missing=true;
+              else if(d.unit&&d.unit!==unit)d.mixed=true;
+              if(d.missing||d.mixed)d.inconsistent=true;
               if(unit&&d.unit===unit&&!d.inconsistent)d.quantity+=qty;
             }
           } else missingPrice++;
@@ -2706,7 +2708,8 @@
       const body=values.slice(0,limit).map(rec=>{
         const valid=rec.unit&&!rec.inconsistent&&Number.isFinite(rec.quantity);
         const quantity=valid?dinhDangSoLuong.format(rec.quantity):"—";
-        const unit=rec.inconsistent?tuDien("dashTopMixedUnits"):(rec.unit||"—");
+        const unit=rec.mixed?tuDien("dashTopMixedUnits"):
+          rec.missing||!rec.unit?"—":rec.unit;
         return '<tr><td><span class="top-sap">'+thoatHTML(rec.name)+
           '</span><span class="top-name">'+thoatHTML(rec.description||"—")+
           '</span></td><td>'+thoatHTML(quantity)+'</td><td>'+thoatHTML(unit)+
@@ -3217,6 +3220,7 @@
       historyLoading=true;
       const sequence=++historySeq;
       capNhatTrangThaiHistory("historyLoading");
+      veBieuDoSuDungKho();
       locLichSuVatTu();
       try{
         let source;
