@@ -1137,6 +1137,58 @@
       .view-tabs .view-tab { font-size:12px; line-height:1.3; }
       #view-stock .detail-kpi-card small { white-space:normal; }
     }
+
+    /* Native-feeling context menu anchored to the row's pointer location. */
+    .stock-row-menu {
+      position:fixed; top:0; left:0; z-index:2300; min-width:220px;
+      max-width:min(290px,calc(100vw - 16px)); padding:5px;
+      border:1px solid var(--line); border-radius:12px;
+      box-shadow:0 15px 38px rgba(8,25,57,.2);
+      background:var(--app-panel); color:var(--ink); outline:none;
+    }
+    .stock-row-menu[hidden],.stock-menu-toast[hidden] { display:none !important; }
+    .stock-row-menu button[role="menuitem"] {
+      display:flex; align-items:center; width:100%; gap:10px;
+      border:0; border-radius:8px; background:transparent; color:var(--ink);
+      min-height:36px; padding:8px 11px; text-align:left;
+      font:inherit; font-size:12px; font-weight:650; cursor:pointer;
+    }
+    .stock-row-menu button:hover,
+    .stock-row-menu button:focus-visible {
+      background:var(--app-hover); outline:2px solid transparent;
+    }
+    .stock-row-menu button:focus-visible {
+      box-shadow:inset 0 0 0 2px var(--blue);
+    }
+    .row-menu-icon {
+      width:20px; flex:0 0 20px; text-align:center;
+      color:var(--blue); font-size:15px; font-weight:750;
+    }
+    .row-menu-divider { height:1px; background:var(--line); margin:5px 7px; }
+    .stock-menu-toast {
+      position:fixed; z-index:2301; left:50%; bottom:22px;
+      transform:translateX(-50%); max-width:calc(100vw - 32px);
+      color:var(--ink); background:var(--app-panel);
+      border:1px solid var(--line); box-shadow:var(--shadow);
+      border-radius:9px; padding:9px 14px; font-size:12px; font-weight:700;
+    }
+    #view-stock #than-bang tr { cursor:context-menu; }
+    /* Restore larger product photography while preserving access to all detail cards. */
+    @media(min-width:1100px) and (min-height:620px) {
+      body.stock-one-screen #view-stock .image-viewer-box {
+        height:clamp(175px,24dvh,265px); min-height:0; margin-bottom:5px;
+      }
+      body.stock-one-screen #view-stock .detail-section {
+        overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin;
+      }
+    }
+    @media(max-width:900px) {
+      #view-stock .image-viewer-box { height:clamp(270px,36dvh,380px); }
+    }
+    @media(max-width:620px) {
+      #view-stock .image-viewer-box { height:280px; }
+      .stock-row-menu button[role="menuitem"] { min-height:42px; font-size:13px; }
+    }
   </style>
 </head>
 <body>
@@ -1360,6 +1412,24 @@
     </main>
   </div>
 
+  <div id="stock-row-menu" class="stock-row-menu" role="menu" data-i18n-aria="stockRowMenuAria"
+    aria-label="Thao tác vật tư" tabindex="-1" hidden>
+    <button type="button" role="menuitem" data-stock-menu-action="history" onclick="thaoTacMenuVatTu('history')">
+      <span class="row-menu-icon" aria-hidden="true">◷</span><span data-i18n="stockMenuHistory">Xem lịch sử</span>
+    </button>
+    <button type="button" role="menuitem" data-stock-menu-action="sap" onclick="thaoTacMenuVatTu('sap')">
+      <span class="row-menu-icon" aria-hidden="true">▤</span><span data-i18n="stockMenuCopySap">Sao chép mã SAP</span>
+    </button>
+    <button type="button" role="menuitem" data-stock-menu-action="part" onclick="thaoTacMenuVatTu('part')">
+      <span class="row-menu-icon" aria-hidden="true">⧉</span><span data-i18n="stockMenuCopyPart">Sao chép mã phụ tùng</span>
+    </button>
+    <div class="row-menu-divider" role="separator"></div>
+    <button type="button" role="menuitem" data-stock-menu-action="export" onclick="thaoTacMenuVatTu('export')">
+      <span class="row-menu-icon" aria-hidden="true">↓</span><span data-i18n="stockMenuExport">Xuất vật tư</span>
+    </button>
+  </div>
+  <div id="stock-menu-toast" class="stock-menu-toast" role="status" aria-live="polite" hidden></div>
+
   <div id="lightbox" onclick="dongLightbox(event)" role="dialog" aria-modal="true" data-i18n-aria="lightboxAria" aria-label="Xem ảnh vật tư">
     <button type="button" class="lightbox-btn lightbox-close" onclick="dongLightbox(event)" data-i18n-aria="close" aria-label="Đóng">×</button>
     <button type="button" class="lightbox-btn img-nav-btn btn-prev" onclick="doiAnhLightbox(-1, event)" data-i18n-aria="prevImage" aria-label="Ảnh trước">‹</button>
@@ -1419,6 +1489,14 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        stockRowMenuAria:"Thao tác với vật tư",stockMenuHistory:"Xem lịch sử",
+        stockMenuCopySap:"Sao chép mã SAP",stockMenuCopyPart:"Sao chép mã phụ tùng",
+        stockMenuExport:"Xuất vật tư",stockMenuCopied:"Đã sao chép {value}",
+        stockMenuCopyFailed:"Không thể sao chép. Vui lòng thử lại.",
+        stockMenuNoPart:"Vật tư này chưa có mã phụ tùng.",
+        stockMenuExportDone:"Đã chuẩn bị tệp Excel cho mã SAP {code}.",
+        stockMenuExportBusy:"Đang xuất báo cáo, vui lòng thử lại.",
+        stockMenuExportFailed:"Không thể xuất thông tin vật tư. Vui lòng thử lại.",
         pageTitle:"Quản lý kho SAP · Tra cứu tồn kho",
         brandName:"Quản lý kho SAP",workspaceName:"Không gian làm việc",colReorder:"Điểm đặt hàng lại",colStorageBin:"Vị trí lưu kho",colStorageLoc:"Kho lưu trữ",colMaterialType:"Loại vật tư",colCostCenter:"Trung tâm chi phí",colPostingDate:"Ngày hạch toán",colStockQty:"Tồn kho khả dụng",
         detailKpiAria:"Các chỉ số vật tư được chọn",
@@ -1526,6 +1604,14 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        stockRowMenuAria:"Material actions",stockMenuHistory:"View history",
+        stockMenuCopySap:"Copy SAP code",stockMenuCopyPart:"Copy part number",
+        stockMenuExport:"Export material",stockMenuCopied:"Copied {value}",
+        stockMenuCopyFailed:"Unable to copy. Please try again.",
+        stockMenuNoPart:"This material has no part number.",
+        stockMenuExportDone:"Prepared Excel file for SAP {code}.",
+        stockMenuExportBusy:"An export is in progress. Please try again.",
+        stockMenuExportFailed:"Unable to export the material. Please try again.",
         pageTitle:"SAP Inventory · Stock lookup",
         brandName:"SAP Inventory",workspaceName:"Workspace",colReorder:"Reorder point",colStorageBin:"Storage bin",colStorageLoc:"Storage location",colMaterialType:"Material type",colCostCenter:"Cost center",colPostingDate:"Posting date",colStockQty:"Available stock",
         detailKpiAria:"Selected material metrics",
@@ -1738,6 +1824,7 @@
       // Enable viewport-fitting layout only for Stock; Dashboard retains normal scrolling.
       document.body.classList.toggle("stock-one-screen",tab==="stock");
       document.body.classList.toggle("dashboard-one-screen",tab==="dashboard");
+      if(document.getElementById("stock-row-menu"))dongMenuVatTu();
       for(const name of CAC_TAB){
         const pane=document.getElementById("view-"+name);
         const button=document.getElementById("tab-"+name);
@@ -4078,6 +4165,168 @@
       }
     }
 
+
+    // A row's context-menu actions always target the row under the pointer.
+    // Stock data remains read-only: "Export material" downloads its information,
+    // never records an OUTPUT movement or edits History.js.
+    let stockMenuIndex=-1;
+    let stockMenuToastTimer=null;
+
+    function dongMenuVatTu(traLaiFocus=false) {
+      const menu=document.getElementById("stock-row-menu");
+      const index=stockMenuIndex;
+      menu.hidden=true;
+      stockMenuIndex=-1;
+      if(traLaiFocus&&index>=0) {
+        const row=document.querySelector('#than-bang tr[data-row-index="'+index+'"]');
+        if(row)row.focus({preventScroll:true});
+      }
+    }
+
+    function moMenuVatTu(event,row) {
+      const index=Number(row?.dataset.rowIndex);
+      if(!Number.isInteger(index)||index<0||index>=tatCaDuLieu.length||
+        !tatCaDuLieu[index])return;
+      event.preventDefault();
+      // Use the application's normal row-selection path to keep details in sync.
+      chonDong(index,row);
+      stockMenuIndex=index;
+      const menu=document.getElementById("stock-row-menu");
+      menu.hidden=false;
+      // First place it on-screen so bounding dimensions are measurable.
+      menu.style.left="0px";
+      menu.style.top="0px";
+      const bounds=menu.getBoundingClientRect();
+      const x=Math.max(8,Math.min(event.clientX,window.innerWidth-bounds.width-8));
+      const y=Math.max(8,Math.min(event.clientY,window.innerHeight-bounds.height-8));
+      menu.style.left=x+"px";
+      menu.style.top=y+"px";
+      menu.querySelector('[role="menuitem"]')?.focus({preventScroll:true});
+    }
+
+    function thongBaoMenuVatTu(key,params={}) {
+      const toast=document.getElementById("stock-menu-toast");
+      toast.textContent=tuDien(key,params);
+      toast.hidden=false;
+      clearTimeout(stockMenuToastTimer);
+      stockMenuToastTimer=setTimeout(()=>{toast.hidden=true;},2600);
+    }
+
+    async function saoChepTuMenu(value) {
+      // Clipboard API may be unavailable on file:// and internal SAP networks.
+      if(navigator.clipboard?.writeText) {
+        try {await navigator.clipboard.writeText(value);return true;}
+        catch(_) { /* fall back to temporary textarea */ }
+      }
+      const box=document.createElement("textarea");
+      box.value=value;box.readOnly=true;
+      box.style.position="fixed";box.style.left="-9999px";
+      document.body.appendChild(box);
+      box.select();
+      let copied=false;
+      try {copied=document.execCommand("copy");}
+      catch(_) {copied=false;}
+      box.remove();
+      return copied;
+    }
+
+    async function xuatMotVatTu(index) {
+      if(dangXuatExcel||!chiMucSanSang||!tieuDeCot.length) {
+        thongBaoMenuVatTu("stockMenuExportBusy");return;
+      }
+      const row=tatCaDuLieu[index];
+      if(!row)return;
+      const sap=chuanHoaMaSap(row[0]);
+      dangXuatExcel=true;
+      try {
+        // The existing Excel generator accepts an array of {dong,chiSo}.
+        const blob=await taoBaoCaoXlsx([{dong:row,chiSo:index}],{
+          keyword:sap,scope:"sap",onlyStock:false,status:"all",fuzzy:false,
+          sortCol:-1,sortDir:1,updated:mocCapNhatCu
+        });
+        const url=URL.createObjectURL(blob);
+        try {
+          const link=document.createElement("a");
+          link.href=url;
+          const safeSap=(sap||"vat_tu").replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,70);
+          link.download="Vat_tu_"+safeSap+"_"+new Date().toLocaleDateString("sv-SE")+".xlsx";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          thongBaoMenuVatTu("stockMenuExportDone",{code:sap});
+        } finally {
+          setTimeout(()=>URL.revokeObjectURL(url),1500);
+        }
+      } catch(err) {
+        console.error("Material Excel export:",err);
+        thongBaoMenuVatTu("stockMenuExportFailed");
+      } finally {
+        dangXuatExcel=false;
+      }
+    }
+
+    async function thaoTacMenuVatTu(action) {
+      const index=stockMenuIndex;
+      dongMenuVatTu();
+      const row=tatCaDuLieu[index];
+      if(!row)return;
+      if(action==="history") {
+        moLichSuVatTu(index);
+        return;
+      }
+      if(action==="export") {
+        await xuatMotVatTu(index);
+        return;
+      }
+      let value="";
+      if(action==="sap")value=chuanHoaMaSap(row[0]);
+      else if(action==="part") {
+        const partCol=tieuDeCot.findIndex(name=>[
+          "part no","part no.","part number","mã phụ tùng"
+        ].includes(String(name??"").trim().toLowerCase()));
+        value=partCol>=0?String(row[partCol]??"").trim():"";
+        if(!value){thongBaoMenuVatTu("stockMenuNoPart");return;}
+      } else return;
+      if(!value)return;
+      const copied=await saoChepTuMenu(value);
+      thongBaoMenuVatTu(copied?"stockMenuCopied":"stockMenuCopyFailed",{value});
+    }
+
+    const stockMenuBody=document.getElementById("than-bang");
+    stockMenuBody.addEventListener("contextmenu",event=>{
+      const row=event.target.closest("tr[data-row-index]");
+      if(row&&stockMenuBody.contains(row))moMenuVatTu(event,row);
+    });
+    stockMenuBody.addEventListener("keydown",event=>{
+      if(event.key!=="ContextMenu"&&!(event.shiftKey&&event.key==="F10"))return;
+      const row=event.target.closest("tr[data-row-index]");
+      if(!row||!stockMenuBody.contains(row))return;
+      const rect=row.getBoundingClientRect();
+      moMenuVatTu({preventDefault:()=>event.preventDefault(),
+        clientX:rect.left+Math.min(64,rect.width/2),
+        clientY:Math.min(window.innerHeight-12,rect.top+Math.min(22,rect.height/2))},row);
+    });
+    const stockMenuElement=document.getElementById("stock-row-menu");
+    stockMenuElement.addEventListener("keydown",event=>{
+      if(event.key==="Escape"){
+        event.preventDefault();event.stopPropagation();dongMenuVatTu(true);return;
+      }
+      if(event.key==="Tab"){dongMenuVatTu();return;}
+      if(event.key==="ArrowDown"||event.key==="ArrowUp"){
+        event.preventDefault();event.stopPropagation();
+        const items=Array.from(stockMenuElement.querySelectorAll('[role="menuitem"]'));
+        const at=items.indexOf(document.activeElement);
+        const next=(at+(event.key==="ArrowDown"?1:-1)+items.length)%items.length;
+        items[next]?.focus({preventScroll:true});
+      }
+    });
+    document.addEventListener("pointerdown",event=>{
+      if(!stockMenuElement.hidden&&!stockMenuElement.contains(event.target))dongMenuVatTu();
+    });
+    document.addEventListener("scroll",()=>{
+      if(!stockMenuElement.hidden)dongMenuVatTu();
+    },true);
+    window.addEventListener("blur",()=>dongMenuVatTu());
     document.querySelector(".table-wrapper").addEventListener("scroll", xuLyCuonCuoiBang, { passive: true });
     document.getElementById("lightbox-img").addEventListener("wheel", xuLyZoomBangConLan, { passive: false });
     document.querySelector(".material-history-table").addEventListener("scroll",cuonTiepLichSuVatTu,{passive:true});
