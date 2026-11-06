@@ -2023,8 +2023,8 @@
         !stats.summable||stats.mixed||stats.invalid?tuDien("consumptionIncomplete"):
         !stats.hasDates?tuDien("consumptionNoDates"):
         !Number.isFinite(stats.stock)||stats.stock<0?tuDien("consumptionNoStock"):
-        !stats.compatible?tuDien("consumptionUnitMismatch"):
         !Number.isFinite(stats.average)||stats.average===0?tuDien("consumptionNoAverage"):
+        !stats.compatible?tuDien("consumptionUnitMismatch"):
         tuDien("consumptionStock",{amount:quantityText(stats.stock),unit:stats.stockUnit});
     }
 
