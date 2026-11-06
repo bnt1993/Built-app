@@ -1470,6 +1470,70 @@
         width:100%; max-width:130px;
       }
     }
+
+    /* Compact independent pagination on the two material analytics tables. */
+    #view-dashboard .dashboard-table-chart {
+      height:430px; min-height:0; display:flex; flex-direction:column;
+    }
+    #view-dashboard .dashboard-table-chart .dashboard-chart-body {
+      flex:1 1 0; min-height:0; overflow:auto; overscroll-behavior:contain;
+    }
+    #view-dashboard .dashboard-mini-pager {
+      display:flex; flex:0 0 auto; flex-wrap:wrap; gap:6px 9px;
+      justify-content:space-between; align-items:center;
+      padding:8px 0 4px; border-top:1px solid var(--line);
+    }
+    #view-dashboard .dashboard-mini-size,
+    #view-dashboard .dashboard-mini-page {
+      display:flex; align-items:center; gap:4px 6px; flex-wrap:wrap;
+      font-size:10px; color:var(--muted); font-weight:650;
+    }
+    #view-dashboard .dashboard-mini-pager input,
+    #view-dashboard .dashboard-mini-pager select {
+      background:var(--app-field); color:var(--ink); border:1px solid var(--line);
+      border-radius:6px; min-height:28px; padding:3px 5px;
+      font:inherit; font-size:11px; font-variant-numeric:tabular-nums;
+    }
+    #view-dashboard .dashboard-mini-size select { width:61px; }
+    #view-dashboard .dashboard-mini-size input { width:52px; }
+    #view-dashboard .dashboard-mini-page input { width:46px; text-align:center; }
+    #view-dashboard .dashboard-mini-page button {
+      min-width:27px; min-height:28px; border:1px solid var(--line);
+      border-radius:6px; background:var(--app-field); color:var(--ink);
+      font:inherit; font-size:13px; cursor:pointer;
+    }
+    #view-dashboard .dashboard-mini-page button:hover:not(:disabled) {
+      background:var(--app-hover); border-color:var(--blue);
+    }
+    #view-dashboard .dashboard-mini-page button:disabled { opacity:.35; cursor:default; }
+    #view-dashboard .dashboard-out-range {
+      display:flex; flex:0 0 auto; flex-wrap:wrap; align-items:center;
+      gap:5px 9px; margin:5px 0 8px; font-size:11px; color:var(--muted);
+      font-weight:700;
+    }
+    #view-dashboard .dashboard-out-range input[type="range"] {
+      flex:1 1 115px; width:100px; min-width:72px;
+      accent-color:var(--blue); cursor:pointer;
+    }
+    #view-dashboard .dashboard-out-range input[type="range"]:disabled { opacity:.4; }
+    #view-dashboard .dashboard-out-range output {
+      color:var(--ink); min-width:75px; text-align:right;
+      font-variant-numeric:tabular-nums;
+    }
+    #view-dashboard .dashboard-detail-table td:nth-child(2),
+    #view-dashboard .dashboard-detail-table td:nth-child(3),
+    #view-dashboard .dashboard-detail-table th:nth-child(2),
+    #view-dashboard .dashboard-detail-table th:nth-child(3) {
+      text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;
+    }
+    #view-dashboard .dashboard-table-chart > p.insight-note:last-child {
+      flex:0 0 auto; margin:5px 0 0; min-height:17px;
+      font-size:10px; overflow:hidden; text-overflow:ellipsis;
+    }
+    @media(max-width:700px) {
+      #view-dashboard .dashboard-table-chart { height:430px; }
+      #view-dashboard .dashboard-mini-size { flex:1 1 100%; }
+    }
   </style>
 </head>
 <body>
@@ -1755,7 +1819,39 @@
                 </select></label>
             </div>
             <p class="insight-note" data-i18n="dashboardTopOutNote">Xuất theo giá trị; nhấn đúp để xem lịch sử.</p>
+            <div class="dashboard-out-range">
+              <label for="dashboard-out-min" data-i18n="dashboardOutMinLabel">Giá trị xuất tối thiểu</label>
+              <input id="dashboard-out-min" type="range" min="0" max="0" step="1" value="0"
+                oninput="doiNguongXuatKho()" data-i18n-aria="dashboardOutMinLabel"
+                aria-label="Giá trị xuất tối thiểu" disabled>
+              <output id="dashboard-out-min-value" for="dashboard-out-min">0 ₫</output>
+            </div>
             <div id="dashboard-top-out" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardTopOutTitle"></div>
+            <div id="dashboard-out-pager" class="dashboard-mini-pager">
+              <div class="dashboard-mini-size">
+                <label for="dashboard-out-size" data-i18n="rowsPerPage">Số dòng/trang</label>
+                <select id="dashboard-out-size" onchange="chonSoDongBangKho('out',this.value)">
+                  <option value="25">25</option><option value="50">50</option><option value="75">75</option>
+                  <option value="100">100</option><option value="200">200</option>
+                  <option value="500">500</option><option value="custom" data-i18n="customAmount">Tùy chọn</option>
+                </select>
+                <input id="dashboard-out-custom" type="number" inputmode="numeric" min="1" max="5000" step="1" value="25"
+                  data-i18n-aria="customRowsAria" aria-label="Nhập số dòng mỗi trang"
+                  onchange="datSoDongBangKho('out',this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongBangKho('out',this.value);}">
+              </div>
+              <div class="dashboard-mini-page">
+                <button id="dashboard-out-first" type="button" onclick="denTrangBangKho('out',1)" data-i18n-title="firstPage" title="Trang đầu">«</button>
+                <button id="dashboard-out-prev" type="button" onclick="denTrangBangKho('out','prev')" data-i18n-title="prev" title="Trước">‹</button>
+                <input id="dashboard-out-page" type="number" min="1" step="1" inputmode="numeric" value="1"
+                  data-i18n-aria="jumpPageAria" aria-label="Nhập số trang"
+                  onchange="denTrangBangKho('out',this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangBangKho('out',this.value);}">
+                <span id="dashboard-out-pages">/ 1</span>
+                <button id="dashboard-out-next" type="button" onclick="denTrangBangKho('out','next')" data-i18n-title="next" title="Sau">›</button>
+                <button id="dashboard-out-last" type="button" onclick="denTrangBangKho('out','last')" data-i18n-title="lastPage" title="Trang cuối">»</button>
+              </div>
+            </div>
             <p id="dashboard-top-out-note" class="insight-note" role="status"></p>
           </div>
           <div class="insight-box dashboard-chart dashboard-table-chart">
@@ -1766,10 +1862,37 @@
                   <option value="90" data-i18n="dashboardDormant90" selected>90 ngày</option>
                   <option value="180" data-i18n="dashboardDormant180">180 ngày</option>
                   <option value="365" data-i18n="dashboardDormant365">365 ngày</option>
+                  <option value="730" data-i18n="dashboardDormant730">2 năm</option>
+                  <option value="1095" data-i18n="dashboardDormant1095">3 năm</option>
                 </select></label>
             </div>
             <p class="insight-note" data-i18n="dashboardDormantNote">Xét tồn kho hiện tại và lịch sử giao dịch xuất.</p>
             <div id="dashboard-dormant" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardDormantTitle"></div>
+            <div id="dashboard-dormant-pager" class="dashboard-mini-pager">
+              <div class="dashboard-mini-size">
+                <label for="dashboard-dormant-size" data-i18n="rowsPerPage">Số dòng/trang</label>
+                <select id="dashboard-dormant-size" onchange="chonSoDongBangKho('dormant',this.value)">
+                  <option value="25">25</option><option value="50">50</option><option value="75">75</option>
+                  <option value="100">100</option><option value="200">200</option>
+                  <option value="500">500</option><option value="custom" data-i18n="customAmount">Tùy chọn</option>
+                </select>
+                <input id="dashboard-dormant-custom" type="number" inputmode="numeric" min="1" max="5000" step="1" value="25"
+                  data-i18n-aria="customRowsAria" aria-label="Nhập số dòng mỗi trang"
+                  onchange="datSoDongBangKho('dormant',this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongBangKho('dormant',this.value);}">
+              </div>
+              <div class="dashboard-mini-page">
+                <button id="dashboard-dormant-first" type="button" onclick="denTrangBangKho('dormant',1)" data-i18n-title="firstPage" title="Trang đầu">«</button>
+                <button id="dashboard-dormant-prev" type="button" onclick="denTrangBangKho('dormant','prev')" data-i18n-title="prev" title="Trước">‹</button>
+                <input id="dashboard-dormant-page" type="number" min="1" step="1" inputmode="numeric" value="1"
+                  data-i18n-aria="jumpPageAria" aria-label="Nhập số trang"
+                  onchange="denTrangBangKho('dormant',this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangBangKho('dormant',this.value);}">
+                <span id="dashboard-dormant-pages">/ 1</span>
+                <button id="dashboard-dormant-next" type="button" onclick="denTrangBangKho('dormant','next')" data-i18n-title="next" title="Sau">›</button>
+                <button id="dashboard-dormant-last" type="button" onclick="denTrangBangKho('dormant','last')" data-i18n-title="lastPage" title="Trang cuối">»</button>
+              </div>
+            </div>
             <p id="dashboard-dormant-note" class="insight-note" role="status"></p>
           </div>
         </div>
@@ -1878,6 +2001,18 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        dashboardTopOutQtyMissingNote:"Số lượng xuất chỉ được cộng khi đơn vị tính giống nhau; dữ liệu thiếu hoặc khác đơn vị hiển thị dấu —.",
+        dashboardOutMinSummary:"Giá trị xuất từ {amount}",
+        dashboardPagerSummary:"{from}–{to} / {total} vật tư",
+        dashboardOutMixedUnits:"Nhiều đơn vị",
+        dashboardOutUnknownQty:"Không đủ dữ liệu số lượng",
+        dashboardOutMinLabel:"Giá trị xuất tối thiểu",
+        dashboardTopOutUnit:"Đơn vị",
+        dashboardDormantPriceMissing:"Chưa có giá",
+        dashboardDormantMultiplePrices:"Nhiều mức giá",
+        dashboardDormantUnitPrice:"Đơn giá (VNĐ)",
+        dashboardDormant1095:"3 năm",
+        dashboardDormant730:"2 năm",
         dashboardTimeYearLimit:"Chọn tối đa 10 năm liên tiếp.",
         dashboardTimeYearTo:"Đến năm",
         dashboardTimeYearFrom:"Từ năm",
@@ -1909,17 +2044,17 @@
         dashboardTimeCurrent:"{from} – {to}",
         dashboardTimeInvalid:"Khoảng ngày không hợp lệ",
         dashboardTopOutTitle:"Vật tư xuất nhiều nhất theo giá trị",
-        dashboardTopOutNote:"Cộng giá trị giao dịch xuất theo mã SAP trong kỳ đã chọn. Nhấn đúp để xem lịch sử.",
+        dashboardTopOutNote:"Lọc theo giá trị xuất, chọn ngưỡng trên thanh trượt. Nhấn đúp dòng vật tư để xem lịch sử.",
         dashboardTopOutEmpty:"Không có giao dịch xuất hợp lệ trong giai đoạn",
         dashboardTopOutMissing:"Thiếu cột mã vật tư hoặc giá trị trong lịch sử",
         dashboardTopOutValue:"Giá trị xuất",
-        dashboardTopOutCount:"Lượt xuất",
+        dashboardTopOutCount:"Số lượng xuất",
         dashboardDormantTitle:"Vật tư tồn lâu chưa xuất",
         dashboardDormantDays:"Không xuất trong",
         dashboardDormant90:"90 ngày",
         dashboardDormant180:"180 ngày",
         dashboardDormant365:"365 ngày",
-        dashboardDormantNote:"Xét vật tư đang còn tồn và lần xuất cuối trong lịch sử khả dụng; nguồn lịch sử có thể chưa đầy đủ.",
+        dashboardDormantNote:"Vật tư còn tồn nhưng chưa xuất trong khoảng chọn. Đơn giá lấy từ bảng tồn kho hiện tại.",
         dashboardDormantLast:"Ngày xuất cuối",
         dashboardDormantStock:"Tồn kho",
         dashboardDormantDaysOld:"Số ngày chưa xuất",
@@ -2088,6 +2223,18 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        dashboardTopOutQtyMissingNote:"Issued quantities are combined only for matching units; missing or mixed units show —.",
+        dashboardOutMinSummary:"Outbound value from {amount}",
+        dashboardPagerSummary:"{from}–{to} / {total} materials",
+        dashboardOutMixedUnits:"Mixed units",
+        dashboardOutUnknownQty:"Quantity unavailable",
+        dashboardOutMinLabel:"Minimum outbound value",
+        dashboardTopOutUnit:"Unit",
+        dashboardDormantPriceMissing:"Price unavailable",
+        dashboardDormantMultiplePrices:"Multiple prices",
+        dashboardDormantUnitPrice:"Unit price (VND)",
+        dashboardDormant1095:"3 years",
+        dashboardDormant730:"2 years",
         dashboardTimeYearLimit:"Select up to 10 consecutive years.",
         dashboardTimeYearTo:"To year",
         dashboardTimeYearFrom:"From year",
@@ -2119,17 +2266,17 @@
         dashboardTimeCurrent:"{from} – {to}",
         dashboardTimeInvalid:"Invalid date range",
         dashboardTopOutTitle:"Top materials by outbound value",
-        dashboardTopOutNote:"Outbound value from Amt.In of OUTPUT movements; double-click for history.",
+        dashboardTopOutNote:"Filter by outbound value using the slider. Double-click a material for history.",
         dashboardTopOutEmpty:"No valid outbound transactions in this period",
         dashboardTopOutMissing:"Missing SAP or amount history column",
         dashboardTopOutValue:"Outbound value",
-        dashboardTopOutCount:"Issues",
+        dashboardTopOutCount:"Issued quantity",
         dashboardDormantTitle:"Slow-moving materials",
         dashboardDormantDays:"No issues for",
         dashboardDormant90:"90 days",
         dashboardDormant180:"180 days",
         dashboardDormant365:"365 days",
-        dashboardDormantNote:"Based on current stock and last outgoing movement in available history; history may be incomplete.",
+        dashboardDormantNote:"Materials with positive stock and no issue within the selected period. Unit prices come from current stock records.",
         dashboardDormantLast:"Last issued",
         dashboardDormantStock:"Stock",
         dashboardDormantDaysOld:"Days since last issue",
