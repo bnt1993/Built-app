@@ -3207,17 +3207,27 @@
     function capNhatThongKeNangCao() {
       if(!analyticsReady)return;
       const limit=Number(document.getElementById("dashboard-limit").value)||10;
-      const stats=tinhPhanTichDashboard(duLieuTimKiem,tieuDeCot);
-      for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
-        document.getElementById(id).textContent=dinhDangSoLuong.format(value);
+      const filteredStock=tonKhoTheoHall();
+      const stats=filteredStock===null?null:tinhPhanTichDashboard(filteredStock,tieuDeCot);
+      if(stats===null){
+        for(const id of ["metric-total","metric-instock","metric-attention","metric-inventory-value"])
+          document.getElementById(id).textContent="—";
+        document.getElementById("metric-value-note").textContent=tuDien("dashboardHallNoStockColumn");
+        document.getElementById("insight-stock-distribution").textContent=tuDien("dashboardHallNoStockColumn");
+        document.getElementById("insight-top").textContent=tuDien("dashboardHallNoStockColumn");
+      }else{
+        for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
+          document.getElementById(id).textContent=dinhDangSoLuong.format(value);
       const money=document.getElementById("metric-inventory-value");
       money.textContent=stats.total===null?"—":dinhDangGiaTriKho(stats.total);
       money.title=money.textContent;
       document.getElementById("metric-value-note").textContent=stats.total===null?
         tuDien("inventoryValueNoPrice"):stats.missingPrice?
         tuDien("inventoryValuePartial",{count:stats.missingPrice}):tuDien("inventoryValueNote");
-      vePhanBoTrangThai(duLieuTimKiem);
+      vePhanBoTrangThai(filteredStock);
       veBangTopGiaTriVatTu(stats.values,limit);
+      }
+      capNhatTrangThaiHall();
       veBieuDoSuDungKho();
       veBieuDoGiaTriKho();
       veSoSanhNhapXuatKho();
@@ -3249,6 +3259,9 @@
     function veLichSuKho() {
       const snapshots=layAnhChupKho();
       const node=document.getElementById("insight-history");
+      if(hallDangLoc()!=="all"){
+        node.textContent=tuDien("dashboardHallUnavailableValue");return;
+      }
       if (!snapshots.length) {node.textContent=tuDien("noAnalytics");return;}
       node.innerHTML=snapshots.slice(-12).reverse().map(rec=>
         '<div class="insight-row"><span class="name">'+thoatHTML(rec.date)+'</span>'+
@@ -3466,9 +3479,80 @@
       veBieuDoGiaTriKho();
     }
 
+    // Storage Location is resolved by header, never by position: History.js may
+    // insert this column before Posting Date. Unknown codes stay unclassified.
+    function cotStorageLocation(headers){
+      return cotHistoryTheoTen(headers,["Storage Location","Storage Loc.","StorageLoc",
+        "SLoc","Storage Location Code","Vị trí kho","Kho lưu trữ","Khu vực kho"]);
+    }
+    function hallTuStorageLocation(value){
+      const key=tenHistoryChuan(value);
+      if(["hall1","h1","khu1","nhakho1"].includes(key))return "hall1";
+      if(["hall2","h2","khu2","nhakho2"].includes(key))return "hall2";
+      return "";
+    }
+    function hallDangLoc(){
+      return document.getElementById("dashboard-hall").value||"all";
+    }
+    function coCotHistoryHall(){
+      return cotStorageLocation(historyColumns)>=0;
+    }
+    function coCotStockHall(){
+      return cotStorageLocation(tieuDeCot)>=0;
+    }
+    let historyHallCache=null;
+    let stockHallCache=null;
+    function lichSuTheoHall(){
+      const hall=hallDangLoc();
+      if(hall==="all")return historyAll;
+      const index=cotStorageLocation(historyColumns);
+      if(index<0)return null;
+      if(historyHallCache&&historyHallCache.records===historyAll&&
+        historyHallCache.index===index&&historyHallCache.hall===hall)
+        return historyHallCache.rows;
+      const rows=historyAll.filter(rec=>hallTuStorageLocation(rec.cells[index])===hall);
+      historyHallCache={records:historyAll,index,hall,rows};
+      return rows;
+    }
+    function tonKhoTheoHall(){
+      const hall=hallDangLoc();
+      if(hall==="all")return duLieuTimKiem;
+      const index=cotStorageLocation(tieuDeCot);
+      if(index<0)return null;
+      if(stockHallCache&&stockHallCache.records===duLieuTimKiem&&
+        stockHallCache.index===index&&stockHallCache.hall===hall)
+        return stockHallCache.rows;
+      const rows=duLieuTimKiem.filter(rec=>hallTuStorageLocation(rec.dong[index])===hall);
+      stockHallCache={records:duLieuTimKiem,index,hall,rows};
+      return rows;
+    }
+    function capNhatTrangThaiHall(){
+      const note=document.getElementById("dashboard-hall-status");
+      const hall=hallDangLoc();
+      if(hall==="all"){note.textContent="";return;}
+      const alerts=[];
+      if(!coCotStockHall())alerts.push(tuDien("dashboardHallNoStockColumn"));
+      if(historyLoaded&&!coCotHistoryHall())alerts.push(tuDien("dashboardHallNoHistoryColumn"));
+      note.textContent=alerts.join(" · ")||tuDien("dashboardQuantitySource");
+    }
+    function doiLocHallPhanTich(){
+      historyHallCache=null;stockHallCache=null;
+      dashboardOutCache=null;dashboardDormantCache=null;
+      dashboardTableState.out.page=1;dashboardTableState.dormant.page=1;
+      document.getElementById("dashboard-out-min").value="0";
+      capNhatTrangThaiHall();
+      if(analyticsReady)capNhatThongKeNangCao();
+      else {
+        veSoSanhNhapXuatKho();veTopVatTuXuatKho();
+        veVatTuTonLau();veBieuDoSuDungKho();veBieuDoGiaTriKho();
+      }
+    }
+
     function locGiaoDichKho(range,types=["in","out"]){
       if(!historyLoaded||!range)return [];
-      return historyAll.filter(rec=>types.includes(rec.type)&&
+      const scope=lichSuTheoHall();
+      if(!scope)return [];
+      return scope.filter(rec=>types.includes(rec.type)&&
         ngayHistoryHopLe(rec.date)&&rec.date>=range.from&&rec.date<=range.to);
     }
 
@@ -3530,6 +3614,15 @@
       header.textContent=range.from+" – "+range.to+"  /  "+range.prevFrom+" – "+range.prevTo;
       if(!historyLoaded){
         root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardCompareNoHistory");
+        return;
+      }
+      if(!lichSuTheoHall()){
+        root.textContent=tuDien("dashboardHallNoHistoryColumn");
+        for(const type of ["in","out"]){
+          document.getElementById("dashboard-compare-"+type+"-current").textContent="—";
+          document.getElementById("dashboard-compare-"+type+"-prior").textContent="";
+          document.getElementById("dashboard-compare-"+type+"-change").textContent="—";
+        }
         return;
       }
       const amountCol=cotGiaTriLichSuKho();
@@ -3905,7 +3998,12 @@
         summary.textContent="";return;
       }
       const buckets=nhomKyTrongKhoangKho(mode,range);
-      const stats=tinhGiaTriNhapXuat(historyAll,historyColumns,mode,buckets);
+      const scope=lichSuTheoHall();
+      if(!scope){
+        chart.textContent=tuDien("dashboardHallNoHistoryColumn");
+        summary.textContent="";return;
+      }
+      const stats=tinhGiaTriNhapXuat(scope,historyColumns,mode,buckets);
       if(stats.missing){chart.textContent=tuDien("dashUsageNoQty");summary.textContent="";return;}
       const max=Math.max(0,...[...stats.values.values()].flatMap(v=>[v.in,v.out]));
       const label=type=>tuDien(type==="in"?"historyInShort":"historyOutShort");
@@ -3933,6 +4031,12 @@
     }
 
     function veBieuDoGiaTriKho(){
+      if(hallDangLoc()!=="all"){
+        document.getElementById("insight-value-trend").textContent=
+          tuDien("dashboardHallUnavailableValue");
+        document.getElementById("dashboard-value-trend-summary").textContent="";
+        return;
+      }
       const mode=document.getElementById("dashboard-value-period").value;
       const range=layKyPhanTichKho();
       const chart=document.getElementById("insight-value-trend");
@@ -4188,11 +4292,13 @@
       if(sequence!==historySeq)return false;
       indexed.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
       historyColumns=columns;
+      historyHallCache=null;
       historyTypeColumn=typeColumn;
       historyAll=indexed;
       ngayXuatCuoiTheoSap.clear();
       for(const [sap,date] of lastOutput)ngayXuatCuoiTheoSap.set(sap,date);
       historyLoaded=true;
+      capNhatTrangThaiHall();
       capNhatCardNgayXuat();
       veSoSanhNhapXuatKho();
       veTopVatTuXuatKho();
