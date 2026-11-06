@@ -1972,11 +1972,11 @@
       }
       const average=summable&&hasDates?recent/12:NaN;
       // Do not predict with mixed/unknown units or partially invalid output.
-      const compatible=unit&&stockUnit&&unit===stockUnit&&!mixed&&invalid===0;
+      const compatible=unitColumn>=0&&!!unit&&!!stockUnit&&unit===stockUnit&&!mixed&&invalid===0;
       const coverage=summable&&compatible&&Number.isFinite(stock)&&stock>=0&&
         Number.isFinite(average)&&average>0?stock/average:NaN;
       return {consumption:summable?consumption:NaN,average,coverage,
-        unit:unit||(unitColumn<0?stockUnit:""),stock,stockUnit,mixed,invalid,
+        unit,stock,stockUnit,mixed,invalid,
         hasQuantity,hasDates,period,compatible,outputCount:output.length,
         summable};
     }
