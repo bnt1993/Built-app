@@ -1862,6 +1862,7 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        dashboardTruncated:"Chỉ hiển thị {count} kỳ gần cuối của khoảng chọn",
         colOrderType:"Loại đặt hàng",
         colMinLot:"Lô đặt hàng tối thiểu",
         dashboardCompareTitle:"So sánh nhập / xuất với kỳ trước",
@@ -2066,6 +2067,7 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        dashboardTruncated:"Only the most recent {count} periods in this range are shown",
         colOrderType:"Order type",
         colMinLot:"Minimum lot size",
         dashboardCompareTitle:"Inbound / outbound vs prior period",
@@ -3070,6 +3072,40 @@
       return number.format(n);
     }
 
+
+    function nhomKyTrongKhoangKho(mode,range){
+      if(!range)return [];
+      const byKey=new Map();
+      let cursor=range.from,iterations=0;
+      while(cursor<=range.to&&iterations++<3654){
+        const key=khoaNhomKho(cursor,mode);
+        if(!byKey.has(key)){
+          let label="",title="";
+          if(mode==="week"){
+            const start=new Date(key+"T00:00:00Z");
+            const thursday=new Date(start);thursday.setUTCDate(thursday.getUTCDate()+3);
+            const year=thursday.getUTCFullYear();
+            const week=Math.ceil(((thursday-new Date(Date.UTC(year,0,1)))/86400000+1)/7);
+            label=(ngonNguHienTai==="en"?"Week ":"Tuần ")+week;
+            const finish=congNgayKho(key,6);
+            title=key+" – "+finish;
+          }else if(mode==="month"){
+            const [y,m]=key.split("-");
+            label=m+"/"+y;title=label;
+          }else if(mode==="year"){label=key;title=key;}
+          else{
+            const [y,m,d]=key.split("-");label=d+"/"+m;title=d+"/"+m+"/"+y;
+          }
+          byKey.set(key,{key,label,title});
+        }
+        cursor=congNgayKho(cursor,1);
+      }
+      const all=[...byKey.values()];
+      const limit=mode==="day"?366:mode==="week"?260:mode==="month"?120:50;
+      const selected=all.slice(-limit);
+      selected.truncated=all.length>limit;
+      return selected;
+    }
     function veCotTheoThoiGianKho(id,periods,values,kind){
       const money=kind==="money",usage=kind==="usage";
       const series=periods.map(p=>({...p,value:values.has(p.key)?values.get(p.key):usage?0:null}));
@@ -3437,7 +3473,12 @@
         summary.textContent="";return;
       }
       const mode=document.getElementById("dashboard-usage-period").value;
-      const buckets=nhomKyKho(mode,mode==="year"?6:12);
+      const range=layKyPhanTichKho();
+      if(!range) {
+        chart.textContent=tuDien("dashboardTimeInvalid");
+        summary.textContent="";return;
+      }
+      const buckets=nhomKyTrongKhoangKho(mode,range);
       const stats=tinhGiaTriNhapXuat(historyAll,historyColumns,mode,buckets);
       if(stats.missing){chart.textContent=tuDien("dashUsageNoQty");summary.textContent="";return;}
       const max=Math.max(0,...[...stats.values.values()].flatMap(v=>[v.in,v.out]));
@@ -3460,13 +3501,21 @@
         outgoing:dinhDangGiaTriKho(stats.outgoing),
         period:tuDien({week:"dashWeek",month:"dashMonth",year:"dashYear"}[mode])
       }):tuDien("dashUsageNoData"))+
+        (buckets.truncated?" · "+tuDien("dashboardTruncated",{count:buckets.length}):"")+
         (stats.invalid?" · "+tuDien("dashUsageInvalid",{count:stats.invalid}):"")+
         (["historyInvalid","historyNoSource"].includes(historyStatusKey)?" · "+tuDien("materialHistoryStale"):"");
     }
 
     function veBieuDoGiaTriKho(){
       const mode=document.getElementById("dashboard-value-period").value;
-      const buckets=nhomKyKho(mode,mode==="day"?30:mode==="year"?6:12);
+      const range=layKyPhanTichKho();
+      const chart=document.getElementById("insight-value-trend");
+      const summary=document.getElementById("dashboard-value-trend-summary");
+      if(!range){
+        chart.textContent=tuDien("dashboardTimeInvalid");
+        summary.textContent="";return;
+      }
+      const buckets=nhomKyTrongKhoangKho(mode,range);
       const keys=new Set(buckets.map(x=>x.key)),latest=new Map();
       for(const rec of layAnhChupKho()){
         if(rec.hasPrice===false||!ngayHistoryHopLe(rec.date)||
@@ -3476,8 +3525,6 @@
         const previous=latest.get(key);
         if(!previous||rec.date>=previous.date)latest.set(key,rec);
       }
-      const chart=document.getElementById("insight-value-trend");
-      const summary=document.getElementById("dashboard-value-trend-summary");
       if(!latest.size){
         chart.textContent=tuDien("dashValueTrendEmpty");
         summary.textContent=tuDien("dashValueTrendNote");return;
@@ -3487,7 +3534,7 @@
       summary.textContent=tuDien("dashValueTrendSummary",{
         count:dinhDangSoLuong.format(latest.size),
         period:tuDien({day:"dashDay",week:"dashWeek",month:"dashMonth",year:"dashYear"}[mode])
-      });
+      })+(buckets.truncated?" · "+tuDien("dashboardTruncated",{count:buckets.length}):"");
     }
 
     // History.js is a real optional source, loaded on demand. There is no
