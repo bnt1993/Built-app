@@ -3184,14 +3184,82 @@
         values};
     }
 
+    const dashboardSortState={
+      value:{column:"value",direction:-1},
+      out:{column:"value",direction:-1},
+      dormant:{column:"last",direction:1}
+    };
+    let dashboardTopValueCache=[];
+    function giaTriSapXepKho(rec,column){
+      switch(column){
+        case "material":return rec.name??rec.sap??"";
+        case "quantity":return rec.inconsistent||rec.quantityValid===false||
+          rec.mixed||rec.missing||!rec.unit?null:rec.quantity;
+        case "unit":return rec.inconsistent||rec.mixed||!rec.unit?null:rec.unit;
+        case "stock":return rec.quantityValid&&rec.unit?rec.quantity:null;
+        case "last":return rec.last||null;
+        case "price":return rec.priceValid&&!rec.priceMixed?rec.price:null;
+        case "value":return rec.value;
+        default:return null;
+      }
+    }
+    function sapXepBangPhanTich(rows,kind){
+      const sorting=dashboardSortState[kind];
+      if(!sorting)return rows.slice();
+      const by=sorting.column,dir=sorting.direction;
+      const collator=new Intl.Collator(ngonNguHienTai==="en"?"en":"vi",{
+        sensitivity:"base",numeric:true
+      });
+      return rows.map((rec,index)=>({rec,index})).sort((a,b)=>{
+        const x=giaTriSapXepKho(a.rec,by),y=giaTriSapXepKho(b.rec,by);
+        const noX=x===null||x===undefined||x==="",noY=y===null||y===undefined||y==="";
+        if(noX||noY)return noX===noY?a.index-b.index:noX?1:-1;
+        const compare=typeof x==="number"&&typeof y==="number"?
+          x-y:collator.compare(String(x),String(y));
+        return compare?dir*compare:a.index-b.index;
+      }).map(x=>x.rec);
+    }
+    function tieuDeSapXepPhanTich(kind,column,key){
+      const state=dashboardSortState[kind],selected=state.column===column;
+      const isAscending=selected&&state.direction>0;
+      const direction=selected?(isAscending?"ascending":"descending"):"none";
+      const title=tuDien(selected&&isAscending?"dashboardSortDesc":"dashboardSortAsc");
+      const arrow=selected?(isAscending?"↑":"↓"):"↕";
+      return '<th aria-sort="'+direction+'"><button type="button" class="dashboard-sort-button" '+
+        'data-active="'+String(selected)+'" title="'+thoatHTML(title)+'" '+
+        'onclick="doiSapXepBangPhanTich(\''+kind+'\',\''+column+'\')">'+
+        thoatHTML(tuDien(key))+' <span class="dashboard-sort-icon" aria-hidden="true">'+arrow+
+        '</span></button></th>';
+    }
+    function doiSapXepBangPhanTich(kind,column){
+      const state=dashboardSortState[kind];
+      if(!state)return;
+      if(state.column===column)state.direction*=-1;
+      else{
+        state.column=column;
+        state.direction=["quantity","stock","price","value"].includes(column)?-1:1;
+      }
+      if(kind==="value"){
+        const limit=Number(document.getElementById("dashboard-limit").value)||10;
+        veBangTopGiaTriVatTu(dashboardTopValueCache,limit);
+      }else if(kind==="out"){
+        dashboardTableState.out.page=1;veTopVatTuXuatKho();
+      }else if(kind==="dormant"){
+        dashboardTableState.dormant.page=1;veVatTuTonLau();
+      }
+    }
+
     function veBangTopGiaTriVatTu(values,limit) {
       const root=document.getElementById("insight-top");
       if(!values.length) {root.textContent=tuDien("dashNoValue");return;}
-      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
-        '</th><th>'+thoatHTML(tuDien("dashTopQuantity"))+'</th><th>'+
-        thoatHTML(tuDien("dashTopUnit"))+'</th><th>'+
-        thoatHTML(tuDien("dashTopValueColumn"))+'</th></tr></thead>';
-      const body=values.slice(0,limit).map(rec=>{
+      const header='<thead><tr>'+
+        tieuDeSapXepPhanTich("value","material","dashTopMaterial")+
+        tieuDeSapXepPhanTich("value","quantity","dashTopQuantity")+
+        tieuDeSapXepPhanTich("value","unit","dashTopUnit")+
+        tieuDeSapXepPhanTich("value","value","dashTopValueColumn")+
+        '</tr></thead>';
+      // Top N means the N highest-value SAPs. Sort only within that shortlist.
+      const body=sapXepBangPhanTich(values.slice(0,limit),"value").map(rec=>{
         const valid=rec.unit&&!rec.inconsistent&&Number.isFinite(rec.quantity);
         const quantity=valid?dinhDangSoLuong.format(rec.quantity):"—";
         const unit=rec.mixed?tuDien("dashTopMixedUnits"):
@@ -3214,6 +3282,7 @@
           document.getElementById(id).textContent="—";
         document.getElementById("metric-value-note").textContent=tuDien("dashboardHallNoStockColumn");
         document.getElementById("insight-stock-distribution").textContent=tuDien("dashboardHallNoStockColumn");
+        dashboardTopValueCache=[];
         document.getElementById("insight-top").textContent=tuDien("dashboardHallNoStockColumn");
       }else{
         for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
@@ -3225,6 +3294,7 @@
         tuDien("inventoryValueNoPrice"):stats.missingPrice?
         tuDien("inventoryValuePartial",{count:stats.missingPrice}):tuDien("inventoryValueNote");
       vePhanBoTrangThai(filteredStock);
+      dashboardTopValueCache=stats.values;
       veBangTopGiaTriVatTu(stats.values,limit);
       }
       capNhatTrangThaiHall();
@@ -3861,13 +3931,13 @@
       if(!filtered.length){
         root.textContent=tuDien("dashboardTopOutEmpty");
       }else{
-        const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
-          '</th><th title="'+thoatHTML(tuDien("dashboardTopOutQtyMissingNote"))+'">'+
-          thoatHTML(tuDien("dashboardTopOutCount"))+
-          '</th><th>'+thoatHTML(tuDien("dashboardTopOutUnit"))+
-          '</th><th>'+thoatHTML(tuDien("dashboardTopOutValue"))+'</th></tr></thead>';
+        const header='<thead><tr>'+
+          tieuDeSapXepPhanTich("out","material","dashTopMaterial")+
+          tieuDeSapXepPhanTich("out","quantity","dashboardTopOutCount")+
+          tieuDeSapXepPhanTich("out","unit","dashboardTopOutUnit")+
+          tieuDeSapXepPhanTich("out","value","dashboardTopOutValue")+'</tr></thead>';
         root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-          filtered.slice(page.start,page.end).map(rec=>{
+          sapXepBangPhanTich(filtered,"out").slice(page.start,page.end).map(rec=>{
             const qty=rec.quantityValid&&!rec.mixed&&rec.unit?
               dinhDangSoLuong.format(rec.quantity):"—";
             const unit=rec.mixed?tuDien("dashboardOutMixedUnits"):(rec.unit||"—");
@@ -3970,12 +4040,13 @@
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
       const page=capNhatPhanTrangBangKho("dormant",rows.length);
-      const header='<thead><tr><th>'+thoatHTML(tuDien("dashTopMaterial"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardDormantStock"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardDormantLast"))+
-        '</th><th>'+thoatHTML(tuDien("dashboardDormantUnitPrice"))+'</th></tr></thead>';
+      const header='<thead><tr>'+
+        tieuDeSapXepPhanTich("dormant","material","dashTopMaterial")+
+        tieuDeSapXepPhanTich("dormant","stock","dashboardDormantStock")+
+        tieuDeSapXepPhanTich("dormant","last","dashboardDormantLast")+
+        tieuDeSapXepPhanTich("dormant","price","dashboardDormantUnitPrice")+'</tr></thead>';
       root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-        rows.slice(page.start,page.end).map(rec=>{
+        sapXepBangPhanTich(rows,"dormant").slice(page.start,page.end).map(rec=>{
           const quantity=rec.quantityValid?
             dinhDangSoLuong.format(rec.quantity)+" "+rec.unit:"—";
           const price=rec.priceMixed?tuDien("dashboardDormantMultiplePrices"):
