@@ -1085,11 +1085,28 @@
             <table id="bang-du-lieu"><thead id="dau-bang"></thead><tbody id="than-bang"><tr><td class="empty-table" data-i18n="loadingData">Đang kết nối dữ liệu...</td></tr></tbody></table>
           </div>
           <div class="table-bottom">
-            <span data-i18n="keyboardHint">↑ ↓ để chọn dòng · / để tìm kiếm</span>
+            <div class="page-size-controls">
+              <label for="so-dong-moi-trang" data-i18n="rowsPerPage">Số dòng/trang</label>
+              <select id="so-dong-moi-trang" onchange="chonSoDongMoiTrang(this.value)" aria-label="Chọn số dòng mỗi trang">
+                <option value="25">25</option><option value="50">50</option>
+                <option value="75" selected>75</option><option value="100">100</option>
+                <option value="200">200</option><option value="500">500</option>
+                <option value="custom" data-i18n="customAmount">Tùy chọn</option>
+              </select>
+              <input id="so-dong-tuy-chinh" type="number" inputmode="numeric" min="1" max="5000" step="1" value="75"
+                onchange="datSoDongMoiTrang(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongMoiTrang(this.value);}"
+                data-i18n-aria="customRowsAria" aria-label="Nhập số dòng mỗi trang">
+            </div>
             <div class="pagination" data-i18n-aria="paginationAria" aria-label="Chuyển trang">
-              <button type="button" class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)" disabled>← <span data-i18n="prev">Trước</span></button>
-              <span id="thong-tin-trang" aria-live="polite">Trang 1 / 1</span>
-              <button type="button" class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)" disabled><span data-i18n="next">Sau</span> →</button>
+              <button type="button" class="btn btn-secondary" id="btn-trang-dau" onclick="denTrang(1)" data-i18n-title="firstPage" title="Về trang đầu" aria-label="Về trang đầu">«</button>
+              <button type="button" class="btn btn-secondary" id="btn-trang-truoc" onclick="doiTrang(-1)" disabled>‹ <span data-i18n="prev">Trước</span></button>
+              <label for="nhap-so-trang" data-i18n="pageLabel">Trang</label>
+              <input id="nhap-so-trang" type="number" inputmode="numeric" min="1" step="1" value="1"
+                onchange="nhayDenTrang(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();nhayDenTrang(this.value);}"
+                data-i18n-aria="jumpPageAria" aria-label="Nhập số trang muốn đến">
+              <span id="thong-tin-trang" aria-live="polite">/ 1</span>
+              <button type="button" class="btn btn-secondary" id="btn-trang-sau" onclick="doiTrang(1)" disabled><span data-i18n="next">Sau</span> ›</button>
+              <button type="button" class="btn btn-secondary" id="btn-trang-cuoi" onclick="denTrang(Math.max(1,Math.ceil(ketQuaLoc.length/SO_DONG_MOI_TRANG)))" data-i18n-title="lastPage" title="Đến trang cuối" aria-label="Đến trang cuối">»</button>
             </div>
           </div>
         </section>
@@ -1478,9 +1495,7 @@
       } else {
         document.getElementById("nhan-sap").textContent = tuDien("noSelectedSap");
       }
-      document.getElementById("thong-tin-trang").textContent = tuDien("page", {
-        current: trangHienTai, total: Math.max(1,Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG))
-      });
+      capNhatDieuKhienPhanTrang();
       capNhatGiaoDienAnh();
       if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
       chuyenTab(tabHienTai,{persist:false,skipHistory:true});
@@ -1587,7 +1602,65 @@
     const duongDanOMang = "data.js";
     const THU_MUC_HINH = "Material/"; // Thư mục chứa ảnh
     const SO_ANH_TOI_DA = 10;        // Tự động quét từ _01 đến _10
-    const SO_DONG_MOI_TRANG = 75;
+    // Users can choose a preset or type a custom page size (safe render cap).
+    let SO_DONG_MOI_TRANG = 75;
+    const SO_DONG_TRANG_TOI_DA = 5000;
+
+    function capNhatDieuKhienPhanTrang() {
+      const tongTrang=Math.max(1,Math.ceil(ketQuaLoc.length/SO_DONG_MOI_TRANG));
+      trangHienTai=Math.max(1,Math.min(trangHienTai,tongTrang));
+      const select=document.getElementById("so-dong-moi-trang");
+      const number=document.getElementById("so-dong-tuy-chinh");
+      const inputPage=document.getElementById("nhap-so-trang");
+      const presets=["25","50","75","100","200","500"];
+      select.value=presets.includes(String(SO_DONG_MOI_TRANG))?String(SO_DONG_MOI_TRANG):"custom";
+      number.value=SO_DONG_MOI_TRANG;
+      inputPage.value=trangHienTai;
+      inputPage.max=tongTrang;
+      document.getElementById("thong-tin-trang").textContent=tuDien("pageTotal",{
+        total:dinhDangSoLuong.format(tongTrang)});
+      document.getElementById("btn-trang-dau").disabled=trangHienTai<=1;
+      document.getElementById("btn-trang-truoc").disabled=trangHienTai<=1;
+      document.getElementById("btn-trang-sau").disabled=trangHienTai>=tongTrang;
+      document.getElementById("btn-trang-cuoi").disabled=trangHienTai>=tongTrang;
+      for(const [id,key] of [["btn-trang-dau","firstPage"],["btn-trang-cuoi","lastPage"]])
+        document.getElementById(id).setAttribute("aria-label",tuDien(key));
+    }
+    function datSoDongMoiTrang(value) {
+      const raw=String(value??"").trim(),number=Number(raw);
+      if(!raw||!Number.isFinite(number)||!Number.isInteger(number)||number<1) {
+        capNhatDieuKhienPhanTrang();return;
+      }
+      const oldOffset=(trangHienTai-1)*SO_DONG_MOI_TRANG;
+      SO_DONG_MOI_TRANG=Math.min(number,SO_DONG_TRANG_TOI_DA);
+      trangHienTai=Math.floor(oldOffset/SO_DONG_MOI_TRANG)+1;
+      ghiTuyChon("checking-rows-per-page",String(SO_DONG_MOI_TRANG));
+      hienThiTrangHienTai();
+      document.querySelector(".table-wrapper").scrollTop=0;
+    }
+    function chonSoDongMoiTrang(value) {
+      if(value==="custom") {
+        document.getElementById("so-dong-tuy-chinh").focus();
+        document.getElementById("so-dong-tuy-chinh").select();
+        return;
+      }
+      datSoDongMoiTrang(value);
+    }
+    function denTrang(value) {
+      const max=Math.max(1,Math.ceil(ketQuaLoc.length/SO_DONG_MOI_TRANG));
+      const next=Math.min(max,Math.max(1,Math.trunc(Number(value)||1)));
+      if(next!==trangHienTai) {trangHienTai=next;hienThiTrangHienTai();
+        document.querySelector(".table-wrapper").scrollTop=0;}
+      else capNhatDieuKhienPhanTrang();
+    }
+    function nhayDenTrang(value) {
+      const raw=String(value??"").trim(),number=Number(raw);
+      if(!raw||!Number.isFinite(number)||!Number.isInteger(number)) {
+        capNhatDieuKhienPhanTrang();return;
+      }
+      denTrang(number);
+    }
+
     // Chỉ hiển thị các cột Excel 1, 2, 6, 4, 5, 3 trong bảng.
     const COT_HIEN_THI = [0, 1, 5, 3, 4, 2];
     // ==========================================================
@@ -2795,18 +2868,11 @@
 
       document.getElementById("than-bang").innerHTML = html ||
         '<tr><td colspan="6" class="empty-table">' + tuDien("noResults") + '</td></tr>';
-      document.getElementById("thong-tin-trang").textContent = tuDien("page",{current:trangHienTai,total:tongSoTrang});
-      document.getElementById("btn-trang-truoc").disabled = trangHienTai <= 1;
-      document.getElementById("btn-trang-sau").disabled = trangHienTai >= tongSoTrang;
+      capNhatDieuKhienPhanTrang();
     }
 
     function doiTrang(buoc) {
-      const tongSoTrang = Math.max(1, Math.ceil(ketQuaLoc.length / SO_DONG_MOI_TRANG));
-      const trangMoi = trangHienTai + buoc;
-      if (trangMoi < 1 || trangMoi > tongSoTrang) return;
-      trangHienTai = trangMoi;
-      hienThiTrangHienTai();
-      document.querySelector(".table-wrapper").scrollTop = 0;
+      denTrang(trangHienTai+buoc);
     }
 
     // Bottom-of-table auto-pagination. A small cooldown prevents one touch
@@ -3719,6 +3785,10 @@
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     taiManifestAnh();
     khoiTaoTuyChon();
+      const storedPageSize=Number(docTuyChon("checking-rows-per-page"));
+      if(Number.isInteger(storedPageSize)&&storedPageSize>=1)
+        SO_DONG_MOI_TRANG=Math.min(storedPageSize,SO_DONG_TRANG_TOI_DA);
+      capNhatDieuKhienPhanTrang();
     document.querySelector(".view-tabs").addEventListener("keydown",xuLyPhimTab);
     const tabDuocLuu=docTuyChon("checking-active-tab");
     chuyenTab(CAC_TAB.includes(tabDuocLuu)?tabDuocLuu:"stock",{persist:false});
