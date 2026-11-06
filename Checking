@@ -989,6 +989,77 @@
       #view-dashboard .metric-card { min-height:112px; padding:12px; }
       #view-dashboard .dashboard-chart { height:350px; padding:13px; }
     }
+
+    /* Readable Stock pagination with compact, keyboard-friendly direct inputs. */
+    #view-stock .table-bottom { display:flex; flex-wrap:wrap; align-items:center; gap:7px 14px; justify-content:space-between; }
+    #view-stock .page-size-controls,#view-stock .pagination { display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap; }
+    #view-stock .page-size-controls label,#view-stock .pagination label { color:var(--muted); font-size:11px; font-weight:750; white-space:nowrap; }
+    #view-stock .page-size-controls select,
+    #view-stock .page-size-controls input,
+    #view-stock .pagination input {
+      min-height:29px; height:29px; border:1px solid var(--line); border-radius:7px;
+      background:var(--app-field); color:var(--ink); padding:3px 6px;
+      font:inherit; font-size:12px; font-variant-numeric:tabular-nums;
+    }
+    #view-stock .page-size-controls select { width:93px; }
+    #view-stock #so-dong-tuy-chinh { width:62px; text-align:center; }
+    #view-stock #nhap-so-trang { width:57px; text-align:center; }
+    #view-stock .pagination .btn { min-height:29px; height:29px; padding:3px 8px; }
+    #view-stock #thong-tin-trang { font-variant-numeric:tabular-nums; white-space:nowrap; }
+    #view-stock .detail-title { padding:13px 0 10px; }
+    #view-stock .detail-title strong { font-size:17px; line-height:1.35; }
+    #view-stock .detail-title small { font-size:12px; }
+    #view-stock .detail-kpi-grid {
+      display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:7px; margin:8px 0 11px;
+    }
+    #view-stock .detail-kpi-card {
+      min-width:0; border:1px solid var(--line); border-radius:11px;
+      background:var(--app-field); padding:10px; display:flex; flex-direction:column; gap:5px;
+    }
+    #view-stock .detail-kpi-card > span {
+      color:var(--muted); font-size:11px; line-height:1.3; font-weight:750;
+    }
+    #view-stock .detail-kpi-card strong {
+      font-size:clamp(14px,1.35vw,20px); line-height:1.3; font-variant-numeric:tabular-nums;
+      color:var(--ink); overflow-wrap:anywhere;
+    }
+    #view-stock .detail-kpi-card small { font-size:10px; color:var(--muted); line-height:1.3; overflow-wrap:anywhere; }
+    #view-stock .detail-kpi-card.value strong { color:var(--blue); }
+    #view-stock #detail-stock-status[data-status="healthy"] { color:#13835b; }
+    #view-stock #detail-stock-status[data-status="at"] { color:#aa7b09; }
+    #view-stock #detail-stock-status[data-status="below"] { color:#c7661b; }
+    #view-stock #detail-stock-status[data-status="zero"] { color:#cb4250; }
+    html[data-theme="dark"] #view-stock #detail-stock-status[data-status="healthy"] { color:#86efac; }
+    html[data-theme="dark"] #view-stock #detail-stock-status[data-status="at"] { color:#fde68a; }
+    html[data-theme="dark"] #view-stock #detail-stock-status[data-status="below"] { color:#fdba74; }
+    html[data-theme="dark"] #view-stock #detail-stock-status[data-status="zero"] { color:#fda4af; }
+    #view-stock #luoi-chi-tiet { gap:9px; }
+    #view-stock #luoi-chi-tiet .detail-item {
+      min-height:72px; padding:11px 12px; gap:6px;
+    }
+    #view-stock #luoi-chi-tiet .detail-item label { font-size:11px; line-height:1.25; }
+    #view-stock #luoi-chi-tiet .detail-item span { font-size:14px; line-height:1.35; }
+    #view-stock #luoi-chi-tiet .bm-no-value { font-size:12px; }
+    @media(min-width:1100px) and (min-height:620px) {
+      body.stock-one-screen #view-stock .table-bottom { min-height:38px; padding:5px 9px; gap:5px 9px; }
+      body.stock-one-screen #view-stock .detail-title strong { font-size:17px; }
+      body.stock-one-screen #view-stock .detail-title small { font-size:11px; }
+      body.stock-one-screen #view-stock #luoi-chi-tiet .detail-item,
+      body.stock-one-screen #view-stock #luoi-chi-tiet .bm-no-card {
+        padding:10px; gap:5px; min-height:73px;
+      }
+      body.stock-one-screen #view-stock #luoi-chi-tiet .detail-item label { font-size:11px; line-height:1.25; }
+      body.stock-one-screen #view-stock #luoi-chi-tiet .detail-item span { font-size:14px; line-height:1.35; }
+      body.stock-one-screen #view-stock .detail-kpi-grid { margin:8px 0 10px; gap:6px; }
+      body.stock-one-screen #view-stock .detail-kpi-card { padding:9px; }
+    }
+    @media(max-width:620px) {
+      #view-stock .detail-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      #view-stock .detail-title strong { font-size:16px; }
+      #view-stock .table-bottom { justify-content:center; }
+      #view-stock .page-size-controls,#view-stock .pagination { justify-content:center; }
+    }
   </style>
 </head>
 <body>
@@ -1272,7 +1343,7 @@
     const NGON_NGU = {
       vi: {
         pageTitle:"Quản lý kho SAP · Tra cứu tồn kho",
-        brandName:"Quản lý kho SAP",
+        brandName:"Quản lý kho SAP",colReorder:"Điểm đặt hàng lại",colStorageBin:"Vị trí lưu kho",colStorageLoc:"Kho lưu trữ",colMaterialType:"Loại vật tư",colCostCenter:"Trung tâm chi phí",colPostingDate:"Ngày hạch toán",colStockQty:"Tồn kho khả dụng",
         detailKpiAria:"Các chỉ số vật tư được chọn",
         detailStockValue:"Giá trị tồn kho",
         detailStockStatus:"Trạng thái tồn kho",
@@ -1379,7 +1450,7 @@
       },
       en: {
         pageTitle:"SAP Inventory · Stock lookup",
-        brandName:"SAP Inventory",
+        brandName:"SAP Inventory",colReorder:"Reorder point",colStorageBin:"Storage bin",colStorageLoc:"Storage location",colMaterialType:"Material type",colCostCenter:"Cost center",colPostingDate:"Posting date",colStockQty:"Available stock",
         detailKpiAria:"Selected material metrics",
         detailStockValue:"Inventory value",
         detailStockStatus:"Stock status",
@@ -1506,11 +1577,20 @@
       const k = ten.trim().toLowerCase();
       const key = {
         "sap":"colSap", "sap code":"colSap", "mã sap":"colSap",
+        "material":"colSap","material number":"colSap","material code":"colSap",
         "description":"colDescription", "mô tả":"colDescription",
+        "material description":"colDescription","material desc":"colDescription",
         "part no":"colPart", "part no.":"colPart", "part number":"colPart",
         "quantity":"colQuantity", "qty":"colQuantity", "số lượng":"colQuantity",
-        "price":"colPrice", "giá":"colPrice", "bm no":"colBm",
-        "unit":"colUnit", "đơn vị":"colUnit", "group":"colGroup", "nhóm":"colGroup"
+        "stock qty":"colQuantity","stock quantity":"colQuantity",
+        "available stock":"colStockQty","on hand":"colStockQty",
+        "price":"colPrice", "unit price":"colPrice", "giá":"colPrice", "bm no":"colBm",
+        "unit":"colUnit","base unit of measure":"colUnit","unit of entry":"colUnit","uom":"colUnit",
+        "đơn vị":"colUnit", "group":"colGroup", "nhóm":"colGroup",
+        "material group":"colGroup","material type":"colMaterialType",
+        "reorder point":"colReorder","re-order point":"colReorder","rop":"colReorder",
+        "storage bin":"colStorageBin","storage location":"colStorageLoc",
+        "cost center":"colCostCenter","posting date":"colPostingDate"
       }[k];
       return key ? tuDien(key) : ten;
     }
@@ -1556,6 +1636,8 @@
       if (idDaChon >= 0 && tatCaDuLieu[idDaChon]) {
         document.getElementById("nhan-sap").textContent =
           tuDien("sapCode",{code:chuanHoaMaSap(tatCaDuLieu[idDaChon][0]) || "—"});
+        document.getElementById("nhan-sap").title=tuDien("sapTooltip",{
+          code:chuanHoaMaSap(tatCaDuLieu[idDaChon][0])||"—"});
         hienThiChiTiet(tatCaDuLieu[idDaChon]);
       } else {
         document.getElementById("nhan-sap").textContent = tuDien("noSelectedSap");
@@ -2244,6 +2326,29 @@
       return String(ten??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
         .replace(/đ/g,"d").toLowerCase().replace(/[^a-z0-9]/g,"");
     }
+    function tenCotHistoryDaDich(name) {
+      const raw=String(name??"");
+      if(ngonNguHienTai!=="vi")return raw;
+      const names={
+        material:"Mã vật tư",materialnumber:"Mã vật tư",
+        materialdescription:"Mô tả vật tư",
+        postingdate:"Ngày hạch toán",documentdate:"Ngày chứng từ",
+        entrydate:"Ngày ghi nhận",transactiondate:"Ngày giao dịch",
+        quantity:"Số lượng",qty:"Số lượng",qtyinunitofentry:"Số lượng theo đơn vị",
+        unitofentry:"Đơn vị tính",baseunitofmeasure:"Đơn vị cơ sở",
+        amtin:"Giá trị (đồng)",amtinloccur:"Giá trị (đồng)",
+        amountinlocalcurrency:"Giá trị (đồng)",amtinlocalcurrency:"Giá trị (đồng)",
+        costcenter:"Trung tâm chi phí",storagebin:"Vị trí lưu kho",
+        storagelocation:"Kho lưu trữ",plant:"Nhà máy",
+        movementtype:"Loại giao dịch",movement:"Loại giao dịch",
+        materialdocument:"Số chứng từ vật tư",documentnumber:"Số chứng từ",
+        documentheadertext:"Nội dung chứng từ",text:"Ghi chú",
+        purchaseorder:"Đơn đặt hàng",postingtime:"Giờ hạch toán",
+        valuationtype:"Loại định giá",batch:"Lô hàng",user:"Người thực hiện",
+        movementqty:"Số lượng giao dịch",quantitychange:"Biến động số lượng"
+      };
+      return names[tenHistoryChuan(raw)]||tenCotDaDich(raw);
+    }
     function cotHistoryTheoTen(headers, aliases) {
       const names=new Set(aliases.map(tenHistoryChuan));
       return headers.findIndex(key=>names.has(tenHistoryChuan(key)));
@@ -2729,7 +2834,7 @@
           !["movement","movementtype"].includes(tenHistoryChuan(col.name)));
       document.getElementById("material-history-head").innerHTML=historyColumns.length?
         "<tr><th>"+thoatHTML(tuDien("historyDirection"))+"</th>"+
-        visibleColumns.map(col=>"<th>"+thoatHTML(col.name)+"</th>").join("")+"</tr>":"";
+        visibleColumns.map(col=>"<th title='"+thoatHTML(col.name)+"'>"+thoatHTML(tenCotHistoryDaDich(col.name))+"</th>").join("")+"</tr>":"";
       document.getElementById("material-history-body").innerHTML=
         htmlDongLichSuVatTu(materialHistoryRows.slice(0,
           materialHistoryPage*MATERIAL_HISTORY_PAGE_SIZE))||
@@ -2982,12 +3087,20 @@
         const selectedAria = muc.chiSo === dongDangChonIndex ? "true" : "false";
         const o = COT_HIEN_THI.map(chiSoCot => {
           const giaTri = thoatHTML(hienThiGiaTri(chiSoCot, muc.dong[chiSoCot]));
-          if (chiSoCot === 0) return '<td><span class="sap-code">' + giaTri + '</span></td>';
+          if (chiSoCot === 0) {
+            const sap=chuanHoaMaSap(muc.dong[0]);
+            const tip=tuDien("sapTooltip",{code:sap});
+            return '<td><span class="sap-code" title="'+thoatHTML(tip)+'" aria-label="'+thoatHTML(tip)+'">' +
+              giaTri + '</span></td>';
+          }
           if (chiSoCot === chiSoSoLuong) {
             const trangThai=muc.trangThaiTon||"unknown";
-            const tooltip=tenTrangThaiTon(trangThai) +
-              (Number.isFinite(muc.reorderPoint) ? ' · Reorder Point: '+muc.reorderPoint : '');
-            return '<td><span class="stock-badge stock-'+trangThai+'" title="'+thoatHTML(tooltip)+'">' +
+            const tooltip=tuDien("detailStatusTooltip",{
+              status:tenTrangThaiTon(trangThai),
+              stock:String(muc.dong[chiSoSoLuong]??"—"),
+              reorder:Number.isFinite(muc.reorderPoint)?dinhDangSoLuong.format(muc.reorderPoint):"—"
+            });
+            return '<td><span class="stock-badge stock-'+trangThai+'" title="'+thoatHTML(tooltip)+'" aria-label="'+thoatHTML(tooltip)+'">' +
               (trangThai==="zero"?'⚠ ':'')+giaTri+'</span></td>';
           }
           return '<td>' + giaTri + '</td>';
@@ -3083,6 +3196,7 @@
       const dongData = tatCaDuLieu[index];
       const maSap = chuanHoaMaSap(dongData[0]); // Cột đầu tiên là Mã SAP
       document.getElementById("nhan-sap").textContent = tuDien("sapCode",{code:maSap || "—"});
+      document.getElementById("nhan-sap").title=tuDien("sapTooltip",{code:maSap||"—"});
       document.getElementById("chi-tiet-trong").style.display = "none";
 
       // Keep image/navigation state intact when re-rendering translated details.
