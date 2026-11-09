@@ -1483,6 +1483,7 @@
       justify-content:space-between; align-items:center;
       padding:8px 0 4px; border-top:1px solid var(--line);
     }
+    #view-dashboard .dashboard-mini-pager[hidden] { display:none !important; }
     #view-dashboard .dashboard-mini-size,
     #view-dashboard .dashboard-mini-page {
       display:flex; align-items:center; gap:4px 6px; flex-wrap:wrap;
@@ -1725,9 +1726,12 @@
           <select id="dashboard-range-mode" onchange="doiKyPhanTichKho()">
             <option value="week" data-i18n="dashboardTimeWeek">7 ngày gần đây</option>
             <option value="month" data-i18n="dashboardTimeMonth" selected>Tháng hiện tại</option>
+            <option value="selected-month" data-i18n="dashboardTimeSelectMonth">Theo tháng</option>
             <option value="year" data-i18n="dashboardTimeYear">Theo năm</option>
             <option value="custom" data-i18n="dashboardTimeCustom">Tùy chọn ngày</option>
           </select></label>
+        <label id="dashboard-range-month-field" hidden><span data-i18n="dashboardTimeMonthLabel">Tháng</span>
+          <input id="dashboard-range-month" type="month" min="2000-01" onchange="doiKyPhanTichKho()"></label>
         <label id="dashboard-range-year-field" hidden><span data-i18n="dashboardTimeYearFrom">Từ năm</span>
           <input type="number" id="dashboard-range-year-from" min="2000" max="2100" step="1" inputmode="numeric" onchange="doiKyPhanTichKho()"></label>
         <label id="dashboard-range-year-end-field" hidden><span data-i18n="dashboardTimeYearTo">Đến năm</span>
@@ -1895,7 +1899,7 @@
                   <option value="1095" data-i18n="dashboardDormant1095">3 năm</option>
                 </select></label>
             </div>
-            <p class="insight-note" data-i18n="dashboardDormantNote">Xét tồn kho hiện tại và lịch sử giao dịch xuất.</p>
+            <p class="insight-note" data-i18n="dashboardDormantNote">Chỉ Hall 1: vật tư còn tồn nhưng chưa xuất trong khoảng chọn. Đơn giá lấy từ tồn kho Hall 1.</p>
             <div id="dashboard-dormant" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardDormantTitle"></div>
             <div id="dashboard-dormant-pager" class="dashboard-mini-pager">
               <div class="dashboard-mini-size">
@@ -2083,6 +2087,8 @@
         dashboardTimeMode:"Chọn kỳ",
         dashboardTimeWeek:"7 ngày gần đây",
         dashboardTimeMonth:"Tháng hiện tại",
+        dashboardTimeSelectMonth:"Theo tháng",
+        dashboardTimeMonthLabel:"Tháng",
         dashboardTimeYear:"Theo năm / nhiều năm",
         dashboardTimeCustom:"Tùy chọn ngày",
         dashboardTimeYearLabel:"Năm",
@@ -2101,7 +2107,8 @@
         dashboardDormant90:"90 ngày",
         dashboardDormant180:"180 ngày",
         dashboardDormant365:"365 ngày",
-        dashboardDormantNote:"Vật tư còn tồn nhưng chưa xuất trong khoảng chọn. Đơn giá lấy từ bảng tồn kho hiện tại.",
+        dashboardDormantNote:"Chỉ Hall 1: vật tư còn tồn nhưng chưa xuất trong khoảng chọn. Đơn giá lấy từ tồn kho Hall 1.",
+        dashboardDormantHall2Unavailable:"Hall 2 không có thông tin vật tư tồn lâu chưa xuất.",
         dashboardDormantLast:"Ngày xuất cuối",
         dashboardDormantStock:"Tồn kho",
         dashboardDormantDaysOld:"Số ngày chưa xuất",
@@ -2323,6 +2330,8 @@
         dashboardTimeMode:"Period",
         dashboardTimeWeek:"Last 7 days",
         dashboardTimeMonth:"Current month",
+        dashboardTimeSelectMonth:"By month",
+        dashboardTimeMonthLabel:"Month",
         dashboardTimeYear:"Year / multiple years",
         dashboardTimeCustom:"Custom dates",
         dashboardTimeYearLabel:"Year",
@@ -2341,7 +2350,8 @@
         dashboardDormant90:"90 days",
         dashboardDormant180:"180 days",
         dashboardDormant365:"365 days",
-        dashboardDormantNote:"Materials with positive stock and no issue within the selected period. Unit prices come from current stock records.",
+        dashboardDormantNote:"Hall 1 only: materials with positive stock and no issue within the selected period. Unit prices come from Hall 1 stock records.",
+        dashboardDormantHall2Unavailable:"No slow-moving material information is available for Hall 2.",
         dashboardDormantLast:"Last issued",
         dashboardDormantStock:"Stock",
         dashboardDormantDaysOld:"Days since last issue",
@@ -3503,14 +3513,20 @@
       if(mode==="week"){
         to=today;from=congNgayKho(to,-6);
         prevTo=congNgayKho(from,-1);prevFrom=congNgayKho(prevTo,-6);
-      }else if(mode==="month"){
-        from=today.slice(0,7)+"-01";to=today;
+      }else if(mode==="month"||mode==="selected-month"){
+        const month=mode==="month"?today.slice(0,7):
+          document.getElementById("dashboard-range-month").value;
+        if(!/^\d{4}-\d{2}$/.test(month)||!ngayHistoryHopLe(month+"-01")||
+          month<"2000-01"||month>today.slice(0,7))return null;
+        from=month+"-01";
         const [y,m]=from.split("-").map(Number);
+        const current=month===today.slice(0,7);
+        to=current?today:new Date(Date.UTC(y,m,0)).toISOString().slice(0,10);
         const p=new Date(Date.UTC(y,m-2,1));
         prevFrom=p.toISOString().slice(0,10);
         const elapsed=khoangNgayKho(from,to);
         const lastDay=new Date(Date.UTC(p.getUTCFullYear(),p.getUTCMonth()+1,0)).getUTCDate();
-        prevTo=congNgayKho(prevFrom,Math.min(elapsed,lastDay)-1);
+        prevTo=congNgayKho(prevFrom,(current?Math.min(elapsed,lastDay):lastDay)-1);
       }else if(mode==="year"){
         const yearFrom=Number(document.getElementById("dashboard-range-year-from").value);
         const yearTo=Number(document.getElementById("dashboard-range-year-to").value);
@@ -3541,6 +3557,7 @@
 
     function doiKyPhanTichKho(){
       const mode=document.getElementById("dashboard-range-mode").value;
+      document.getElementById("dashboard-range-month-field").hidden=mode!=="selected-month";
       document.getElementById("dashboard-range-year-field").hidden=mode!=="year";
       document.getElementById("dashboard-range-year-end-field").hidden=mode!=="year";
       document.getElementById("dashboard-range-from-field").hidden=mode!=="custom";
@@ -3596,8 +3613,7 @@
       historyHallCache={records:historyAll,index,hall,rows,unknownCount,unrecognized:!hasKnown};
       return hasKnown?rows:null;
     }
-    function tonKhoTheoHall(){
-      const hall=hallDangLoc();
+    function tonKhoTheoHall(hall=hallDangLoc()){
       if(hall==="all")return duLieuTimKiem;
       const index=cotStorageLocation(tieuDeCot);
       if(index<0)return null;
@@ -3743,15 +3759,15 @@
         chuanHoaMaSap(v.dong[0]).toLowerCase()===rec.sap.toLowerCase());
       return material||null;
     }
-    function moLichSuDashboardTheoSap(sap){
-      const item=(tonKhoTheoHall()||[]).find(v=>
+    function moLichSuDashboardTheoSap(sap,hall=hallDangLoc()){
+      const item=(tonKhoTheoHall(hall)||[]).find(v=>
         chuanHoaMaSap(v.dong[0]).toLowerCase()===String(sap).toLowerCase());
-      if(item){moLichSuVatTu(item.chiSo,hallDangLoc());return;}
+      if(item){moLichSuVatTu(item.chiSo,hall);return;}
       if(!historyLoaded)return;
       // History can include material codes absent from current stock.
       const dialog=document.getElementById("material-history-dialog");
       materialHistorySap=String(sap);
-      materialHistoryHall=hallDangLoc();
+      materialHistoryHall=hall;
       materialHistoryStockIndex=-1;
       materialHistoryPage=1;
       materialHistorySortColumn=-2;
@@ -3767,13 +3783,15 @@
     }
     function moLichSuBangDashboard(event){
       const tr=event.target.closest("tr[data-sap]");
-      if(tr&&event.currentTarget.contains(tr))moLichSuDashboardTheoSap(tr.dataset.sap);
+      if(tr&&event.currentTarget.contains(tr))moLichSuDashboardTheoSap(tr.dataset.sap,
+        event.currentTarget.id==="dashboard-dormant"?"hall1":hallDangLoc());
     }
     function bamPhimLichSuBangDashboard(event){
       if(event.key!=="Enter")return;
       const row=event.target.closest("tr[data-sap]");
       if(!row)return;
-      event.preventDefault();moLichSuDashboardTheoSap(row.dataset.sap);
+      event.preventDefault();moLichSuDashboardTheoSap(row.dataset.sap,
+        event.currentTarget.id==="dashboard-dormant"?"hall1":hallDangLoc());
     }
 
     function phamViTopXuatKho(){
@@ -3987,11 +4005,13 @@
     }
 
     function thongKeVatTuTonLau(days,now=new Date()){
+      if(hallDangLoc()==="hall2")return [];
       if(!historyLoaded)return null;
       const sapCol=cotMaSapLichSuKho();
       if(sapCol<0)return null;
       const today=ngayDiaPhuongISO(now),stock=new Map();
-      const hallStock=tonKhoTheoHall(),hallHistory=lichSuTheoHall();
+      // This report is available only for Hall 1, including the All areas view.
+      const hallStock=tonKhoTheoHall("hall1"),hallHistory=lichSuTheoHall("hall1");
       if(!hallStock||!hallHistory)return null;
       const unitCol=cotHistoryTheoTen(tieuDeCot,[
         "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
@@ -4043,6 +4063,15 @@
     function veVatTuTonLau(){
       const root=document.getElementById("dashboard-dormant");
       const note=document.getElementById("dashboard-dormant-note");
+      const unavailable=hallDangLoc()==="hall2";
+      document.getElementById("dashboard-dormant-days").disabled=unavailable;
+      const pager=document.getElementById("dashboard-dormant-pager");
+      pager.hidden=true;
+      if(unavailable){
+        dashboardDormantCache=null;
+        root.textContent=tuDien("dashboardDormantHall2Unavailable");
+        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
+      }
       if(!historyLoaded){
         root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
@@ -4060,8 +4089,8 @@
       }
       const rows=dashboardDormantCache.rows;
       if(rows===null){
-        root.textContent=tuDien(hallDangLoc()!=="all"&&!coCotStockHall()?
-          loiCotHall("stock"):hallDangLoc()!=="all"&&lichSuTheoHall()===null?
+        root.textContent=tuDien(tonKhoTheoHall("hall1")===null?
+          loiCotHall("stock"):lichSuTheoHall("hall1")===null?
           loiCotHall("history"):"dashboardDormantMissing");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
@@ -4069,6 +4098,7 @@
         root.textContent=tuDien("dashboardDormantEmpty");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
+      pager.hidden=false;
       const page=capNhatPhanTrangBangKho("dormant",rows.length);
       const header='<thead><tr>'+
         tieuDeSapXepPhanTich("dormant","material","dashTopMaterial")+
@@ -4114,7 +4144,8 @@
         chart.textContent=tuDien(loiCotHall("history"));
         summary.textContent="";return;
       }
-      const stats=tinhGiaTriNhapXuat(scope,historyColumns,mode,buckets);
+      const stats=tinhGiaTriNhapXuat(scope.filter(rec=>
+        rec.date>=range.from&&rec.date<=range.to),historyColumns,mode,buckets);
       if(stats.missing){chart.textContent=tuDien("dashUsageNoQty");summary.textContent="";return;}
       const max=Math.max(0,...[...stats.values.values()].flatMap(v=>[v.in,v.out]));
       const label=type=>tuDien(type==="in"?"historyInShort":"historyOutShort");
@@ -4160,6 +4191,7 @@
       const keys=new Set(buckets.map(x=>x.key)),latest=new Map();
       for(const rec of layAnhChupKho()){
         if(rec.hasPrice===false||!ngayHistoryHopLe(rec.date)||
+          rec.date<range.from||rec.date>range.to||
           !Number.isFinite(rec.value)||rec.value<0)continue;
         const key=khoaNhomKho(rec.date,mode);
         if(!keys.has(key))continue;
@@ -6492,6 +6524,8 @@
     const selectedYear=String(dashboardNow.getFullYear());
     document.getElementById("dashboard-range-year-from").value=selectedYear;
     document.getElementById("dashboard-range-year-to").value=selectedYear;
+    document.getElementById("dashboard-range-month").value=ngayDiaPhuongISO(dashboardNow).slice(0,7);
+    document.getElementById("dashboard-range-month").max=ngayDiaPhuongISO(dashboardNow).slice(0,7);
     document.getElementById("dashboard-range-from").value=
       ngayDiaPhuongISO(new Date(dashboardNow.getFullYear(),dashboardNow.getMonth(),1));
     document.getElementById("dashboard-range-to").value=ngayDiaPhuongISO(dashboardNow);

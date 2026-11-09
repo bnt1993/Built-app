@@ -108,6 +108,13 @@ nodes['dashboard-hall'].value='hall2';ctx.moLichSuDashboardTheoSap('A');
 assert.equal(ctx.materialHistoryRows.length,1);
 assert.equal(nodes['material-history-out-count'].textContent,'9 PC');
 assert.equal(nodes['material-history-stock'].textContent,'20 PC');
+// Dormant rows retain Hall 1 when opened from the All areas dashboard.
+nodes['dashboard-hall'].value='all';ctx.moLichSuDashboardTheoSap('A','hall1');
+assert.equal(ctx.materialHistoryHall,'hall1');assert.equal(ctx.materialHistoryRows.length,2);
+assert.equal(nodes['material-history-out-count'].textContent,'4 PC');
+assert.equal(nodes['material-history-stock'].textContent,'10 PC');
+assert.equal(nodes['dashboard-hall'].value,'all');
+nodes['dashboard-hall'].value='hall2';
 // Without a Hall column in Stock, retain scoped history but show no Hall balance.
 ctx.tieuDeCot=['SAP','Description','Stock','Unit'];ctx.moLichSuDashboardTheoSap('A');
 assert.equal(ctx.materialHistoryRows.length,1);
