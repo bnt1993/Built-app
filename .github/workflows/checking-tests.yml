@@ -1,0 +1,32 @@
+name: Checking dashboard regression tests
+
+on:
+  pull_request:
+    paths:
+      - Checking
+      - Amount.js
+      - tests/**
+      - .github/workflows/checking-tests.yml
+  push:
+    branches: [main]
+    paths:
+      - Checking
+      - Amount.js
+      - tests/**
+      - .github/workflows/checking-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  dashboard-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Amount.js reader and refresh
+        run: node tests/amount_logic.cjs
+      - name: Validate filtered report exports
+        run: node tests/dashboard_export_logic.cjs
