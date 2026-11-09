@@ -3043,9 +3043,57 @@
       el.textContent = tuDien(key, values);
     }
 
+
+    // HEAD validators avoid repeatedly downloading/reindexing multi-MB SAP files.
+    // Missing validators or local file:// pages fall back to the existing loader.
+    const phienBanNguon={stock:"",history:""};
+    const phienBanChoNap={stock:"",history:""};
+    async function kiemTraPhienBanNguon(kind,file,load){
+      if(document.hidden)return;
+      if(location.protocol!=="http:"&&location.protocol!=="https:"){
+        load();return;
+      }
+      try{
+        const response=await fetch(file+"?check="+Date.now(),{
+          method:"HEAD",cache:"no-store"
+        });
+        if(!response.ok)throw Error("VERSION_HEAD_FAILED");
+        const etag=response.headers.get("etag");
+        const modified=response.headers.get("last-modified");
+        const length=response.headers.get("content-length");
+        const signature=etag?"etag:"+etag:modified?
+          "modified:"+modified+"|"+(length||""):"";
+        if(!signature){load();return;}
+        if(phienBanNguon[kind]===signature){
+          ghiNhanNguon(kind,"unchanged");
+          return;
+        }
+        phienBanChoNap[kind]=signature;
+        load();
+      }catch(err){
+        // Legacy network shares may not support HEAD; retain working behavior.
+        load();
+      }
+    }
+    function kiemTraPhienBanStock(){
+      return kiemTraPhienBanNguon("stock",duongDanOMang,taiDuLieu);
+    }
+    function kiemTraPhienBanHistory(){
+      if(!historyLoaded||historyLoading)return;
+      return kiemTraPhienBanNguon("history",DUONG_DAN_HISTORY,()=>taiHistory(true));
+    }
+    function lamMoiToanBoNguon(){
+      taiDuLieu();
+      taiLaiAmount();
+      if(historyLoaded||tabHienTai==="dashboard")taiHistory(true);
+      taiManifestAnh();
+    }
+
     function taiDuLieu() {
       if (document.hidden || dangTaiScript) return;
       dangTaiScript = true;
+      const batDauTai=Date.now();
+      ghiNhanNguon("stock","loading");
       const lanHienTai = ++lanTaiDuLieu;
       const scriptCu = document.getElementById("script-data");
       if (scriptCu) scriptCu.remove();
@@ -3064,6 +3112,8 @@
         s.remove();
         datTrangThaiDuLieu("statusOffline", "error");
         datThongBaoCapNhat("statusTimeout");
+        ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
+        phienBanChoNap.stock="";
       }, 15000);
 
       s.onload = function() {
@@ -3078,6 +3128,8 @@
         if (!Array.isArray(duLieuMoi) || !duLieuMoi.length || !Array.isArray(duLieuMoi[0])) {
           datTrangThaiDuLieu("statusInvalid", "error");
           datThongBaoCapNhat("statusBadData");
+          ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
+          phienBanChoNap.stock="";
           return;
         }
         if (!coMocCapNhat || thoiGianCapNhat !== mocCapNhatCu || !tatCaDuLieu.length) {
@@ -3093,6 +3145,12 @@
           taoChiMucTimKiem();
         }
         datTrangThaiDuLieu("statusOnline");
+        if(phienBanChoNap.stock){
+          phienBanNguon.stock=phienBanChoNap.stock;
+          phienBanChoNap.stock="";
+        }
+        ghiNhanNguon("stock","ready",{count:duLieuMoi.length-1,
+          ms:Date.now()-batDauTai});
         datThongBaoCapNhat("updated", {time: coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString(ngonNguHienTai === "en" ? "en-US" : "vi-VN")});
       };
       s.onerror = function() {
@@ -3101,6 +3159,8 @@
         dangTaiScript = false;
         datTrangThaiDuLieu("statusOffline", "error");
         datThongBaoCapNhat("statusLoadFail", {file:duongDanOMang});
+        ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
+        phienBanChoNap.stock="";
       };
       document.body.appendChild(s);
     }
@@ -3252,6 +3312,8 @@
     function taiLaiAmount(){
       if(dangTaiAmount||document.hidden)return;
       dangTaiAmount=true;
+      const batDauTai=Date.now();
+      ghiNhanNguon("amount","loading");
       const previous=window.amountData;
       const script=document.createElement("script");
       let finished=false;
@@ -3270,9 +3332,12 @@
             (previous.length===0||layGiaTriKhoTuAmount().length>0);
           trangThaiAmount=hadValid?"dashAmountStale":errorKey;
         }
+        ghiNhanNguon("amount",ok?"ready":Array.isArray(previous)?"stale":"error",{
+          ms:Date.now()-batDauTai,count:layGiaTriKhoTuAmount().length});
         capNhatTrangThaiAmount();
         veBieuDoGiaTriKho();
         veLichSuKho();
+        capNhatCanhBaoKho();
       }
       script.onload=()=>{
         const changed=window.amountData!==previous;
@@ -4904,6 +4969,8 @@
     async function taiHistory(force=false) {
       if(historyLoading || (historyLoaded && !force))return;
       historyLoading=true;
+      const batDauTai=Date.now();
+      ghiNhanNguon("history","loading");
       veSoSanhNhapXuatKho();
       veTopVatTuXuatKho();
       veVatTuTonLau();
@@ -4920,11 +4987,16 @@
         } else source=await taiHistoryBangScript();
         if(!source.data)throw Error("HISTORY_BAD_FORMAT");
         const ok=await apDungNguonHistory(source.data,"file",source.updated,sequence);
+        if(ok && phienBanChoNap.history){
+          phienBanNguon.history=phienBanChoNap.history;
+          phienBanChoNap.history="";
+        }
         if(!ok && historyStatusKey==="historyLoading")
           capNhatTrangThaiHistory("historyInvalid");
       }catch(err){
         console.warn("History.js:",err);
         // Preserve the last good History result when a reload fails.
+        phienBanChoNap.history="";
         capNhatTrangThaiHistory(err.message==="HISTORY_BAD_FORMAT"||err instanceof SyntaxError
           ?"historyInvalid":"historyNoSource");
       }finally{
@@ -4936,6 +5008,11 @@
           veSoSanhNhapXuatKho();
           veTopVatTuXuatKho();
           veVatTuTonLau();
+          capNhatCanhBaoKho();
+          ghiNhanNguon("history",
+            ["historyInvalid","historyNoSource"].includes(historyStatusKey)?
+              (historyLoaded?"stale":"error"):"ready",
+            {count:historyAll.length,ms:Date.now()-batDauTai});
         }
       }
     }
@@ -7200,13 +7277,20 @@
     trangThaiAmount=!Array.isArray(window.amountData)?"dashAmountLoadError":
       window.amountData.length&&!layGiaTriKhoTuAmount().length?"dashAmountInvalid":null;
     capNhatTrangThaiAmount();
+    ghiNhanNguon("amount",trangThaiAmount?"error":"ready",
+      {count:layGiaTriKhoTuAmount().length});
     if(trangThaiAmount)taiLaiAmount();
+    veTrangThaiNguon();
     taiDuLieu();
-    setInterval(taiDuLieu, 30000);
+    setInterval(kiemTraPhienBanStock, 30000);
+    setInterval(kiemTraPhienBanHistory, 60000);
     setInterval(taiLaiAmount, 60000);
     setInterval(kiemTraNhacBaoCao, 60000);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {taiDuLieu();taiLaiAmount();kiemTraNhacBaoCao();}
+      if (!document.hidden) {
+        kiemTraPhienBanStock();kiemTraPhienBanHistory();
+        taiLaiAmount();kiemTraNhacBaoCao();
+      }
     });
   </script>
 </body>
