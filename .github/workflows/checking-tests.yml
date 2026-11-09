@@ -5,6 +5,8 @@ on:
     paths:
       - Checking
       - Amount.js
+      - HistoryWorker.js
+      - scripts/**
       - tests/**
       - .github/workflows/checking-tests.yml
   push:
@@ -12,6 +14,8 @@ on:
     paths:
       - Checking
       - Amount.js
+      - HistoryWorker.js
+      - scripts/**
       - tests/**
       - .github/workflows/checking-tests.yml
 
@@ -30,3 +34,21 @@ jobs:
         run: node tests/amount_logic.cjs
       - name: Validate filtered report exports
         run: node tests/dashboard_export_logic.cjs
+      - name: Verify source versioning, percentage and drilldown logic
+        run: node tests/dashboard_sources_logic.cjs
+      - name: Validate local metadata generator
+        run: python3 tests/test_prepare_stock_assets.py
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium --with-deps
+      - name: Check dashboard interactions
+        run: node tests/dashboard_sources_browser.cjs
