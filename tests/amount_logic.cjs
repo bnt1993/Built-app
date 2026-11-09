@@ -23,7 +23,7 @@ const ctx={console,window:{},document,setTimeout,clearTimeout,Array,Date,Map,Set
   },
   veCotTheoThoiGianKho:(id,buckets,values)=>{chart={id,buckets,values}},
   dinhDangGiaTriKho:n=>new Intl.NumberFormat('vi-VN').format(n)+' ₫',
-  dinhDangSoLuong:{format:n=>String(n)},tuDien:key=>key,
+  dinhDangSoLuong:{format:n=>String(n)},tuDien:(key,params)=>key==='dashValueDelta'?`${params.percent}% ${params.date}`:key,
   veLichSuKho:()=>{},ghiNhanNguon:()=>{},capNhatCanhBaoKho:()=>{}};
 vm.createContext(ctx);
 for(const name of ['ngayHistoryHopLe','khoaNhomKho','layGiaTriKhoTuAmount',
