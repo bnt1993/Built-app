@@ -1484,6 +1484,17 @@
       padding:8px 0 4px; border-top:1px solid var(--line);
     }
     #view-dashboard .dashboard-mini-pager[hidden] { display:none !important; }
+    #view-dashboard .dashboard-report-count {
+      align-self:flex-start; margin:4px 0 8px; padding:5px 9px;
+      border:1px solid var(--line); border-radius:8px; background:var(--app-field);
+      color:var(--ink); font-size:12px; font-weight:750;
+    }
+    @media(max-width:700px) {
+      #view-dashboard .dashboard-table-chart { height:auto; min-height:430px; }
+      #view-dashboard .dashboard-table-chart .dashboard-chart-body {
+        flex:0 0 auto; min-height:140px; max-height:260px;
+      }
+    }
     #view-dashboard .dashboard-mini-size,
     #view-dashboard .dashboard-mini-page {
       display:flex; align-items:center; gap:4px 6px; flex-wrap:wrap;
@@ -1759,7 +1770,7 @@
           <div class="metric-text">
             <div class="metric-label" data-i18n="dashFilteredValue">Tổng giá trị tồn kho</div>
             <strong class="metric-value metric-money" id="metric-inventory-value" aria-live="polite">—</strong>
-            <span class="metric-note" id="metric-value-note" data-i18n="inventoryValueNote">Tổng (Số lượng tồn × Đơn giá)</span>
+            <span class="metric-note" id="metric-value-note" data-i18n="dashValueTrendEmpty">Chưa có bản ghi giá trị kho theo thời gian trên thiết bị này.</span>
           </div>
           <div class="metric-icon" aria-hidden="true">₫</div>
         </div>
@@ -1859,6 +1870,7 @@
                 aria-label="Giá trị xuất tối thiểu" disabled>
               <output id="dashboard-out-min-value" for="dashboard-out-min">0 ₫</output>
             </div>
+            <p id="dashboard-out-matches" class="dashboard-report-count" role="status" aria-live="polite" data-i18n="dashboardReportCountUnavailable">Số mã phù hợp: —</p>
             <div id="dashboard-top-out" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardTopOutTitle"></div>
             <div id="dashboard-out-pager" class="dashboard-mini-pager">
               <div class="dashboard-mini-size">
@@ -1900,6 +1912,7 @@
                 </select></label>
             </div>
             <p class="insight-note" data-i18n="dashboardDormantNote">Chỉ Hall 1: vật tư còn tồn nhưng chưa xuất trong khoảng chọn. Đơn giá lấy từ tồn kho Hall 1.</p>
+            <p id="dashboard-dormant-matches" class="dashboard-report-count" role="status" aria-live="polite" data-i18n="dashboardReportCountUnavailable">Số mã phù hợp: —</p>
             <div id="dashboard-dormant" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardDormantTitle"></div>
             <div id="dashboard-dormant-pager" class="dashboard-mini-pager">
               <div class="dashboard-mini-size">
@@ -2046,6 +2059,10 @@
         dashboardHallNoMatches:"Không có dữ liệu cho Hall đã chọn.",
         dashboardHallUnavailableValue:"Lịch sử giá trị kho theo từng Hall chưa được lưu; chỉ có bản ghi tổng kho.",
         dashboardHall2NoSnapshots:"Hall 2 không có lịch sử đồng bộ trên thiết bị.",
+        dashboardHall2NoStockReport:"Hall 2 không có thông tin tồn kho cho báo cáo này.",
+        dashboardReportCount:"Tìm thấy {count} mã vật tư",
+        dashboardReportCountUnavailable:"Số mã phù hợp: —",
+        dashboardSnapshotValueDate:"Theo bản đồng bộ trên thiết bị ngày {date}",
         dashboardHallNoHistoryRecords:"Không có giao dịch thuộc Hall đã chọn trong dữ liệu lịch sử.",
         dashboardHallNoStockColumn:"Dữ liệu tồn kho chưa có cột Storage Location; chưa thể tính số tồn theo Hall.",
         dashboardHallNoHistoryColumn:"History.js chưa có cột Storage Location; không thể lọc giao dịch theo khu vực kho.",
@@ -2290,6 +2307,10 @@
         dashboardHallNoMatches:"No data for the selected Hall.",
         dashboardHallUnavailableValue:"Historical Hall-level inventory values were not saved; only full-warehouse snapshots exist.",
         dashboardHall2NoSnapshots:"No local synchronization history is available for Hall 2.",
+        dashboardHall2NoStockReport:"No inventory information is available for Hall 2 in this report.",
+        dashboardReportCount:"Matching material codes: {count}",
+        dashboardReportCountUnavailable:"Matching material codes: —",
+        dashboardSnapshotValueDate:"From the local synchronization snapshot on {date}",
         dashboardHallNoHistoryRecords:"No matching movements for the selected Hall.",
         dashboardHallNoStockColumn:"Stock source has no Storage Location column; Hall-specific balances are unavailable.",
         dashboardHallNoHistoryColumn:"History.js has no Storage Location column; movements cannot be filtered by area.",
@@ -2999,12 +3020,22 @@
     function hienThiTongGiaTriKho() {
       const oGiaTri = document.getElementById("metric-inventory-value");
       const ghiChu = document.getElementById("metric-value-note");
-      oGiaTri.textContent = tongGiaTriTonKho === null ? "—" : dinhDangGiaTriKho(tongGiaTriTonKho);
+      const unavailable=hallDangLoc()==="hall2";
+      const snapshot=unavailable?null:anhChupGiaTriMoiNhat(layAnhChupKho());
+      oGiaTri.textContent=snapshot?dinhDangGiaTriKho(snapshot.value):"—";
       oGiaTri.title = oGiaTri.textContent;
-      ghiChu.textContent = tongGiaTriTonKho === null ? tuDien("inventoryValueNoPrice")
-        : soDongGiaTriKhongHopLe > 0
-          ? tuDien("inventoryValuePartial", {count:dinhDangSoLuong.format(soDongGiaTriKhongHopLe)})
-          : tuDien("inventoryValueNote");
+      ghiChu.textContent=tuDien(unavailable?"dashboardHall2NoSnapshots":
+        snapshot?"dashboardSnapshotValueDate":"dashValueTrendEmpty",{date:snapshot?.date});
+    }
+
+    function anhChupGiaTriMoiNhat(snapshots){
+      let latest=null;
+      for(const rec of snapshots){
+        if(!rec||rec.hasPrice===false||!ngayHistoryHopLe(rec.date)||
+          !Number.isFinite(rec.value)||rec.value<0)continue;
+        if(!latest||rec.date>=latest.date)latest=rec;
+      }
+      return latest;
     }
 
 
@@ -3300,24 +3331,23 @@
       const filteredStock=tonKhoTheoHall();
       const stats=filteredStock===null?null:tinhPhanTichDashboard(filteredStock,tieuDeCot);
       if(stats===null){
-        for(const id of ["metric-total","metric-instock","metric-attention","metric-inventory-value"])
+        for(const id of ["metric-total","metric-instock","metric-attention"])
           document.getElementById(id).textContent="—";
-        document.getElementById("metric-value-note").textContent=tuDien(loiCotHall("stock"));
-        document.getElementById("insight-stock-distribution").textContent=tuDien(loiCotHall("stock"));
-        dashboardTopValueCache=[];
-        document.getElementById("insight-top").textContent=tuDien(loiCotHall("stock"));
       }else{
         for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
           document.getElementById(id).textContent=dinhDangSoLuong.format(value);
-      const money=document.getElementById("metric-inventory-value");
-      money.textContent=stats.total===null?"—":dinhDangGiaTriKho(stats.total);
-      money.title=money.textContent;
-      document.getElementById("metric-value-note").textContent=stats.total===null?
-        tuDien("inventoryValueNoPrice"):stats.missingPrice?
-        tuDien("inventoryValuePartial",{count:stats.missingPrice}):tuDien("inventoryValueNote");
-      vePhanBoTrangThai(filteredStock);
-      dashboardTopValueCache=stats.values;
-      veBangTopGiaTriVatTu(stats.values,limit);
+      }
+      // These stock reports use the same source for All areas and Hall 1.
+      if(hallDangLoc()==="hall2"){
+        document.getElementById("insight-stock-distribution").textContent=tuDien("dashboardHall2NoStockReport");
+        dashboardTopValueCache=[];
+        document.getElementById("insight-top").textContent=tuDien("dashboardHall2NoStockReport");
+      }else{
+        const stockStats=filteredStock===duLieuTimKiem?stats:
+          tinhPhanTichDashboard(duLieuTimKiem,tieuDeCot);
+        vePhanBoTrangThai(duLieuTimKiem);
+        dashboardTopValueCache=stockStats.values;
+        veBangTopGiaTriVatTu(stockStats.values,limit);
       }
       capNhatTrangThaiHall();
       veBieuDoSuDungKho();
@@ -3825,6 +3855,11 @@
     function bangKhoPrefix(kind){
       return kind==="out"?"dashboard-out":kind==="dormant"?"dashboard-dormant":"";
     }
+    function capNhatSoMaBaoCaoKho(kind,count=null){
+      const node=document.getElementById(bangKhoPrefix(kind)+"-matches");
+      node.textContent=count===null?tuDien("dashboardReportCountUnavailable"):
+        tuDien("dashboardReportCount",{count:dinhDangSoLuong.format(count)});
+    }
     function capNhatPhanTrangBangKho(kind,total){
       const state=dashboardTableState[kind],prefix=bangKhoPrefix(kind);
       if(!state||!prefix)return {start:0,end:0,total:0};
@@ -3936,6 +3971,7 @@
 
     function veTopVatTuXuatKho(){
       const root=document.getElementById("dashboard-top-out");
+      capNhatSoMaBaoCaoKho("out");
       const note=document.getElementById("dashboard-top-out-note");
       const slider=document.getElementById("dashboard-out-min");
       const amountText=document.getElementById("dashboard-out-min-value");
@@ -3981,6 +4017,7 @@
       amountText.textContent=dinhDangGiaTriKho(threshold);
       amountText.title=tuDien("dashboardOutMinSummary",{amount:amountText.textContent});
       const filtered=rows.filter(row=>row.value>=threshold);
+      capNhatSoMaBaoCaoKho("out",filtered.length);
       const page=capNhatPhanTrangBangKho("out",filtered.length);
       if(!filtered.length){
         root.textContent=tuDien("dashboardTopOutEmpty");
@@ -4074,6 +4111,7 @@
 
     function veVatTuTonLau(){
       const root=document.getElementById("dashboard-dormant");
+      capNhatSoMaBaoCaoKho("dormant");
       const note=document.getElementById("dashboard-dormant-note");
       const unavailable=hallDangLoc()==="hall2";
       document.getElementById("dashboard-dormant-days").disabled=unavailable;
@@ -4106,6 +4144,7 @@
           loiCotHall("history"):"dashboardDormantMissing");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
       }
+      capNhatSoMaBaoCaoKho("dormant",rows.length);
       if(!rows.length){
         root.textContent=tuDien("dashboardDormantEmpty");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
@@ -4185,9 +4224,10 @@
     }
 
     function veBieuDoGiaTriKho(){
-      if(hallDangLoc()!=="all"){
+      hienThiTongGiaTriKho();
+      if(hallDangLoc()==="hall2"){
         document.getElementById("insight-value-trend").textContent=
-          tuDien("dashboardHallUnavailableValue");
+          tuDien("dashboardHall2NoSnapshots");
         document.getElementById("dashboard-value-trend-summary").textContent="";
         return;
       }

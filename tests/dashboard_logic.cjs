@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
 const html=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8'),ctx={console,ngonNguHienTai:"vi"};vm.createContext(ctx);
-for(const name of ['chuyenThanhSo','chuanHoaMaSap','tenHistoryChuan','cotHistoryTheoTen','tinhPhanTichDashboard','ngayHistoryHopLe','nhomKyKho','khoaNhomKho','tinhGiaTriNhapXuat']){
+for(const name of ['chuyenThanhSo','chuanHoaMaSap','tenHistoryChuan','cotHistoryTheoTen','tinhPhanTichDashboard','ngayHistoryHopLe','nhomKyKho','khoaNhomKho','tinhGiaTriNhapXuat','anhChupGiaTriMoiNhat']){
  const start=html.indexOf('    function '+name+'(');assert(start>=0,name);vm.runInContext(html.slice(start,html.indexOf('\n    function ',start+1)),ctx);
 }
 const headers=['SAP','Description','Price','Unit'];const rec=(qty,price,unit='PC')=>({dong:['A','Motor',price,unit],soLuong:qty,reorderPoint:5,trangThaiTon:'healthy'});
@@ -24,3 +24,13 @@ assert(ctx.nhomKyKho('week',1,new Date(2021,0,1))[0].title.includes('/ 2020'));
 ctx.ngonNguHienTai='en';assert.equal(ctx.nhomKyKho('week',1,new Date(2026,0,1))[0].label,'Week 1');
 assert(!html.includes('insight-replenishment'));
 console.log('PASS ISO week labels 44/45, week 53 and week-year boundaries; removed replenishment card.');
+
+const snapshots=[{date:'2026-11-05',value:3000},{date:'2026-10-31',value:2000},
+  {date:'2026-11-09',value:9999,hasPrice:false},{date:'2026-02-30',value:99999},
+  {date:'2026-11-08',value:-100},{date:'invalid',value:88888},
+  {date:'2026-11-07',value:NaN},null];
+assert.equal(ctx.anhChupGiaTriMoiNhat(snapshots),snapshots[0]);
+assert.equal(ctx.anhChupGiaTriMoiNhat([]),null);
+assert.equal(ctx.anhChupGiaTriMoiNhat([{date:'2026-11-09',value:0}]).value,0);
+assert.equal(ctx.anhChupGiaTriMoiNhat([{date:'2026-11-09',value:20},{date:'2026-11-09',value:30}]).value,30);
+console.log('PASS latest saved inventory value by date, same-day updates, zero balances and invalid/missing-price snapshots.');
