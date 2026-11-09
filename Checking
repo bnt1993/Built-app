@@ -490,6 +490,25 @@
     .advanced-controls textarea{width:min(400px,100%);min-height:66px;resize:vertical}
     .advanced-controls .check-row{flex-direction:row;align-items:center}
     .advanced-controls button{min-height:36px}
+    /* Export caption, selector and action share one horizontal baseline. Keep
+       these rules scoped so other filter labels remain vertically stacked. */
+    .dashboard-export-controls{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+    .dashboard-export-controls > #bao-cao-nhac-lich{align-self:flex-start;max-width:100%;min-height:38px}
+    .dashboard-export-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0}
+    .dashboard-export-controls .dashboard-export-row > label{
+      display:inline-flex;flex-direction:row;align-items:center;
+      flex:0 0 auto;min-width:0;margin:0;white-space:nowrap;
+      font-size:12px;line-height:1.25
+    }
+    .dashboard-export-row > select{flex:1 1 180px;min-width:160px;max-width:100%;height:38px}
+    .dashboard-export-row > button{flex:0 0 auto;min-height:38px;white-space:nowrap}
+    @media(max-width:700px){
+      .dashboard-export-row{flex-direction:column;align-items:stretch}
+      .dashboard-export-controls .dashboard-export-row > label{align-self:flex-start}
+      .dashboard-export-row > select,.dashboard-export-row > button{
+        flex:0 0 auto;width:100%;min-width:0
+      }
+    }
     .insight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:12px}
     .insight-box{padding:12px;border:1px solid var(--line);border-radius:11px;min-width:0;background:var(--app-field)}
     .insight-box h3{font-size:12px;margin:0 0 10px;color:var(--ink)}
@@ -1947,14 +1966,15 @@
         <div class="dashboard-utilities">
           <div class="insight-box"><h3 data-i18n="inventoryHistory">Lịch sử giá trị kho</h3><p class="insight-note" data-i18n="dashSnapshotNote">Nguồn Amount.js (cùng thư mục với HTML); Tất cả và Hall 1 dùng chung dữ liệu.</p><div id="insight-history" class="history-grid"></div></div>
           <div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
-            <div class="advanced-controls" style="padding-top:0">
+            <div class="advanced-controls dashboard-export-controls" style="padding-top:0">
               <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
                 <option value="off" data-i18n="scheduleOff">Tắt</option>
                 <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
                 <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
               </select>
-              <label for="dashboard-export-kind" data-i18n="dashboardExportSelect">Chọn báo cáo xuất</label>
-              <select id="dashboard-export-kind" data-i18n-aria="dashboardExportSelect" aria-label="Chọn báo cáo xuất">
+              <div class="dashboard-export-row">
+                <label id="dashboard-export-label" for="dashboard-export-kind" data-i18n="dashboardExportSelect">Chọn báo cáo xuất</label>
+                <select id="dashboard-export-kind" data-i18n-aria="dashboardExportSelect" aria-label="Chọn báo cáo xuất">
                 <option value="stock" data-i18n="dashboardExportStock">Tra cứu tồn kho (bộ lọc Tra cứu)</option>
                 <option value="value" data-i18n="dashboardExportTopValue">Vật tư có giá trị tồn cao</option>
                 <option value="out" data-i18n="dashboardExportTopOut">Vật tư xuất nhiều nhất</option>
@@ -1967,6 +1987,7 @@
               </select>
               <button type="button" id="dashboard-export-button" class="btn btn-soft"
                 onclick="xuatBaoCaoThongKe()" data-i18n="dashboardExportAction">Xuất báo cáo Excel</button>
+              </div>
             </div>
             <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
           </div>
