@@ -2178,6 +2178,7 @@
         dashAlertValue:"Giá trị kho thay đổi {percent}% từ ngày {date}.",
         dashAlertReorder:"{count} dòng vật tư đang hết hoặc không vượt điểm đặt hàng lại.",
         dashAlertOut:"Giá trị xuất tăng {percent}% so với kỳ trước.",
+        dashAlertMaterialOut:"{count} mã vật tư xuất tăng đột biến (trên 100% so với kỳ trước): {codes}.",
         dashSourceHeading:"Trạng thái nguồn dữ liệu",
         dashSourceRefresh:"Kiểm tra cập nhật",
         dashSourceClear:"Xóa bộ nhớ đệm lịch sử",
@@ -2195,6 +2196,7 @@
         dashSourceError:"Không tải được",
         dashSourceDetail:"{count} dòng · {ms} ms",
         dashSourceChecked:"Kiểm tra: {time}",
+        dashSourceUpdated:"Dữ liệu: {time}",
         dashSourceNoData:"Chưa có dữ liệu",
         dashSourceCleared:"Đã xóa bộ nhớ đệm lịch sử trên thiết bị.",
         dashSourceClearFailed:"Không thể xóa bộ nhớ đệm khi cơ sở dữ liệu đang được sử dụng.",
@@ -2505,6 +2507,7 @@
         dashAlertValue:"Inventory value changed {percent}% since {date}.",
         dashAlertReorder:"{count} materials are empty or at/below reorder point.",
         dashAlertOut:"Outbound value increased {percent}% compared to the prior period.",
+        dashAlertMaterialOut:"{count} material codes have outbound value growth over 100%: {codes}.",
         dashSourceHeading:"Data source status",
         dashSourceRefresh:"Check for updates",
         dashSourceClear:"Clear History cache",
@@ -2522,6 +2525,7 @@
         dashSourceError:"Unavailable",
         dashSourceDetail:"{count} rows · {ms} ms",
         dashSourceChecked:"Checked: {time}",
+        dashSourceUpdated:"Source: {time}",
         dashSourceNoData:"No data",
         dashSourceCleared:"Local History cache cleared.",
         dashSourceClearFailed:"Could not clear the cache while the database is in use.",
@@ -3256,7 +3260,7 @@
           phienBanChoNap.stock="";
         }
         ghiNhanNguon("stock","ready",{count:duLieuMoi.length-1,
-          ms:Date.now()-batDauTai});
+          updated:coMocCapNhat?String(thoiGianCapNhat):"",ms:Date.now()-batDauTai});
         datThongBaoCapNhat("updated", {time: coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString(ngonNguHienTai === "en" ? "en-US" : "vi-VN")});
       };
       s.onerror = function() {
@@ -3439,7 +3443,8 @@
           trangThaiAmount=hadValid?"dashAmountStale":errorKey;
         }
         ghiNhanNguon("amount",ok?"ready":Array.isArray(previous)?"stale":"error",{
-          ms:Date.now()-batDauTai,count:layGiaTriKhoTuAmount().length});
+          ms:Date.now()-batDauTai,count:layGiaTriKhoTuAmount().length,
+          updated:layGiaTriKhoTuAmount().slice(-1)[0]?.date||""});
         capNhatTrangThaiAmount();
         veBieuDoGiaTriKho();
         veLichSuKho();
@@ -3480,7 +3485,8 @@
         desc.textContent=tuDien(nhanTinhTrangNguon[entry.status])+
           (entry.count?" · "+tuDien("dashSourceDetail",{
             count:dinhDangSoLuong.format(entry.count),ms:Math.round(entry.ms)}):"")+
-          (entry.at?" · "+tuDien("dashSourceChecked",{time:entry.at}):"");
+          (entry.at?" · "+tuDien("dashSourceChecked",{time:entry.at}):"")+
+          (entry.updated?" · "+tuDien("dashSourceUpdated",{time:entry.updated}):"");
         node.replaceChildren(title,desc);
       }
     }
@@ -3505,6 +3511,37 @@
         ngonNguHienTai==="en"?"en-US":"vi-VN",
         {maximumFractionDigits:1}).format(value);
     }
+
+    let cacheCanhBaoVatTu=null;
+    function vatTuXuatDotBienTrongKy(range){
+      if(!range||!historyLoaded)return [];
+      const hall=hallDangLoc(),rows=lichSuTheoHall();
+      if(!rows)return [];
+      const key=[range.from,range.to,range.prevFrom,range.prevTo,hall].join("|");
+      if(cacheCanhBaoVatTu?.key===key&&
+        cacheCanhBaoVatTu.source===historyAll)return cacheCanhBaoVatTu.items;
+      const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
+      if(amountCol<0||sapCol<0)return [];
+      const actual=new Map(),previous=new Map();
+      for(const rec of rows){
+        if(rec.type!=="out"||!ngayHistoryHopLe(rec.date))continue;
+        const current=rec.date>=range.from&&rec.date<=range.to;
+        const prior=rec.date>=range.prevFrom&&rec.date<=range.prevTo;
+        if(!current&&!prior)continue;
+        const raw=String(rec.cells[amountCol]??"").trim();
+        const amount=raw?chuyenThanhSo(raw):NaN;
+        const sap=chuanHoaMaSap(rec.cells[sapCol]);
+        if(!sap||!Number.isFinite(amount))continue;
+        const table=current?actual:previous;
+        table.set(sap,(table.get(sap)||0)+Math.abs(amount));
+      }
+      const items=[...actual].map(([sap,value])=>({
+        sap,value,prior:previous.get(sap)||0
+      })).filter(r=>r.prior>0&&r.value>r.prior*2)
+        .sort((a,b)=>(b.value/b.prior)-(a.value/a.prior)||b.value-a.value);
+      cacheCanhBaoVatTu={key,source:historyAll,items};
+      return items;
+    }
     function capNhatCanhBaoKho(){
       const node=document.getElementById("dashboard-alert-list");if(!node)return;
       const warnings=[],hall=hallDangLoc(),value=tinhBienDongAmount();
@@ -3527,6 +3564,12 @@
           if(growth!==null&&growth>100)
             warnings.push({level:"warning",text:tuDien("dashAlertOut",{
               percent:chuoiPhanTramKho(growth)})});
+          const spikes=vatTuXuatDotBienTrongKy(range);
+          if(spikes.length)warnings.push({level:"warning",
+            text:tuDien("dashAlertMaterialOut",{
+              count:dinhDangSoLuong.format(spikes.length),
+              codes:spikes.slice(0,3).map(r=>r.sap).join(", ")
+            })});
         }
       }
       node.replaceChildren();
@@ -5276,6 +5319,7 @@
       if(historyLoading || (historyLoaded && !force))return;
       historyLoading=true;
       const batDauTai=Date.now();
+      let capNhatHistory="";
       ghiNhanNguon("history","loading");
       veSoSanhNhapXuatKho();
       veTopVatTuXuatKho();
@@ -5290,6 +5334,7 @@
         if(!force&&signature){
           const cached=await layCacheHistory(signature);
           if(cached&&apDungCacheHistory(cached,sequence)){
+            capNhatHistory=cached.updated||"";
             phienBanNguon.history=signature;
             return;
           }
@@ -5300,6 +5345,7 @@
           source=await docHistoryBangWorker(await response.text());
         } else source=await taiHistoryBangScript();
         if(!source.data)throw Error("HISTORY_BAD_FORMAT");
+        capNhatHistory=source.updated||"";
         const ok=await apDungNguonHistory(source.data,"file",source.updated,sequence);
         if(ok&&signature)luuCacheHistory(signature,source.updated);
         if(ok && phienBanChoNap.history){
@@ -5327,7 +5373,8 @@
           ghiNhanNguon("history",
             ["historyInvalid","historyNoSource"].includes(historyStatusKey)?
               (historyLoaded?"stale":"error"):"ready",
-            {count:historyAll.length,ms:Date.now()-batDauTai});
+            {count:historyAll.length,ms:Date.now()-batDauTai,
+              updated:capNhatHistory});
         }
       }
     }
@@ -7619,7 +7666,8 @@
       window.amountData.length&&!layGiaTriKhoTuAmount().length?"dashAmountInvalid":null;
     capNhatTrangThaiAmount();
     ghiNhanNguon("amount",trangThaiAmount?"error":"ready",
-      {count:layGiaTriKhoTuAmount().length});
+      {count:layGiaTriKhoTuAmount().length,
+        updated:layGiaTriKhoTuAmount().slice(-1)[0]?.date||""});
     if(trangThaiAmount)taiLaiAmount();
     veTrangThaiNguon();
     taiDuLieu();
