@@ -1953,7 +1953,20 @@
                 <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
                 <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
               </select>
-              <button type="button" class="btn btn-soft" onclick="xuatExcel()" data-i18n="dashStockExport">Xuất kết quả tra cứu tồn kho</button>
+              <label for="dashboard-export-kind" data-i18n="dashboardExportSelect">Chọn báo cáo xuất</label>
+              <select id="dashboard-export-kind" data-i18n-aria="dashboardExportSelect" aria-label="Chọn báo cáo xuất">
+                <option value="stock" data-i18n="dashboardExportStock">Tra cứu tồn kho (bộ lọc Tra cứu)</option>
+                <option value="value" data-i18n="dashboardExportTopValue">Vật tư có giá trị tồn cao</option>
+                <option value="out" data-i18n="dashboardExportTopOut">Vật tư xuất nhiều nhất</option>
+                <option value="dormant" data-i18n="dashboardExportDormant">Vật tư tồn lâu</option>
+                <option value="distribution" data-i18n="dashboardExportDistribution">Phân bố trạng thái tồn kho</option>
+                <option value="valueTrend" data-i18n="dashboardExportValueTrend">Giá trị kho theo thời gian</option>
+                <option value="movement" data-i18n="dashboardExportMovement">Giá trị nhập / xuất theo thời gian</option>
+                <option value="compare" data-i18n="dashboardExportCompare">So sánh nhập / xuất với kỳ trước</option>
+                <option value="all" data-i18n="dashboardExportAll">Tất cả báo cáo khả dụng</option>
+              </select>
+              <button type="button" id="dashboard-export-button" class="btn btn-soft"
+                onclick="xuatBaoCaoThongKe()" data-i18n="dashboardExportAction">Xuất báo cáo Excel</button>
             </div>
             <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
           </div>
@@ -2063,6 +2076,44 @@
         dashboardHallUnavailableValue:"Lịch sử giá trị kho theo từng Hall chưa được lưu; chỉ có bản ghi tổng kho.",
         dashboardHall2NoSnapshots:"Hall 2 không có dữ liệu giá trị kho.",
         dashboardHall2NoStockReport:"Hall 2 không có thông tin tồn kho cho báo cáo này.",
+        dashboardExportSelect:"Chọn báo cáo xuất",
+        dashboardExportStock:"Tra cứu tồn kho (theo bộ lọc Tra cứu)",
+        dashboardExportTopValue:"Vật tư có giá trị tồn cao",
+        dashboardExportTopOut:"Vật tư xuất nhiều nhất",
+        dashboardExportDormant:"Vật tư tồn lâu",
+        dashboardExportDistribution:"Phân bố trạng thái tồn kho",
+        dashboardExportValueTrend:"Giá trị kho theo thời gian",
+        dashboardExportMovement:"Giá trị nhập / xuất theo thời gian",
+        dashboardExportCompare:"So sánh nhập / xuất với kỳ trước",
+        dashboardExportAll:"Tất cả báo cáo khả dụng",
+        dashboardExportAction:"Xuất báo cáo Excel",
+        dashboardExportEmpty:"Không có dữ liệu phù hợp với báo cáo và bộ lọc hiện tại.",
+        dashboardExportUnavailable:"Nguồn dữ liệu chưa sẵn sàng hoặc báo cáo không áp dụng cho Hall này.",
+        dashboardExportHall:"Khu vực kho",
+        dashboardExportRange:"Giai đoạn",
+        dashboardExportPeriod:"Xem theo",
+        dashboardExportFilter:"Bộ lọc",
+        dashboardExportSort:"Sắp xếp",
+        dashboardExportRows:"Số dòng",
+        dashboardExportSap:"Mã SAP",
+        dashboardExportDescription:"Mô tả vật tư",
+        dashboardExportPercent:"Tỷ lệ (%)",
+        dashboardExportDate:"Ngày ghi nhận",
+        dashboardExportPeriodName:"Kỳ",
+        dashboardExportCurrent:"Kỳ hiện tại",
+        dashboardExportPrevious:"Kỳ trước",
+        dashboardExportChange:"Thay đổi (%)",
+        dashboardExportSource:"Nguồn dữ liệu",
+        dashboardExportValue:"Giá trị tồn (VND)",
+        dashboardExportIn:"Giá trị nhập (VND)",
+        dashboardExportOut:"Giá trị xuất (VND)",
+        dashboardExportUnit:"Đơn vị",
+        dashboardExportTopN:"Top",
+        dashboardExportThreshold:"Giá trị xuất tối thiểu",
+        dashboardExportDays:"Ngưỡng không xuất (ngày)",
+        dashboardExportStatus:"Trạng thái tồn kho",
+        dashboardExportCount:"Số dòng",
+        dashboardExportGenerated:"Thời điểm xuất",
         dashboardReportCount:"Tìm thấy {count} mã vật tư",
         dashboardReportCountUnavailable:"Số mã phù hợp: —",
         dashboardSnapshotValueDate:"Theo Amount.js, ngày {date}",
@@ -2316,6 +2367,44 @@
         dashboardHallUnavailableValue:"Historical Hall-level inventory values were not saved; only full-warehouse snapshots exist.",
         dashboardHall2NoSnapshots:"No inventory value data is available for Hall 2.",
         dashboardHall2NoStockReport:"No inventory information is available for Hall 2 in this report.",
+        dashboardExportSelect:"Choose report",
+        dashboardExportStock:"Stock lookup (search filters)",
+        dashboardExportTopValue:"Highest inventory value materials",
+        dashboardExportTopOut:"Highest outbound value materials",
+        dashboardExportDormant:"Slow-moving materials",
+        dashboardExportDistribution:"Inventory status distribution",
+        dashboardExportValueTrend:"Inventory value over time",
+        dashboardExportMovement:"Inbound / outbound value over time",
+        dashboardExportCompare:"Compare inbound / outbound with previous period",
+        dashboardExportAll:"All available reports",
+        dashboardExportAction:"Export Excel report",
+        dashboardExportEmpty:"No results match the selected report and filters.",
+        dashboardExportUnavailable:"Source data unavailable or report does not apply to this Hall.",
+        dashboardExportHall:"Warehouse area",
+        dashboardExportRange:"Date range",
+        dashboardExportPeriod:"Group by",
+        dashboardExportFilter:"Filter",
+        dashboardExportSort:"Sorting",
+        dashboardExportRows:"Rows",
+        dashboardExportSap:"SAP code",
+        dashboardExportDescription:"Material description",
+        dashboardExportPercent:"Share (%)",
+        dashboardExportDate:"Recorded date",
+        dashboardExportPeriodName:"Period",
+        dashboardExportCurrent:"Current period",
+        dashboardExportPrevious:"Previous period",
+        dashboardExportChange:"Change (%)",
+        dashboardExportSource:"Source",
+        dashboardExportValue:"Inventory value (VND)",
+        dashboardExportIn:"Inbound value (VND)",
+        dashboardExportOut:"Outbound value (VND)",
+        dashboardExportUnit:"Unit",
+        dashboardExportTopN:"Top",
+        dashboardExportThreshold:"Minimum outbound value",
+        dashboardExportDays:"Inactive threshold (days)",
+        dashboardExportStatus:"Stock status",
+        dashboardExportCount:"Rows",
+        dashboardExportGenerated:"Exported at",
         dashboardReportCount:"Matching material codes: {count}",
         dashboardReportCountUnavailable:"Matching material codes: —",
         dashboardSnapshotValueDate:"From Amount.js, dated {date}",
