@@ -15,7 +15,7 @@ const document={hidden:false,getElementById:id=>nodes[id],
   createElement:()=>({remove(){}}),
   head:{appendChild:script=>scriptAction(script)}};
 const ctx={console,window:{},document,setTimeout,clearTimeout,Array,Date,Map,Set,
-  dangTaiAmount:false,trangThaiAmount:null,
+  dangTaiAmount:false,trangThaiAmount:null,ngonNguHienTai:'vi',
   hallDangLoc:()=>hall,layKyPhanTichKho:()=>({from:'2026-11-01',to:'2026-11-30'}),
   nhomKyTrongKhoangKho:(mode)=>{
     if(mode==='month')return [{key:'2026-11',label:'11/2026'}];
