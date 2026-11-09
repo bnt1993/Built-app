@@ -1,5 +1,6 @@
 /* Parse exported History.js as JSON data, never eval or import its script. */
 "use strict";
+self.postMessage({ready:true});
 self.onmessage=event=>{
   try{
     const source=String(event.data?.source??"");
