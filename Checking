@@ -2140,6 +2140,7 @@
         dashSourceLoading:"Đang tải",
         dashSourceReady:"Sẵn sàng",
         dashSourceUnchanged:"Không thay đổi",
+        dashSourceFallback:"Đang dò ảnh (chưa có manifest)",
         dashSourceStale:"Dữ liệu lần trước",
         dashSourceError:"Không tải được",
         dashSourceDetail:"{count} dòng · {ms} ms",
@@ -2460,6 +2461,7 @@
         dashSourceLoading:"Loading",
         dashSourceReady:"Ready",
         dashSourceUnchanged:"Unchanged",
+        dashSourceFallback:"Scanning images (no manifest)",
         dashSourceStale:"Previous data",
         dashSourceError:"Unavailable",
         dashSourceDetail:"{count} rows · {ms} ms",
@@ -3079,11 +3081,55 @@
         load();
       }
     }
+
+    // Optional checking-versions.js supports very fast version probes even
+    // from file:// network shares (which do not expose HTTP ETag headers).
+    const phienBanFile={known:null,loading:false,available:null};
+    function kiemTraPhienBanCucBo(){
+      if(location.protocol!=="file:"||document.hidden||
+        phienBanFile.loading||phienBanFile.available===false)return;
+      phienBanFile.loading=true;
+      const script=document.createElement("script");
+      let done=false;
+      const timer=setTimeout(()=>finish(false),1500);
+      function finish(ok){
+        if(done)return;
+        done=true;clearTimeout(timer);
+        script.remove();phienBanFile.loading=false;
+        const data=window.checkingSourceVersions;
+        if(!ok||!data||typeof data!=="object"){
+          phienBanFile.available=false;
+          return;
+        }
+        phienBanFile.available=true;
+        if(!phienBanFile.known){
+          phienBanFile.known={...data};
+          return;
+        }
+        const previous=phienBanFile.known;
+        phienBanFile.known={...data};
+        if(data.stock!==previous.stock)taiDuLieu();
+        if(data.history!==previous.history&&historyLoaded)taiHistory(true);
+        if(data.amount!==previous.amount)taiLaiAmount();
+      }
+      script.onload=()=>finish(true);
+      script.onerror=()=>finish(false);
+      script.src="checking-versions.js?check="+Date.now();
+      document.head.appendChild(script);
+    }
+
     function kiemTraPhienBanStock(){
+      if(location.protocol==="file:"&&phienBanFile.available!==false){
+        kiemTraPhienBanCucBo();return;
+      }
       return kiemTraPhienBanNguon("stock",duongDanOMang,taiDuLieu);
     }
     function kiemTraPhienBanHistory(){
       if(!historyLoaded||historyLoading)return;
+      if(location.protocol==="file:"){
+        kiemTraPhienBanCucBo();
+        return;
+      }
       return kiemTraPhienBanNguon("history",DUONG_DAN_HISTORY,()=>taiHistory(true));
     }
     function lamMoiToanBoNguon(){
@@ -3366,7 +3412,7 @@
       amount:"dashSourceAmount",images:"dashSourceImages"};
     const nhanTinhTrangNguon={waiting:"dashSourceWaiting",loading:"dashSourceLoading",
       ready:"dashSourceReady",unchanged:"dashSourceUnchanged",
-      stale:"dashSourceStale",error:"dashSourceError"};
+      stale:"dashSourceStale",fallback:"dashSourceFallback",error:"dashSourceError"};
     function veTrangThaiNguon(){
       for(const [id,entry] of Object.entries(trangThaiNguon)){
         const node=document.getElementById("dashboard-source-"+id);
@@ -6042,9 +6088,17 @@
     let promiseManifestAnh = null;
     const bienTheAnh=new Map();
     function taiManifestAnh() {
-      if(window.MaterialImageManifest&&typeof window.MaterialImageManifest==="object")
-        return Promise.resolve(window.MaterialImageManifest);
+      const source=window.MaterialImageManifest;
+      if(source&&typeof source==="object"){
+        const entries=source.version===2?source.materials:source;
+        const total=entries&&typeof entries==="object"?
+          Object.values(entries).reduce((n,v)=>n+(Array.isArray(v)?v.length:0),0):0;
+        ghiNhanNguon("images","ready",{count:total});
+        return Promise.resolve(source);
+      }
       if(!promiseManifestAnh) {
+        const batDauTai=Date.now();
+        ghiNhanNguon("images","loading");
         promiseManifestAnh=new Promise(resolve=>{
           const script=document.createElement("script");
           let done=false;
@@ -6062,7 +6116,15 @@
             const response=await fetch(THU_MUC_HINH+"manifest.json",{cache:"no-cache",signal:controller.signal});
             return response.ok?await response.json():null;
           }catch{return null;}finally{clearTimeout(timer);}
-        }).then(data=>data&&typeof data==="object"&&!Array.isArray(data)?data:null);
+        }).then(data=>{
+          const manifest=data&&typeof data==="object"&&!Array.isArray(data)?data:null;
+          const entries=manifest?.version===2?manifest.materials:manifest;
+          const count=entries&&typeof entries==="object"?
+            Object.values(entries).reduce((n,v)=>n+(Array.isArray(v)?v.length:0),0):0;
+          ghiNhanNguon("images",manifest?"ready":"fallback",{
+            count,ms:Date.now()-batDauTai});
+          return manifest;
+        });
       }
       return promiseManifestAnh;
     }
@@ -7416,6 +7478,9 @@
     if(trangThaiAmount)taiLaiAmount();
     veTrangThaiNguon();
     taiDuLieu();
+    kiemTraPhienBanCucBo();
+    if(typeof requestIdleCallback==="function")requestIdleCallback(()=>taiManifestAnh());
+    else setTimeout(()=>taiManifestAnh(),1200);
     setInterval(kiemTraPhienBanStock, 30000);
     setInterval(kiemTraPhienBanHistory, 60000);
     setInterval(taiLaiAmount, 60000);
