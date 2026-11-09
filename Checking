@@ -2045,6 +2045,7 @@
         dashboardSortAsc:"Sắp xếp tăng dần",
         dashboardHallNoMatches:"Không có dữ liệu cho Hall đã chọn.",
         dashboardHallUnavailableValue:"Lịch sử giá trị kho theo từng Hall chưa được lưu; chỉ có bản ghi tổng kho.",
+        dashboardHall2NoSnapshots:"Hall 2 không có lịch sử đồng bộ trên thiết bị.",
         dashboardHallNoHistoryRecords:"Không có giao dịch thuộc Hall đã chọn trong dữ liệu lịch sử.",
         dashboardHallNoStockColumn:"Dữ liệu tồn kho chưa có cột Storage Location; chưa thể tính số tồn theo Hall.",
         dashboardHallNoHistoryColumn:"History.js chưa có cột Storage Location; không thể lọc giao dịch theo khu vực kho.",
@@ -2288,6 +2289,7 @@
         dashboardSortAsc:"Sort ascending",
         dashboardHallNoMatches:"No data for the selected Hall.",
         dashboardHallUnavailableValue:"Historical Hall-level inventory values were not saved; only full-warehouse snapshots exist.",
+        dashboardHall2NoSnapshots:"No local synchronization history is available for Hall 2.",
         dashboardHallNoHistoryRecords:"No matching movements for the selected Hall.",
         dashboardHallNoStockColumn:"Stock source has no Storage Location column; Hall-specific balances are unavailable.",
         dashboardHallNoHistoryColumn:"History.js has no Storage Location column; movements cannot be filtered by area.",
@@ -3349,8 +3351,8 @@
     function veLichSuKho() {
       const snapshots=layAnhChupKho();
       const node=document.getElementById("insight-history");
-      if(hallDangLoc()!=="all"){
-        node.textContent=tuDien("dashboardHallUnavailableValue");return;
+      if(hallDangLoc()==="hall2"){
+        node.textContent=tuDien("dashboardHall2NoSnapshots");return;
       }
       if (!snapshots.length) {node.textContent=tuDien("noAnalytics");return;}
       node.innerHTML=snapshots.slice(-12).reverse().map(rec=>
@@ -3759,15 +3761,17 @@
         chuanHoaMaSap(v.dong[0]).toLowerCase()===rec.sap.toLowerCase());
       return material||null;
     }
-    function moLichSuDashboardTheoSap(sap,hall=hallDangLoc()){
-      const item=(tonKhoTheoHall(hall)||[]).find(v=>
+    function moLichSuDashboardTheoSap(sap,hall=hallDangLoc(),fromDormant=false){
+      const dormant=fromDormant&&hall==="hall1";
+      const item=((dormant?tonKhoHall1TonLau():tonKhoTheoHall(hall))||[]).find(v=>
         chuanHoaMaSap(v.dong[0]).toLowerCase()===String(sap).toLowerCase());
-      if(item){moLichSuVatTu(item.chiSo,hall);return;}
+      if(item){moLichSuVatTu(item.chiSo,hall,dormant);return;}
       if(!historyLoaded)return;
       // History can include material codes absent from current stock.
       const dialog=document.getElementById("material-history-dialog");
       materialHistorySap=String(sap);
       materialHistoryHall=hall;
+      materialHistoryFromDormant=dormant;
       materialHistoryStockIndex=-1;
       materialHistoryPage=1;
       materialHistorySortColumn=-2;
@@ -3784,14 +3788,16 @@
     function moLichSuBangDashboard(event){
       const tr=event.target.closest("tr[data-sap]");
       if(tr&&event.currentTarget.contains(tr))moLichSuDashboardTheoSap(tr.dataset.sap,
-        event.currentTarget.id==="dashboard-dormant"?"hall1":hallDangLoc());
+        event.currentTarget.id==="dashboard-dormant"?"hall1":hallDangLoc(),
+        event.currentTarget.id==="dashboard-dormant");
     }
     function bamPhimLichSuBangDashboard(event){
       if(event.key!=="Enter")return;
       const row=event.target.closest("tr[data-sap]");
       if(!row)return;
       event.preventDefault();moLichSuDashboardTheoSap(row.dataset.sap,
-        event.currentTarget.id==="dashboard-dormant"?"hall1":hallDangLoc());
+        event.currentTarget.id==="dashboard-dormant"?"hall1":hallDangLoc(),
+        event.currentTarget.id==="dashboard-dormant");
     }
 
     function phamViTopXuatKho(){
@@ -4004,6 +4010,12 @@
       })+" · "+range.from+" – "+range.to;
     }
 
+    function tonKhoHall1TonLau(){
+      // The standalone Stock source is Hall 1's inventory for this report.
+      // When locations are supplied, still exclude Hall 2 and unknown codes.
+      return coCotStockHall()?tonKhoTheoHall("hall1"):duLieuTimKiem;
+    }
+
     function thongKeVatTuTonLau(days,now=new Date()){
       if(hallDangLoc()==="hall2")return [];
       if(!historyLoaded)return null;
@@ -4011,7 +4023,7 @@
       if(sapCol<0)return null;
       const today=ngayDiaPhuongISO(now),stock=new Map();
       // This report is available only for Hall 1, including the All areas view.
-      const hallStock=tonKhoTheoHall("hall1"),hallHistory=lichSuTheoHall("hall1");
+      const hallStock=tonKhoHall1TonLau(),hallHistory=lichSuTheoHall("hall1");
       if(!hallStock||!hallHistory)return null;
       const unitCol=cotHistoryTheoTen(tieuDeCot,[
         "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
@@ -4089,7 +4101,7 @@
       }
       const rows=dashboardDormantCache.rows;
       if(rows===null){
-        root.textContent=tuDien(tonKhoTheoHall("hall1")===null?
+        root.textContent=tuDien(tonKhoHall1TonLau()===null?
           loiCotHall("stock"):lichSuTheoHall("hall1")===null?
           loiCotHall("history"):"dashboardDormantMissing");
         note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
@@ -4549,6 +4561,7 @@
 
     let materialHistorySap="";
     let materialHistoryHall="all";
+    let materialHistoryFromDormant=false;
     let materialHistoryRows=[];
     let materialHistoryPage=1;
     let materialHistoryReturnFocus=null;
@@ -4617,7 +4630,8 @@
       const hallColumn=cotStorageLocation(tieuDeCot);
       const valid=row=>Array.isArray(row)&&
         chuanHoaMaSap(row[0]).toLowerCase()===materialHistorySap.toLowerCase()&&
-        (materialHistoryHall==="all"||hallColumn>=0&&
+        (materialHistoryHall==="all"||
+          materialHistoryFromDormant&&materialHistoryHall==="hall1"&&hallColumn<0||hallColumn>=0&&
           hallTuStorageLocation(row[hallColumn])===materialHistoryHall);
       return valid(selected)?selected:tatCaDuLieu.find(valid);
     }
@@ -4707,13 +4721,14 @@
       coverageNote.title=coverageNote.textContent;
     }
 
-    function moLichSuVatTu(index,hall="all") {
+    function moLichSuVatTu(index,hall="all",fromDormant=false) {
       const row=tatCaDuLieu[index];
       const sap=row?chuanHoaMaSap(row[0]):"";
       if(!sap)return;
       const dialog=document.getElementById("material-history-dialog");
       materialHistorySap=sap;
       materialHistoryHall=hall;
+      materialHistoryFromDormant=fromDormant&&hall==="hall1";
       materialHistoryStockIndex=index;
       materialHistoryPage=1;
       materialHistorySortColumn=-2;

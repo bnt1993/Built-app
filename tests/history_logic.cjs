@@ -3,13 +3,14 @@ const html=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8');
 const nodes={'dashboard-hall':{value:'hall1'},'dashboard-hall-status':{textContent:''}};
 const ctx={console,setTimeout,clearTimeout,window:{},historyHallCache:null,stockHallCache:null,
   historyLoaded:true,analyticsReady:false,ngonNguHienTai:'vi',DUONG_DAN_HISTORY:'History.js',
+  materialHistoryFromDormant:false,
   document:{getElementById:id=>nodes[id]||null,createElement:()=>({remove(){}}),body:{}},
   tuDien:(key,params={})=>key+JSON.stringify(params)};
 vm.createContext(ctx);
 for(const name of ['thoatHTML','chuyenThanhSo','chuanHoaMaSap','tenHistoryChuan','cotHistoryTheoTen',
   'docHistoryTuVanBan','timNguonHistory','taiHistoryBangScript','ngayHistoryISO','loaiHistory',
   'cotStorageLocation','hallTuStorageLocation','hallDangLoc','coCotHistoryHall','coCotStockHall',
-  'lichSuTheoHall','tonKhoTheoHall','loiCotHall','capNhatTrangThaiHall','dinhDangLuongHistory',
+  'lichSuTheoHall','tonKhoTheoHall','tonKhoHall1TonLau','loiCotHall','capNhatTrangThaiHall','dinhDangLuongHistory',
   'dongStockLichSuVatTu','cotSoLuongHistoryDungCot','tongSoLuongHistory','thongKeConsumptionVatTu',
   'hienThiSoLuongVatTu','capNhatLocCostCenter','locLichSuVatTu','moLichSuDashboardTheoSap','moLichSuVatTu']){
   const match=html.match(new RegExp('^    function '+name+'\\([^]*?^    }','m'));
@@ -119,8 +120,23 @@ nodes['dashboard-hall'].value='hall2';
 ctx.tieuDeCot=['SAP','Description','Stock','Unit'];ctx.moLichSuDashboardTheoSap('A');
 assert.equal(ctx.materialHistoryRows.length,1);
 assert.equal(nodes['material-history-stock'].textContent,'—');
+// Dormant report alone can use the standalone Hall 1 stock source.
+ctx.tatCaDuLieu=[ctx.tieuDeCot,['A','Standalone Hall 1',10,'PC']];
+ctx.duLieuTimKiem=[{dong:ctx.tatCaDuLieu[1],chiSo:1}];
+nodes['dashboard-hall'].value='all';ctx.moLichSuDashboardTheoSap('A','hall1',true);
+assert.equal(ctx.materialHistoryFromDormant,true);
+assert.equal(ctx.materialHistoryRows.length,2);
+assert.equal(nodes['material-history-stock'].textContent,'10 PC');
+assert.equal(nodes['material-history-out-count'].textContent,'4 PC');
+ctx.moLichSuDashboardTheoSap('A','hall1');
+assert.equal(ctx.materialHistoryFromDormant,false);
+assert.equal(nodes['material-history-stock'].textContent,'—');
+ctx.moLichSuDashboardTheoSap('A','hall2');
+assert.equal(nodes['material-history-stock'].textContent,'—');
+assert.equal(nodes['material-history-out-count'].textContent,'9 PC');
 // Direct Stock lookup resets the popup to all Halls, including unmapped rows.
 ctx.moLichSuVatTu(1);
+assert.equal(ctx.materialHistoryFromDormant,false);
 assert.equal(ctx.materialHistoryHall,'all');assert.equal(ctx.materialHistoryRows.length,4);
 assert.equal(nodes['material-history-out-count'].textContent,'33 PC');
 nodes['material-history-cost'].value='CC1';ctx.locLichSuVatTu();
