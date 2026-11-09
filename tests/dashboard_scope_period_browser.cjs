@@ -37,7 +37,8 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
             .map(row=>row.filter((_,index)=>index!==5)):stock;
         body='window.duLieuCongTy='+JSON.stringify(source)+';window.thoiGianCapNhat="test";';
       }
-      else if(u.pathname==='/History.js')body='window.materialHistory='+JSON.stringify(history)+';';
+      else if(u.pathname==='/History.js')body='window.materialHistory='+JSON.stringify(history)+';'
+       else if(u.pathname==='/Amount.js')body='window.amountData='+JSON.stringify([['31/10/2026',100,'100 VND'],['01/11/2026',200,'200 VND']])+';';
       else if(u.pathname==='/Material/manifest.js')body='window.MaterialImageManifest={version:2,complete:true,materials:{}};';
       return r.fulfill({contentType,body});
     });
@@ -94,13 +95,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
       const summary=await page.locator('#dashboard-usage-summary').innerText();
       assert.match(summary,/1\.000/);assert.match(summary,/600/);assert(!summary.includes('6.000'));
     }
-    // Snapshots outside the selected month cannot fill a boundary-week bucket.
-    await page.evaluate(()=>{
-      ghiTuyChon('checking-stock-snapshots',JSON.stringify([
-        {date:'2026-10-31',value:100,hasPrice:true},
-        {date:'2026-11-01',value:9000,hasPrice:true}
-      ]));
-    });
+    // Amount.js records outside October cannot fill its weekly buckets.
     await page.locator('#dashboard-value-period').selectOption('week');
     assert(!/9k|9\.000/.test(await page.locator('#insight-value-trend').innerText()));
     assert.match(await page.locator('#insight-value-trend').innerText(),/100/);
@@ -137,12 +132,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
       await page.keyboard.press('Escape');
     }
     await page.locator('#dashboard-hall').selectOption('all');
-    await page.evaluate(()=>{
-      ghiTuyChon('checking-stock-snapshots',JSON.stringify([
-        {date:'2026-10-31',value:100,hasPrice:true},
-        {date:'2026-11-01',value:200,hasPrice:true}
-      ]));veLichSuKho();
-    });
+    await page.evaluate(()=>veLichSuKho());
     const snapshots=await page.locator('#insight-history').innerText();
     assert.match(snapshots,/2026-11-01/);
     await page.locator('#dashboard-hall').selectOption('hall1');
@@ -150,16 +140,16 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     assert.equal(await page.locator('#insight-history .insight-row').count(),2);
     await page.screenshot({path:'/tmp/dashboard-hall1-standalone-fixed.png',fullPage:true});
     await page.locator('#dashboard-hall').selectOption('hall2');
-    assert.match(await page.locator('#insight-history').innerText(),/Hall 2 không có lịch sử đồng bộ/);
+    assert.match(await page.locator('#insight-history').innerText(),/Hall 2 không có dữ liệu giá trị kho/);
     assert.equal(await page.locator('#insight-history .insight-row').count(),0);
     assert.match(await dormant.innerText(),/Hall 2 không có thông tin/);
     assert.equal(await dormant.locator('table').count(),0);
     await page.locator('#lang-en').click();
-    assert.match(await page.locator('#insight-history').innerText(),/No local synchronization history.*Hall 2/);
+    assert.match(await page.locator('#insight-history').innerText(),/No inventory value data.*Hall 2/);
     await page.locator('#lang-vi').click();
     await page.locator('#dashboard-hall').selectOption('all');
     assert.equal(await page.locator('#insight-history').innerText(),snapshots);
-    await page.evaluate(()=>{ghiTuyChon('checking-stock-snapshots','[]');veLichSuKho();});
+    await page.evaluate(()=>{window.amountData=[];veLichSuKho();});
     const empty=await page.locator('#insight-history').innerText();
     await page.locator('#dashboard-hall').selectOption('hall1');
     assert.equal(await page.locator('#insight-history').innerText(),empty);
@@ -168,6 +158,6 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.locator('#dashboard-hall').selectOption('hall2');
     assert.match(await dormant.innerText(),/Hall 2 không có thông tin/);
     assert.deepEqual(errors,[]);
-    console.log('PASS browser: Hall 1 dormant report with/without Stock locations, popup/keyboard scope, shared All/Hall 1 sync snapshots, Hall 2 unavailable, month selection, chart boundaries, VI/EN and mobile layout.');
+    console.log('PASS browser: Hall 1 dormant report with/without Stock locations, popup/keyboard scope, shared All/Hall 1 Amount.js values, Hall 2 unavailable, month selection, chart boundaries, VI/EN and mobile layout.');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
