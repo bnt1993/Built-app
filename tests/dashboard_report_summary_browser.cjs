@@ -31,7 +31,8 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
       if(u.pathname==='/'){
         body=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8');contentType='text/html';
       }else if(u.pathname==='/data.js')body='window.duLieuCongTy='+JSON.stringify(stock)+';window.thoiGianCapNhat="test";';
-      else if(u.pathname==='/History.js')body='window.materialHistory='+JSON.stringify(history)+';';
+      else if(u.pathname==='/History.js')body='window.materialHistory='+JSON.stringify(history)+';'
+       else if(u.pathname==='/Amount.js')body='window.amountData='+JSON.stringify([['01/10/2026',1000,'1.000 VND'],['31/10/2026',2000,'2.000 VND'],['05/11/2026',3000,'3.000 VND']])+';';
       else if(u.pathname==='/Material/manifest.js')body='window.MaterialImageManifest={version:2,complete:true,materials:{}};';
       return r.fulfill({contentType,body});
     });
@@ -68,12 +69,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     assert.equal(await dormant.innerText(),'Tìm thấy 1 mã vật tư');
     await page.locator('#dashboard-dormant-days').selectOption('1095');
     assert.equal(await dormant.innerText(),'Tìm thấy 0 mã vật tư');
-    // Snapshot total is independent of the live Stock total and selected month.
-    const saved=[{date:'2026-10-01',value:1000,hasPrice:true},
-      {date:'2026-10-31',value:2000,hasPrice:true},{date:'2026-11-05',value:3000,hasPrice:true}];
-    await page.evaluate(records=>{
-      ghiTuyChon('checking-stock-snapshots',JSON.stringify(records));capNhatThongKeNangCao();
-    },saved);
+    // Valuations come from Amount.js, not local browser snapshots.
     assert.match(await page.locator('#metric-inventory-value').innerText(),/^3\.000/);
     assert.match(await page.locator('#metric-value-note').innerText(),/2026-11-05/);
     assert(!/Tổng \(Số lượng|10\.500/.test(await page.locator('#metric-value-note').innerText()));
@@ -87,7 +83,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
       await page.locator('#dashboard-hall').selectOption('hall1');
       assert.equal(await page.locator('#insight-value-trend').innerText(),allValues);
     }
-    const savedText=await page.evaluate(()=>docTuyChon('checking-stock-snapshots'));
+    const amountText=await page.evaluate(()=>JSON.stringify(window.amountData));
     // Hall 2 has outbound history but no stock report or local snapshots.
     await page.locator('#dashboard-hall').selectOption('hall2');
     assert.equal(await out.innerText(),'Tìm thấy 1 mã vật tư');
@@ -97,8 +93,8 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
       assert.equal(await page.locator('#'+id+' table,#'+id+' .stock-donut').count(),0);
     }
     assert.equal(await page.locator('#metric-inventory-value').innerText(),'—');
-    assert.match(await page.locator('#insight-value-trend').innerText(),/Hall 2 không có lịch sử đồng bộ/);
-    assert.equal(await page.evaluate(()=>docTuyChon('checking-stock-snapshots')),savedText);
+    assert.match(await page.locator('#insight-value-trend').innerText(),/Hall 2 không có dữ liệu giá trị kho/);
+    assert.equal(await page.evaluate(()=>JSON.stringify(window.amountData)),amountText);
     await page.locator('#lang-en').click();
     assert.equal(await out.innerText(),'Matching material codes: 1');
     assert.equal(await dormant.innerText(),'Matching material codes: —');
@@ -123,15 +119,15 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.evaluate(()=>{historyLoaded=false;historyLoading=true;veTopVatTuXuatKho();veVatTuTonLau();});
     assert.equal(await out.innerText(),'Số mã phù hợp: —');
     assert.equal(await dormant.innerText(),'Số mã phù hợp: —');
-    await page.evaluate(()=>{ghiTuyChon('checking-stock-snapshots','[]');veBieuDoGiaTriKho();});
+    await page.evaluate(()=>{window.amountData=[];veBieuDoGiaTriKho();});
     assert.equal(await page.locator('#metric-inventory-value').innerText(),'—');
-    assert.match(await page.locator('#metric-value-note').innerText(),/Chưa có bản ghi/);
+    assert.match(await page.locator('#metric-value-note').innerText(),/Amount.js/);
     await page.evaluate(()=>{
-      ghiTuyChon('checking-stock-snapshots',JSON.stringify([{date:'2026-11-09',value:0,hasPrice:true}]));
+      window.amountData=[['09/11/2026',0,'0 VND']];
       veBieuDoGiaTriKho();
     });
     assert.match(await page.locator('#metric-inventory-value').innerText(),/^0/);
     assert.deepEqual(errors,[]);
-    console.log('PASS matching SAP counts across filters/pages/sorts, shared All/Hall 1 stock reports, Hall 2 unavailable, snapshot total/charts, gaps, empty/zero values, VI/EN and mobile.');
+    console.log('PASS matching SAP counts across filters/pages/sorts, shared All/Hall 1 stock reports, Hall 2 unavailable, Amount.js value/charts, gaps, empty/zero values, VI/EN and mobile.');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
