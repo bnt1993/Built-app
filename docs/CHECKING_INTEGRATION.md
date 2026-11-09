@@ -189,3 +189,12 @@ node tests/checking_logic.cjs
 node tests/history_logic.cjs
 node tests/dashboard_logic.cjs
 ```
+
+## Tồn lâu Hall 1 và chọn tháng phân tích
+
+- Bảng **Vật tư tồn lâu chưa xuất** chỉ dùng dòng tồn kho và giao dịch xuất thuộc Hall 1, kể cả khi bộ lọc chung là **Tất cả khu vực**. Hall 2 hiển thị **không có thông tin**, ẩn phân trang và tắt chọn ngưỡng ngày cho bảng này; các báo cáo Hall 2 khác vẫn hoạt động.
+- Nhấn đúp hoặc nhấn Enter trên dòng tồn lâu mở lịch sử, số lượng và số dư riêng Hall 1. Dữ liệu thiếu hoặc không nhận diện được Storage Location vẫn được báo thiếu; không lấy tồn kho Hall 2 hay tự gán mã kho chưa biết cho Hall 1.
+- **Chọn kỳ → Theo tháng** cho phép chọn tháng/năm từ tháng 01/2000 đến tháng hiện tại. Tháng đã kết thúc dùng toàn tháng và so với toàn tháng trước; tháng hiện tại dùng đến ngày hiện tại và so cùng số ngày của tháng trước (giới hạn ở ngày cuối tháng).
+- Khoảng tháng áp dụng cho so sánh, bảng xuất khi dùng **Theo khoảng đã chọn**, biểu đồ giao dịch và giá trị kho. Tuần/năm trên biểu đồ chỉ đổi cách nhóm; giao dịch và ảnh chụp ngoài khoảng chọn không được cộng vào kỳ biên. Bảng tồn lâu tiếp tục xét tồn hiện tại và ngưỡng ngày chưa xuất.
+
+Kiểm tra: `node tests/dashboard_scope_period_logic.cjs`, `node tests/dashboard_scope_period_browser.cjs`, `node tests/history_logic.cjs`. Kiểm tra trình duyệt cần Playwright và Chromium, có thể dùng `CHROMIUM_HELPER` như các bài kiểm tra trình duyệt khác.
