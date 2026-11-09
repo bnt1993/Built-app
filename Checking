@@ -707,6 +707,20 @@
     .dashboard-source-item strong{display:block;font-size:12px;margin-bottom:4px}
     .dashboard-source-item[data-status="error"]{border-color:#d86a6a}
     .dashboard-source-item[data-status="stale"]{border-color:#e49a29}
+    .trend-column[data-period-key]{cursor:pointer;border-radius:8px;outline-offset:2px}
+    .trend-column[data-period-key]:hover{background:var(--app-hover)}
+    .trend-column[data-period-key]:focus-visible{outline:2px solid var(--blue)}
+    .dashboard-period-dialog{width:min(1000px,96vw);max-height:88dvh;
+      background:var(--app-panel);color:var(--ink);border:1px solid var(--line);
+      border-radius:15px;padding:18px}
+    .dashboard-period-dialog::backdrop{background:rgba(9,20,40,.5)}
+    .dashboard-period-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .dashboard-period-heading h2{font-size:17px;margin:0}
+    .dashboard-period-table-wrap{overflow:auto;max-height:60dvh;margin-top:12px}
+    .dashboard-period-table-wrap table{width:100%;border-collapse:collapse;white-space:nowrap}
+    .dashboard-period-table-wrap th,.dashboard-period-table-wrap td{
+      padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);font-size:12px}
+    .dashboard-period-pagination{display:flex;align-items:center;justify-content:center;gap:15px;margin-top:10px}
     @media(max-width:950px){.dashboard-source-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:560px){.dashboard-source-grid{grid-template-columns:1fr}}
 
@@ -2024,6 +2038,36 @@
     </main>
   </div>
 
+  <dialog id="dashboard-period-dialog" class="dashboard-period-dialog"
+    aria-labelledby="dashboard-period-title">
+    <div class="dashboard-period-heading">
+      <h2 id="dashboard-period-title" data-i18n="dashDrillTitle">Giao dịch trong kỳ</h2>
+      <button type="button" class="btn btn-soft" onclick="dongChiTietKyKho()"
+        data-i18n="dashDrillClose">Đóng</button>
+    </div>
+    <p id="dashboard-period-summary" role="status" class="insight-note"></p>
+    <div class="dashboard-period-table-wrap">
+      <table class="dashboard-detail-table">
+        <thead><tr>
+          <th data-i18n="dashboardExportDate">Ngày</th>
+          <th data-i18n="dashboardExportSap">Mã SAP</th>
+          <th data-i18n="historyDirection">Nhập / xuất</th>
+          <th data-i18n="dashboardTopOutCount">Số lượng</th>
+          <th data-i18n="dashboardExportUnit">Đơn vị</th>
+          <th data-i18n="dashboardExportValue">Giá trị (VND)</th>
+        </tr></thead>
+        <tbody id="dashboard-period-rows"></tbody>
+      </table>
+    </div>
+    <div class="dashboard-period-pagination">
+      <button type="button" class="btn btn-soft" onclick="chuyenTrangChiTietKy(-1)"
+        data-i18n="prev">Trước</button>
+      <span id="dashboard-period-page"></span>
+      <button type="button" class="btn btn-soft" onclick="chuyenTrangChiTietKy(1)"
+        data-i18n="next">Sau</button>
+    </div>
+  </dialog>
+
   <div id="stock-row-menu" class="stock-row-menu" role="menu" data-i18n-aria="stockRowMenuAria"
     aria-label="Thao tác vật tư" tabindex="-1" hidden>
     <button type="button" role="menuitem" data-stock-menu-action="history" onclick="thaoTacMenuVatTu('history')">
@@ -2118,6 +2162,12 @@
         dashboardHallUnavailableValue:"Lịch sử giá trị kho theo từng Hall chưa được lưu; chỉ có bản ghi tổng kho.",
         dashboardHall2NoSnapshots:"Hall 2 không có dữ liệu giá trị kho.",
         dashboardHall2NoStockReport:"Hall 2 không có thông tin tồn kho cho báo cáo này.",
+        dashDrillTitle:"Giao dịch trong kỳ",
+        dashDrillClose:"Đóng",
+        dashDrillHint:"Xem giao dịch kỳ {period}",
+        dashDrillSummary:"{count} giao dịch · {from} đến {to} · Nhập: {incoming} · Xuất: {outgoing}",
+        dashDrillUnavailable:"Chưa có lịch sử giao dịch hợp lệ trong kỳ này.",
+        dashDrillPage:"Trang {page}/{total} · {count} giao dịch",
         dashValueDelta:"{percent}% so với {date}",
         dashValueDeltaMissing:"Cần ít nhất 2 ngày dữ liệu để so sánh.",
         dashValueDeltaZero:"Giá trị kỳ trước bằng 0; chưa thể tính %.",
@@ -2439,6 +2489,12 @@
         dashboardHallUnavailableValue:"Historical Hall-level inventory values were not saved; only full-warehouse snapshots exist.",
         dashboardHall2NoSnapshots:"No inventory value data is available for Hall 2.",
         dashboardHall2NoStockReport:"No inventory information is available for Hall 2 in this report.",
+        dashDrillTitle:"Transactions in period",
+        dashDrillClose:"Close",
+        dashDrillHint:"Show transactions for {period}",
+        dashDrillSummary:"{count} transactions · {from} to {to} · In: {incoming} · Out: {outgoing}",
+        dashDrillUnavailable:"No valid transaction history in this period.",
+        dashDrillPage:"Page {page}/{total} · {count} transactions",
         dashValueDelta:"{percent}% vs {date}",
         dashValueDeltaMissing:"At least two dated values are needed for comparison.",
         dashValueDeltaZero:"Previous value is zero; percentage is undefined.",
@@ -4660,7 +4716,10 @@
         '<span class="movement-legend-'+type+'">'+thoatHTML(label(type))+'</span>').join("")+
         '</div><div class="trend-list">'+buckets.map(p=>{
           const value=stats.values.get(p.key);
-          return '<div class="trend-column"><div class="movement-pair">'+["in","out"].map(type=>{
+          return '<div class="trend-column" role="button" tabindex="0" data-period-key="'+
+          thoatHTML(p.key)+'" data-period-mode="'+mode+'" aria-label="'+
+          thoatHTML(tuDien("dashDrillHint",{period:p.title}))+
+          '"><div class="movement-pair">'+["in","out"].map(type=>{
             const exact=label(type)+": "+dinhDangGiaTriKho(value[type]);
             return '<div class="movement-series" title="'+thoatHTML(p.title+" · "+exact)+'" aria-label="'+thoatHTML(p.title+" · "+exact)+'">'+
               '<span class="trend-amount">'+thoatHTML(dinhDangRutGonKho(value[type]))+'</span>'+
@@ -4677,6 +4736,82 @@
         (buckets.truncated?" · "+tuDien("dashboardTruncated",{count:buckets.length}):"")+
         (stats.invalid?" · "+tuDien("dashUsageInvalid",{count:stats.invalid}):"")+
         (["historyInvalid","historyNoSource"].includes(historyStatusKey)?" · "+tuDien("materialHistoryStale"):"");
+    }
+
+
+    // Drill into the actual SAP transactions underlying an in/out chart bucket.
+    let giaoDichKyKho=[];
+    let trangGiaoDichKy=1;
+    const DONG_MOI_TRANG_KY=50;
+    function khoangKyDuocChon(key,mode){
+      let from=key,to=key;
+      if(mode==="week")to=congNgayKho(key,6);
+      else if(mode==="month"){
+        from=key+"-01";
+        const [year,month]=key.split("-").map(Number);
+        to=new Date(Date.UTC(year,month,0)).toISOString().slice(0,10);
+      }else if(mode==="year"){from=key+"-01-01";to=key+"-12-31";}
+      else if(mode!=="day")return null;
+      if(!ngayHistoryHopLe(from)||!ngayHistoryHopLe(to))return null;
+      const selected=layKyPhanTichKho();
+      if(!selected)return null;
+      from=from>selected.from?from:selected.from;
+      to=to<selected.to?to:selected.to;
+      return from<=to?{from,to}:null;
+    }
+    function moChiTietKyKho(key,mode){
+      const range=khoangKyDuocChon(key,mode);
+      const dialog=document.getElementById("dashboard-period-dialog");
+      const summary=document.getElementById("dashboard-period-summary");
+      if(!historyLoaded||!range||!lichSuTheoHall()){
+        giaoDichKyKho=[];
+        summary.textContent=tuDien("dashDrillUnavailable");
+      }else{
+        giaoDichKyKho=locGiaoDichKho(range);
+        const col=cotGiaTriLichSuKho();
+        const amounts=col>=0?tongNhapXuatTrongKhoang(range,col):{in:0,out:0};
+        summary.textContent=tuDien("dashDrillSummary",{
+          count:dinhDangSoLuong.format(giaoDichKyKho.length),
+          from:range.from,to:range.to,
+          incoming:col>=0?dinhDangGiaTriKho(amounts.in):"—",
+          outgoing:col>=0?dinhDangGiaTriKho(amounts.out):"—"
+        });
+      }
+      trangGiaoDichKy=1;
+      veChiTietKyKho();
+      if(!dialog.open)dialog.showModal();
+    }
+    function veChiTietKyKho(){
+      const body=document.getElementById("dashboard-period-rows");
+      const quantityCol=cotSoLuongHistoryDungCot(),amountCol=cotGiaTriLichSuKho(),
+        sapCol=cotMaSapLichSuKho(),unitCol=cotHistoryTheoTen(historyColumns,[
+          "Unit of Entry","Unit","UOM","Base Unit of Measure","Đơn vị"]);
+      const total=Math.max(1,Math.ceil(giaoDichKyKho.length/DONG_MOI_TRANG_KY));
+      trangGiaoDichKy=Math.max(1,Math.min(trangGiaoDichKy,total));
+      const offset=(trangGiaoDichKy-1)*DONG_MOI_TRANG_KY;
+      body.innerHTML=giaoDichKyKho.slice(offset,offset+DONG_MOI_TRANG_KY).map(rec=>{
+        const money=amountCol>=0?chuyenThanhSo(rec.cells[amountCol]):NaN;
+        const quantity=quantityCol>=0?chuyenThanhSo(rec.cells[quantityCol]):NaN;
+        const cells=[
+          rec.date,sapCol>=0?rec.cells[sapCol]:"—",
+          tuDien(rec.type==="in"?"historyInShort":"historyOutShort"),
+          Number.isFinite(quantity)?dinhDangSoLuong.format(Math.abs(quantity)):"—",
+          unitCol>=0?rec.cells[unitCol]:"—",
+          Number.isFinite(money)?dinhDangGiaTriKho(Math.abs(money)):"—"
+        ];
+        return '<tr>'+cells.map(x=>'<td>'+thoatHTML(x)+'</td>').join("")+'</tr>';
+      }).join("")||'<tr><td colspan="6">'+thoatHTML(tuDien("dashDrillUnavailable"))+'</td></tr>';
+      document.getElementById("dashboard-period-page").textContent=
+        tuDien("dashDrillPage",{page:trangGiaoDichKy,total,
+          count:dinhDangSoLuong.format(giaoDichKyKho.length)});
+    }
+    function chuyenTrangChiTietKy(delta){
+      trangGiaoDichKy+=delta;
+      veChiTietKyKho();
+    }
+    function dongChiTietKyKho(){
+      const node=document.getElementById("dashboard-period-dialog");
+      if(node.open)node.close();
     }
 
     function veBieuDoGiaTriKho(){
@@ -7469,6 +7604,16 @@
       node.addEventListener("dblclick",moLichSuBangDashboard);
       node.addEventListener("keydown",bamPhimLichSuBangDashboard);
     }
+    const giaoDichChart=document.getElementById("insight-usage");
+    function chonKyTrenBieuDo(event){
+      const target=event.target.closest(".trend-column[data-period-key]");
+      if(!target||!giaoDichChart.contains(target))return;
+      if(event.type==="keydown"&&event.key!=="Enter"&&event.key!==" ")return;
+      event.preventDefault();
+      moChiTietKyKho(target.dataset.periodKey,target.dataset.periodMode);
+    }
+    giaoDichChart.addEventListener("click",chonKyTrenBieuDo);
+    giaoDichChart.addEventListener("keydown",chonKyTrenBieuDo);
     doiKyPhanTichKho();
     trangThaiAmount=!Array.isArray(window.amountData)?"dashAmountLoadError":
       window.amountData.length&&!layGiaTriKhoTuAmount().length?"dashAmountInvalid":null;
