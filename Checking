@@ -6511,6 +6511,149 @@
     }
 
 
+
+    // Dashboard exports use the same full filtered source, Top-N, threshold,
+    // sort order and grouping as on-screen tables, not just the current page.
+    function taoDuLieuXuatThongKe(kind){
+      const hall=hallDangLoc(),period=layKyPhanTichKho();
+      const tr=key=>tuDien(key);
+      const hallLabel=tr(hall==="hall1"?"dashboardHall1":
+        hall==="hall2"?"dashboardHall2":"dashboardHallAll");
+      const rangeLabel=range=>range?range.from+" – "+range.to:"—";
+      const order=key=>dashboardSortState[key].column+
+        (dashboardSortState[key].direction<0?" ↓":" ↑");
+      const extra=(key,value)=>[tr(key),String(value)];
+      const meta=[extra("dashboardExportHall",hallLabel),
+        extra("dashboardExportRange",rangeLabel(period)),
+        extra("dashboardExportGenerated",new Date().toLocaleString(
+          ngonNguHienTai==="en"?"en-US":"vi-VN"))];
+      const make=(title,sheet,columns,rows,money=[],options=[])=>({
+        title:tr(title),sheet,columns:columns.map(tr),rows,money,meta:meta.concat(options)
+      });
+      const fail=()=>{throw Error("DASHBOARD_EXPORT_UNAVAILABLE")};
+      const stock=()=>{if(!analyticsReady||hall==="hall2")fail()};
+      const history=()=>{if(!historyLoaded||historyLoading)fail()};
+      if(kind==="value"){
+        stock();
+        const limit=Number(document.getElementById("dashboard-limit").value)||10;
+        const rows=sapXepBangPhanTich(dashboardTopValueCache.slice(0,limit),"value");
+        return make("dashboardExportTopValue","Top ton",
+          ["dashboardExportSap","dashboardExportDescription","dashTopQuantity",
+           "dashboardExportUnit","dashboardExportValue"],
+          rows.map(r=>[r.name,r.description||"",r.unit&&!r.inconsistent?r.quantity:null,
+            r.mixed?tr("dashTopMixedUnits"):r.missing?"":r.unit,r.value]),[4],
+          [extra("dashboardExportTopN",limit),extra("dashboardExportSort",order("value"))]);
+      }
+      if(kind==="out"){
+        history();
+        const range=phamViTopXuatKho();
+        if(!range||hall!=="all"&&lichSuTheoHall()===null)fail();
+        const key=range.from+"|"+range.to+"|"+hall;
+        const valid=dashboardOutCache&&dashboardOutCache.key===key&&
+          dashboardOutCache.history===historyAll&&dashboardOutCache.stock===duLieuTimKiem;
+        const source=valid?dashboardOutCache.rows:thongKeTopVatTuXuatKho(range);
+        if(!source)fail();
+        const minimum=Math.max(0,Number(document.getElementById("dashboard-out-min").value)||0);
+        const rows=sapXepBangPhanTich(source.filter(r=>r.value>=minimum),"out");
+        return make("dashboardExportTopOut","Top xuat",
+          ["dashboardExportSap","dashboardExportDescription","dashboardTopOutCount",
+           "dashboardExportUnit","dashboardExportOut"],
+          rows.map(r=>[r.sap,r.description||"",
+            r.quantityValid&&!r.mixed&&r.unit?r.quantity:null,
+            r.mixed?tr("dashboardOutMixedUnits"):r.unit||"",r.value]),[4],
+          [extra("dashboardExportRange",rangeLabel(range)),
+           extra("dashboardExportThreshold",minimum),extra("dashboardExportSort",order("out"))]);
+      }
+      if(kind==="dormant"){
+        stock();history();
+        const days=Number(document.getElementById("dashboard-dormant-days").value)||90;
+        const today=ngayDiaPhuongISO();
+        const valid=dashboardDormantCache&&dashboardDormantCache.days===days&&
+          dashboardDormantCache.today===today&&dashboardDormantCache.hall===hall&&
+          dashboardDormantCache.history===historyAll&&dashboardDormantCache.stock===duLieuTimKiem;
+        const source=valid?dashboardDormantCache.rows:thongKeVatTuTonLau(days);
+        if(!source)fail();
+        const rows=sapXepBangPhanTich(source,"dormant");
+        return make("dashboardExportDormant","Ton lau",
+          ["dashboardExportSap","dashboardExportDescription","dashboardDormantStock",
+           "dashboardExportUnit","dashboardDormantLast","dashboardDormantUnitPrice"],
+          rows.map(r=>[r.sap,r.description||"",r.quantityValid?r.quantity:null,r.unit||"",
+            r.last||tr("dashboardDormantNever"),
+            r.priceMixed?tr("dashboardDormantMultiplePrices"):r.priceValid?r.price:null]),[5],
+          [extra("dashboardExportDays",days),extra("dashboardExportSort",order("dormant"))]);
+      }
+      if(kind==="distribution"){
+        stock();
+        const values=["healthy","at","below","zero","unknown"];
+        const tally=Object.fromEntries(values.map(key=>[key,0]));
+        for(const row of duLieuTimKiem)
+          tally[row.trangThaiTon]=(tally[row.trangThaiTon]||0)+1;
+        const keys={healthy:"stockAbove",at:"stockEqual",below:"stockBelow",
+          zero:"stockZero",unknown:"stockUnknown"};
+        const total=duLieuTimKiem.length;
+        return make("dashboardExportDistribution","Trang thai",
+          ["dashboardExportStatus","dashboardExportCount","dashboardExportPercent"],
+          total?values.map(key=>[tr(keys[key]),tally[key],
+            Math.round(tally[key]/total*10000)/100]):[],
+          [],[extra("dashboardExportSource","data.js")]);
+      }
+      if(kind==="valueTrend"){
+        stock();
+        if(!period)fail();
+        const mode=document.getElementById("dashboard-value-period").value;
+        const buckets=nhomKyTrongKhoangKho(mode,period);
+        const keys=new Set(buckets.map(p=>p.key)),last=new Map();
+        for(const rec of layGiaTriKhoTuAmount()){
+          if(rec.date<period.from||rec.date>period.to)continue;
+          const key=khoaNhomKho(rec.date,mode);
+          if(!keys.has(key))continue;
+          if(!last.has(key)||rec.date>=last.get(key).date)last.set(key,rec);
+        }
+        return make("dashboardExportValueTrend","Gia tri kho",
+          ["dashboardExportPeriodName","dashboardExportDate","dashboardExportValue"],
+          last.size?buckets.map(p=>[p.label,last.get(p.key)?.date||"",
+            last.get(p.key)?.value??null]):[],[2],
+          [extra("dashboardExportPeriod",tr({day:"dashDay",week:"dashWeek",
+            month:"dashMonth",year:"dashYear"}[mode])),
+           extra("dashboardExportSource","Amount.js")]);
+      }
+      if(kind==="movement"){
+        history();
+        if(!period||hall!=="all"&&lichSuTheoHall()===null)fail();
+        const mode=document.getElementById("dashboard-usage-period").value;
+        const buckets=nhomKyTrongKhoangKho(mode,period);
+        const scope=lichSuTheoHall();
+        if(!scope)fail();
+        const stats=tinhGiaTriNhapXuat(scope.filter(r=>r.date>=period.from&&r.date<=period.to),
+          historyColumns,mode,buckets);
+        if(stats.missing)fail();
+        return make("dashboardExportMovement","Nhap xuat",
+          ["dashboardExportPeriodName","dashboardExportIn","dashboardExportOut"],
+          buckets.map(p=>[p.label,stats.values.get(p.key)?.in??0,
+            stats.values.get(p.key)?.out??0]),[1,2],
+          [extra("dashboardExportPeriod",tr({week:"dashWeek",
+            month:"dashMonth",year:"dashYear"}[mode])),
+           extra("dashboardExportSource","History.js")]);
+      }
+      if(kind==="compare"){
+        history();
+        if(!period||hall!=="all"&&lichSuTheoHall()===null)fail();
+        const col=cotGiaTriLichSuKho();
+        if(col<0)fail();
+        const now=tongNhapXuatTrongKhoang(period,col);
+        const before=tongNhapXuatTrongKhoang({from:period.prevFrom,to:period.prevTo},col);
+        return make("dashboardExportCompare","So sanh",
+          ["dashboardExportStatus","dashboardExportCurrent","dashboardExportPrevious",
+           "dashboardExportChange"],
+          ["in","out"].map(key=>[tr(key==="in"?"historyInShort":"historyOutShort"),
+            now[key],before[key],before[key]===0?null:
+              Math.round((now[key]-before[key])/before[key]*10000)/100]),[1,2],
+          [extra("dashboardExportRange",rangeLabel({from:period.prevFrom,to:period.prevTo})),
+           extra("dashboardExportSource","History.js")]);
+      }
+      fail();
+    }
+
     // A row's context-menu actions always target the row under the pointer.
     // Stock data remains read-only: "Export material" downloads its information,
     // never records an OUTPUT movement or edits History.js.
