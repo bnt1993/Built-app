@@ -2042,6 +2042,7 @@
     </div>
   </dialog>
 
+  <script src="Amount.js"></script>
   <script>
 
     // Text labels are translated without reloading data.js or the image gallery.
@@ -3017,11 +3018,28 @@
       }).format(giaTri);
     }
 
+    // Amount.js contains historical whole-warehouse balances: [DD/MM/YYYY, numeric VND, display].
+    // It is authoritative for both All and Hall 1; Hall 2 has no valuation history.
+    function layGiaTriKhoTuAmount(){
+      const rows=Array.isArray(window.amountData)?window.amountData:[];
+      const byDate=new Map();
+      for(const row of rows){
+        if(!Array.isArray(row)||row.length<2)continue;
+        const match=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(row[0]).trim());
+        if(!match)continue;
+        const iso=match[3]+"-"+match[2]+"-"+match[1];
+        const value=typeof row[1]==="number"?row[1]:Number(row[1]);
+        if(!ngayHistoryHopLe(iso)||!Number.isFinite(value)||value<0)continue;
+        byDate.set(iso,{date:iso,value,hasPrice:true});
+      }
+      return [...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));
+    }
+
     function hienThiTongGiaTriKho() {
       const oGiaTri = document.getElementById("metric-inventory-value");
       const ghiChu = document.getElementById("metric-value-note");
       const unavailable=hallDangLoc()==="hall2";
-      const snapshot=unavailable?null:anhChupGiaTriMoiNhat(layAnhChupKho());
+      const snapshot=unavailable?null:anhChupGiaTriMoiNhat(layGiaTriKhoTuAmount());
       oGiaTri.textContent=snapshot?dinhDangGiaTriKho(snapshot.value):"—";
       oGiaTri.title = oGiaTri.textContent;
       ghiChu.textContent=tuDien(unavailable?"dashboardHall2NoSnapshots":
@@ -3379,7 +3397,7 @@
     }
 
     function veLichSuKho() {
-      const snapshots=layAnhChupKho();
+      const snapshots=layGiaTriKhoTuAmount();
       const node=document.getElementById("insight-history");
       if(hallDangLoc()==="hall2"){
         node.textContent=tuDien("dashboardHall2NoSnapshots");return;
@@ -4241,7 +4259,7 @@
       }
       const buckets=nhomKyTrongKhoangKho(mode,range);
       const keys=new Set(buckets.map(x=>x.key)),latest=new Map();
-      for(const rec of layAnhChupKho()){
+      for(const rec of layGiaTriKhoTuAmount()){
         if(rec.hasPrice===false||!ngayHistoryHopLe(rec.date)||
           rec.date<range.from||rec.date>range.to||
           !Number.isFinite(rec.value)||rec.value<0)continue;
