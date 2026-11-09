@@ -2145,6 +2145,8 @@
         dashSourceDetail:"{count} dòng · {ms} ms",
         dashSourceChecked:"Kiểm tra: {time}",
         dashSourceNoData:"Chưa có dữ liệu",
+        dashSourceCleared:"Đã xóa bộ nhớ đệm lịch sử trên thiết bị.",
+        dashSourceClearFailed:"Không thể xóa bộ nhớ đệm khi cơ sở dữ liệu đang được sử dụng.",
         dashboardExportSelect:"Chọn báo cáo xuất",
         dashboardExportStock:"Tra cứu tồn kho (theo bộ lọc Tra cứu)",
         dashboardExportTopValue:"Vật tư có giá trị tồn cao",
@@ -2463,6 +2465,8 @@
         dashSourceDetail:"{count} rows · {ms} ms",
         dashSourceChecked:"Checked: {time}",
         dashSourceNoData:"No data",
+        dashSourceCleared:"Local History cache cleared.",
+        dashSourceClearFailed:"Could not clear the cache while the database is in use.",
         dashboardExportSelect:"Choose report",
         dashboardExportStock:"Stock lookup (search filters)",
         dashboardExportTopValue:"Highest inventory value materials",
@@ -4857,6 +4861,127 @@
       return {data,updated:time?JSON.parse(time[1]):""};
     }
 
+
+    // Cache one successfully indexed History version. The cache is origin-scoped;
+    // users of shared workstations can clear it from the status panel.
+    const HISTORY_CACHE_DB="checking-history-index-v2";
+    function moKhoHistory(){
+      if(typeof indexedDB==="undefined"||location.protocol==="file:")
+        return Promise.resolve(null);
+      return new Promise(resolve=>{
+        let request;
+        try{request=indexedDB.open(HISTORY_CACHE_DB,1)}
+        catch{resolve(null);return}
+        request.onupgradeneeded=()=>{
+          if(!request.result.objectStoreNames.contains("versions"))
+            request.result.createObjectStore("versions");
+        };
+        request.onsuccess=()=>resolve(request.result);
+        request.onerror=()=>resolve(null);
+        request.onblocked=()=>resolve(null);
+      });
+    }
+    async function layCacheHistory(signature){
+      if(!signature)return null;
+      const db=await moKhoHistory();if(!db)return null;
+      return new Promise(resolve=>{
+        try{
+          const transaction=db.transaction("versions","readonly");
+          const req=transaction.objectStore("versions").get("latest");
+          req.onsuccess=()=>{
+            const item=req.result;
+            db.close();
+            resolve(item&&item.signature===signature&&
+              Date.now()-item.savedAt<86400000?item:null);
+          };
+          req.onerror=()=>{db.close();resolve(null)};
+        }catch{db.close();resolve(null)}
+      });
+    }
+    async function luuCacheHistory(signature,updated){
+      if(!signature||!historyLoaded)return;
+      const db=await moKhoHistory();if(!db)return;
+      try{
+        const transaction=db.transaction("versions","readwrite");
+        transaction.objectStore("versions").put({
+          signature,savedAt:Date.now(),updated,columns:historyColumns,
+          records:historyAll,typeColumn:historyTypeColumn,
+          output:[...ngayXuatCuoiTheoSap]
+        },"latest");
+        transaction.oncomplete=()=>db.close();
+        transaction.onerror=()=>db.close();
+        transaction.onabort=()=>db.close();
+      }catch{db.close()}
+    }
+    function xoaCacheHistory(){
+      if(typeof indexedDB==="undefined")return;
+      try{
+        const request=indexedDB.deleteDatabase(HISTORY_CACHE_DB);
+        request.onsuccess=()=>alert(tuDien("dashSourceCleared"));
+        request.onblocked=()=>alert(tuDien("dashSourceClearFailed"));
+        request.onerror=()=>alert(tuDien("dashSourceClearFailed"));
+      }catch{alert(tuDien("dashSourceClearFailed"))}
+    }
+    function apDungCacheHistory(item,sequence){
+      if(sequence!==historySeq||!item||!Array.isArray(item.columns)||
+        !Array.isArray(item.records))return false;
+      historyColumns=item.columns;
+      historyAll=item.records;
+      historyTypeColumn=item.typeColumn;
+      historyHallCache=null;stockHallCache=null;
+      ngayXuatCuoiTheoSap.clear();
+      for(const [key,date] of item.output||[])ngayXuatCuoiTheoSap.set(key,date);
+      historyLoaded=true;
+      capNhatTrangThaiHistory("historyLoaded");
+      capNhatTrangThaiHall();
+      capNhatCardNgayXuat();
+      locLichSuVatTu();
+      return true;
+    }
+    async function phienBanHistoryHienTai(){
+      if(location.protocol!=="http:"&&location.protocol!=="https:")return "";
+      try{
+        const r=await fetch(DUONG_DAN_HISTORY+"?version="+Date.now(),
+          {method:"HEAD",cache:"no-store"});
+        if(!r.ok)return "";
+        const etag=r.headers.get("etag"),modified=r.headers.get("last-modified");
+        return etag?"etag:"+etag:modified?
+          "modified:"+modified+"|"+(r.headers.get("content-length")||""):"";
+      }catch{return ""}
+    }
+
+    // Worker is optional for offline file:// and deployments that did not copy
+    // HistoryWorker.js. A short ready-handshake avoids hanging on blank mock files.
+    async function docHistoryBangWorker(source){
+      if(typeof Worker!=="function")return docHistoryTuVanBan(source);
+      return new Promise((resolve,reject)=>{
+        let worker;
+        try{worker=new Worker("HistoryWorker.js")}
+        catch{resolve(docHistoryTuVanBan(source));return}
+        let done=false;
+        let timer=setTimeout(()=>finish(null),1200);
+        function finish(result){
+          if(done)return;
+          done=true;clearTimeout(timer);worker.terminate();
+          if(result)resolve(result);
+          else{
+            try{resolve(docHistoryTuVanBan(source))}
+            catch(err){reject(err)}
+          }
+        }
+        worker.onerror=()=>finish(null);
+        worker.onmessage=event=>{
+          const message=event.data;
+          if(message?.ready){
+            clearTimeout(timer);
+            timer=setTimeout(()=>finish(null),15000);
+            try{worker.postMessage({source})}catch{finish(null)}
+          }else if(message?.data)finish(message);
+          else if(message?.error)finish(null);
+        };
+      });
+    }
+
     async function apDungNguonHistory(source,origin="file",updated="",sequence=historySeq) {
       let parsed;
       try {parsed=bienDoiHistory(source);}
@@ -4980,13 +5105,22 @@
       locLichSuVatTu();
       try{
         let source;
+        const signature=phienBanChoNap.history||await phienBanHistoryHienTai();
+        if(!force&&signature){
+          const cached=await layCacheHistory(signature);
+          if(cached&&apDungCacheHistory(cached,sequence)){
+            phienBanNguon.history=signature;
+            return;
+          }
+        }
         if(typeof fetch==="function" && location.protocol!=="file:") {
           const response=await fetch(DUONG_DAN_HISTORY+"?t="+Date.now(),{cache:"no-store",priority:"low"});
           if(!response.ok)throw Error("HISTORY_MISSING");
-          source=docHistoryTuVanBan(await response.text());
+          source=await docHistoryBangWorker(await response.text());
         } else source=await taiHistoryBangScript();
         if(!source.data)throw Error("HISTORY_BAD_FORMAT");
         const ok=await apDungNguonHistory(source.data,"file",source.updated,sequence);
+        if(ok&&signature)luuCacheHistory(signature,source.updated);
         if(ok && phienBanChoNap.history){
           phienBanNguon.history=phienBanChoNap.history;
           phienBanChoNap.history="";
