@@ -28,7 +28,7 @@ const ctx={
     {name:'C',description:'Motor C',quantity:1,unit:'PC',value:10}
   ],
   duLieuTimKiem:[{trangThaiTon:'healthy'},{trangThaiTon:'zero'}],
-  historyAll:[],
+  historyAll:[],historyColumns:[],
   sapXepBangPhanTich:(rows,kind)=>rows.slice().sort((a,b)=>
     ctx.dashboardSortState[kind].direction*(a[ctx.dashboardSortState[kind].column]-
        b[ctx.dashboardSortState[kind].column])),
