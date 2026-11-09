@@ -705,6 +705,44 @@
     .coverage-row { padding:7px 0; }
     .dashboard-utilities { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px; }
     .dashboard-utilities .insight-box { height:210px; overflow:auto; }
+    .dashboard-value-change{display:block;font-size:12px;font-weight:750;margin-top:5px;color:var(--muted)}
+    .dashboard-value-change[data-direction="up"]{color:#14804a}
+    .dashboard-value-change[data-direction="down"]{color:#cb4051}
+    .dashboard-alert-panel,.dashboard-source-panel{padding:14px 16px;margin:15px 0;
+      border:1px solid var(--line);background:var(--app-panel);border-radius:14px}
+    .dashboard-alert-header,.dashboard-source-heading{display:flex;align-items:center;
+      justify-content:space-between;flex-wrap:wrap;gap:10px}
+    .dashboard-alert-header h2,.dashboard-source-heading h3{font-size:14px;margin:0}
+    .dashboard-alert-header small{font-size:11px;color:var(--muted)}
+    .dashboard-alert-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .dashboard-alert{flex:1 1 230px;font-size:12px;padding:10px;border-radius:10px;
+      border:1px solid var(--line);background:var(--app-field)}
+    .dashboard-alert[data-level="warning"]{border-left:4px solid #e49a29}
+    .dashboard-alert[data-level="danger"]{border-left:4px solid #cc4050}
+    .dashboard-alert[data-level="ok"]{border-left:4px solid #10a06f}
+    .dashboard-source-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+    .dashboard-source-item{padding:10px;border:1px solid var(--line);border-radius:9px;
+      background:var(--app-field);font-size:11px;overflow-wrap:anywhere}
+    .dashboard-source-item strong{display:block;font-size:12px;margin-bottom:4px}
+    .dashboard-source-item[data-status="error"]{border-color:#d86a6a}
+    .dashboard-source-item[data-status="stale"]{border-color:#e49a29}
+    .trend-column[data-period-key]{cursor:pointer;border-radius:8px;outline-offset:2px}
+    .trend-column[data-period-key]:hover{background:var(--app-hover)}
+    .trend-column[data-period-key]:focus-visible{outline:2px solid var(--blue)}
+    .dashboard-period-dialog{width:min(1000px,96vw);max-height:88dvh;
+      background:var(--app-panel);color:var(--ink);border:1px solid var(--line);
+      border-radius:15px;padding:18px}
+    .dashboard-period-dialog::backdrop{background:rgba(9,20,40,.5)}
+    .dashboard-period-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .dashboard-period-heading h2{font-size:17px;margin:0}
+    .dashboard-period-table-wrap{overflow:auto;max-height:60dvh;margin-top:12px}
+    .dashboard-period-table-wrap table{width:100%;border-collapse:collapse;white-space:nowrap}
+    .dashboard-period-table-wrap th,.dashboard-period-table-wrap td{
+      padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);font-size:12px}
+    .dashboard-period-pagination{display:flex;align-items:center;justify-content:center;gap:15px;margin-top:10px}
+    @media(max-width:950px){.dashboard-source-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:560px){.dashboard-source-grid{grid-template-columns:1fr}}
+
     @media(max-width:1100px) { #view-dashboard .metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media(max-width:700px) {
       #view-dashboard .insight-grid,.dashboard-utilities { grid-template-columns:1fr; }
@@ -1789,10 +1827,16 @@
           <div class="metric-text">
             <div class="metric-label" data-i18n="dashFilteredValue">Tổng giá trị tồn kho</div>
             <strong class="metric-value metric-money" id="metric-inventory-value" aria-live="polite">—</strong>
+            <span class="dashboard-value-change" id="metric-value-change" aria-live="polite">—</span>
             <span class="metric-note" id="metric-value-note" data-i18n="dashValueTrendEmpty">Chưa có dữ liệu giá trị kho hợp lệ trong Amount.js.</span>
           </div>
           <div class="metric-icon" aria-hidden="true">₫</div>
         </div>
+      </section>
+      <section class="dashboard-alert-panel" aria-label="Cảnh báo kho" data-i18n-aria="dashAlertHeading">
+        <div class="dashboard-alert-header"><h2 data-i18n="dashAlertHeading">Cảnh báo kho</h2>
+          <small data-i18n="dashAlertRule">Giá trị ±10% · giá trị xuất tăng trên 100% · tồn bằng/dưới điểm đặt hàng</small></div>
+        <div id="dashboard-alert-list" class="dashboard-alert-list" role="status" aria-live="polite"></div>
       </section>
       <section class="dashboard-compare-section" aria-label="So sánh nhập xuất" data-i18n-aria="dashboardCompareTitle">
         <div class="dashboard-chart-heading">
@@ -1992,7 +2036,19 @@
             <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
           </div>
         </div>
-        <div class="insight-note" data-i18n="insightNote">Lịch sử trên thiết bị này chỉ có số liệu tổng hợp, không phải nhật ký nhập/xuất.</div>
+        <section class="dashboard-source-panel" aria-label="Trạng thái nguồn dữ liệu" data-i18n-aria="dashSourceHeading">
+          <div class="dashboard-source-heading"><h3 data-i18n="dashSourceHeading">Trạng thái nguồn dữ liệu</h3>
+          <button type="button" class="btn btn-soft" onclick="lamMoiToanBoNguon()" data-i18n="dashSourceRefresh">Kiểm tra cập nhật</button></div>
+          <div class="dashboard-source-grid">
+            <div class="dashboard-source-item" id="dashboard-source-stock">data.js</div>
+            <div class="dashboard-source-item" id="dashboard-source-history">History.js</div>
+            <div class="dashboard-source-item" id="dashboard-source-amount">Amount.js</div>
+            <div class="dashboard-source-item" id="dashboard-source-images">Material</div>
+          </div>
+          <p class="insight-note" data-i18n="dashSourcePrivacy">Bộ nhớ đệm lịch sử trên thiết bị này có thể chứa dữ liệu SAP nội bộ. Xóa bộ nhớ đệm nếu dùng máy chung.</p>
+          <button type="button" class="btn btn-soft" onclick="xoaCacheHistory()" data-i18n="dashSourceClear">Xóa bộ nhớ đệm lịch sử</button>
+        </section>
+        <div class="insight-note" data-i18n="insightNote">Lịch sử giao dịch lấy từ History.js; giá trị kho lấy từ Amount.js.</div>
       </section>
       </section>
 
@@ -2002,6 +2058,36 @@
       </footer>
     </main>
   </div>
+
+  <dialog id="dashboard-period-dialog" class="dashboard-period-dialog"
+    aria-labelledby="dashboard-period-title">
+    <div class="dashboard-period-heading">
+      <h2 id="dashboard-period-title" data-i18n="dashDrillTitle">Giao dịch trong kỳ</h2>
+      <button type="button" class="btn btn-soft" onclick="dongChiTietKyKho()"
+        data-i18n="dashDrillClose">Đóng</button>
+    </div>
+    <p id="dashboard-period-summary" role="status" class="insight-note"></p>
+    <div class="dashboard-period-table-wrap">
+      <table class="dashboard-detail-table">
+        <thead><tr>
+          <th data-i18n="dashboardExportDate">Ngày</th>
+          <th data-i18n="dashboardExportSap">Mã SAP</th>
+          <th data-i18n="historyDirection">Nhập / xuất</th>
+          <th data-i18n="dashboardTopOutCount">Số lượng</th>
+          <th data-i18n="dashboardExportUnit">Đơn vị</th>
+          <th data-i18n="dashboardExportValue">Giá trị (VND)</th>
+        </tr></thead>
+        <tbody id="dashboard-period-rows"></tbody>
+      </table>
+    </div>
+    <div class="dashboard-period-pagination">
+      <button type="button" class="btn btn-soft" onclick="chuyenTrangChiTietKy(-1)"
+        data-i18n="prev">Trước</button>
+      <span id="dashboard-period-page"></span>
+      <button type="button" class="btn btn-soft" onclick="chuyenTrangChiTietKy(1)"
+        data-i18n="next">Sau</button>
+    </div>
+  </dialog>
 
   <div id="stock-row-menu" class="stock-row-menu" role="menu" data-i18n-aria="stockRowMenuAria"
     aria-label="Thao tác vật tư" tabindex="-1" hidden>
@@ -2097,6 +2183,44 @@
         dashboardHallUnavailableValue:"Lịch sử giá trị kho theo từng Hall chưa được lưu; chỉ có bản ghi tổng kho.",
         dashboardHall2NoSnapshots:"Hall 2 không có dữ liệu giá trị kho.",
         dashboardHall2NoStockReport:"Hall 2 không có thông tin tồn kho cho báo cáo này.",
+        dashDrillTitle:"Giao dịch trong kỳ",
+        dashDrillClose:"Đóng",
+        dashDrillHint:"Xem giao dịch kỳ {period}",
+        dashDrillSummary:"{count} giao dịch · {from} đến {to} · Nhập: {incoming} · Xuất: {outgoing}",
+        dashDrillUnavailable:"Chưa có lịch sử giao dịch hợp lệ trong kỳ này.",
+        dashDrillPage:"Trang {page}/{total} · {count} giao dịch",
+        dashValueDelta:"{percent}% so với {date}",
+        dashValueDeltaMissing:"Cần ít nhất 2 ngày dữ liệu để so sánh.",
+        dashValueDeltaZero:"Giá trị kỳ trước bằng 0; chưa thể tính %.",
+        dashValueDeltaNone:"Hall 2 không có giá trị kho.",
+        dashAlertHeading:"Cảnh báo kho",
+        dashAlertRule:"Giá trị kho ±10% · xuất tăng trên 100% · tồn xuống ngưỡng",
+        dashAlertAllClear:"Chưa phát hiện cảnh báo theo các ngưỡng hiện tại.",
+        dashAlertValue:"Giá trị kho thay đổi {percent}% từ ngày {date}.",
+        dashAlertReorder:"{count} dòng vật tư đang hết hoặc không vượt điểm đặt hàng lại.",
+        dashAlertOut:"Giá trị xuất tăng {percent}% so với kỳ trước.",
+        dashAlertMaterialOut:"{count} mã vật tư xuất tăng đột biến (trên 100% so với kỳ trước): {codes}.",
+        dashSourceHeading:"Trạng thái nguồn dữ liệu",
+        dashSourceRefresh:"Kiểm tra cập nhật",
+        dashSourceClear:"Xóa bộ nhớ đệm lịch sử",
+        dashSourcePrivacy:"Bộ nhớ đệm History.js trên thiết bị có thể chứa dữ liệu SAP nội bộ; hãy xóa khi dùng máy chung.",
+        dashSourceStock:"Tồn kho · data.js",
+        dashSourceHistory:"Giao dịch · History.js",
+        dashSourceAmount:"Giá trị kho · Amount.js",
+        dashSourceImages:"Ảnh vật tư · Material",
+        dashSourceWaiting:"Chưa tải",
+        dashSourceLoading:"Đang tải",
+        dashSourceReady:"Sẵn sàng",
+        dashSourceUnchanged:"Không thay đổi",
+        dashSourceFallback:"Đang dò ảnh (chưa có manifest)",
+        dashSourceStale:"Dữ liệu lần trước",
+        dashSourceError:"Không tải được",
+        dashSourceDetail:"{count} dòng · {ms} ms",
+        dashSourceChecked:"Kiểm tra: {time}",
+        dashSourceUpdated:"Dữ liệu: {time}",
+        dashSourceNoData:"Chưa có dữ liệu",
+        dashSourceCleared:"Đã xóa bộ nhớ đệm lịch sử trên thiết bị.",
+        dashSourceClearFailed:"Không thể xóa bộ nhớ đệm khi cơ sở dữ liệu đang được sử dụng.",
         dashboardExportSelect:"Chọn báo cáo xuất",
         dashboardExportStock:"Tra cứu tồn kho (theo bộ lọc Tra cứu)",
         dashboardExportTopValue:"Vật tư có giá trị tồn cao",
@@ -2388,6 +2512,44 @@
         dashboardHallUnavailableValue:"Historical Hall-level inventory values were not saved; only full-warehouse snapshots exist.",
         dashboardHall2NoSnapshots:"No inventory value data is available for Hall 2.",
         dashboardHall2NoStockReport:"No inventory information is available for Hall 2 in this report.",
+        dashDrillTitle:"Transactions in period",
+        dashDrillClose:"Close",
+        dashDrillHint:"Show transactions for {period}",
+        dashDrillSummary:"{count} transactions · {from} to {to} · In: {incoming} · Out: {outgoing}",
+        dashDrillUnavailable:"No valid transaction history in this period.",
+        dashDrillPage:"Page {page}/{total} · {count} transactions",
+        dashValueDelta:"{percent}% vs {date}",
+        dashValueDeltaMissing:"At least two dated values are needed for comparison.",
+        dashValueDeltaZero:"Previous value is zero; percentage is undefined.",
+        dashValueDeltaNone:"Hall 2 has no inventory valuation.",
+        dashAlertHeading:"Inventory alerts",
+        dashAlertRule:"Stock value ±10% · outbound grows over 100% · reorder warnings",
+        dashAlertAllClear:"No alerts at the current thresholds.",
+        dashAlertValue:"Inventory value changed {percent}% since {date}.",
+        dashAlertReorder:"{count} materials are empty or at/below reorder point.",
+        dashAlertOut:"Outbound value increased {percent}% compared to the prior period.",
+        dashAlertMaterialOut:"{count} material codes have outbound value growth over 100%: {codes}.",
+        dashSourceHeading:"Data source status",
+        dashSourceRefresh:"Check for updates",
+        dashSourceClear:"Clear History cache",
+        dashSourcePrivacy:"The local History.js cache may contain confidential SAP data; clear it on shared devices.",
+        dashSourceStock:"Stock · data.js",
+        dashSourceHistory:"Movements · History.js",
+        dashSourceAmount:"Inventory value · Amount.js",
+        dashSourceImages:"Material images",
+        dashSourceWaiting:"Not loaded",
+        dashSourceLoading:"Loading",
+        dashSourceReady:"Ready",
+        dashSourceUnchanged:"Unchanged",
+        dashSourceFallback:"Scanning images (no manifest)",
+        dashSourceStale:"Previous data",
+        dashSourceError:"Unavailable",
+        dashSourceDetail:"{count} rows · {ms} ms",
+        dashSourceChecked:"Checked: {time}",
+        dashSourceUpdated:"Source: {time}",
+        dashSourceNoData:"No data",
+        dashSourceCleared:"Local History cache cleared.",
+        dashSourceClearFailed:"Could not clear the cache while the database is in use.",
         dashboardExportSelect:"Choose report",
         dashboardExportStock:"Stock lookup (search filters)",
         dashboardExportTopValue:"Highest inventory value materials",
@@ -2762,6 +2924,7 @@
       capNhatGiaoDienAnh();
       if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
       chuyenTab(tabHienTai,{persist:false,skipHistory:true});
+      veTrangThaiNguon();capNhatCanhBaoKho();
       capNhatNgonNguHistory();
       kiemTraNhacBaoCao();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
@@ -2967,9 +3130,101 @@
       el.textContent = tuDien(key, values);
     }
 
+
+    // HEAD validators avoid repeatedly downloading/reindexing multi-MB SAP files.
+    // Missing validators or local file:// pages fall back to the existing loader.
+    const phienBanNguon={stock:"",history:""};
+    const phienBanChoNap={stock:"",history:""};
+    async function kiemTraPhienBanNguon(kind,file,load){
+      if(document.hidden)return;
+      if(location.protocol!=="http:"&&location.protocol!=="https:"){
+        load();return;
+      }
+      try{
+        const response=await fetch(file+"?check="+Date.now(),{
+          method:"HEAD",cache:"no-store"
+        });
+        if(!response.ok)throw Error("VERSION_HEAD_FAILED");
+        const etag=response.headers.get("etag");
+        const modified=response.headers.get("last-modified");
+        const length=response.headers.get("content-length");
+        const signature=etag?"etag:"+etag:modified?
+          "modified:"+modified+"|"+(length||""):"";
+        if(!signature){load();return;}
+        if(phienBanNguon[kind]===signature){
+          ghiNhanNguon(kind,"unchanged");
+          return;
+        }
+        phienBanChoNap[kind]=signature;
+        load();
+      }catch(err){
+        // Legacy network shares may not support HEAD; retain working behavior.
+        load();
+      }
+    }
+
+    // Optional checking-versions.js supports very fast version probes even
+    // from file:// network shares (which do not expose HTTP ETag headers).
+    const phienBanFile={known:null,loading:false,available:null};
+    function kiemTraPhienBanCucBo(){
+      if(location.protocol!=="file:"||document.hidden||
+        phienBanFile.loading||phienBanFile.available===false)return;
+      phienBanFile.loading=true;
+      const script=document.createElement("script");
+      let done=false;
+      const timer=setTimeout(()=>finish(false),1500);
+      function finish(ok){
+        if(done)return;
+        done=true;clearTimeout(timer);
+        script.remove();phienBanFile.loading=false;
+        const data=window.checkingSourceVersions;
+        if(!ok||!data||typeof data!=="object"){
+          phienBanFile.available=false;
+          return;
+        }
+        phienBanFile.available=true;
+        if(!phienBanFile.known){
+          phienBanFile.known={...data};
+          return;
+        }
+        const previous=phienBanFile.known;
+        phienBanFile.known={...data};
+        if(data.stock!==previous.stock)taiDuLieu();
+        if(data.history!==previous.history&&historyLoaded)taiHistory(true);
+        if(data.amount!==previous.amount)taiLaiAmount();
+      }
+      script.onload=()=>finish(true);
+      script.onerror=()=>finish(false);
+      script.src="checking-versions.js?check="+Date.now();
+      document.head.appendChild(script);
+    }
+
+    function kiemTraPhienBanStock(){
+      if(location.protocol==="file:"&&phienBanFile.available!==false){
+        kiemTraPhienBanCucBo();return;
+      }
+      return kiemTraPhienBanNguon("stock",duongDanOMang,taiDuLieu);
+    }
+    function kiemTraPhienBanHistory(){
+      if(!historyLoaded||historyLoading)return;
+      if(location.protocol==="file:"){
+        kiemTraPhienBanCucBo();
+        return;
+      }
+      return kiemTraPhienBanNguon("history",DUONG_DAN_HISTORY,()=>taiHistory(true));
+    }
+    function lamMoiToanBoNguon(){
+      taiDuLieu();
+      taiLaiAmount();
+      if(historyLoaded||tabHienTai==="dashboard")taiHistory(true);
+      taiManifestAnh();
+    }
+
     function taiDuLieu() {
       if (document.hidden || dangTaiScript) return;
       dangTaiScript = true;
+      const batDauTai=Date.now();
+      ghiNhanNguon("stock","loading");
       const lanHienTai = ++lanTaiDuLieu;
       const scriptCu = document.getElementById("script-data");
       if (scriptCu) scriptCu.remove();
@@ -2988,6 +3243,8 @@
         s.remove();
         datTrangThaiDuLieu("statusOffline", "error");
         datThongBaoCapNhat("statusTimeout");
+        ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
+        phienBanChoNap.stock="";
       }, 15000);
 
       s.onload = function() {
@@ -3002,6 +3259,8 @@
         if (!Array.isArray(duLieuMoi) || !duLieuMoi.length || !Array.isArray(duLieuMoi[0])) {
           datTrangThaiDuLieu("statusInvalid", "error");
           datThongBaoCapNhat("statusBadData");
+          ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
+          phienBanChoNap.stock="";
           return;
         }
         if (!coMocCapNhat || thoiGianCapNhat !== mocCapNhatCu || !tatCaDuLieu.length) {
@@ -3017,6 +3276,12 @@
           taoChiMucTimKiem();
         }
         datTrangThaiDuLieu("statusOnline");
+        if(phienBanChoNap.stock){
+          phienBanNguon.stock=phienBanChoNap.stock;
+          phienBanChoNap.stock="";
+        }
+        ghiNhanNguon("stock","ready",{count:duLieuMoi.length-1,
+          updated:coMocCapNhat?String(thoiGianCapNhat):"",ms:Date.now()-batDauTai});
         datThongBaoCapNhat("updated", {time: coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString(ngonNguHienTai === "en" ? "en-US" : "vi-VN")});
       };
       s.onerror = function() {
@@ -3025,6 +3290,8 @@
         dangTaiScript = false;
         datTrangThaiDuLieu("statusOffline", "error");
         datThongBaoCapNhat("statusLoadFail", {file:duongDanOMang});
+        ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
+        phienBanChoNap.stock="";
       };
       document.body.appendChild(s);
     }
@@ -3176,6 +3443,8 @@
     function taiLaiAmount(){
       if(dangTaiAmount||document.hidden)return;
       dangTaiAmount=true;
+      const batDauTai=Date.now();
+      ghiNhanNguon("amount","loading");
       const previous=window.amountData;
       const script=document.createElement("script");
       let finished=false;
@@ -3194,9 +3463,13 @@
             (previous.length===0||layGiaTriKhoTuAmount().length>0);
           trangThaiAmount=hadValid?"dashAmountStale":errorKey;
         }
+        ghiNhanNguon("amount",ok?"ready":Array.isArray(previous)?"stale":"error",{
+          ms:Date.now()-batDauTai,count:layGiaTriKhoTuAmount().length,
+          updated:layGiaTriKhoTuAmount().slice(-1)[0]?.date||""});
         capNhatTrangThaiAmount();
         veBieuDoGiaTriKho();
         veLichSuKho();
+        capNhatCanhBaoKho();
       }
       script.onload=()=>{
         const changed=window.amountData!==previous;
@@ -3209,6 +3482,127 @@
       document.head.appendChild(script);
     }
 
+
+    // Source telemetry is presentation-only: no data is sent to external services.
+    const trangThaiNguon={
+      stock:{status:"waiting",count:0,ms:0,at:""},
+      history:{status:"waiting",count:0,ms:0,at:""},
+      amount:{status:"waiting",count:0,ms:0,at:""},
+      images:{status:"waiting",count:0,ms:0,at:""}
+    };
+    const nhanNguon={stock:"dashSourceStock",history:"dashSourceHistory",
+      amount:"dashSourceAmount",images:"dashSourceImages"};
+    const nhanTinhTrangNguon={waiting:"dashSourceWaiting",loading:"dashSourceLoading",
+      ready:"dashSourceReady",unchanged:"dashSourceUnchanged",
+      stale:"dashSourceStale",fallback:"dashSourceFallback",error:"dashSourceError"};
+    function veTrangThaiNguon(){
+      for(const [id,entry] of Object.entries(trangThaiNguon)){
+        const node=document.getElementById("dashboard-source-"+id);
+        if(!node)continue;
+        node.dataset.status=entry.status;
+        const title=document.createElement("strong");
+        title.textContent=tuDien(nhanNguon[id]);
+        const desc=document.createElement("span");
+        desc.textContent=tuDien(nhanTinhTrangNguon[entry.status])+
+          (entry.count?" · "+tuDien("dashSourceDetail",{
+            count:dinhDangSoLuong.format(entry.count),ms:Math.round(entry.ms)}):"")+
+          (entry.at?" · "+tuDien("dashSourceChecked",{time:entry.at}):"")+
+          (entry.updated?" · "+tuDien("dashSourceUpdated",{time:entry.updated}):"");
+        node.replaceChildren(title,desc);
+      }
+    }
+    function ghiNhanNguon(id,status,details={}){
+      const entry=trangThaiNguon[id];if(!entry)return;
+      Object.assign(entry,details,{status,at:new Date().toLocaleTimeString(
+        ngonNguHienTai==="en"?"en-US":"vi-VN")});
+      veTrangThaiNguon();
+    }
+    function phanTramBienDongKho(current,previous){
+      if(!Number.isFinite(current)||!Number.isFinite(previous)||previous===0)return null;
+      return (current-previous)/previous*100;
+    }
+    function tinhBienDongAmount(){
+      const rows=layGiaTriKhoTuAmount();
+      const latest=rows[rows.length-1],previous=rows[rows.length-2];
+      return {latest,previous,percent:latest&&previous?
+        phanTramBienDongKho(latest.value,previous.value):null};
+    }
+    function chuoiPhanTramKho(value){
+      return (value>0?"+":"")+new Intl.NumberFormat(
+        ngonNguHienTai==="en"?"en-US":"vi-VN",
+        {maximumFractionDigits:1}).format(value);
+    }
+
+    let cacheCanhBaoVatTu=null;
+    function vatTuXuatDotBienTrongKy(range){
+      if(!range||!historyLoaded)return [];
+      const hall=hallDangLoc(),rows=lichSuTheoHall();
+      if(!rows)return [];
+      const key=[range.from,range.to,range.prevFrom,range.prevTo,hall].join("|");
+      if(cacheCanhBaoVatTu?.key===key&&
+        cacheCanhBaoVatTu.source===historyAll)return cacheCanhBaoVatTu.items;
+      const amountCol=cotGiaTriLichSuKho(),sapCol=cotMaSapLichSuKho();
+      if(amountCol<0||sapCol<0)return [];
+      const actual=new Map(),previous=new Map();
+      for(const rec of rows){
+        if(rec.type!=="out"||!ngayHistoryHopLe(rec.date))continue;
+        const current=rec.date>=range.from&&rec.date<=range.to;
+        const prior=rec.date>=range.prevFrom&&rec.date<=range.prevTo;
+        if(!current&&!prior)continue;
+        const raw=String(rec.cells[amountCol]??"").trim();
+        const amount=raw?chuyenThanhSo(raw):NaN;
+        const sap=chuanHoaMaSap(rec.cells[sapCol]);
+        if(!sap||!Number.isFinite(amount))continue;
+        const table=current?actual:previous;
+        table.set(sap,(table.get(sap)||0)+Math.abs(amount));
+      }
+      const items=[...actual].map(([sap,value])=>({
+        sap,value,prior:previous.get(sap)||0
+      })).filter(r=>r.prior>0&&r.value>r.prior*2)
+        .sort((a,b)=>(b.value/b.prior)-(a.value/a.prior)||b.value-a.value);
+      cacheCanhBaoVatTu={key,source:historyAll,items};
+      return items;
+    }
+    function capNhatCanhBaoKho(){
+      const node=document.getElementById("dashboard-alert-list");if(!node)return;
+      const warnings=[],hall=hallDangLoc(),value=tinhBienDongAmount();
+      if(hall!=="hall2"&&value.percent!==null&&Math.abs(value.percent)>=10)
+        warnings.push({level:"warning",text:tuDien("dashAlertValue",{
+          percent:chuoiPhanTramKho(value.percent),date:value.previous.date})});
+      if(hall!=="hall2"&&analyticsReady){
+        const attention=duLieuTimKiem.filter(r=>
+          ["zero","at","below"].includes(r.trangThaiTon)).length;
+        if(attention)warnings.push({level:"danger",text:tuDien("dashAlertReorder",{
+          count:dinhDangSoLuong.format(attention)})});
+      }
+      const range=layKyPhanTichKho();
+      if(historyLoaded&&range&&lichSuTheoHall()){
+        const col=cotGiaTriLichSuKho();
+        if(col>=0){
+          const present=tongNhapXuatTrongKhoang(range,col);
+          const past=tongNhapXuatTrongKhoang({from:range.prevFrom,to:range.prevTo},col);
+          const growth=phanTramBienDongKho(present.out,past.out);
+          if(growth!==null&&growth>100)
+            warnings.push({level:"warning",text:tuDien("dashAlertOut",{
+              percent:chuoiPhanTramKho(growth)})});
+          const spikes=vatTuXuatDotBienTrongKy(range);
+          if(spikes.length)warnings.push({level:"warning",
+            text:tuDien("dashAlertMaterialOut",{
+              count:dinhDangSoLuong.format(spikes.length),
+              codes:spikes.slice(0,3).map(r=>r.sap).join(", ")
+            })});
+        }
+      }
+      node.replaceChildren();
+      for(const warn of warnings.length?warnings:[{
+        level:"ok",text:tuDien("dashAlertAllClear")}]){
+        const part=document.createElement("div");
+        part.className="dashboard-alert";part.dataset.level=warn.level;
+        part.textContent=warn.text;
+        node.appendChild(part);
+      }
+    }
+
     function hienThiTongGiaTriKho() {
       const oGiaTri = document.getElementById("metric-inventory-value");
       const ghiChu = document.getElementById("metric-value-note");
@@ -3216,6 +3610,14 @@
       const snapshot=unavailable?null:anhChupGiaTriMoiNhat(layGiaTriKhoTuAmount());
       oGiaTri.textContent=snapshot?dinhDangGiaTriKho(snapshot.value):"—";
       oGiaTri.title = oGiaTri.textContent;
+      const delta=document.getElementById("metric-value-change");
+      const compared=unavailable?null:tinhBienDongAmount();
+      delta.dataset.direction=compared?.percent>0?"up":compared?.percent<0?"down":"none";
+      delta.textContent=unavailable?tuDien("dashValueDeltaNone"):
+        !compared?.previous?tuDien("dashValueDeltaMissing"):
+        compared.percent===null?tuDien("dashValueDeltaZero"):
+        tuDien("dashValueDelta",{percent:chuoiPhanTramKho(compared.percent),
+          date:compared.previous.date});
       ghiChu.textContent=tuDien(unavailable?"dashboardHall2NoSnapshots":
         snapshot?"dashboardSnapshotValueDate":"dashValueTrendEmpty",{date:snapshot?.date});
     }
@@ -3548,6 +3950,7 @@
       veTopVatTuXuatKho();
       veVatTuTonLau();
       veLichSuKho();
+      capNhatCanhBaoKho();
       kiemTraNhacBaoCao();
     }
 
@@ -4377,7 +4780,10 @@
         '<span class="movement-legend-'+type+'">'+thoatHTML(label(type))+'</span>').join("")+
         '</div><div class="trend-list">'+buckets.map(p=>{
           const value=stats.values.get(p.key);
-          return '<div class="trend-column"><div class="movement-pair">'+["in","out"].map(type=>{
+          return '<div class="trend-column" role="button" tabindex="0" data-period-key="'+
+          thoatHTML(p.key)+'" data-period-mode="'+mode+'" aria-label="'+
+          thoatHTML(tuDien("dashDrillHint",{period:p.title}))+
+          '"><div class="movement-pair">'+["in","out"].map(type=>{
             const exact=label(type)+": "+dinhDangGiaTriKho(value[type]);
             return '<div class="movement-series" title="'+thoatHTML(p.title+" · "+exact)+'" aria-label="'+thoatHTML(p.title+" · "+exact)+'">'+
               '<span class="trend-amount">'+thoatHTML(dinhDangRutGonKho(value[type]))+'</span>'+
@@ -4394,6 +4800,82 @@
         (buckets.truncated?" · "+tuDien("dashboardTruncated",{count:buckets.length}):"")+
         (stats.invalid?" · "+tuDien("dashUsageInvalid",{count:stats.invalid}):"")+
         (["historyInvalid","historyNoSource"].includes(historyStatusKey)?" · "+tuDien("materialHistoryStale"):"");
+    }
+
+
+    // Drill into the actual SAP transactions underlying an in/out chart bucket.
+    let giaoDichKyKho=[];
+    let trangGiaoDichKy=1;
+    const DONG_MOI_TRANG_KY=50;
+    function khoangKyDuocChon(key,mode){
+      let from=key,to=key;
+      if(mode==="week")to=congNgayKho(key,6);
+      else if(mode==="month"){
+        from=key+"-01";
+        const [year,month]=key.split("-").map(Number);
+        to=new Date(Date.UTC(year,month,0)).toISOString().slice(0,10);
+      }else if(mode==="year"){from=key+"-01-01";to=key+"-12-31";}
+      else if(mode!=="day")return null;
+      if(!ngayHistoryHopLe(from)||!ngayHistoryHopLe(to))return null;
+      const selected=layKyPhanTichKho();
+      if(!selected)return null;
+      from=from>selected.from?from:selected.from;
+      to=to<selected.to?to:selected.to;
+      return from<=to?{from,to}:null;
+    }
+    function moChiTietKyKho(key,mode){
+      const range=khoangKyDuocChon(key,mode);
+      const dialog=document.getElementById("dashboard-period-dialog");
+      const summary=document.getElementById("dashboard-period-summary");
+      if(!historyLoaded||!range||!lichSuTheoHall()){
+        giaoDichKyKho=[];
+        summary.textContent=tuDien("dashDrillUnavailable");
+      }else{
+        giaoDichKyKho=locGiaoDichKho(range);
+        const col=cotGiaTriLichSuKho();
+        const amounts=col>=0?tongNhapXuatTrongKhoang(range,col):{in:0,out:0};
+        summary.textContent=tuDien("dashDrillSummary",{
+          count:dinhDangSoLuong.format(giaoDichKyKho.length),
+          from:range.from,to:range.to,
+          incoming:col>=0?dinhDangGiaTriKho(amounts.in):"—",
+          outgoing:col>=0?dinhDangGiaTriKho(amounts.out):"—"
+        });
+      }
+      trangGiaoDichKy=1;
+      veChiTietKyKho();
+      if(!dialog.open)dialog.showModal();
+    }
+    function veChiTietKyKho(){
+      const body=document.getElementById("dashboard-period-rows");
+      const quantityCol=cotSoLuongHistoryDungCot(),amountCol=cotGiaTriLichSuKho(),
+        sapCol=cotMaSapLichSuKho(),unitCol=cotHistoryTheoTen(historyColumns,[
+          "Unit of Entry","Unit","UOM","Base Unit of Measure","Đơn vị"]);
+      const total=Math.max(1,Math.ceil(giaoDichKyKho.length/DONG_MOI_TRANG_KY));
+      trangGiaoDichKy=Math.max(1,Math.min(trangGiaoDichKy,total));
+      const offset=(trangGiaoDichKy-1)*DONG_MOI_TRANG_KY;
+      body.innerHTML=giaoDichKyKho.slice(offset,offset+DONG_MOI_TRANG_KY).map(rec=>{
+        const money=amountCol>=0?chuyenThanhSo(rec.cells[amountCol]):NaN;
+        const quantity=quantityCol>=0?chuyenThanhSo(rec.cells[quantityCol]):NaN;
+        const cells=[
+          rec.date,sapCol>=0?rec.cells[sapCol]:"—",
+          tuDien(rec.type==="in"?"historyInShort":"historyOutShort"),
+          Number.isFinite(quantity)?dinhDangSoLuong.format(Math.abs(quantity)):"—",
+          unitCol>=0?rec.cells[unitCol]:"—",
+          Number.isFinite(money)?dinhDangGiaTriKho(Math.abs(money)):"—"
+        ];
+        return '<tr>'+cells.map(x=>'<td>'+thoatHTML(x)+'</td>').join("")+'</tr>';
+      }).join("")||'<tr><td colspan="6">'+thoatHTML(tuDien("dashDrillUnavailable"))+'</td></tr>';
+      document.getElementById("dashboard-period-page").textContent=
+        tuDien("dashDrillPage",{page:trangGiaoDichKy,total,
+          count:dinhDangSoLuong.format(giaoDichKyKho.length)});
+    }
+    function chuyenTrangChiTietKy(delta){
+      trangGiaoDichKy+=delta;
+      veChiTietKyKho();
+    }
+    function dongChiTietKyKho(){
+      const node=document.getElementById("dashboard-period-dialog");
+      if(node.open)node.close();
     }
 
     function veBieuDoGiaTriKho(){
@@ -4624,6 +5106,127 @@
       return {data,updated:time?JSON.parse(time[1]):""};
     }
 
+
+    // Cache one successfully indexed History version. The cache is origin-scoped;
+    // users of shared workstations can clear it from the status panel.
+    const HISTORY_CACHE_DB="checking-history-index-v2";
+    function moKhoHistory(){
+      if(typeof indexedDB==="undefined"||location.protocol==="file:")
+        return Promise.resolve(null);
+      return new Promise(resolve=>{
+        let request;
+        try{request=indexedDB.open(HISTORY_CACHE_DB,1)}
+        catch{resolve(null);return}
+        request.onupgradeneeded=()=>{
+          if(!request.result.objectStoreNames.contains("versions"))
+            request.result.createObjectStore("versions");
+        };
+        request.onsuccess=()=>resolve(request.result);
+        request.onerror=()=>resolve(null);
+        request.onblocked=()=>resolve(null);
+      });
+    }
+    async function layCacheHistory(signature){
+      if(!signature)return null;
+      const db=await moKhoHistory();if(!db)return null;
+      return new Promise(resolve=>{
+        try{
+          const transaction=db.transaction("versions","readonly");
+          const req=transaction.objectStore("versions").get("latest");
+          req.onsuccess=()=>{
+            const item=req.result;
+            db.close();
+            resolve(item&&item.signature===signature&&
+              Date.now()-item.savedAt<86400000?item:null);
+          };
+          req.onerror=()=>{db.close();resolve(null)};
+        }catch{db.close();resolve(null)}
+      });
+    }
+    async function luuCacheHistory(signature,updated){
+      if(!signature||!historyLoaded)return;
+      const db=await moKhoHistory();if(!db)return;
+      try{
+        const transaction=db.transaction("versions","readwrite");
+        transaction.objectStore("versions").put({
+          signature,savedAt:Date.now(),updated,columns:historyColumns,
+          records:historyAll,typeColumn:historyTypeColumn,
+          output:[...ngayXuatCuoiTheoSap]
+        },"latest");
+        transaction.oncomplete=()=>db.close();
+        transaction.onerror=()=>db.close();
+        transaction.onabort=()=>db.close();
+      }catch{db.close()}
+    }
+    function xoaCacheHistory(){
+      if(typeof indexedDB==="undefined")return;
+      try{
+        const request=indexedDB.deleteDatabase(HISTORY_CACHE_DB);
+        request.onsuccess=()=>alert(tuDien("dashSourceCleared"));
+        request.onblocked=()=>alert(tuDien("dashSourceClearFailed"));
+        request.onerror=()=>alert(tuDien("dashSourceClearFailed"));
+      }catch{alert(tuDien("dashSourceClearFailed"))}
+    }
+    function apDungCacheHistory(item,sequence){
+      if(sequence!==historySeq||!item||!Array.isArray(item.columns)||
+        !Array.isArray(item.records))return false;
+      historyColumns=item.columns;
+      historyAll=item.records;
+      historyTypeColumn=item.typeColumn;
+      historyHallCache=null;stockHallCache=null;
+      ngayXuatCuoiTheoSap.clear();
+      for(const [key,date] of item.output||[])ngayXuatCuoiTheoSap.set(key,date);
+      historyLoaded=true;
+      capNhatTrangThaiHistory("historyLoaded");
+      capNhatTrangThaiHall();
+      capNhatCardNgayXuat();
+      locLichSuVatTu();
+      return true;
+    }
+    async function phienBanHistoryHienTai(){
+      if(location.protocol!=="http:"&&location.protocol!=="https:")return "";
+      try{
+        const r=await fetch(DUONG_DAN_HISTORY+"?version="+Date.now(),
+          {method:"HEAD",cache:"no-store"});
+        if(!r.ok)return "";
+        const etag=r.headers.get("etag"),modified=r.headers.get("last-modified");
+        return etag?"etag:"+etag:modified?
+          "modified:"+modified+"|"+(r.headers.get("content-length")||""):"";
+      }catch{return ""}
+    }
+
+    // Worker is optional for offline file:// and deployments that did not copy
+    // HistoryWorker.js. A short ready-handshake avoids hanging on blank mock files.
+    async function docHistoryBangWorker(source){
+      if(typeof Worker!=="function")return docHistoryTuVanBan(source);
+      return new Promise((resolve,reject)=>{
+        let worker;
+        try{worker=new Worker("HistoryWorker.js")}
+        catch{resolve(docHistoryTuVanBan(source));return}
+        let done=false;
+        let timer=setTimeout(()=>finish(null),1200);
+        function finish(result){
+          if(done)return;
+          done=true;clearTimeout(timer);worker.terminate();
+          if(result)resolve(result);
+          else{
+            try{resolve(docHistoryTuVanBan(source))}
+            catch(err){reject(err)}
+          }
+        }
+        worker.onerror=()=>finish(null);
+        worker.onmessage=event=>{
+          const message=event.data;
+          if(message?.ready){
+            clearTimeout(timer);
+            timer=setTimeout(()=>finish(null),15000);
+            try{worker.postMessage({source})}catch{finish(null)}
+          }else if(message?.data)finish(message);
+          else if(message?.error)finish(null);
+        };
+      });
+    }
+
     async function apDungNguonHistory(source,origin="file",updated="",sequence=historySeq) {
       let parsed;
       try {parsed=bienDoiHistory(source);}
@@ -4736,6 +5339,9 @@
     async function taiHistory(force=false) {
       if(historyLoading || (historyLoaded && !force))return;
       historyLoading=true;
+      const batDauTai=Date.now();
+      let capNhatHistory="";
+      ghiNhanNguon("history","loading");
       veSoSanhNhapXuatKho();
       veTopVatTuXuatKho();
       veVatTuTonLau();
@@ -4745,18 +5351,34 @@
       locLichSuVatTu();
       try{
         let source;
+        const signature=phienBanChoNap.history||await phienBanHistoryHienTai();
+        if(!force&&signature){
+          const cached=await layCacheHistory(signature);
+          if(cached&&apDungCacheHistory(cached,sequence)){
+            capNhatHistory=cached.updated||"";
+            phienBanNguon.history=signature;
+            return;
+          }
+        }
         if(typeof fetch==="function" && location.protocol!=="file:") {
           const response=await fetch(DUONG_DAN_HISTORY+"?t="+Date.now(),{cache:"no-store",priority:"low"});
           if(!response.ok)throw Error("HISTORY_MISSING");
-          source=docHistoryTuVanBan(await response.text());
+          source=await docHistoryBangWorker(await response.text());
         } else source=await taiHistoryBangScript();
         if(!source.data)throw Error("HISTORY_BAD_FORMAT");
+        capNhatHistory=source.updated||"";
         const ok=await apDungNguonHistory(source.data,"file",source.updated,sequence);
+        if(ok&&signature)luuCacheHistory(signature,source.updated);
+        if(ok && phienBanChoNap.history){
+          phienBanNguon.history=phienBanChoNap.history;
+          phienBanChoNap.history="";
+        }
         if(!ok && historyStatusKey==="historyLoading")
           capNhatTrangThaiHistory("historyInvalid");
       }catch(err){
         console.warn("History.js:",err);
         // Preserve the last good History result when a reload fails.
+        phienBanChoNap.history="";
         capNhatTrangThaiHistory(err.message==="HISTORY_BAD_FORMAT"||err instanceof SyntaxError
           ?"historyInvalid":"historyNoSource");
       }finally{
@@ -4768,6 +5390,12 @@
           veSoSanhNhapXuatKho();
           veTopVatTuXuatKho();
           veVatTuTonLau();
+          capNhatCanhBaoKho();
+          ghiNhanNguon("history",
+            ["historyInvalid","historyNoSource"].includes(historyStatusKey)?
+              (historyLoaded?"stale":"error"):"ready",
+            {count:historyAll.length,ms:Date.now()-batDauTai,
+              updated:capNhatHistory});
         }
       }
     }
@@ -5663,9 +6291,17 @@
     let promiseManifestAnh = null;
     const bienTheAnh=new Map();
     function taiManifestAnh() {
-      if(window.MaterialImageManifest&&typeof window.MaterialImageManifest==="object")
-        return Promise.resolve(window.MaterialImageManifest);
+      const source=window.MaterialImageManifest;
+      if(source&&typeof source==="object"){
+        const entries=source.version===2?source.materials:source;
+        const total=entries&&typeof entries==="object"?
+          Object.values(entries).reduce((n,v)=>n+(Array.isArray(v)?v.length:0),0):0;
+        ghiNhanNguon("images","ready",{count:total});
+        return Promise.resolve(source);
+      }
       if(!promiseManifestAnh) {
+        const batDauTai=Date.now();
+        ghiNhanNguon("images","loading");
         promiseManifestAnh=new Promise(resolve=>{
           const script=document.createElement("script");
           let done=false;
@@ -5683,7 +6319,15 @@
             const response=await fetch(THU_MUC_HINH+"manifest.json",{cache:"no-cache",signal:controller.signal});
             return response.ok?await response.json():null;
           }catch{return null;}finally{clearTimeout(timer);}
-        }).then(data=>data&&typeof data==="object"&&!Array.isArray(data)?data:null);
+        }).then(data=>{
+          const manifest=data&&typeof data==="object"&&!Array.isArray(data)?data:null;
+          const entries=manifest?.version===2?manifest.materials:manifest;
+          const count=entries&&typeof entries==="object"?
+            Object.values(entries).reduce((n,v)=>n+(Array.isArray(v)?v.length:0),0):0;
+          ghiNhanNguon("images",manifest?"ready":"fallback",{
+            count,ms:Date.now()-batDauTai});
+          return manifest;
+        });
       }
       return promiseManifestAnh;
     }
@@ -7028,17 +7672,38 @@
       node.addEventListener("dblclick",moLichSuBangDashboard);
       node.addEventListener("keydown",bamPhimLichSuBangDashboard);
     }
+    const giaoDichChart=document.getElementById("insight-usage");
+    function chonKyTrenBieuDo(event){
+      const target=event.target.closest(".trend-column[data-period-key]");
+      if(!target||!giaoDichChart.contains(target))return;
+      if(event.type==="keydown"&&event.key!=="Enter"&&event.key!==" ")return;
+      event.preventDefault();
+      moChiTietKyKho(target.dataset.periodKey,target.dataset.periodMode);
+    }
+    giaoDichChart.addEventListener("click",chonKyTrenBieuDo);
+    giaoDichChart.addEventListener("keydown",chonKyTrenBieuDo);
     doiKyPhanTichKho();
     trangThaiAmount=!Array.isArray(window.amountData)?"dashAmountLoadError":
       window.amountData.length&&!layGiaTriKhoTuAmount().length?"dashAmountInvalid":null;
     capNhatTrangThaiAmount();
+    ghiNhanNguon("amount",trangThaiAmount?"error":"ready",
+      {count:layGiaTriKhoTuAmount().length,
+        updated:layGiaTriKhoTuAmount().slice(-1)[0]?.date||""});
     if(trangThaiAmount)taiLaiAmount();
+    veTrangThaiNguon();
     taiDuLieu();
-    setInterval(taiDuLieu, 30000);
+    kiemTraPhienBanCucBo();
+    if(typeof requestIdleCallback==="function")requestIdleCallback(()=>taiManifestAnh());
+    else setTimeout(()=>taiManifestAnh(),1200);
+    setInterval(kiemTraPhienBanStock, 30000);
+    setInterval(kiemTraPhienBanHistory, 60000);
     setInterval(taiLaiAmount, 60000);
     setInterval(kiemTraNhacBaoCao, 60000);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {taiDuLieu();taiLaiAmount();kiemTraNhacBaoCao();}
+      if (!document.hidden) {
+        kiemTraPhienBanStock();kiemTraPhienBanHistory();
+        taiLaiAmount();kiemTraNhacBaoCao();
+      }
     });
   </script>
 </body>

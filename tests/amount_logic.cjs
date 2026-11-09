@@ -4,6 +4,7 @@ const html=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8');
 const nodes={
   'metric-inventory-value':{textContent:'',title:''},
   'metric-value-note':{textContent:''},
+  'metric-value-change':{textContent:'',dataset:{}},
   'dashboard-amount-status':{textContent:''},
   'dashboard-value-period':{value:'day'},
   'insight-value-trend':{textContent:''},
@@ -14,7 +15,7 @@ const document={hidden:false,getElementById:id=>nodes[id],
   createElement:()=>({remove(){}}),
   head:{appendChild:script=>scriptAction(script)}};
 const ctx={console,window:{},document,setTimeout,clearTimeout,Array,Date,Map,Set,
-  dangTaiAmount:false,trangThaiAmount:null,
+  dangTaiAmount:false,trangThaiAmount:null,ngonNguHienTai:'vi',
   hallDangLoc:()=>hall,layKyPhanTichKho:()=>({from:'2026-11-01',to:'2026-11-30'}),
   nhomKyTrongKhoangKho:(mode)=>{
     if(mode==='month')return [{key:'2026-11',label:'11/2026'}];
@@ -22,10 +23,11 @@ const ctx={console,window:{},document,setTimeout,clearTimeout,Array,Date,Map,Set
   },
   veCotTheoThoiGianKho:(id,buckets,values)=>{chart={id,buckets,values}},
   dinhDangGiaTriKho:n=>new Intl.NumberFormat('vi-VN').format(n)+' ₫',
-  dinhDangSoLuong:{format:n=>String(n)},tuDien:key=>key,
-  veLichSuKho:()=>{}};
+  dinhDangSoLuong:{format:n=>String(n)},tuDien:(key,params)=>key==='dashValueDelta'?`${params.percent}% ${params.date}`:key,
+  veLichSuKho:()=>{},ghiNhanNguon:()=>{},capNhatCanhBaoKho:()=>{}};
 vm.createContext(ctx);
 for(const name of ['ngayHistoryHopLe','khoaNhomKho','layGiaTriKhoTuAmount',
+  'phanTramBienDongKho','tinhBienDongAmount','chuoiPhanTramKho',
   'anhChupGiaTriMoiNhat','hienThiTongGiaTriKho','capNhatTrangThaiAmount',
   'veBieuDoGiaTriKho','taiLaiAmount']){
   const m=html.match(new RegExp('^    function '+name+'\\([^]*?^    }','m'));
@@ -44,9 +46,11 @@ const data=ctx.layGiaTriKhoTuAmount();
 assert.deepEqual(Array.from(data.map(x=>x.date)),['2026-11-08','2026-11-09','2026-11-10']);
 assert.equal(data[1].value,250);
 assert.equal(data[2].value,0);
+assert.equal(ctx.tinhBienDongAmount().percent,-100);
 for(const scope of ['all','hall1']){
   hall=scope;chart=null;ctx.veBieuDoGiaTriKho();
   assert.equal(nodes['metric-inventory-value'].textContent,'0 ₫');
+  assert.match(nodes['metric-value-change'].textContent,/100/);
   assert.equal(chart.values.get('2026-11-09'),250);
   assert.equal(chart.values.get('2026-11-10'),0);
 }
