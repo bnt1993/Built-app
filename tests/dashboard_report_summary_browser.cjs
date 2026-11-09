@@ -38,6 +38,16 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     });
     await page.goto('http://report-summary.test/');await page.locator('#tab-dashboard').click();
     await page.waitForFunction(()=>historyLoaded&&analyticsReady);
+    // All three export controls must share a baseline on desktop.
+    const exportParts=await Promise.all(['#dashboard-export-label',
+      '#dashboard-export-kind','#dashboard-export-button'].map(async selector=>{
+      const box=await page.locator(selector).boundingBox();
+      assert(box,selector+' must be visible');return box.y+box.height/2;
+    }));
+    assert(exportParts.every(y=>Math.abs(y-exportParts[0])<=12),
+      'Report caption, selector and export button must align on desktop');
+    assert.equal(await page.locator('#dashboard-export-kind option').count(),9);
+
     await page.locator('#dashboard-range-mode').selectOption('selected-month');
     await page.locator('#dashboard-range-month').fill('2026-10');
     await page.locator('#dashboard-range-month').dispatchEvent('change');
