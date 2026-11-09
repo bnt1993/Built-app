@@ -6654,6 +6654,130 @@
       fail();
     }
 
+
+    // Self-contained XLSX exporter; no online Excel libraries or uploads.
+    // Every selected report has its own worksheet, filter summary and all rows.
+    async function taoBaoCaoThongKeXlsx(reports){
+      if(!reports.length)throw Error("DASHBOARD_EXPORT_EMPTY");
+      const ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+      const worksheets=[],entries=[];
+      for(let k=0;k<reports.length;k++){
+        const report=reports[k],count=report.columns.length;
+        if(!count||count>16384||report.rows.length>1048568)
+          throw Error("XLSX_EXCEL_LIMIT");
+        const last=tenCotXlsx(count-1),rows=[],merges=[];
+        const info=(row,text,style=2)=>{
+          rows.push(hangXlsx(row,[oChuXlsx(0,row,text,style)],row===1?39:23));
+          if(count>1)merges.push("A"+row+":"+last+row);
+        };
+        info(1,report.title,1);
+        for(let n=0;n<6;n++){
+          const value=report.meta[n];
+          info(n+2,value?value[0]+": "+value[1]:"");
+        }
+        rows.push(hangXlsx(8,report.columns.map((value,i)=>oChuXlsx(i,8,value,7)),30));
+        for(let i=0;i<report.rows.length;i++){
+          if(i&&i%1500===0)await new Promise(resolve=>setTimeout(resolve,0));
+          const row=i+9,even=i%2===0;
+          const cells=report.rows[i].map((value,col)=>
+            typeof value==="number"&&Number.isFinite(value)?
+              oSoXlsx(col,row,value,report.money.includes(col)?
+                even?10:11:even?12:13):
+              oChuXlsx(col,row,value===null||value===undefined?"":String(value),even?8:9));
+          rows.push(hangXlsx(row,cells,23));
+        }
+        const widths=report.columns.map((v,i)=>Math.min(42,Math.max(
+          report.money.includes(i)?24:16,String(v).length+4)));
+        if(count>1)widths[1]=Math.max(widths[1],32);
+        const cols=widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+
+          '" width="'+w+'" customWidth="1"/>').join("");
+        const lastRow=Math.max(8,report.rows.length+8);
+        const sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+          '<worksheet xmlns="'+ns+'"><dimension ref="A1:'+last+lastRow+'"/>'+
+          '<sheetViews><sheetView showGridLines="0" workbookViewId="0">'+
+          '<pane ySplit="8" topLeftCell="A9" activePane="bottomLeft" state="frozen"/>'+
+          '<selection pane="bottomLeft" activeCell="A9" sqref="A9"/>'+
+          '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="22"/>'+
+          '<cols>'+cols+'</cols><sheetData>'+rows.join("")+'</sheetData>'+
+          '<autoFilter ref="A8:'+last+lastRow+'"/>'+
+          (merges.length?'<mergeCells count="'+merges.length+'">'+
+            merges.map(m=>'<mergeCell ref="'+m+'"/>').join("")+'</mergeCells>':"")+
+          '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>'+
+          '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+        worksheets.push('<sheet name="'+xmlXlsx(report.sheet)+'" sheetId="'+(k+1)+
+          '" r:id="rId'+(k+1)+'"/>');
+        entries.push({name:"xl/worksheets/sheet"+(k+1)+".xml",data:sheet});
+      }
+      const types='<?xml version="1.0" encoding="UTF-8"?>'+
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+        '<Default Extension="xml" ContentType="application/xml"/>'+
+        '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+        '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+        worksheets.map((_,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+
+          '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("")+
+        '</Types>';
+      const relationships='<?xml version="1.0" encoding="UTF-8"?>'+
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+        worksheets.map((_,i)=>'<Relationship Id="rId'+(i+1)+
+          '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join("")+
+        '<Relationship Id="rId'+(worksheets.length+1)+
+        '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+
+        '</Relationships>';
+      entries.push(
+        {name:"[Content_Types].xml",data:types},
+        {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+        {name:"xl/workbook.xml",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<workbook xmlns="'+ns+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+          '<bookViews><workbookView/></bookViews><sheets>'+worksheets.join("")+'</sheets></workbook>'},
+        {name:"xl/_rels/workbook.xml.rels",data:relationships},
+        {name:"xl/styles.xml",data:taoKieuXlsx()}
+      );
+      return new Blob([dongGoiZipXlsx(entries)],{
+        type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+    }
+
+    async function xuatBaoCaoThongKe(){
+      const selected=document.getElementById("dashboard-export-kind").value;
+      if(selected==="stock"){await xuatExcel();return;}
+      if(dangXuatExcel)return;
+      const button=document.getElementById("dashboard-export-button");
+      button.disabled=true;button.setAttribute("aria-busy","true");dangXuatExcel=true;
+      try {
+        const kinds=selected==="all"?
+          ["value","out","dormant","distribution","valueTrend","movement","compare"]:[selected];
+        const reports=[];
+        for(const kind of kinds){
+          try{
+            const report=taoDuLieuXuatThongKe(kind);
+            if(report.rows.length)reports.push(report);
+            else if(selected!=="all")throw Error("DASHBOARD_EXPORT_EMPTY");
+          }catch(err){
+            if(selected!=="all"||err.message!=="DASHBOARD_EXPORT_UNAVAILABLE")throw err;
+          }
+        }
+        if(!reports.length)throw Error("DASHBOARD_EXPORT_EMPTY");
+        const blob=await taoBaoCaoThongKeXlsx(reports);
+        const url=URL.createObjectURL(blob);
+        try{
+          const link=document.createElement("a");
+          link.href=url;
+          link.download="Bao_cao_kho_"+selected+"_"+new Date().toLocaleDateString("sv-SE")+".xlsx";
+          document.body.appendChild(link);link.click();link.remove();
+        }finally{setTimeout(()=>URL.revokeObjectURL(url),1500);}
+      }catch(error){
+        console.error("Dashboard report XLSX:",error);
+        alert(tuDien(error.message==="DASHBOARD_EXPORT_EMPTY"?"dashboardExportEmpty":
+          error.message==="DASHBOARD_EXPORT_UNAVAILABLE"?"dashboardExportUnavailable":
+          error.message==="XLSX_EXCEL_LIMIT"?"exportTooMany":"exportFailed"));
+      }finally{
+        dangXuatExcel=false;button.disabled=false;button.removeAttribute("aria-busy");
+      }
+    }
+
     // A row's context-menu actions always target the row under the pointer.
     // Stock data remains read-only: "Export material" downloads its information,
     // never records an OUTPUT movement or edits History.js.
