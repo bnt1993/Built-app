@@ -13,7 +13,7 @@ vm.createContext(ctx);
 for(const name of ['chuyenThanhSo','chuanHoaMaSap','tenHistoryChuan','cotHistoryTheoTen',
   'ngayHistoryHopLe','ngayDiaPhuongISO','congNgayKho','khoangNgayKho','layKyPhanTichKho',
   'cotStorageLocation','hallTuStorageLocation','hallDangLoc','lichSuTheoHall',
-  'tonKhoTheoHall','cotMaSapLichSuKho','thongKeVatTuTonLau']){
+  'tonKhoTheoHall','coCotStockHall','tonKhoHall1TonLau','cotMaSapLichSuKho','thongKeVatTuTonLau']){
   const match=html.match(new RegExp('^    function '+name+'\\([^]*?^    }','m'));
   assert(match,name);vm.runInContext(match[0],ctx);
 }
@@ -67,9 +67,23 @@ assert.deepEqual(Array.from(report(),r=>r.sap),['D','A']);
 nodes['dashboard-hall'].value='hall2';
 assert.equal(report().length,0);
 nodes['dashboard-hall'].value='all';
-// Missing and unrecognized locations must never produce cross-Hall balances.
+// A standalone Hall 1 Stock file has no Storage Location column.
+const mixedStock=ctx.duLieuTimKiem;
 ctx.tieuDeCot=['SAP','Description','No Hall','Unit','Price'];
-assert.equal(report(),null);
+ctx.duLieuTimKiem=mixedStock.filter(item=>item.dong[2]==='Hall 1');
+for(const hall of ['all','hall1']){
+  nodes['dashboard-hall'].value=hall;
+  const standalone=report();
+  assert.deepEqual(Array.from(standalone,r=>r.sap),['D','A']);
+  assert.equal(standalone.find(r=>r.sap==='A').quantity,10);
+  assert.equal(standalone.find(r=>r.sap==='A').price,100);
+  assert.equal(standalone.find(r=>r.sap==='A').last,'2025-01-01');
+  // Other analytics retain strict Hall filtering for unlabelled stock.
+  assert.equal(ctx.tonKhoTheoHall('hall1'),null);
+}
+nodes['dashboard-hall'].value='hall2';assert.equal(report().length,0);
+nodes['dashboard-hall'].value='all';
+// If Stock supplies locations, never fall back over unknown codes.
 ctx.tieuDeCot=['SAP','Description','Storage Location','Unit','Price'];
 ctx.duLieuTimKiem=[{dong:['A','Unknown','8000','PC',100],soLuong:10}];
 assert.equal(report(),null);

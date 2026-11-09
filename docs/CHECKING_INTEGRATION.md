@@ -193,7 +193,9 @@ node tests/dashboard_logic.cjs
 ## Tồn lâu Hall 1 và chọn tháng phân tích
 
 - Bảng **Vật tư tồn lâu chưa xuất** chỉ dùng dòng tồn kho và giao dịch xuất thuộc Hall 1, kể cả khi bộ lọc chung là **Tất cả khu vực**. Hall 2 hiển thị **không có thông tin**, ẩn phân trang và tắt chọn ngưỡng ngày cho bảng này; các báo cáo Hall 2 khác vẫn hoạt động.
-- Nhấn đúp hoặc nhấn Enter trên dòng tồn lâu mở lịch sử, số lượng và số dư riêng Hall 1. Dữ liệu thiếu hoặc không nhận diện được Storage Location vẫn được báo thiếu; không lấy tồn kho Hall 2 hay tự gán mã kho chưa biết cho Hall 1.
+- Dữ liệu Stock riêng của Hall 1 có thể không có cột Storage Location: bảng tồn lâu vẫn lấy số dư và đơn giá từ nguồn này, còn ngày xuất cuối chỉ lấy giao dịch Hall 1 trong History.js. Nếu Stock có cột khu vực, bảng vẫn lọc đúng Hall 1 và không gán mã kho chưa nhận diện cho Hall 1. History.js vẫn cần cột khu vực để tách giao dịch hai Hall.
+- Nhấn đúp hoặc nhấn Enter trên dòng tồn lâu mở lịch sử, số lượng và số dư Hall 1, kể cả khi nguồn Stock riêng không có cột khu vực. Cách lấy số dư này chỉ áp dụng cho popup mở từ bảng tồn lâu; các bảng khác giữ nguyên cách lọc Hall.
+- **Lịch sử đồng bộ trên thiết bị** dùng cùng danh sách ảnh chụp khi chọn **Tất cả khu vực** hoặc **Hall 1**. Chọn **Hall 2** hiển thị không có lịch sử đồng bộ. Thay đổi này không tạo lại, sửa hoặc xóa các ảnh chụp đã lưu, và không thay đổi bộ lọc của biểu đồ giá trị kho theo thời gian.
 - **Chọn kỳ → Theo tháng** cho phép chọn tháng/năm từ tháng 01/2000 đến tháng hiện tại. Tháng đã kết thúc dùng toàn tháng và so với toàn tháng trước; tháng hiện tại dùng đến ngày hiện tại và so cùng số ngày của tháng trước (giới hạn ở ngày cuối tháng).
 - Khoảng tháng áp dụng cho so sánh, bảng xuất khi dùng **Theo khoảng đã chọn**, biểu đồ giao dịch và giá trị kho. Tuần/năm trên biểu đồ chỉ đổi cách nhóm; giao dịch và ảnh chụp ngoài khoảng chọn không được cộng vào kỳ biên. Bảng tồn lâu tiếp tục xét tồn hiện tại và ngưỡng ngày chưa xuất.
 

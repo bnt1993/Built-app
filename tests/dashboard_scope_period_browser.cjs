@@ -26,11 +26,17 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
       ['Hall 1','30/09/2026','OUTPUT','B',-30,'PC',-6000],
       ['Hall 1','01/11/2026','OUTPUT','B',-40,'PC',-8000],
       ['Hall 1','15/02/2024','OUTPUT','B',-1,'PC',-200]];
+    let standaloneStock=false;
     await page.route('http://scope-period.test/**',r=>{
       const u=new URL(r.request().url());let body='',contentType='text/javascript';
       if(u.pathname==='/'){
         body=fs.readFileSync(path.join(__dirname,'../Checking'),'utf8');contentType='text/html';
-      }else if(u.pathname==='/data.js')body='window.duLieuCongTy='+JSON.stringify(stock)+';window.thoiGianCapNhat="test";';
+      }else if(u.pathname==='/data.js'){
+        const source=standaloneStock?
+          [stock[0],...stock.slice(1).filter(row=>row[5]==='Hall 1')]
+            .map(row=>row.filter((_,index)=>index!==5)):stock;
+        body='window.duLieuCongTy='+JSON.stringify(source)+';window.thoiGianCapNhat="test";';
+      }
       else if(u.pathname==='/History.js')body='window.materialHistory='+JSON.stringify(history)+';';
       else if(u.pathname==='/Material/manifest.js')body='window.MaterialImageManifest={version:2,complete:true,materials:{}};';
       return r.fulfill({contentType,body});
@@ -112,11 +118,56 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.locator('#dashboard-range-mode').selectOption('year');
     assert.equal(await page.locator('#dashboard-range-month-field').isVisible(),false);
     assert.equal(await page.locator('#dashboard-range-year-field').isVisible(),true);
+    // Reproduce the user's Stock file: Hall 1 inventory without a Hall column.
+    standaloneStock=true;await page.reload();
+    await page.locator('#tab-dashboard').click();
+    await page.waitForFunction(()=>historyLoaded&&analyticsReady);
+    for(const hall of ['all','hall1']){
+      await page.locator('#dashboard-hall').selectOption(hall);
+      assert.equal(await dormant.locator('tbody tr').count(),1);
+      assert.match(await dormant.innerText(),/Motor Hall 1/);
+      assert(!/chưa có cột|900|9\.999/.test(await dormant.innerText()));
+      await dormant.locator('tbody tr').dblclick();
+      assert.equal(await page.evaluate(()=>materialHistoryHall),'hall1');
+      assert.equal(await page.locator('#material-history-stock').innerText(),'10 PC');
+      assert.equal(await page.locator('#material-history-out-count').innerText(),'1 PC');
+      await page.keyboard.press('Escape');
+      await dormant.locator('tbody tr').focus();await page.keyboard.press('Enter');
+      assert.equal(await page.locator('#material-history-stock').innerText(),'10 PC');
+      await page.keyboard.press('Escape');
+    }
+    await page.locator('#dashboard-hall').selectOption('all');
+    await page.evaluate(()=>{
+      ghiTuyChon('checking-stock-snapshots',JSON.stringify([
+        {date:'2026-10-31',value:100,hasPrice:true},
+        {date:'2026-11-01',value:200,hasPrice:true}
+      ]));veLichSuKho();
+    });
+    const snapshots=await page.locator('#insight-history').innerText();
+    assert.match(snapshots,/2026-11-01/);
+    await page.locator('#dashboard-hall').selectOption('hall1');
+    assert.equal(await page.locator('#insight-history').innerText(),snapshots);
+    assert.equal(await page.locator('#insight-history .insight-row').count(),2);
+    await page.screenshot({path:'/tmp/dashboard-hall1-standalone-fixed.png',fullPage:true});
+    await page.locator('#dashboard-hall').selectOption('hall2');
+    assert.match(await page.locator('#insight-history').innerText(),/Hall 2 không có lịch sử đồng bộ/);
+    assert.equal(await page.locator('#insight-history .insight-row').count(),0);
+    assert.match(await dormant.innerText(),/Hall 2 không có thông tin/);
+    assert.equal(await dormant.locator('table').count(),0);
+    await page.locator('#lang-en').click();
+    assert.match(await page.locator('#insight-history').innerText(),/No local synchronization history.*Hall 2/);
+    await page.locator('#lang-vi').click();
+    await page.locator('#dashboard-hall').selectOption('all');
+    assert.equal(await page.locator('#insight-history').innerText(),snapshots);
+    await page.evaluate(()=>{ghiTuyChon('checking-stock-snapshots','[]');veLichSuKho();});
+    const empty=await page.locator('#insight-history').innerText();
+    await page.locator('#dashboard-hall').selectOption('hall1');
+    assert.equal(await page.locator('#insight-history').innerText(),empty);
     // Hall 2 remains unavailable while the history feed is loading as well.
     await page.evaluate(()=>{historyLoaded=false;historyLoading=true;});
     await page.locator('#dashboard-hall').selectOption('hall2');
     assert.match(await dormant.innerText(),/Hall 2 không có thông tin/);
     assert.deepEqual(errors,[]);
-    console.log('PASS browser: Hall 1 dormant report/popup/keyboard scope, Hall 2 unavailable state, calendar-month selection, exact chart boundaries, VI/EN and mobile layout.');
+    console.log('PASS browser: Hall 1 dormant report with/without Stock locations, popup/keyboard scope, shared All/Hall 1 sync snapshots, Hall 2 unavailable, month selection, chart boundaries, VI/EN and mobile layout.');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
