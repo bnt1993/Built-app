@@ -2032,6 +2032,9 @@
       vi: {
         dashboardHallUnknownStock:"Storage Location của dữ liệu tồn kho chưa có giá trị Hall 1/Hall 2 nhận diện được.",
         dashboardHallUnknownHistory:"Giá trị Storage Location chưa nhận diện được Hall 1/Hall 2. Cần đối chiếu mã kho thực tế trong History.js.",
+        dashboardHallPartialHistory:"Có {count} giao dịch thiếu hoặc chưa nhận diện khu vực kho; không được tính vào Hall đã chọn.",
+        dashboardHallPartialStock:"Có {count} dòng tồn kho thiếu hoặc chưa nhận diện khu vực kho; không được tính vào Hall đã chọn.",
+        materialHistoryHallScope:"Lịch sử và số liệu trong cửa sổ này chỉ thuộc {hall}.",
         dashboardQuantitySource:"Số lượng nhập/xuất lấy từ Qty in unit of entry, giá trị tiền lấy từ Amt.in loc.cur.",
         dashboardSortHint:"Nhấn tiêu đề cột để sắp xếp",
         dashboardSortDesc:"Sắp xếp giảm dần",
@@ -2269,6 +2272,9 @@
       en: {
         dashboardHallUnknownStock:"Stock Storage Location has no recognized Hall 1/Hall 2 values.",
         dashboardHallUnknownHistory:"Storage Location codes do not match Hall 1/Hall 2; confirm the source mapping.",
+        dashboardHallPartialHistory:"{count} transactions have a missing or unrecognized storage location and are excluded from the selected Hall.",
+        dashboardHallPartialStock:"{count} stock rows have a missing or unrecognized storage location and are excluded from the selected Hall.",
+        materialHistoryHallScope:"History and figures in this window are limited to {hall}.",
         dashboardQuantitySource:"Inbound/outbound quantities use Qty in unit of entry; monetary values use Amt.in loc.cur.",
         dashboardSortHint:"Click a column heading to sort",
         dashboardSortDesc:"Sort descending",
@@ -3576,8 +3582,7 @@
     }
     let historyHallCache=null;
     let stockHallCache=null;
-    function lichSuTheoHall(){
-      const hall=hallDangLoc();
+    function lichSuTheoHall(hall=hallDangLoc()){
       if(hall==="all")return historyAll;
       const index=cotStorageLocation(historyColumns);
       if(index<0)return null;
@@ -3585,9 +3590,10 @@
         historyHallCache.index===index&&historyHallCache.hall===hall)
         return historyHallCache.unrecognized?null:historyHallCache.rows;
       const rows=historyAll.filter(rec=>hallTuStorageLocation(rec.cells[index])===hall);
-      const hasKnown=rows.length>0||historyAll.some(rec=>
-        !!hallTuStorageLocation(rec.cells[index]));
-      historyHallCache={records:historyAll,index,hall,rows,unrecognized:!hasKnown};
+      const unknownCount=historyAll.reduce((count,rec)=>
+        count+(!hallTuStorageLocation(rec.cells[index])?1:0),0);
+      const hasKnown=historyAll.length>unknownCount;
+      historyHallCache={records:historyAll,index,hall,rows,unknownCount,unrecognized:!hasKnown};
       return hasKnown?rows:null;
     }
     function tonKhoTheoHall(){
@@ -3599,9 +3605,10 @@
         stockHallCache.index===index&&stockHallCache.hall===hall)
         return stockHallCache.unrecognized?null:stockHallCache.rows;
       const rows=duLieuTimKiem.filter(rec=>hallTuStorageLocation(rec.dong[index])===hall);
-      const hasKnown=rows.length>0||duLieuTimKiem.some(rec=>
-        !!hallTuStorageLocation(rec.dong[index]));
-      stockHallCache={records:duLieuTimKiem,index,hall,rows,unrecognized:!hasKnown};
+      const unknownCount=duLieuTimKiem.reduce((count,rec)=>
+        count+(!hallTuStorageLocation(rec.dong[index])?1:0),0);
+      const hasKnown=duLieuTimKiem.length>unknownCount;
+      stockHallCache={records:duLieuTimKiem,index,hall,rows,unknownCount,unrecognized:!hasKnown};
       return hasKnown?rows:null;
     }
     function loiCotHall(loai){
@@ -3615,8 +3622,16 @@
       const hall=hallDangLoc();
       if(hall==="all"){note.textContent="";return;}
       const alerts=[];
-      if(analyticsReady&&tonKhoTheoHall()===null)alerts.push(tuDien(loiCotHall("stock")));
-      if(historyLoaded&&lichSuTheoHall()===null)alerts.push(tuDien(loiCotHall("history")));
+      if(analyticsReady){
+        if(tonKhoTheoHall()===null)alerts.push(tuDien(loiCotHall("stock")));
+        else if(stockHallCache&&stockHallCache.unknownCount)alerts.push(tuDien(
+          "dashboardHallPartialStock",{count:dinhDangLuongHistory(stockHallCache.unknownCount)}));
+      }
+      if(historyLoaded){
+        if(lichSuTheoHall()===null)alerts.push(tuDien(loiCotHall("history")));
+        else if(historyHallCache&&historyHallCache.unknownCount)alerts.push(tuDien(
+          "dashboardHallPartialHistory",{count:dinhDangLuongHistory(historyHallCache.unknownCount)}));
+      }
       note.textContent=alerts.join(" · ")||tuDien("dashboardQuantitySource");
     }
     function doiLocHallPhanTich(){
@@ -3729,13 +3744,14 @@
       return material||null;
     }
     function moLichSuDashboardTheoSap(sap){
-      const item=duLieuTimKiem.find(v=>
+      const item=(tonKhoTheoHall()||[]).find(v=>
         chuanHoaMaSap(v.dong[0]).toLowerCase()===String(sap).toLowerCase());
-      if(item){moLichSuVatTu(item.chiSo);return;}
+      if(item){moLichSuVatTu(item.chiSo,hallDangLoc());return;}
       if(!historyLoaded)return;
       // History can include material codes absent from current stock.
       const dialog=document.getElementById("material-history-dialog");
       materialHistorySap=String(sap);
+      materialHistoryHall=hallDangLoc();
       materialHistoryStockIndex=-1;
       materialHistoryPage=1;
       materialHistorySortColumn=-2;
@@ -4232,6 +4248,7 @@
 
     function timNguonHistory() {
       const candidates=[
+        "materialHistory",
         "duLieuLichSu","duLieuHistory","duLieuLichSuNhapXuat","lichSuNhapXuat",
         "inventoryTransactions","historyData","HistoryData","HISTORY_DATA",
         "inventoryHistory","historyTransactions","duLieuNhapXuat"
@@ -4337,16 +4354,16 @@
     }
 
     // Parse the actual 6 MB History.js as *data* rather than executing it.
-    // It assigns window.duLieuCongTy, the same global used by data.js for Stock.
-    // Parsing protects the live stock source from being overwritten.
+    // Current exports use materialHistory/lastUpdate; older exports share
+    // duLieuCongTy/thoiGianCapNhat with Stock. Parse without running either.
     function docHistoryTuVanBan(source) {
-      const assignment=/window\.(?:duLieuCongTy|duLieuLichSu|duLieuHistory|lichSuNhapXuat|inventoryTransactions|historyData)\s*=\s*\[/.exec(source);
+      const assignment=/window\.(?:materialHistory|duLieuCongTy|duLieuLichSu|duLieuHistory|lichSuNhapXuat|inventoryTransactions|historyData)\s*=\s*\[/.exec(source);
       if(!assignment)throw Error("HISTORY_BAD_FORMAT");
       const from=assignment.index+assignment[0].length-1;
       const to=source.lastIndexOf("]");
       if(to<=from)throw Error("HISTORY_BAD_FORMAT");
       const data=JSON.parse(source.slice(from,to+1));
-      const time=/window\.thoiGianCapNhat\s*=\s*("(?:\\.|[^"\\])*")/.exec(source);
+      const time=/window\.(?:lastUpdate|thoiGianCapNhat)\s*=\s*("(?:\\.|[^"\\])*")/.exec(source);
       return {data,updated:time?JSON.parse(time[1]):""};
     }
 
@@ -4408,13 +4425,17 @@
 
     // Only the known array assignment is read; no eval/new Function on History.js.
     // Local file:// environments cannot fetch JS text, so they use a temporary
-    // script, snapshot both shared globals, then restore Stock immediately.
+    // script, snapshot its globals, then restore them immediately.
     function taiHistoryBangScript() {
       return new Promise((resolve,reject)=>{
         const hasStock=Object.prototype.hasOwnProperty.call(window,"duLieuCongTy");
         const hasTime=Object.prototype.hasOwnProperty.call(window,"thoiGianCapNhat");
         const oldStock=window.duLieuCongTy;
         const oldTime=window.thoiGianCapNhat;
+        const hasHistory=Object.prototype.hasOwnProperty.call(window,"materialHistory");
+        const hasLastUpdate=Object.prototype.hasOwnProperty.call(window,"lastUpdate");
+        const oldHistory=window.materialHistory;
+        const oldLastUpdate=window.lastUpdate;
         const oldScript=document.getElementById("script-history-data");
         if(oldScript)oldScript.remove();
         const script=document.createElement("script");
@@ -4428,6 +4449,10 @@
           else delete window.duLieuCongTy;
           if(hasTime)window.thoiGianCapNhat=oldTime;
           else delete window.thoiGianCapNhat;
+          if(hasHistory)window.materialHistory=oldHistory;
+          else delete window.materialHistory;
+          if(hasLastUpdate)window.lastUpdate=oldLastUpdate;
+          else delete window.lastUpdate;
         }
         function finish(data,err) {
           if(finished)return;
@@ -4439,9 +4464,12 @@
           else resolve(data);
         }
         script.onload=()=>{
-          const data=window.duLieuCongTy!==oldStock
+          const currentHistory=window.materialHistory!==oldHistory;
+          const data=currentHistory?window.materialHistory:window.duLieuCongTy!==oldStock
             ? window.duLieuCongTy:timNguonHistory();
-          finish({data,updated:window.thoiGianCapNhat||""},null);
+          const updated=window.lastUpdate!==oldLastUpdate?window.lastUpdate||"":
+            window.thoiGianCapNhat!==oldTime?window.thoiGianCapNhat||"":"";
+          finish({data,updated},null);
         };
         script.onerror=()=>finish(null,Error("HISTORY_MISSING"));
         document.body.appendChild(script);
@@ -4488,6 +4516,7 @@
     }
 
     let materialHistorySap="";
+    let materialHistoryHall="all";
     let materialHistoryRows=[];
     let materialHistoryPage=1;
     let materialHistoryReturnFocus=null;
@@ -4553,7 +4582,11 @@
 
     function dongStockLichSuVatTu() {
       const selected=tatCaDuLieu[materialHistoryStockIndex];
-      const valid=row=>Array.isArray(row)&&chuanHoaMaSap(row[0]).toLowerCase()===materialHistorySap.toLowerCase();
+      const hallColumn=cotStorageLocation(tieuDeCot);
+      const valid=row=>Array.isArray(row)&&
+        chuanHoaMaSap(row[0]).toLowerCase()===materialHistorySap.toLowerCase()&&
+        (materialHistoryHall==="all"||hallColumn>=0&&
+          hallTuStorageLocation(row[hallColumn])===materialHistoryHall);
       return valid(selected)?selected:tatCaDuLieu.find(valid);
     }
 
@@ -4587,7 +4620,7 @@
       return {value:total,unit,reason:unitCol<0?"materialHistoryQuantityUnit":""};
     }
 
-    function hienThiSoLuongVatTu(rowsForQuantity,allSapRows) {
+    function hienThiSoLuongVatTu(rowsForQuantity,allSapRows,scopeAvailable=true) {
       const stockRow=dongStockLichSuVatTu();
       const stockUnitCol=cotHistoryTheoTen(tieuDeCot,[
         "Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
@@ -4601,7 +4634,7 @@
         const id=kind==="unknown"?"other":kind;
         const val=document.getElementById("material-history-"+id+"-count");
         const note=document.getElementById("material-history-"+kind+"-note");
-        if(!historyLoaded){val.textContent="—";note.textContent="";continue;}
+        if(!historyLoaded||!scopeAvailable){val.textContent="—";note.textContent="";continue;}
         const stat=tongSoLuongHistory(rowsForQuantity.filter(row=>row.type===kind));
         val.textContent=Number.isFinite(stat.value)?
           dinhDangLuongHistory(stat.value)+(stat.unit?" "+stat.unit:""):"—";
@@ -4612,7 +4645,7 @@
       const monthlyNote=document.getElementById("material-history-monthly-note");
       const coverage=document.getElementById("material-history-coverage");
       const coverageNote=document.getElementById("material-history-coverage-note");
-      if(!historyLoaded) {
+      if(!historyLoaded||!scopeAvailable) {
         monthly.textContent=coverage.textContent="—";
         monthlyNote.textContent=coverageNote.textContent=tuDien("consumptionNoHistory");
         return;
@@ -4642,12 +4675,13 @@
       coverageNote.title=coverageNote.textContent;
     }
 
-    function moLichSuVatTu(index) {
+    function moLichSuVatTu(index,hall="all") {
       const row=tatCaDuLieu[index];
       const sap=row?chuanHoaMaSap(row[0]):"";
       if(!sap)return;
       const dialog=document.getElementById("material-history-dialog");
       materialHistorySap=sap;
+      materialHistoryHall=hall;
       materialHistoryStockIndex=index;
       materialHistoryPage=1;
       materialHistorySortColumn=-2;
@@ -4708,7 +4742,8 @@
       document.getElementById("material-history-refresh").disabled=historyLoading;
       const sapCol=cotHistoryTheoTen(historyColumns,
         ["Material","SAP","SAP Code","Material Number","Mã SAP","Mã vật tư"]);
-      const sapRows=historyLoaded&&sapCol>=0?historyAll.filter(row=>
+      const historyScope=lichSuTheoHall(materialHistoryHall);
+      const sapRows=historyLoaded&&sapCol>=0?(historyScope||[]).filter(row=>
         chuanHoaMaSap(row.cells[sapCol]).toLowerCase()===materialHistorySap.toLowerCase()):[];
       capNhatLocCostCenter(sapRows);
       const cost=document.getElementById("material-history-cost").value;
@@ -4722,7 +4757,7 @@
         return true;
       });
       // Quantity cards follow the date and Cost Center scope. Kind filters the table only.
-      hienThiSoLuongVatTu(scopeRows,sapRows);
+      hienThiSoLuongVatTu(scopeRows,sapRows,historyScope!==null);
       materialHistoryRows=kind==="all"?scopeRows:scopeRows.filter(row=>row.type===kind);
       sapXepLichSuVatTu();
       document.getElementById("material-history-export").disabled=
@@ -4730,7 +4765,11 @@
       const failed=["historyNoSource","historyInvalid"].includes(historyStatusKey);
       status.textContent=historyLoading?tuDien("historyLoading"):failed?
         tuDien(historyStatusKey)+(historyLoaded?" "+tuDien("materialHistoryStale"):""):
-        !historyLoaded?tuDien("historyIdle"):sapCol<0?tuDien("materialHistoryMissing"):"";
+        !historyLoaded?tuDien("historyIdle"):historyScope===null?tuDien(loiCotHall("history")):
+        sapCol<0?tuDien("materialHistoryMissing"):"";
+      if(materialHistoryHall!=="all")status.textContent+=(status.textContent?" · ":"")+
+        tuDien("materialHistoryHallScope",{hall:tuDien(
+          materialHistoryHall==="hall1"?"dashboardHall1":"dashboardHall2")});
       materialHistoryPage=1;
       veLichSuVatTu();
       document.querySelector(".material-history-table").scrollTop=0;
@@ -5825,6 +5864,8 @@
         tuDien("materialHistoryFrom");
       const sortName=sortedBy+(materialHistorySortDirection<0?" ↓":" ↑");
       const scope=[
+        tuDien("dashboardHallFilter")+": "+tuDien(materialHistoryHall==="all"?
+          "dashboardHallAll":materialHistoryHall==="hall1"?"dashboardHall1":"dashboardHall2"),
         tuDien("historyReportMovement")+": "+kindName,
         tuDien("historyReportFrom")+": "+(from||tuDien("historyAny")),
         tuDien("historyReportTo")+": "+(to||tuDien("historyAny")),

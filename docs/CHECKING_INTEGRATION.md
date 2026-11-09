@@ -164,3 +164,28 @@ node tests/dashboard_browser.cjs
 ```
 
 Browser checks require Playwright and its Chromium browser. In environments using a Chromium helper, set `CHROMIUM_HELPER` to its ESM module path. They cover modal behavior, real History.js parsing, selection after reordered/deleted stock, paired VND charts, weekly snapshots, language switching and mobile overflow.
+
+## History.js sau bản xuất ngày 06/11/2026
+
+Bản xuất hiện tại dùng `window.materialHistory` và `window.lastUpdate`, với header:
+
+```javascript
+["Storage Location","Posting Date","Movement Type","Material","Material Description",
+ "Purchase order","Qty in unit of entry","Unit of Entry","Amt.in loc.cur.","Cost Center"]
+```
+
+Bộ đọc hỗ trợ cả tên biến mới và định dạng cũ `duLieuCongTy` / `thoiGianCapNhat`. Khi tải bằng HTTP, dữ liệu được trích bằng `JSON.parse`; khi mở bằng `file://`, các biến nguồn được khôi phục sau khi tải script. Thời gian lịch sử không lấy nhầm từ dữ liệu Stock.
+
+Chỉ `INPUT` là nhập và `OUTPUT` là xuất; `SCRAP` và mã giao dịch số thuộc nhóm khác. Số lượng lấy từ `Qty in unit of entry`, cộng trị tuyệt đối theo cùng `Unit of Entry`; tiền lấy từ `Amt.in loc.cur.` hoặc `Amt.In`. Tất cả cột được tìm theo tên, không theo vị trí cố định.
+
+Bản nguồn có 33.287 dòng Hall 1, 17.513 dòng Hall 2 và 12.001 dòng chưa phân Hall (trống hoặc mã `8000`, `8001`, `8002`). Khi chọn Hall, ứng dụng cảnh báo số dòng chưa phân bổ, vẫn giữ chúng trong phạm vi Tất cả và không tự suy đoán ánh xạ mã kho. Dữ liệu Stock cần cột Storage Location riêng để tính số dư theo Hall.
+
+Popup mở từ Phân tích giữ Hall đang chọn cho danh sách, số lượng, đơn vị, Cost Center, mức sử dụng và báo cáo xuất. Số dư chỉ lấy từ dòng Stock cùng SAP và cùng Hall; thiếu cột Hall trong Stock thì hiển thị chưa có số dư. Popup mở trực tiếp từ Tra cứu vẫn dùng toàn bộ lịch sử của SAP. Bộ lọc ngày và Cost Center áp dụng trong phạm vi popup; bộ lọc loại giao dịch chỉ đổi bảng, không đổi ba card nhập/xuất/khác.
+
+Kiểm thử nguồn thật và các nhánh tích hợp:
+
+```sh
+node tests/checking_logic.cjs
+node tests/history_logic.cjs
+node tests/dashboard_logic.cjs
+```
