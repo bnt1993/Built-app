@@ -344,6 +344,49 @@
       .pager{flex-wrap:wrap;justify-content:center}
     }
 
+  
+    .report-tabs{display:flex;gap:7px;margin:3px 0 10px;padding:4px;background:#eaf0f8;
+      border:1px solid #dfe8f3;border-radius:12px;max-width:max-content}
+    .report-tab{border:0;background:transparent;border-radius:9px;padding:11px 18px;color:#5a7292;
+      font-size:12px;font-weight:800;cursor:pointer}
+    .report-tab:hover{background:#dce8f9;color:#2157b2}
+    .report-tab.active{background:#fff;color:#1e56b8;box-shadow:0 2px 9px #274f8b19}
+    .report-tab .tab-count{font-size:10px;margin-left:5px;color:#647991}
+    [hidden]{display:none!important}
+    .request-source-bar{padding:12px 15px;display:flex;align-items:center;justify-content:space-between;
+      gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    .request-source-bar>div:first-child{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+    .request-source-bar strong{font-size:12px}
+    #request-source-status{font-size:11px;color:#476ba0}
+    #request-source-update{font-size:10px;color:#7890a8}
+    .request-source-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .request-file-label{display:inline-flex;align-items:center;cursor:pointer}
+    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+      clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .request-filters{padding:12px 15px;display:grid;grid-template-columns:minmax(240px,2fr) repeat(3,minmax(120px,1fr));
+      gap:12px;margin-bottom:10px;align-items:end}
+    .request-filters .filter-heading{grid-column:1/-1}
+    .request-note{padding:10px 15px;border-top:1px solid #e8edf5;color:#647a93;
+      background:#f6faff;font-size:11px}
+    .request-table{min-width:1500px}
+    .request-table-toolbar{align-items:center}
+    .request-link-tag{display:inline-block;border-radius:7px;padding:5px 8px;font-size:10px;
+      font-weight:750;white-space:nowrap;background:#edf2fb;color:#536781}
+    .request-link-tag.complete{background:#daf5e9;color:#087d59}
+    .request-link-tag.partial{background:#fff0d4;color:#95620c}
+    .request-link-tag.mismatch{background:#ffe4e8;color:#aa344f}
+    .request-link-tag.missing{background:#f4f5fa;color:#63748c}
+    .request-link-tag.unavailable{background:#f3eafd;color:#7d4ab0}
+    .request-link-tag.no-gr{background:#e7effd;color:#3763ac}
+    .request-detail-note{font-size:12px;color:#697e95}
+    #request-jump-po{margin-top:13px}
+    @media(max-width:1100px){.request-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .request-filters .field.search{grid-column:1/-1}}
+    @media(max-width:700px){.report-tabs{max-width:100%;width:100%}.report-tab{flex:1;padding:11px 7px;font-size:11px}
+      .request-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .request-source-actions{width:100%}.request-source-actions .button{flex:1;text-align:center}}
+    @media(max-width:450px){.request-filters{grid-template-columns:1fr}.request-filters .field.search{grid-column:auto}}
+
   </style>
 </head>
 <body>
@@ -357,6 +400,17 @@
       <button class="button" id="reload-btn" type="button"><span aria-hidden="true">↻</span> Làm mới dữ liệu</button>
     </div>
   </div>
+  <nav class="report-tabs" role="tablist" aria-label="Chọn báo cáo">
+    <button type="button" class="report-tab active" role="tab" id="tab-po-gr"
+      aria-controls="po-gr-panel" aria-selected="true" tabindex="0">
+      <span aria-hidden="true">▦</span> Theo dõi PO / GR
+    </button>
+    <button type="button" class="report-tab" role="tab" id="tab-request"
+      aria-controls="request-panel" aria-selected="false" tabindex="-1">
+      <span aria-hidden="true">▤</span> Yêu cầu vật tư <span class="tab-count" id="request-tab-count"></span>
+    </button>
+  </nav>
+  <section id="po-gr-panel" role="tabpanel" aria-labelledby="tab-po-gr">
   <div class="source-strip">
     <div class="source-strip-status"><span class="status-dot" id="status-dot"></span>
       <strong id="source-status">Đang kiểm tra nguồn</strong>
@@ -466,7 +520,109 @@
       Không gửi file lên máy chủ hoặc dịch vụ khác. Nếu nguồn thiếu dấu đóng mảng, cần sửa file trước khi chạy.</p>
   </details>
   <p class="footnote">Báo cáo được tính trực tiếp trên trình duyệt từ PO.js và GR.js ở cùng thư mục. GR loại 101 cộng, 102 trừ; loại 105/106 là tùy chọn. Không tính các mã vật tư GR không trùng PO.</p>
+
+  </section>
+  <section id="request-panel" role="tabpanel" aria-labelledby="tab-request" hidden>
+    <div class="request-source-bar panel">
+      <div><strong>Đối chiếu yêu cầu → PO → GR</strong>
+        <span id="request-source-status" role="status" aria-live="polite">Chưa đọc Request.js</span>
+        <small id="request-source-update">Ngày cập nhật: —</small>
+      </div>
+      <div class="request-source-actions">
+        <button type="button" class="button" id="request-reload">↻ Làm mới Request.js</button>
+        <label class="button request-file-label" for="request-file">Chọn file Request.js</label>
+        <input type="file" id="request-file" accept=".js,.txt,text/javascript" class="visually-hidden"/>
+      </div>
+    </div>
+    <section class="kpis" aria-label="Tổng quan yêu cầu vật tư">
+      <div class="kpi"><div class="kpi-top"><span class="caption">Yêu cầu theo bộ lọc</span><span class="kpi-icon blue">▤</span></div>
+        <strong id="request-stat-total">—</strong><small>Từng dòng trong Request.js</small></div>
+      <div class="kpi"><div class="kpi-top"><span class="caption">Đã ghi số PO</span><span class="kpi-icon amber">◷</span></div>
+        <strong id="request-stat-po">—</strong><small>Không đồng nghĩa đã có trong PO.js</small></div>
+      <div class="kpi"><div class="kpi-top"><span class="caption">PO được đối chiếu</span><span class="kpi-icon teal">✓</span></div>
+        <strong id="request-stat-match">—</strong><small>Khớp cả số PO và mã SAP</small></div>
+      <div class="kpi"><div class="kpi-top"><span class="caption">Đang chờ IR</span><span class="kpi-icon rose">!</span></div>
+        <strong id="request-stat-wait">—</strong><small>Theo trạng thái trong Request.js</small></div>
+    </section>
+    <section class="panel request-filters" aria-label="Bộ lọc yêu cầu">
+      <div class="filter-heading"><div><div class="section-eyebrow">ĐỐI CHIẾU NGUỒN DỮ LIỆU</div>
+        <h2>Báo cáo yêu cầu vật tư</h2></div>
+        <button type="button" class="ghost-link" id="request-clear">Xóa bộ lọc</button></div>
+      <div class="field search"><label for="request-search">Mã SAP, PO, tên vật tư, ghi chú</label>
+        <input id="request-search" type="search" autocomplete="off" placeholder="Tìm một hoặc nhiều mã..."></div>
+      <div class="field"><label for="request-status">Trạng thái Request</label>
+        <select id="request-status"><option value="">Tất cả</option>
+          <option value="Done">Done</option><option value="Waiting for IR">Waiting for IR</option></select></div>
+      <div class="field"><label for="request-link">Kết quả đối chiếu</label>
+        <select id="request-link"><option value="">Tất cả</option>
+          <option value="missing">Chưa ghi số PO</option>
+          <option value="unavailable">PO chưa có trong PO.js</option>
+          <option value="mismatch">PO khác mã SAP</option>
+          <option value="no-gr">Có PO, chưa nhập GR</option>
+          <option value="partial">Đã nhập một phần</option>
+          <option value="complete">Đã nhận đủ</option></select></div>
+      <div class="field"><label for="request-hall">Khu vực</label>
+        <select id="request-hall"><option value="">Tất cả Hall</option></select></div>
+      <div class="field"><label for="request-from">Ngày yêu cầu từ</label><input id="request-from" type="date"/></div>
+      <div class="field"><label for="request-to">Đến ngày</label><input id="request-to" type="date"/></div>
+    </section>
+    <section class="panel report-panel">
+      <div class="table-header request-table-toolbar">
+        <div><div class="section-eyebrow">REQUEST / PURCHASE ORDER / GOODS RECEIPT</div>
+          <h2>Tiến độ xử lý yêu cầu vật tư</h2>
+          <small id="request-result-info">Chọn tab để tải dữ liệu Request.js.</small></div>
+        <button class="button primary" type="button" id="request-export">↓ Xuất Excel theo bộ lọc</button>
+      </div>
+      <div class="request-note" id="request-join-note">
+        Chỉ ghép tự động khi Request có số PO và khớp mã SAP trong PO.js.
+      </div>
+      <div class="table-scroller" aria-label="Bảng yêu cầu và đối chiếu PO/GR" role="region" tabindex="0">
+        <table id="request-table" class="request-table">
+          <thead><tr>
+            <th><button data-rsort="date">Ngày yêu cầu <span>↕</span></button></th>
+            <th><button data-rsort="sap">Mã SAP <span>↕</span></button></th>
+            <th><button data-rsort="description">Tên vật tư <span>↕</span></button></th>
+            <th><button data-rsort="qty">SL yêu cầu <span>↕</span></button></th>
+            <th><button data-rsort="hall">Hall <span>↕</span></button></th>
+            <th><button data-rsort="status">Trạng thái YC <span>↕</span></button></th>
+            <th><button data-rsort="po">Số PO <span>↕</span></button></th>
+            <th><button data-rsort="orderedDate">Ngày đặt PO <span>↕</span></button></th>
+            <th><button data-rsort="poQty">SL PO <span>↕</span></button></th>
+            <th><button data-rsort="grQty">SL nhập GR <span>↕</span></button></th>
+            <th><button data-rsort="percent">Đã nhập (%) <span>↕</span></button></th>
+            <th><button data-rsort="link">Đối chiếu <span>↕</span></button></th>
+          </tr></thead>
+          <tbody id="request-body"></tbody>
+        </table>
+        <div id="request-empty" class="empty-state" hidden>Không có yêu cầu phù hợp bộ lọc.</div>
+      </div>
+      <div class="table-footer">
+        <span id="request-visible">0 dòng</span>
+        <div class="pager">
+          <label for="request-page-size">Tải mỗi lượt</label>
+          <select id="request-page-size"><option>25</option><option selected>50</option><option>100</option><option>200</option></select>
+          <button type="button" id="request-first" title="Về đầu danh sách">« Đầu</button>
+          <button type="button" id="request-last" title="Đến cuối danh sách">Cuối »</button>
+        </div>
+      </div>
+      <div class="load-sentinel" id="request-sentinel">Cuộn để tải tiếp các yêu cầu</div>
+    </section>
+    <p class="footnote">Request.js được ghép với PO.js bằng <b>số PO + mã SAP</b>, sau đó đối chiếu GR theo PO + Item + mã SAP. Dòng chưa ghi số PO không được tự gán theo mã vật tư vì có thể trùng nhiều đơn.</p>
+  </section>
 </div>
+<dialog id="request-dialog" aria-labelledby="request-dialog-title">
+  <div class="dialog-head"><h2 id="request-dialog-title">Chi tiết yêu cầu</h2>
+    <button type="button" class="button" id="request-dialog-close">Đóng ×</button></div>
+  <div class="dialog-body">
+    <div id="request-detail-fields" class="detail-grid"></div>
+    <h3>Đối chiếu PO và GR</h3>
+    <p class="request-detail-note" id="request-detail-note"></p>
+    <div class="table-scroller"><table class="gr-table"><thead><tr>
+      <th>Số PO</th><th>Item</th><th>SL PO</th><th>SL GR</th><th>Ngày GR gần nhất</th><th>Tình trạng</th>
+    </tr></thead><tbody id="request-detail-po"></tbody></table></div>
+    <button type="button" class="button" id="request-jump-po" hidden>Xem PO trên tab PO/GR</button>
+  </div>
+</dialog>
 <dialog id="details-dialog" aria-labelledby="details-title">
   <div class="dialog-head"><h2 id="details-title">Chi tiết dòng PO</h2><button class="button" id="close-dialog" type="button">Đóng ×</button></div>
   <div class="dialog-body"><div id="detail-fields" class="detail-grid"></div><h3>Lịch sử nhập hàng liên quan</h3>
