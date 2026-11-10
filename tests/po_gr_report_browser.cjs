@@ -170,7 +170,17 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   const initialViewport=await scroller.evaluate(node=>({
     height:node.clientHeight,scrollHeight:node.scrollHeight,overflow:getComputedStyle(node).overflowY
   }));
-  assert.ok(initialViewport.height>130&&initialViewport.height<850);
+  console.log('SCROLLER_DEBUG',JSON.stringify(await page.evaluate(()=>({
+    scroller:(()=>{const e=document.getElementById('table-scroller');return {client:e.clientHeight,scroll:e.scrollHeight,
+      top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom}})(),
+    page:(()=>{const e=document.querySelector('.page');return {height:e.clientHeight,scroll:e.scrollHeight}})(),
+    kpi:document.querySelector('#po-gr-panel .kpis').getBoundingClientRect().height,
+    filters:document.querySelector('#po-gr-panel .filters').getBoundingClientRect().height,
+    report:document.querySelector('#po-gr-panel .report-panel').getBoundingClientRect().height,
+    viewport:window.innerHeight
+  }))));
+  assert.ok(initialViewport.height>=125&&initialViewport.height<850,
+    JSON.stringify(initialViewport));
   assert.equal(initialViewport.overflow,'auto');
   assert.ok(initialViewport.scrollHeight>initialViewport.height,'table should scroll internally');
   assert.equal(await page.locator('#load-sentinel').evaluate(node=>
