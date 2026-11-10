@@ -1091,6 +1091,12 @@ function sortRequestRows(rows,key,order){
   const d=order==="asc"?1:-1;
   return rows.slice().sort((a,b)=>{
     let x=a[key],y=b[key];
+    if(key==="week"){
+      // Missing filename week goes last in both directions.
+      if(!x&&!y)return a.index-b.index;
+      if(!x)return 1;
+      if(!y)return -1;
+    }
     if(typeof x==="number"||typeof y==="number"){
       const ax=Number.isFinite(x)?x:null,by=Number.isFinite(y)?y:null;
       if(ax===null||by===null)return (ax===null?1:-1)*(ax===null&&by===null?0:1);
