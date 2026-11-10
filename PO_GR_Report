@@ -1627,6 +1627,8 @@ function setReportTab(next){
   }
   if(next==="request"&&!requestState.loaded&&!requestState.loading)
     loadRequestFile();
+  // Hide the prior tab's floating header immediately on tab changes.
+  scheduleFixedHeaders();
 }
 function updateRequestSource(message,error=false){
   const status=id("request-source-status");
@@ -2077,11 +2079,18 @@ function scheduleFixedHeaders(){
     updateFixedReportHeaders();
   });
 }
-installFixedReportHeader("report-table","table-scroller","po-gr-panel");
-installFixedReportHeader("request-table","request-scroller","request-panel");
-window.addEventListener("scroll",scheduleFixedHeaders,{passive:true});
-window.addEventListener("resize",scheduleFixedHeaders,{passive:true});
-scheduleFixedHeaders();
+// Logic-only tests use a small simulated DOM with no real <thead>. This
+// enhancement activates only in a browser with both complete report tables.
+if(document.getElementById("report-table")?.tHead&&
+   document.getElementById("request-table")?.tHead&&
+   typeof window.addEventListener==="function"&&
+   typeof requestAnimationFrame==="function"){
+  installFixedReportHeader("report-table","table-scroller","po-gr-panel");
+  installFixedReportHeader("request-table","request-scroller","request-panel");
+  window.addEventListener("scroll",scheduleFixedHeaders,{passive:true});
+  window.addEventListener("resize",scheduleFixedHeaders,{passive:true});
+  scheduleFixedHeaders();
+}
 
 window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
   loadNextBatch,buildRequestReport,filterRequestRows,sortRequestRows,requestXlsx,requestWeekFromFile,
