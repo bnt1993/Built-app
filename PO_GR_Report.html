@@ -310,28 +310,15 @@
     <div class="top-actions">
       <span id="load-state" class="muted load-status" role="status" aria-live="polite">Chưa nạp dữ liệu</span>
       <button class="button" id="reload-btn" type="button"><span aria-hidden="true">↻</span> Làm mới dữ liệu</button>
-      <button class="button primary" id="export-btn" type="button"><span aria-hidden="true">↓</span> Xuất Excel</button>
     </div>
   </div>
-  <section class="hero">
-    <div class="hero-copy"><p class="eyebrow"><span class="eyebrow-line"></span> PURCHASE ORDER INTELLIGENCE</p>
-      <h1>Trung tâm theo dõi <em>PO &amp; GR</em></h1>
-      <p>Toàn bộ đơn mua hàng bắt đầu bằng <b>48</b> · Theo dõi tiến độ nhập kho, tuổi đơn hàng và chênh lệch PO/GR trong một màn hình.</p>
-      <div class="hero-tags"><span>✓ Tự động đối chiếu PO / GR</span><span>✓ Dữ liệu từ file nội bộ</span></div>
+  <div class="source-strip">
+    <div class="source-strip-status"><span class="status-dot" id="status-dot"></span>
+      <strong id="source-status">Đang kiểm tra nguồn</strong>
+      <span id="dataset-summary">Đang nạp PO.js...</span></div>
+    <div class="source-strip-dates">
+      <span id="po-update">PO: —</span><span id="gr-update">GR: —</span>
     </div>
-    <div class="hero-meta">
-      <div class="hero-status"><strong><span class="status-dot" id="status-dot"></span> <span id="source-status">Đang kiểm tra nguồn</span></strong>
-        <small>NGUỒN DỮ LIỆU</small></div>
-      <div class="hero-updates"><div id="po-update">PO: —</div><div id="gr-update">GR: —</div></div>
-      <div class="hero-watermark" aria-hidden="true">48</div>
-    </div>
-  </section>
-  <div class="scope-banner" role="status">
-    <div class="scope-start"><span class="scope-icon" aria-hidden="true">◈</span><div>
-      <strong>Phạm vi báo cáo <span class="scope-code">PO 48*</span></strong>
-      <p id="dataset-summary">Đang đọc toàn bộ dữ liệu PO.js...</p></div>
-    </div>
-    <div class="scope-tip">Không giới hạn theo trang · Xuất Excel theo toàn bộ kết quả lọc</div>
   </div>
   <section class="kpis" aria-label="Tổng quan theo bộ lọc">
     <div class="kpi"><div class="kpi-top"><span class="caption">Dòng PO hiển thị</span><span class="kpi-icon blue">▤</span></div>
@@ -355,7 +342,6 @@
       <option value="done">Đã nhận đủ</option><option value="excess">Nhận vượt</option>
       <option value="invalid">Cần kiểm tra</option></select></div>
     <div class="field"><label for="supplier-filter">Nhà cung cấp</label><select id="supplier-filter"><option value="">Tất cả nhà cung cấp</option></select></div>
-    <div class="field"><label for="plant-filter">Nhà máy</label><select id="plant-filter"><option value="">Tất cả nhà máy</option></select></div>
     <div class="field"><label for="date-from">Ngày PO từ</label><input id="date-from" type="date"></div>
     <div class="field"><label for="date-to">Đến ngày</label><input id="date-to" type="date"></div>
     <div class="filter-bottom">
@@ -373,7 +359,10 @@
         <button type="button" data-mode="overdue" class="quick-tab" aria-pressed="false">Chờ ≥ 60 ngày</button>
         <button type="button" data-mode="done" class="quick-tab" aria-pressed="false">Đã nhận đủ</button>
       </div>
-      <div class="quick-count"><span id="current-count">0</span><small> dòng phù hợp</small></div>
+      <div class="toolbar-right">
+        <span class="quick-count"><span id="current-count">0</span><small> dòng phù hợp</small></span>
+        <button type="button" class="button primary table-export" id="export-btn">↓ Xuất Excel theo bộ lọc</button>
+      </div>
     </div>
     <div class="table-header">
       <div><div class="section-eyebrow">DANH SÁCH ĐƠN MUA HÀNG</div>
@@ -385,7 +374,7 @@
       </div>
     </div>
     <div class="table-scroll-tip">↔ Cuộn ngang để xem đầy đủ cột · Nhấp đúp một dòng để xem chứng từ GR</div>
-    <div class="table-scroller" role="region" tabindex="0" aria-label="Bảng PO và GR có thể cuộn ngang">
+    <div class="table-scroller" id="table-scroller" role="region" tabindex="0" aria-label="Bảng PO và GR có thể cuộn ngang">
       <table id="report-table"><thead><tr>
         <th><button data-sort="po">Số PO <span>↕</span></button></th>
         <th><button data-sort="material">Mã vật tư <span>↕</span></button></th>
@@ -395,7 +384,6 @@
         <th><button data-sort="grQty">SL nhận <span>↕</span></button></th>
         <th><button data-sort="lastGr">Ngày GR gần nhất <span>↕</span></button></th>
         <th><button data-sort="bill">Vận đơn <span>↕</span></button></th>
-        <th><button data-sort="key">Khóa đối chiếu <span>↕</span></button></th>
         <th><button data-sort="age">Ngày chờ <span>↕</span></button></th>
         <th><button data-sort="percent">% nhận <span>↕</span></button></th>
         <th><button data-sort="remain">SL còn thiếu <span>↕</span></button></th>
@@ -403,16 +391,17 @@
       </tr></thead><tbody id="report-body"></tbody></table>
       <div id="empty" class="empty-state" hidden>Không có dữ liệu phù hợp với bộ lọc.</div>
     </div>
-    <div class="table-footer">
+    <div class="table-footer" id="table-footer">
       <span id="page-summary">0 dòng</span>
       <div class="pager">
-        <label for="page-size">Dòng/trang</label>
-        <select id="page-size"><option>25</option><option selected>50</option><option>100</option><option>200</option></select>
-        <button id="first" type="button" title="Trang đầu">«</button><button id="prev" type="button" title="Trang trước">‹</button>
-        <span id="page-indicator">1 / 1</span><button id="next" type="button" title="Trang sau">›</button>
-        <button id="last" type="button" title="Trang cuối">»</button>
+        <label for="page-size">Tải mỗi lượt</label>
+        <select id="page-size" aria-label="Số dòng tải mỗi lượt"><option>25</option><option selected>50</option><option>100</option><option>200</option></select>
+        <button id="first" type="button" title="Về đầu danh sách">« Đầu</button>
+        <span id="page-indicator" aria-live="polite">0 / 0</span>
+        <button id="last" type="button" title="Đến cuối danh sách">Cuối »</button>
       </div>
     </div>
+    <div id="load-sentinel" class="load-sentinel" aria-hidden="true"></div>
   </section>
   <details class="panel source-details">
     <summary>Nguồn dữ liệu và tải file thủ công</summary>
