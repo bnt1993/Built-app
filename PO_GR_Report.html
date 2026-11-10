@@ -344,6 +344,49 @@
       .pager{flex-wrap:wrap;justify-content:center}
     }
 
+  
+    .report-tabs{display:flex;gap:7px;margin:3px 0 10px;padding:4px;background:#eaf0f8;
+      border:1px solid #dfe8f3;border-radius:12px;max-width:max-content}
+    .report-tab{border:0;background:transparent;border-radius:9px;padding:11px 18px;color:#5a7292;
+      font-size:12px;font-weight:800;cursor:pointer}
+    .report-tab:hover{background:#dce8f9;color:#2157b2}
+    .report-tab.active{background:#fff;color:#1e56b8;box-shadow:0 2px 9px #274f8b19}
+    .report-tab .tab-count{font-size:10px;margin-left:5px;color:#647991}
+    [hidden]{display:none!important}
+    .request-source-bar{padding:12px 15px;display:flex;align-items:center;justify-content:space-between;
+      gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    .request-source-bar>div:first-child{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+    .request-source-bar strong{font-size:12px}
+    #request-source-status{font-size:11px;color:#476ba0}
+    #request-source-update{font-size:10px;color:#7890a8}
+    .request-source-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .request-file-label{display:inline-flex;align-items:center;cursor:pointer}
+    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+      clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .request-filters{padding:12px 15px;display:grid;grid-template-columns:minmax(240px,2fr) repeat(3,minmax(120px,1fr));
+      gap:12px;margin-bottom:10px;align-items:end}
+    .request-filters .filter-heading{grid-column:1/-1}
+    .request-note{padding:10px 15px;border-top:1px solid #e8edf5;color:#647a93;
+      background:#f6faff;font-size:11px}
+    .request-table{min-width:1500px}
+    .request-table-toolbar{align-items:center}
+    .request-link-tag{display:inline-block;border-radius:7px;padding:5px 8px;font-size:10px;
+      font-weight:750;white-space:nowrap;background:#edf2fb;color:#536781}
+    .request-link-tag.complete{background:#daf5e9;color:#087d59}
+    .request-link-tag.partial{background:#fff0d4;color:#95620c}
+    .request-link-tag.mismatch{background:#ffe4e8;color:#aa344f}
+    .request-link-tag.missing{background:#f4f5fa;color:#63748c}
+    .request-link-tag.unavailable{background:#f3eafd;color:#7d4ab0}
+    .request-link-tag.no-gr{background:#e7effd;color:#3763ac}
+    .request-detail-note{font-size:12px;color:#697e95}
+    #request-jump-po{margin-top:13px}
+    @media(max-width:1100px){.request-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .request-filters .field.search{grid-column:1/-1}}
+    @media(max-width:700px){.report-tabs{max-width:100%;width:100%}.report-tab{flex:1;padding:11px 7px;font-size:11px}
+      .request-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .request-source-actions{width:100%}.request-source-actions .button{flex:1;text-align:center}}
+    @media(max-width:450px){.request-filters{grid-template-columns:1fr}.request-filters .field.search{grid-column:auto}}
+
   </style>
 </head>
 <body>
@@ -357,6 +400,17 @@
       <button class="button" id="reload-btn" type="button"><span aria-hidden="true">↻</span> Làm mới dữ liệu</button>
     </div>
   </div>
+  <nav class="report-tabs" role="tablist" aria-label="Chọn báo cáo">
+    <button type="button" class="report-tab active" role="tab" id="tab-po-gr"
+      aria-controls="po-gr-panel" aria-selected="true" tabindex="0">
+      <span aria-hidden="true">▦</span> Theo dõi PO / GR
+    </button>
+    <button type="button" class="report-tab" role="tab" id="tab-request"
+      aria-controls="request-panel" aria-selected="false" tabindex="-1">
+      <span aria-hidden="true">▤</span> Yêu cầu vật tư <span class="tab-count" id="request-tab-count"></span>
+    </button>
+  </nav>
+  <section id="po-gr-panel" role="tabpanel" aria-labelledby="tab-po-gr">
   <div class="source-strip">
     <div class="source-strip-status"><span class="status-dot" id="status-dot"></span>
       <strong id="source-status">Đang kiểm tra nguồn</strong>
@@ -466,7 +520,109 @@
       Không gửi file lên máy chủ hoặc dịch vụ khác. Nếu nguồn thiếu dấu đóng mảng, cần sửa file trước khi chạy.</p>
   </details>
   <p class="footnote">Báo cáo được tính trực tiếp trên trình duyệt từ PO.js và GR.js ở cùng thư mục. GR loại 101 cộng, 102 trừ; loại 105/106 là tùy chọn. Không tính các mã vật tư GR không trùng PO.</p>
+
+  </section>
+  <section id="request-panel" role="tabpanel" aria-labelledby="tab-request" hidden>
+    <div class="request-source-bar panel">
+      <div><strong>Đối chiếu yêu cầu → PO → GR</strong>
+        <span id="request-source-status" role="status" aria-live="polite">Chưa đọc Request.js</span>
+        <small id="request-source-update">Ngày cập nhật: —</small>
+      </div>
+      <div class="request-source-actions">
+        <button type="button" class="button" id="request-reload">↻ Làm mới Request.js</button>
+        <label class="button request-file-label" for="request-file">Chọn file Request.js</label>
+        <input type="file" id="request-file" accept=".js,.txt,text/javascript" class="visually-hidden"/>
+      </div>
+    </div>
+    <section class="kpis" aria-label="Tổng quan yêu cầu vật tư">
+      <div class="kpi"><div class="kpi-top"><span class="caption">Yêu cầu theo bộ lọc</span><span class="kpi-icon blue">▤</span></div>
+        <strong id="request-stat-total">—</strong><small>Từng dòng trong Request.js</small></div>
+      <div class="kpi"><div class="kpi-top"><span class="caption">Đã ghi số PO</span><span class="kpi-icon amber">◷</span></div>
+        <strong id="request-stat-po">—</strong><small>Không đồng nghĩa đã có trong PO.js</small></div>
+      <div class="kpi"><div class="kpi-top"><span class="caption">PO được đối chiếu</span><span class="kpi-icon teal">✓</span></div>
+        <strong id="request-stat-match">—</strong><small>Khớp cả số PO và mã SAP</small></div>
+      <div class="kpi"><div class="kpi-top"><span class="caption">Đang chờ IR</span><span class="kpi-icon rose">!</span></div>
+        <strong id="request-stat-wait">—</strong><small>Theo trạng thái trong Request.js</small></div>
+    </section>
+    <section class="panel request-filters" aria-label="Bộ lọc yêu cầu">
+      <div class="filter-heading"><div><div class="section-eyebrow">ĐỐI CHIẾU NGUỒN DỮ LIỆU</div>
+        <h2>Báo cáo yêu cầu vật tư</h2></div>
+        <button type="button" class="ghost-link" id="request-clear">Xóa bộ lọc</button></div>
+      <div class="field search"><label for="request-search">Mã SAP, PO, tên vật tư, ghi chú</label>
+        <input id="request-search" type="search" autocomplete="off" placeholder="Tìm một hoặc nhiều mã..."></div>
+      <div class="field"><label for="request-status">Trạng thái Request</label>
+        <select id="request-status"><option value="">Tất cả</option>
+          <option value="Done">Done</option><option value="Waiting for IR">Waiting for IR</option></select></div>
+      <div class="field"><label for="request-link">Kết quả đối chiếu</label>
+        <select id="request-link"><option value="">Tất cả</option>
+          <option value="missing">Chưa ghi số PO</option>
+          <option value="unavailable">PO chưa có trong PO.js</option>
+          <option value="mismatch">PO khác mã SAP</option>
+          <option value="no-gr">Có PO, chưa nhập GR</option>
+          <option value="partial">Đã nhập một phần</option>
+          <option value="complete">Đã nhận đủ</option></select></div>
+      <div class="field"><label for="request-hall">Khu vực</label>
+        <select id="request-hall"><option value="">Tất cả Hall</option></select></div>
+      <div class="field"><label for="request-from">Ngày yêu cầu từ</label><input id="request-from" type="date"/></div>
+      <div class="field"><label for="request-to">Đến ngày</label><input id="request-to" type="date"/></div>
+    </section>
+    <section class="panel report-panel">
+      <div class="table-header request-table-toolbar">
+        <div><div class="section-eyebrow">REQUEST / PURCHASE ORDER / GOODS RECEIPT</div>
+          <h2>Tiến độ xử lý yêu cầu vật tư</h2>
+          <small id="request-result-info">Chọn tab để tải dữ liệu Request.js.</small></div>
+        <button class="button primary" type="button" id="request-export">↓ Xuất Excel theo bộ lọc</button>
+      </div>
+      <div class="request-note" id="request-join-note">
+        Chỉ ghép tự động khi Request có số PO và khớp mã SAP trong PO.js.
+      </div>
+      <div class="table-scroller" aria-label="Bảng yêu cầu và đối chiếu PO/GR" role="region" tabindex="0">
+        <table id="request-table" class="request-table">
+          <thead><tr>
+            <th><button data-rsort="date">Ngày yêu cầu <span>↕</span></button></th>
+            <th><button data-rsort="sap">Mã SAP <span>↕</span></button></th>
+            <th><button data-rsort="description">Tên vật tư <span>↕</span></button></th>
+            <th><button data-rsort="qty">SL yêu cầu <span>↕</span></button></th>
+            <th><button data-rsort="hall">Hall <span>↕</span></button></th>
+            <th><button data-rsort="status">Trạng thái YC <span>↕</span></button></th>
+            <th><button data-rsort="po">Số PO <span>↕</span></button></th>
+            <th><button data-rsort="orderedDate">Ngày đặt PO <span>↕</span></button></th>
+            <th><button data-rsort="poQty">SL PO <span>↕</span></button></th>
+            <th><button data-rsort="grQty">SL nhập GR <span>↕</span></button></th>
+            <th><button data-rsort="percent">Đã nhập (%) <span>↕</span></button></th>
+            <th><button data-rsort="link">Đối chiếu <span>↕</span></button></th>
+          </tr></thead>
+          <tbody id="request-body"></tbody>
+        </table>
+        <div id="request-empty" class="empty-state" hidden>Không có yêu cầu phù hợp bộ lọc.</div>
+      </div>
+      <div class="table-footer">
+        <span id="request-visible">0 dòng</span>
+        <div class="pager">
+          <label for="request-page-size">Tải mỗi lượt</label>
+          <select id="request-page-size"><option>25</option><option selected>50</option><option>100</option><option>200</option></select>
+          <button type="button" id="request-first" title="Về đầu danh sách">« Đầu</button>
+          <button type="button" id="request-last" title="Đến cuối danh sách">Cuối »</button>
+        </div>
+      </div>
+      <div class="load-sentinel" id="request-sentinel">Cuộn để tải tiếp các yêu cầu</div>
+    </section>
+    <p class="footnote">Request.js được ghép với PO.js bằng <b>số PO + mã SAP</b>, sau đó đối chiếu GR theo PO + Item + mã SAP. Dòng chưa ghi số PO không được tự gán theo mã vật tư vì có thể trùng nhiều đơn.</p>
+  </section>
 </div>
+<dialog id="request-dialog" aria-labelledby="request-dialog-title">
+  <div class="dialog-head"><h2 id="request-dialog-title">Chi tiết yêu cầu</h2>
+    <button type="button" class="button" id="request-dialog-close">Đóng ×</button></div>
+  <div class="dialog-body">
+    <div id="request-detail-fields" class="detail-grid"></div>
+    <h3>Đối chiếu PO và GR</h3>
+    <p class="request-detail-note" id="request-detail-note"></p>
+    <div class="table-scroller"><table class="gr-table"><thead><tr>
+      <th>Số PO</th><th>Item</th><th>SL PO</th><th>SL GR</th><th>Ngày GR gần nhất</th><th>Tình trạng</th>
+    </tr></thead><tbody id="request-detail-po"></tbody></table></div>
+    <button type="button" class="button" id="request-jump-po" hidden>Xem PO trên tab PO/GR</button>
+  </div>
+</dialog>
 <dialog id="details-dialog" aria-labelledby="details-title">
   <div class="dialog-head"><h2 id="details-title">Chi tiết dòng PO</h2><button class="button" id="close-dialog" type="button">Đóng ×</button></div>
   <div class="dialog-body"><div id="detail-fields" class="detail-grid"></div><h3>Lịch sử nhập hàng liên quan</h3>
@@ -479,9 +635,10 @@
 (function(){
 "use strict";
 const id=name=>document.getElementById(name);
-const SOURCE_NAMES={po:["duLieuPO","duLieuCongTy"],gr:["duLieuGR"]};
+const SOURCE_NAMES={po:["duLieuPO","duLieuCongTy"],gr:["duLieuGR"],request:["duLieuRequest"]};
 const SOURCE_TIMESTAMPS={po:["thoiGianCapNhatPO","thoiGianCapNhat"],
-  gr:["thoiGianCapNhatGR","thoiGianCapNhat"]};
+  gr:["thoiGianCapNhatGR","thoiGianCapNhat"],
+  request:["thoiGianCapNhatRequest","thoiGianCapNhat"]};
 const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const numeric=new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2});
 const state={po:[],gr:[],rows:[],filtered:[],poUpdated:"",grUpdated:"",loaded:false,loading:false,
@@ -774,10 +931,111 @@ function reportFresh(){
       "Đã đọc "+fmt(info.totalPO)+" dòng PO, "+fmt(info.totalGR)+" dòng GR · đối chiếu theo PO + Item + mã vật tư";
     updateSelect("supplier-filter",state.rows.map(x=>x.supplier),"Tất cả nhà cung cấp");
     render();
+    if(requestState.data.length)rebuildRequests();
   }catch(err){
     id("load-state").textContent=err.message;id("join-note").textContent=err.message;
     state.rows=[];render();
   }
+}
+// Request.js is a separate input source, not the GR transaction ledger.
+// A Request is only linked to a PO when the exact PO number AND SAP material
+// match. Rows without PO No. remain unverified rather than guessed by SAP.
+const REQUEST_COLUMNS={
+  file:["File Name"],rowNo:["No"],group:["Purchasing Group"],
+  sap:["SAP No","SAP Number","Material"],date:["Requested date","Request date"],
+  description:["Description"],stock:["Stock"],reorder:["Reorder Point"],
+  lot:["Lot size of reorder"],qty:["Qty need to order","Required Qty"],
+  unit:["Unit"],price:["Price(EUR)"],amount:["Amount(EUR)"],
+  orderType:["OrderType"],note:["Note"],supplier:["Supplier"],
+  hall:["Hall"],status:["Status"],po:["PO No.","PO No","Purchase order"],
+  orderedDate:["Ordered date","PO date"]
+};
+const REQUEST_LINK_LABELS={
+  missing:"Chưa ghi số PO",
+  unverified:"Chưa tải dữ liệu PO",
+  unavailable:"PO chưa có trong PO.js",
+  mismatch:"PO khác mã SAP",
+  "gr-unavailable":"Có PO · chưa tải GR.js",
+  "no-gr":"Có PO · chưa nhập GR",
+  partial:"Nhập một phần",
+  complete:"Đã nhận đủ",
+  negative:"GR âm · cần kiểm tra",
+  invalid:"Thiếu mã SAP"
+};
+function buildRequestReport(source,poRows,opts={}){
+  if(!Array.isArray(source)||!Array.isArray(source[0]))
+    throw Error("Request.js không có dòng tiêu đề.");
+  const header=source[0],cols={};
+  for(const [key,names] of Object.entries(REQUEST_COLUMNS))
+    cols[key]=findCol(header,names);
+  for(const key of ["sap","date","qty","status","po"]){
+    if(cols[key]<0)throw Error("Request.js thiếu cột: "+REQUEST_COLUMNS[key][0]);
+  }
+  const byPO=new Map();
+  for(const p of poRows||[]){
+    const po=normalizeCode(p.po);
+    if(!byPO.has(po))byPO.set(po,[]);
+    byPO.get(po).push(p);
+  }
+  const rows=[];
+  for(let i=1;i<source.length;i++){
+    const raw=source[i];if(!Array.isArray(raw))continue;
+    const c=key=>cols[key]>=0?raw[cols[key]]??"":"";
+    const sap=normalizeCode(c("sap")),po=normalizeCode(c("po"));
+    const matchesPO=po&&opts.poReady?byPO.get(po)||[]:[];
+    const matches=matchesPO.filter(p=>normalizeCode(p.material)===sap);
+    const linked=matches.length>0;
+    const poQty=linked?matches.reduce((sum,p)=>sum+(Number.isFinite(p.poQty)?p.poQty:0),0):NaN;
+    const grQty=linked&&opts.grReady?
+      matches.reduce((sum,p)=>sum+(Number.isFinite(p.grQty)?p.grQty:0),0):NaN;
+    const percent=Number.isFinite(poQty)&&poQty>0&&Number.isFinite(grQty)?
+      grQty/poQty*100:NaN;
+    const link=!sap?"invalid":!po?"missing":!opts.poReady?"unverified":
+      !matchesPO.length?"unavailable":!linked?"mismatch":
+      !opts.grReady?"gr-unavailable":grQty<0?"negative":
+      grQty<=0?"no-gr":grQty<poQty-1e-8?"partial":"complete";
+    const r={
+      index:i-1,file:String(c("file")).trim(),rowNo:String(c("rowNo")).trim(),
+      group:String(c("group")).trim(),sap,po,date:excelDate(c("date")),
+      orderedDate:excelDate(c("orderedDate")),
+      description:String(c("description")).trim(),status:String(c("status")).trim(),
+      hall:String(c("hall")).trim(),supplier:String(c("supplier")).trim(),
+      qty:number(c("qty")),unit:String(c("unit")).trim(),
+      stock:number(c("stock")),reorder:number(c("reorder")),
+      lot:number(c("lot")),price:number(c("price")),amount:number(c("amount")),
+      orderType:String(c("orderType")).trim(),note:String(c("note")).trim(),
+      matches,poQty,grQty,percent,link
+    };
+    r.searchText=[r.sap,r.po,r.description,r.note,r.supplier,r.file,r.group,
+      r.status,r.hall].join(" ").toLocaleLowerCase();
+    rows.push(r);
+  }
+  return rows;
+}
+function filterRequestRows(rows,filters){
+  const terms=String(filters.query||"").toLocaleLowerCase()
+    .split(/[,;\n|]+/).map(x=>x.trim()).filter(Boolean);
+  return rows.filter(r=>{
+    if(terms.length&&!terms.some(term=>r.searchText.includes(term)))return false;
+    if(filters.status&&r.status!==filters.status)return false;
+    if(filters.link&&r.link!==filters.link)return false;
+    if(filters.hall&&r.hall!==filters.hall)return false;
+    if(filters.from&&(!r.date||r.date<filters.from))return false;
+    if(filters.to&&(!r.date||r.date>filters.to))return false;
+    return true;
+  });
+}
+function sortRequestRows(rows,key,order){
+  const d=order==="asc"?1:-1;
+  return rows.slice().sort((a,b)=>{
+    let x=a[key],y=b[key];
+    if(typeof x==="number"||typeof y==="number"){
+      const ax=Number.isFinite(x)?x:null,by=Number.isFinite(y)?y:null;
+      if(ax===null||by===null)return (ax===null?1:-1)*(ax===null&&by===null?0:1);
+      return (ax-by)*d||a.index-b.index;
+    }
+    return String(x??"").localeCompare(String(y??""),"vi",{numeric:true})*d||a.index-b.index;
+  });
 }
 function isTable(value){return Array.isArray(value)&&value.length>0&&Array.isArray(value[0])}
 // PO.js uses window.duLieuPO in the new export; older exports use
@@ -808,7 +1066,8 @@ function fromJSText(text,globalNames){
   const array=JSON.parse(text.slice(start,end));
   if(!isTable(array))throw Error(name+" không đúng định dạng bảng.");
   // Separate PO and GR timestamps are preferred over the older common field.
-  const stampNames=names.includes("duLieuGR")?SOURCE_TIMESTAMPS.gr:SOURCE_TIMESTAMPS.po;
+  const stampNames=names.includes("duLieuGR")?SOURCE_TIMESTAMPS.gr:
+    names.includes("duLieuRequest")?SOURCE_TIMESTAMPS.request:SOURCE_TIMESTAMPS.po;
   let updated="";
   for(const stamp of stampNames){
     const found=new RegExp("window\\."+stamp+"\\s*=\\s*([\"'])(.*?)\\1").exec(text);
@@ -824,7 +1083,8 @@ async function readScript(filename,globalNames){
   for(const name of names){
     try{delete window[name]}catch{window[name]=undefined}
   }
-  const stampNames=names.includes("duLieuGR")?SOURCE_TIMESTAMPS.gr:SOURCE_TIMESTAMPS.po;
+  const stampNames=names.includes("duLieuGR")?SOURCE_TIMESTAMPS.gr:
+    names.includes("duLieuRequest")?SOURCE_TIMESTAMPS.request:SOURCE_TIMESTAMPS.po;
   const oldStamps=new Map(stampNames.map(name=>[name,window[name]]));
   for(const name of stampNames){
     try{delete window[name]}catch{window[name]=undefined}
@@ -880,6 +1140,7 @@ async function loadAll(){
       [state.poError,state.grError].filter(Boolean).join(" · ");
     if(state.loaded){reportFresh()}
     else{state.rows=[];render();id("join-note").textContent="Chọn file thủ công ở mục Nguồn dữ liệu nếu không nạp được."}
+    if(activeReportTab==="request")await loadRequestFile();
   }finally{state.loading=false;id("reload-btn").disabled=false}
 }
 async function loadSelected(file,kind){
@@ -1009,7 +1270,353 @@ id("reload-btn").addEventListener("click",loadAll);id("export-btn").addEventList
 id("close-dialog").addEventListener("click",()=>id("details-dialog").close());
 id("file-po").addEventListener("change",e=>loadSelected(e.target.files[0],"po"));
 id("file-gr").addEventListener("change",e=>loadSelected(e.target.files[0],"gr"));
-window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,loadNextBatch};
+
+const requestState={data:[],rows:[],filtered:[],byIndex:new Map(),updated:"",
+  loading:false,loaded:false,error:"",size:50,start:0,visible:0,
+  sort:"date",direction:"desc"};
+let activeReportTab="po";
+const requestId=name=>id("request-"+name);
+function setReportTab(next){
+  activeReportTab=next;
+  for(const [name,tab,panel] of [["po","tab-po-gr","po-gr-panel"],
+    ["request","tab-request","request-panel"]]){
+    const selected=name===next,button=id(tab);
+    button.classList.toggle("active",selected);
+    button.setAttribute("aria-selected",String(selected));
+    button.tabIndex=selected?0:-1;
+    id(panel).hidden=!selected;
+  }
+  if(next==="request"&&!requestState.loaded&&!requestState.loading)
+    loadRequestFile();
+}
+function updateRequestSource(message,error=false){
+  const status=id("request-source-status");
+  status.textContent=message;status.classList.toggle("danger",error);
+  id("request-source-update").textContent="Request.js: "+(requestState.updated||"chưa rõ ngày cập nhật");
+  id("request-tab-count").textContent=requestState.loaded?
+    "("+fmt(requestState.rows.length)+")":"";
+}
+function requestFilters(){
+  return {query:requestId("search").value,status:requestId("status").value,
+    link:requestId("link").value,hall:requestId("hall").value,
+    from:requestId("from").value,to:requestId("to").value};
+}
+function refreshRequestChoices(){
+  const hallSelect=requestId("hall"),previous=hallSelect.value;
+  hallSelect.replaceChildren(new Option("Tất cả Hall",""));
+  for(const hall of [...new Set(requestState.rows.map(x=>x.hall))].filter(Boolean)
+    .sort((a,b)=>a.localeCompare(b,"vi",{numeric:true})))
+    hallSelect.add(new Option("Hall "+hall,hall));
+  hallSelect.value=[...hallSelect.options].some(x=>x.value===previous)?previous:"";
+  const select=requestId("status"),cur=select.value;
+  select.replaceChildren(new Option("Tất cả",""));
+  for(const value of [...new Set(requestState.rows.map(r=>r.status))].filter(Boolean)
+    .sort((a,b)=>a.localeCompare(b,"vi")))
+    select.add(new Option(value,value));
+  select.value=[...select.options].some(x=>x.value===cur)?cur:"";
+}
+function rebuildRequests(){
+  if(!requestState.data.length)return;
+  try{
+    const poRows=state.rows,opts={poReady:state.po.length>0,grReady:state.gr.length>0};
+    requestState.rows=buildRequestReport(requestState.data,poRows,opts);
+    requestState.byIndex=new Map(requestState.rows.map(r=>[r.index,r]));
+    refreshRequestChoices();
+    renderRequests();
+    requestState.loaded=true;
+    updateRequestSource(fmt(requestState.rows.length)+" yêu cầu · đã đọc Request.js");
+  }catch(err){
+    requestState.error=err.message;
+    updateRequestSource("Lỗi cấu trúc: "+err.message,true);
+    requestState.loaded=false;
+  }
+}
+async function loadRequestFile(){
+  if(requestState.loading)return;
+  requestState.loading=true;requestId("reload").disabled=true;
+  updateRequestSource("Đang tải Request.js...");
+  try{
+    const result=await readScript("Request.js",SOURCE_NAMES.request);
+    requestState.data=result.data;
+    requestState.updated=result.updated;
+    requestState.error="";
+    rebuildRequests();
+  }catch(err){
+    requestState.error=err.message;
+    updateRequestSource("Không tải được Request.js: "+err.message,true);
+  }finally{
+    requestState.loading=false;requestId("reload").disabled=false;
+  }
+}
+function applyRequestUpload(file){
+  if(!file)return;
+  file.text().then(text=>{
+    const result=fromJSText(text,SOURCE_NAMES.request);
+    requestState.data=result.data;
+    requestState.updated=result.updated;
+    requestState.error="";
+    rebuildRequests();
+  }).catch(err=>updateRequestSource("File Request.js không hợp lệ: "+err.message,true));
+}
+function updateRequestStats(rows){
+  requestId("stat-total").textContent=fmt(rows.length);
+  requestId("stat-po").textContent=fmt(rows.filter(r=>r.po).length);
+  requestId("stat-match").textContent=fmt(rows.filter(r=>r.matches.length>0).length);
+  requestId("stat-wait").textContent=fmt(rows.filter(r=>
+    r.status.toLocaleLowerCase()==="waiting for ir").length);
+}
+function requestRowDOM(r){
+  const tr=document.createElement("tr");
+  tr.tabIndex=0;tr.dataset.requestIndex=String(r.index);
+  tr.setAttribute("aria-label","Chi tiết yêu cầu "+r.sap+" "+r.po);
+  td(tr,displayDate(r.date));
+  td(tr,r.sap||"—","sap");
+  td(tr,r.description||"—","desc",r.description);
+  td(tr,fmt(r.qty),"number");
+  td(tr,r.hall||"—");
+  const status=td(tr,"");
+  const st=document.createElement("span");
+  st.className="tag "+(r.status.toLowerCase()==="done"?"done":"partial");
+  st.textContent=r.status||"—";status.appendChild(st);
+  td(tr,r.po||"—",r.po?"sap":"empty");
+  td(tr,displayDate(r.orderedDate));
+  td(tr,fmt(r.poQty),"number");
+  td(tr,fmt(r.grQty),"number");
+  const percent=td(tr,"");
+  const wrapper=document.createElement("div");wrapper.className="progress-outer";
+  const bar=document.createElement("div");bar.className="progress";
+  const fill=document.createElement("i");
+  fill.style.width=Math.max(0,Math.min(100,Number.isFinite(r.percent)?r.percent:0))+"%";
+  bar.appendChild(fill);wrapper.appendChild(bar);
+  const label=document.createElement("div");label.className="progress-text";
+  label.textContent=pct(r.percent);wrapper.appendChild(label);percent.appendChild(wrapper);
+  const col=td(tr,"");
+  const tag=document.createElement("span");
+  tag.className="request-link-tag "+r.link;
+  tag.textContent=REQUEST_LINK_LABELS[r.link]||r.link;
+  col.appendChild(tag);
+  return tr;
+}
+function requestVisibilityStatus(){
+  const total=requestState.filtered.length,end=requestState.start+requestState.visible;
+  requestId("visible").textContent=total?
+    fmt(requestState.start+1)+"–"+fmt(end)+" / "+fmt(total)+" yêu cầu":"0 yêu cầu";
+  requestId("first").disabled=requestState.start===0&&requestState.visible<=requestState.size;
+  requestId("last").disabled=end>=total;
+  requestId("sentinel").textContent=end<total?
+    "Cuộn xuống để tải thêm các yêu cầu":"Đã đến cuối danh sách yêu cầu";
+}
+function showRequestWindow(start,count){
+  const total=requestState.filtered.length;
+  requestState.start=Math.max(0,Math.min(start,Math.max(0,total-1)));
+  requestState.visible=Math.max(0,Math.min(count,total-requestState.start));
+  const fragment=document.createDocumentFragment();
+  for(const r of requestState.filtered.slice(
+    requestState.start,requestState.start+requestState.visible))
+    fragment.appendChild(requestRowDOM(r));
+  requestId("body").replaceChildren(fragment);
+  requestId("empty").hidden=total!==0;
+  requestVisibilityStatus();
+}
+function addRequestBatch(){
+  if(activeReportTab!=="request"||requestState.loading||
+    requestState.start!==0||requestState.start+requestState.visible>=requestState.filtered.length)
+    return false;
+  const from=requestState.visible;
+  const to=Math.min(requestState.filtered.length,from+requestState.size);
+  const fragment=document.createDocumentFragment();
+  for(const r of requestState.filtered.slice(from,to))
+    fragment.appendChild(requestRowDOM(r));
+  requestId("body").appendChild(fragment);
+  requestState.visible=to;requestVisibilityStatus();return true;
+}
+function renderRequests(){
+  const filters=requestFilters();
+  requestState.filtered=sortRequestRows(filterRequestRows(requestState.rows,filters),
+    requestState.sort,requestState.direction);
+  const rows=requestState.filtered;
+  updateRequestStats(rows);
+  showRequestWindow(0,Math.min(requestState.size,rows.length));
+  const count=fmt(rows.length),unassigned=rows.filter(r=>r.link==="missing").length,
+    unavailable=rows.filter(r=>r.link==="unavailable").length,
+    invalid=rows.filter(r=>r.link==="mismatch").length;
+  requestId("result-info").textContent=count+" / "+fmt(requestState.rows.length)+
+    " yêu cầu · Nhấp đúp dòng để xem chi tiết";
+  requestId("join-note").textContent="Chưa ghi số PO: "+fmt(unassigned)+
+    " · Có PO nhưng chưa thấy trong PO.js: "+fmt(unavailable)+
+    " · Mã SAP khác PO: "+fmt(invalid)+
+    " · Không ghép tự động theo mã SAP khi thiếu số PO.";
+  document.querySelectorAll("[data-rsort]").forEach(button=>{
+    const active=button.dataset.rsort===requestState.sort;
+    button.querySelector("span").textContent=active?
+      (requestState.direction==="asc"?"↑":"↓"):"↕";
+    button.parentElement.setAttribute("aria-sort",active?
+      (requestState.direction==="asc"?"ascending":"descending"):"none");
+  });
+}
+function showRequestDetails(row){
+  if(!row)return;
+  id("request-dialog-title").textContent="Yêu cầu "+row.sap+
+    (row.po?" · PO "+row.po:"");
+  const props=[
+    ["File nguồn",row.file],["STT trong file",row.rowNo],
+    ["Ngày yêu cầu",displayDate(row.date)],["Ngày đặt PO",displayDate(row.orderedDate)],
+    ["Mã SAP",row.sap],["Mô tả",row.description],
+    ["Số lượng yêu cầu",fmt(row.qty)+" "+row.unit],
+    ["Tồn kho khi yêu cầu",fmt(row.stock)],["Điểm đặt hàng",fmt(row.reorder)],
+    ["Lô đặt hàng",fmt(row.lot)],["Giá (EUR)",fmt(row.price)],
+    ["Giá trị (EUR)",fmt(row.amount)],["Loại đặt hàng",row.orderType],
+    ["Nhóm mua hàng",row.group],["Phụ trách / Supplier",row.supplier],
+    ["Hall",row.hall],["Trạng thái Request",row.status],["Ghi chú",row.note],
+    ["Số PO trong Request",row.po],["Kết quả đối chiếu",REQUEST_LINK_LABELS[row.link]||row.link]
+  ];
+  const fields=requestId("detail-fields");fields.replaceChildren();
+  for(const [key,value] of props){
+    const cell=document.createElement("div");cell.className="detail-cell";
+    const label=document.createElement("label");label.textContent=key;
+    const strong=document.createElement("strong");strong.textContent=value||"—";
+    cell.append(label,strong);fields.appendChild(cell);
+  }
+  const body=requestId("detail-po");body.replaceChildren();
+  for(const poRow of row.matches){
+    const tr=document.createElement("tr");
+    for(const value of [poRow.po,poRow.item,fmt(poRow.poQty),
+      state.gr.length?fmt(poRow.grQty):"—",
+      displayDate(poRow.latestGr),statusText(poRow.status)])
+      td(tr,value);
+    body.appendChild(tr);
+  }
+  if(!row.matches.length){const tr=document.createElement("tr");
+    const cell=td(tr,"Không có PO + mã SAP khớp trong nguồn đang tải");
+    cell.colSpan=6;body.appendChild(tr);
+  }
+  requestId("detail-note").textContent=REQUEST_LINK_LABELS[row.link]||row.link;
+  requestId("jump-po").hidden=!row.po||!row.matches.length;
+  requestId("jump-po").dataset.po=row.po;
+  id("request-dialog").showModal();
+}
+function requestXlsx(rows){
+  const cols=["Ngày yêu cầu","Mã SAP","Mô tả","SL yêu cầu","Đơn vị",
+    "Hall","Trạng thái Request","Số PO","Ngày đặt PO","SL PO","SL GR",
+    "% nhập/PO","Kết quả đối chiếu","Phụ trách","Đơn giá EUR","Giá trị EUR",
+    "Tồn tại lúc yêu cầu","Điểm đặt hàng","Lô đặt hàng","Loại đặt",
+    "Ghi chú","File nguồn","STT dòng","Nhóm mua hàng"];
+  const grid=[cols,...rows.map(r=>[displayDate(r.date),r.sap,r.description,r.qty,r.unit,
+    r.hall,r.status,r.po,displayDate(r.orderedDate),
+    Number.isFinite(r.poQty)?r.poQty:null,
+    Number.isFinite(r.grQty)?r.grQty:null,
+    Number.isFinite(r.percent)?r.percent:null,
+    REQUEST_LINK_LABELS[r.link]||r.link,r.supplier,
+    Number.isFinite(r.price)?r.price:null,Number.isFinite(r.amount)?r.amount:null,
+    Number.isFinite(r.stock)?r.stock:null,Number.isFinite(r.reorder)?r.reorder:null,
+    Number.isFinite(r.lot)?r.lot:null,r.orderType,r.note,r.file,r.rowNo,r.group])];
+  const last=colName(cols.length-1);
+  const sheet='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
+    '<sheetData>'+grid.map((row,i)=>'<row r="'+(i+1)+'">'+cellsXML(row,i+1)+'</row>').join("")+
+    '</sheetData><autoFilter ref="A1:'+last+grid.length+'"/></worksheet>';
+  const types='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+    '<Default Extension="xml" ContentType="application/xml"/>'+
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+    '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+  return zipEncode([["[Content_Types].xml",types],
+    ["_rels/.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ["xl/workbook.xml",'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Request_PO_GR" sheetId="1" r:id="rId1"/></sheets></workbook>'],
+    ["xl/_rels/workbook.xml.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'],
+    ["xl/worksheets/sheet1.xml",sheet]]);
+}
+function exportRequests(){
+  if(!requestState.filtered.length){
+    updateRequestSource("Không có yêu cầu phù hợp để xuất.",true);return;
+  }
+  const blob=requestXlsx(requestState.filtered),url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;
+  a.download="Request_PO_GR_"+todayISO()+".xlsx";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+
+for(const [name,selector] of [["po","tab-po-gr"],["request","tab-request"]]){
+  id(selector).addEventListener("click",()=>setReportTab(name));
+}
+document.querySelector(".report-tabs").addEventListener("keydown",event=>{
+  if(event.key!=="ArrowLeft"&&event.key!=="ArrowRight")return;
+  const next=activeReportTab==="po"?"request":"po";
+  setReportTab(next);
+  id(next==="po"?"tab-po-gr":"tab-request").focus();
+  event.preventDefault();
+});
+requestId("reload").addEventListener("click",loadRequestFile);
+requestId("file").addEventListener("change",event=>applyRequestUpload(event.target.files[0]));
+let requestDebounce=null;
+for(const name of ["search","status","link","hall","from","to"]){
+  requestId(name).addEventListener(name==="search"?"input":"change",()=>{
+    clearTimeout(requestDebounce);
+    requestDebounce=setTimeout(renderRequests,name==="search"?150:0);
+  });
+}
+requestId("clear").addEventListener("click",()=>{
+  for(const name of ["search","status","link","hall","from","to"])
+    requestId(name).value="";
+  renderRequests();
+});
+document.querySelectorAll("[data-rsort]").forEach(button=>button.addEventListener("click",()=>{
+  const key=button.dataset.rsort;
+  requestState.direction=requestState.sort===key&&requestState.direction==="asc"?"desc":"asc";
+  requestState.sort=key;
+  renderRequests();
+}));
+requestId("page-size").addEventListener("change",event=>{
+  requestState.size=Number(event.target.value)||50;
+  showRequestWindow(0,Math.min(requestState.size,requestState.filtered.length));
+});
+requestId("first").addEventListener("click",()=>{
+  showRequestWindow(0,Math.min(requestState.size,requestState.filtered.length));
+  requestId("table").scrollIntoView({block:"start"});
+});
+requestId("last").addEventListener("click",()=>{
+  showRequestWindow(Math.max(0,requestState.filtered.length-requestState.size),
+    requestState.size);
+  requestId("visible").scrollIntoView({block:"end"});
+});
+if(typeof IntersectionObserver==="function"){
+  const observer=new IntersectionObserver(entries=>{
+    if(entries.some(entry=>entry.isIntersecting))addRequestBatch();
+  },{root:null,rootMargin:"0px 0px 200px 0px"});
+  observer.observe(requestId("sentinel"));
+}else{
+  window.addEventListener("scroll",()=>{
+    if(activeReportTab==="request"&&
+      requestId("sentinel").getBoundingClientRect().top<=window.innerHeight+200)
+      addRequestBatch();
+  },{passive:true});
+}
+function requestRowAction(event){
+  if(event.type==="keydown"&&event.key!=="Enter")return;
+  const element=event.target.closest("tr[data-request-index]");
+  if(!element)return;
+  if(event.type==="keydown")event.preventDefault();
+  showRequestDetails(requestState.byIndex.get(Number(element.dataset.requestIndex)));
+}
+requestId("body").addEventListener("dblclick",requestRowAction);
+requestId("body").addEventListener("keydown",requestRowAction);
+requestId("dialog-close").addEventListener("click",()=>id("request-dialog").close());
+requestId("jump-po").addEventListener("click",()=>{
+  const po=requestId("jump-po").dataset.po;
+  id("request-dialog").close();
+  setReportTab("po");
+  id("search").value=po;
+  id("status-filter").value="all";
+  id("overdue-only").checked=false;
+  render();
+});
+requestId("export").addEventListener("click",exportRequests);
+
+window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
+  loadNextBatch,buildRequestReport,filterRequestRows,sortRequestRows,requestXlsx,
+  getRequestState:()=>requestState};
 loadAll();
 })();
 </script>
