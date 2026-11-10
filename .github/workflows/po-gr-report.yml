@@ -7,7 +7,9 @@ on:
       - PO_GR_Report.html
       - PO.js
       - GR.js
+      - Request.js
       - tests/po_gr_report_browser.cjs
+      - tests/request_report_browser.cjs
       - .github/workflows/po-gr-report.yml
   push:
     branches: [main]
@@ -16,7 +18,9 @@ on:
       - PO_GR_Report.html
       - PO.js
       - GR.js
+      - Request.js
       - tests/po_gr_report_browser.cjs
+      - tests/request_report_browser.cjs
       - .github/workflows/po-gr-report.yml
 
 permissions:
@@ -37,3 +41,5 @@ jobs:
           npx playwright install chromium --with-deps
       - name: Validate PO/GR web report
         run: node tests/po_gr_report_browser.cjs
+      - name: Validate Request.js reconciliation, filtering and export
+        run: node tests/request_report_browser.cjs
