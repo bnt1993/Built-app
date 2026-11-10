@@ -10,6 +10,7 @@ on:
       - Request.js
       - tests/po_gr_report_browser.cjs
       - tests/request_report_browser.cjs
+      - tests/po_gr_integrity_logic.cjs
       - .github/workflows/po-gr-report.yml
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - Request.js
       - tests/po_gr_report_browser.cjs
       - tests/request_report_browser.cjs
+      - tests/po_gr_integrity_logic.cjs
       - .github/workflows/po-gr-report.yml
 
 permissions:
@@ -35,6 +37,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate numeric integrity and source failure recovery
+        run: node tests/po_gr_integrity_logic.cjs
       - name: Install Playwright Chromium
         run: |
           npm install --no-save playwright@1.56.1
@@ -43,3 +47,4 @@ jobs:
         run: node tests/po_gr_report_browser.cjs
       - name: Validate Request.js reconciliation, filtering and export
         run: node tests/request_report_browser.cjs
+

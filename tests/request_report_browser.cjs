@@ -68,6 +68,9 @@ function routeFor(page,sources){
   assert.equal(await page.locator('#request-stat-po').innerText(),'247');
   assert.equal(await page.locator('#request-stat-match').innerText(),'0');
   assert.equal(await page.locator('#request-stat-wait').innerText(),'20');
+  const actualAmount=await page.evaluate(()=>window.POGR.getRequestState().rows
+    .find(r=>r.sap==='900064272'&&r.week==='WK41').amount);
+  assert.equal(actualAmount,81.078,'SAP decimal comma must survive in the browser');
   assert.match(await page.locator('#request-source-update').innerText(),/19:00:49/);
   assert.equal(await page.locator('#request-body tr').count(),50);
   assert.equal(await page.locator('#request-table thead th').first().innerText().then(t=>t.includes('Tuần (File Name)')),true);
@@ -130,9 +133,10 @@ function routeFor(page,sources){
   const p2=await browser.newPage({viewport:{width:1450,height:930},acceptDownloads:true});
   await p2.clock.install({time:new Date('2026-11-10T12:00:00+07:00')});
   const errors2=[];p2.on('pageerror',e=>errors2.push(e.message));
-  await routeFor(p2,{po:script('duLieuPO','thoiGianCapNhatPO',po),
+  const fixtureSources={po:script('duLieuPO','thoiGianCapNhatPO',po),
     gr:script('duLieuGR','thoiGianCapNhatGR',gr),
-    request:script('duLieuRequest','thoiGianCapNhatRequest',requests)});
+    request:script('duLieuRequest','thoiGianCapNhatRequest',requests)};
+  await routeFor(p2,fixtureSources);
   await p2.goto('http://request-report.test/');
   await p2.waitForFunction(()=>document.getElementById('stat-total').textContent==='2');
   await p2.locator('#tab-request').click();
@@ -179,7 +183,29 @@ function routeFor(page,sources){
   assert.equal(await p2.locator('#po-gr-panel').isVisible(),true);
   assert.equal(await p2.locator('#search').inputValue(),'4811770001');
   assert.equal(await p2.locator('#stat-total').innerText(),'2');
+  // Invalid source headers invalidate the dependent Request reconciliation.
+  await p2.locator('#file-po').setInputFiles({name:'PO.js',mimeType:'application/javascript',
+    buffer:Buffer.from('window.duLieuPO=[["Wrong header"],["bad"]];')});
+  await p2.waitForFunction(()=>document.getElementById('stat-total').textContent==='0');
+  const invalidPO=await p2.evaluate(()=>window.POGR.getRequestState().rows
+    .filter(r=>r.po&&r.sap).every(r=>r.matches.length===0&&r.link==='unverified'));
+  assert.equal(invalidPO,true);
+  assert.equal(await p2.locator('#status-dot').getAttribute('class'),'status-dot error');
+  await p2.locator('#reload-btn').click();
+  await p2.waitForFunction(()=>document.getElementById('stat-total').textContent==='2');
+  assert.equal(await p2.evaluate(()=>window.POGR.getRequestState().rows.filter(r=>r.matches.length).length),2);
+  await p2.locator('#tab-request').click();
+  await p2.locator('#request-clear').click();
+  await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='5');
+  await p2.locator('#request-file').setInputFiles({name:'Request.js',mimeType:'application/javascript',
+    buffer:Buffer.from('window.duLieuRequest=[["Wrong header"],["bad"]];')});
+  await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='0');
+  assert.equal(await p2.evaluate(()=>window.POGR.getRequestState().filtered.length),0);
+  assert.match(await p2.locator('#request-source-status').innerText(),/Lỗi cấu trúc/);
+  await p2.locator('#request-reload').click();
+  await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='5');
   assert.deepEqual(errors2,[]);
   console.log('PASS Request.js real 334 rows, independent source, PO + material linkage, GR reversal, filters, detail, tab switch, XLSX.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
+
