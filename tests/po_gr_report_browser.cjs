@@ -199,7 +199,9 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.ok((await sticky.locator('.head-track').getAttribute('style'))
     .includes('translateX(-'+actualHorizontalOffset+'px)'));
   // The mirrored header forwards clicks to the actual sort buttons.
-  await sticky.locator('[data-sort="po"]').click();
+  // After horizontal scrolling, the first column's separate pinned heading
+  // stays clickable even though its normal mirrored cell has moved offscreen.
+  await sticky.locator('.fixed-head-first button').click();
   assert.equal(await page.locator('#report-body tr').count(),50);
   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
   await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length>=100);
