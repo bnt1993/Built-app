@@ -6,6 +6,15 @@
 
 Dữ liệu đặt trong `window.duLieuRequest = [[...], ...];` và thời gian trong `window.thoiGianCapNhatRequest`. Các cột chính: `File Name`, `No`, `Purchasing Group `, `SAP No`, `Requested date`, `Description`, `Stock`, `Reorder Point`, `Lot size of reorder`, `Qty need to order`, `Unit`, `Price(EUR)`, `Amount(EUR)`, `OrderType`, `Note`, `Supplier`, `Hall`, `Status`, `PO No.`, `Ordered date`. Ngày lưu theo số ngày Excel (serial); tiền EUR có thể chứa dấu phẩy thập phân.
 
+### Giao diện Request gọn và mã tuần từ File Name
+
+- Nút tab **Yêu cầu vật tư** và bốn thẻ thống kê được thu gọn để nhường không gian cho bảng.
+- Sáu bộ lọc Request (tìm kiếm, trạng thái, kết quả đối chiếu, Hall, từ ngày, đến ngày) được sắp trên **một hàng khi màn hình máy tính đủ rộng**; trên máy tính bảng/điện thoại chúng xuống hàng để không bị cắt chữ.
+- Cột **Tuần (File Name)** được đặt **đầu tiên** trong bảng Request, chỉ hiển thị phần tuần ở cuối tên file: `Order sparepart list of ME56_5244_WK31.xlsx` → `WK31`; `..._Wk32.xlsx` → `WK32`.
+- Mã tuần được chuẩn hóa thành `WK01`–`WK53`; tên không có tuần hợp lệ hiển thị `—`. Khi di chuột lên cột tuần, bảng hiển thị **tên file gốc**. Popup chi tiết vẫn giữ `File Name` đầy đủ.
+- Có thể **sắp xếp theo tuần** với các dòng không có tuần được đưa xuống cuối; **Excel xuất theo bộ lọc** có cột Tuần đầu tiên và vẫn giữ cột File nguồn gốc.
+- Cách đối chiếu Request ↔ PO ↔ GR, trạng thái Hall và nội dung `Request.js` gốc không thay đổi.
+
 ### Quy tắc đối chiếu ba nguồn
 
 1. Đọc **mọi dòng Request.js**, kể cả các yêu cầu chưa có PO và các yêu cầu ở nhiều Hall; Request không bị giới hạn PO 48* khi thống kê.
