@@ -378,6 +378,9 @@
     .request-link-tag.missing{background:#f4f5fa;color:#63748c}
     .request-link-tag.unavailable{background:#f3eafd;color:#7d4ab0}
     .request-link-tag.no-gr{background:#e7effd;color:#3763ac}
+    .request-link-tag.unit-mismatch,.request-link-tag.data-invalid,
+    .request-link-tag.negative,.request-link-tag.invalid{background:#ffe4e8;color:#aa344f}
+    .request-link-tag.unverified,.request-link-tag.gr-unavailable{background:#fff0d4;color:#95620c}
     .request-detail-note{font-size:12px;color:#697e95}
     #request-jump-po{margin-top:13px}
     @media(max-width:1100px){.request-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -631,7 +634,13 @@
           <option value="mismatch">PO khác mã SAP</option>
           <option value="no-gr">Có PO, chưa nhập GR</option>
           <option value="partial">Đã nhập một phần</option>
-          <option value="complete">Đã nhận đủ</option></select></div>
+          <option value="complete">Đã nhận đủ</option>
+          <option value="unverified">Chưa tải dữ liệu PO</option>
+          <option value="gr-unavailable">Chưa tải dữ liệu GR</option>
+          <option value="unit-mismatch">Khác hoặc thiếu đơn vị</option>
+          <option value="data-invalid">Số lượng hoặc dòng dữ liệu lỗi</option>
+          <option value="negative">GR âm</option>
+          <option value="invalid">Thiếu mã SAP</option></select></div>
       <div class="field"><label for="request-week">Tuần (File Name)</label>
         <select id="request-week" aria-label="Lọc yêu cầu theo tuần từ tên file">
           <option value="">Tất cả tuần</option></select></div>
@@ -717,7 +726,7 @@ const SOURCE_TIMESTAMPS={po:["thoiGianCapNhatPO","thoiGianCapNhat"],
 const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const numeric=new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2});
 const state={po:[],gr:[],rows:[],filtered:[],poUpdated:"",grUpdated:"",loaded:false,loading:false,
-  start:0,visibleCount:0,size:50,sort:"age",direction:"desc",warnings:[],poError:"",grError:"",poVar:"",grVar:"",totalPO:0,excludedPO:0};
+  start:0,visibleCount:0,size:50,sort:"age",direction:"desc",warnings:[],poError:"",grError:"",reportError:"",poVar:"",grVar:"",totalPO:0,excludedPO:0};
 const aliases={
   po:{po:["Pur. Doc.","Purchase Order","PO Num","PO Number","Purchasing Document"],
     item:["Item","PO Item","Purchasing Item"],material:["Material","Material Number","SAP"],
@@ -736,13 +745,16 @@ function norm(text){return String(text??"").toLowerCase().normalize("NFD").repla
 function findCol(head,names){for(const name of names){const ix=head.findIndex(v=>norm(v)===norm(name));if(ix>=0)return ix}return -1}
 function normalizeCode(v){return String(v??"").trim().replace(/\.0+$/,"")}
 function itemCode(v){const x=normalizeCode(v);return /^\d+$/.test(x)?x.replace(/^0+(?=\d)/,""):x}
+function unitCode(v){return String(v??"").trim().toUpperCase()}
 function number(v){
   if(typeof v==="number")return Number.isFinite(v)?v:NaN;
   let s=String(v??"").trim().replace(/[\u00a0\s]/g,"");
   if(!s)return NaN;
   const i=s.lastIndexOf(","),j=s.lastIndexOf(".");
   if(i>=0&&j>=0)s=i>j?s.replace(/\./g,"").replace(",","."):s.replace(/,/g,"");
-  else if(i>=0)s=/^-?\d{1,3}(?:,\d{3})+$/.test(s)?s.replace(/,/g,""):s.replace(",",".");
+  // Generated SAP sources use decimal commas, including three decimal places.
+  // A single comma must never turn 81,078 EUR into 81078 EUR.
+  else if(i>=0)s=s.replace(",",".");
   else if(j>=0&&/^-?\d{1,3}(?:\.\d{3}){2,}$/.test(s))s=s.replace(/\./g,"");
   const result=Number(s);return Number.isFinite(result)?result:NaN;
 }
@@ -766,7 +778,7 @@ function daysOld(s){if(!s)return NaN;return Math.max(0,Math.floor((Date.parse(to
 function fmt(n){return Number.isFinite(n)?numeric.format(n):"—"}
 function escapeText(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function calculateStatus(row){
-  if(!Number.isFinite(row.poQty)||row.poQty<=0)return "invalid";
+  if(row.issues?.length||!Number.isFinite(row.poQty)||row.poQty<=0||!Number.isFinite(row.grQty))return "invalid";
   if(row.grQty<0)return "invalid";
   if(row.grQty===0)return "none";
   if(row.grQty<row.poQty-1e-8)return "partial";
@@ -786,7 +798,7 @@ function cell(row,col){return col<0?"":row[col]??""}
 function buildReport(poData,grData,allow105=false){
   const p=mapFields(poData,"po"),g=mapFields(grData,"gr");
   const grByKey=new Map(),seen=new Set();
-  let ignored=0,duplicates=0;
+  let ignored=0,duplicates=0,invalidQty=0,unitMismatches=0;
   const signs={"101":1,"102":-1};if(allow105){signs["105"]=1;signs["106"]=-1}
   for(const raw of grData.slice(1)){
     if(!Array.isArray(raw))continue;
@@ -798,7 +810,9 @@ function buildReport(poData,grData,allow105=false){
     if(dedup&&seen.has(dedup)){duplicates++;continue}
     if(dedup)seen.add(dedup);
     const qty=number(cell(raw,g.qty));
-    if(!Number.isFinite(qty)){ignored++;continue}
+    // Retain invalid transactions in the journal and invalidate their PO line.
+    // Dropping one would make an unknown receipt look like zero received.
+    if(!Number.isFinite(qty))invalidQty++;
     const entry={date,doc,docItem,movement,qty:Math.abs(qty)*signs[movement],
       unit:String(cell(raw,g.unit)).trim(),bill:String(cell(raw,g.bill)).trim(),
       material,po,item};
@@ -826,17 +840,26 @@ function buildReport(poData,grData,allow105=false){
       return exact;
     }).sort((a,b)=>b.date.localeCompare(a.date)||b.doc.localeCompare(a.doc));
     const ordered=number(cell(raw,p.poQty));
-    const grQty=related.reduce((sum,r)=>sum+r.qty,0);
     const poQty=Number.isFinite(ordered)?ordered:NaN;
+    const unit=String(cell(raw,p.unit)).trim();
+    const unitMismatch=related.some(r=>!unitCode(unit)||!unitCode(r.unit)||unitCode(r.unit)!==unitCode(unit));
+    if(unitMismatch)unitMismatches++;
+    const grQty=unitMismatch?NaN:related.reduce((sum,r)=>sum+r.qty,0);
+    const issues=[];
+    if(!item||!material)issues.push("Thiếu Item hoặc mã vật tư");
+    if(!Number.isFinite(poQty)||poQty<=0)issues.push("Số lượng PO không hợp lệ");
+    if(unitMismatch)issues.push("Đơn vị PO/GR khác nhau hoặc còn thiếu; chưa có hệ số quy đổi");
+    if(related.some(r=>!Number.isFinite(r.qty)))issues.push("Số lượng GR không hợp lệ");
+    if(grQty<0)issues.push("Số lượng GR âm");
     const latest=related.find(x=>x.date)?.date||"";
     const bill=(related.find(x=>x.bill)||{}).bill||"";
     const row={po,item,material,description:String(cell(raw,p.description)).trim(),
       poDate,poQty,grQty,latestGr:latest,bill,
       key:po+"|"+item+"|"+material,age:daysOld(poDate),
-      percent:Number.isFinite(poQty)&&poQty>0?grQty/poQty*100:NaN,
-      remain:Number.isFinite(poQty)?Math.max(0,poQty-grQty):NaN,
+      percent:!issues.length&&Number.isFinite(poQty)&&poQty>0?grQty/poQty*100:NaN,
+      remain:!issues.length&&Number.isFinite(poQty)?Math.max(0,poQty-grQty):NaN,
       supplier:String(cell(raw,p.supplier)).trim(),plant:String(cell(raw,p.plant)).trim(),
-      buyer:String(cell(raw,p.buyer)).trim(),unit:String(cell(raw,p.unit)).trim(),
+      buyer:String(cell(raw,p.buyer)).trim(),unit,unitMismatch,issues,
       netPrice:number(cell(raw,p.netPrice)),currency:String(cell(raw,p.currency)).trim(),
       receipts:related};
     row.status=!item||!material?"invalid":calculateStatus(row);
@@ -844,9 +867,9 @@ function buildReport(poData,grData,allow105=false){
       row.buyer,row.plant,row.bill,row.key].join(" ").toLocaleLowerCase();
     rows.push(row);
   }
-  return {rows,ignored,duplicates,mismatch,invalidDate,excludedPO,totalPO:poData.length-1,totalGR:grData.length-1};
+  return {rows,ignored,duplicates,mismatch,invalidDate,invalidQty,unitMismatches,excludedPO,totalPO:poData.length-1,totalGR:grData.length-1};
 }
-function pct(v){return Number.isFinite(v)?new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2}).format(v)+"%":"—"}
+function pct(v){return Number.isFinite(v)?numeric.format(v)+"%":"—"}
 function statusText(s){return {none:"Chưa nhận",partial:"Nhận một phần",done:"Đã đủ",excess:"Nhận vượt",invalid:"Cần kiểm tra"}[s]||s}
 function sortValue(r,key){if(key==="lastGr")return r.latestGr;return r[key]}
 function searchMatch(r,value){
@@ -896,7 +919,7 @@ function updateQuickTabs(){
 }
 function updateKPI(rows){
   const total=rows.length,pending=rows.filter(x=>x.status==="none"||x.status==="partial"||x.status==="invalid").length,
-    overdue=rows.filter(x=>x.remain>0&&x.age>=60).length,
+    overdue=rows.filter(x=>x.status!=="done"&&x.status!=="excess"&&x.age>=60).length,
     received=rows.filter(x=>x.status==="done"||x.status==="excess").length;
   id("stat-total").textContent=fmt(total);id("stat-pending").textContent=fmt(pending);
   id("stat-overdue").textContent=fmt(overdue);id("stat-completion").textContent=total?pct(received/total*100):"—";
@@ -926,7 +949,7 @@ function appendRows(rows){
     outer.appendChild(label);progress.appendChild(outer);
     td(tr,fmt(r.remain),"number");
     const status=td(tr,"");const tag=document.createElement("span");
-    tag.className="tag "+r.status;tag.textContent=statusText(r.status);status.appendChild(tag);
+    tag.className="tag "+r.status;tag.textContent=statusText(r.status);tag.title=(r.issues||[]).join(" · ");status.appendChild(tag);
     fragment.appendChild(tr);
   }
   id("report-body").appendChild(fragment);
@@ -978,7 +1001,7 @@ function openDetail(r){
     ["Số lượng đặt",fmt(r.poQty)+" "+r.unit],["Đã nhận",fmt(r.grQty)+" "+r.unit],
     ["Chưa nhận",fmt(r.remain)+" "+r.unit],["Tỷ lệ nhận",pct(r.percent)],
     ["Ngày chờ",fmt(r.age)],["Đơn giá",fmt(r.netPrice)+" "+r.currency],
-    ["Tình trạng",statusText(r.status)]];
+    ["Tình trạng",statusText(r.status)],["Lưu ý dữ liệu",(r.issues||[]).join(" · ")||"—"]];
   const root=id("detail-fields");root.replaceChildren();
   for(const [label,value] of props){const box=document.createElement("div");box.className="detail-cell";
     const l=document.createElement("label");l.textContent=label;const v=document.createElement("strong");v.textContent=value||"—";
@@ -992,25 +1015,43 @@ function openDetail(r){
   id("details-dialog").showModal();
 }
 function reportFresh(){
-  if(!state.po.length){state.rows=[];render();return}
+  state.reportError="";
+  state.rows=[];state.totalPO=0;state.excludedPO=0;state.warnings=[];
   try{
-    const info=buildReport(state.po,state.gr.length?state.gr:[aliases.gr?Object.keys(aliases.gr):[]],id("include-105").checked);
-    state.rows=info.rows;state.totalPO=info.totalPO;state.excludedPO=info.excludedPO;state.warnings=[];
-    id("dataset-summary").textContent=fmt(info.rows.length)+" dòng PO đầu 48 / "+
-      fmt(info.totalPO)+" dòng trong PO.js"+(info.excludedPO?
-        " · loại "+fmt(info.excludedPO)+" dòng PO khác 48":"");
-    if(info.mismatch)state.warnings.push(info.mismatch+" dòng GR có mã vật tư khác PO");
-    if(info.duplicates)state.warnings.push(info.duplicates+" chứng từ GR trùng đã bỏ qua");
-    if(info.invalidDate)state.warnings.push(info.invalidDate+" dòng PO có ngày không hợp lệ");
-    id("join-note").textContent=state.warnings.length?state.warnings.join(" · "):
-      "Đã đọc "+fmt(info.totalPO)+" dòng PO, "+fmt(info.totalGR)+" dòng GR · đối chiếu theo PO + Item + mã vật tư";
-    updateSelect("supplier-filter",state.rows.map(x=>x.supplier),"Tất cả nhà cung cấp");
-    render();
-    if(requestState.data.length)rebuildRequests();
+    if(!state.po.length){
+      id("dataset-summary").textContent="Chưa có dữ liệu PO hợp lệ";
+      id("join-note").textContent=state.poError||"Cần tải PO.js để đối chiếu";
+    }else{
+      const emptyGR=[Object.values(aliases.gr).map(names=>names[0])];
+      const info=buildReport(state.po,state.gr.length?state.gr:emptyGR,id("include-105").checked);
+      state.rows=info.rows;state.totalPO=info.totalPO;state.excludedPO=info.excludedPO;state.warnings=[];
+      if(!state.gr.length){
+        for(const row of state.rows){
+          row.grQty=NaN;row.percent=NaN;row.remain=NaN;row.status="invalid";
+          row.issues.push("Chưa có dữ liệu GR hợp lệ");
+        }
+        state.warnings.push("Chưa có dữ liệu GR hợp lệ; chưa thể tính số lượng đã nhận");
+      }
+      id("dataset-summary").textContent=fmt(info.rows.length)+" dòng PO đầu 48 / "+
+        fmt(info.totalPO)+" dòng trong PO.js"+(info.excludedPO?
+          " · loại "+fmt(info.excludedPO)+" dòng PO khác 48":"");
+      if(info.mismatch)state.warnings.push(info.mismatch+" dòng GR có mã vật tư khác PO");
+      if(info.duplicates)state.warnings.push(info.duplicates+" chứng từ GR trùng đã bỏ qua");
+      if(info.invalidDate)state.warnings.push(info.invalidDate+" dòng PO có ngày không hợp lệ");
+      if(info.invalidQty)state.warnings.push(info.invalidQty+" dòng GR có số lượng không hợp lệ");
+      if(info.unitMismatches)state.warnings.push(info.unitMismatches+" dòng PO cần kiểm tra đơn vị GR");
+      id("join-note").textContent=state.warnings.length?state.warnings.join(" · "):
+        "Đã đọc "+fmt(info.totalPO)+" dòng PO, "+fmt(info.totalGR)+" dòng GR · đối chiếu theo PO + Item + mã vật tư";
+    }
   }catch(err){
+    state.reportError=err.message;
     id("load-state").textContent=err.message;id("join-note").textContent=err.message;
-    state.rows=[];render();
+    id("dataset-summary").textContent="Nguồn dữ liệu cần kiểm tra";
+    state.rows=[];state.totalPO=0;state.excludedPO=0;
   }
+  updateSelect("supplier-filter",state.rows.map(x=>x.supplier),"Tất cả nhà cung cấp");
+  render();
+  if(requestState.data.length)rebuildRequests();
 }
 // Request.js is a separate input source, not the GR transaction ledger.
 // A Request is only linked to a PO when the exact PO number AND SAP material
@@ -1035,6 +1076,8 @@ const REQUEST_LINK_LABELS={
   partial:"Nhập một phần",
   complete:"Đã nhận đủ",
   negative:"GR âm · cần kiểm tra",
+  "unit-mismatch":"Khác hoặc thiếu đơn vị · cần kiểm tra",
+  "data-invalid":"Số lượng hoặc dòng PO/GR không hợp lệ",
   invalid:"Thiếu mã SAP"
 };
 // Extract the trailing WK code from File Name, e.g. ..._WK31.xlsx -> WK31.
@@ -1070,14 +1113,20 @@ function buildRequestReport(source,poRows,opts={}){
     const matchesPO=po&&opts.poReady?byPO.get(po)||[]:[];
     const matches=matchesPO.filter(p=>normalizeCode(p.material)===sap);
     const linked=matches.length>0;
-    const poQty=linked?matches.reduce((sum,p)=>sum+(Number.isFinite(p.poQty)?p.poQty:0),0):NaN;
-    const grQty=linked&&opts.grReady?
-      matches.reduce((sum,p)=>sum+(Number.isFinite(p.grQty)?p.grQty:0),0):NaN;
+    const units=new Set(matches.map(p=>unitCode(p.unit)));
+    const unitMismatch=units.size>1||matches.some(p=>p.unitMismatch);
+    const invalidPO=matches.some(p=>!Number.isFinite(p.poQty)||p.poQty<=0||!p.item||!p.material);
+    const invalidGR=matches.some(p=>!Number.isFinite(p.grQty));
+    const negativeGR=matches.some(p=>p.grQty<0);
+    const poQty=linked&&!invalidPO&&units.size<=1?matches.reduce((sum,p)=>sum+p.poQty,0):NaN;
+    const grQty=linked&&opts.grReady&&!unitMismatch&&!invalidGR?
+      matches.reduce((sum,p)=>sum+p.grQty,0):NaN;
     const percent=Number.isFinite(poQty)&&poQty>0&&Number.isFinite(grQty)?
       grQty/poQty*100:NaN;
     const link=!sap?"invalid":!po?"missing":!opts.poReady?"unverified":
       !matchesPO.length?"unavailable":!linked?"mismatch":
-      !opts.grReady?"gr-unavailable":grQty<0?"negative":
+      invalidPO?"data-invalid":!opts.grReady?"gr-unavailable":
+      unitMismatch?"unit-mismatch":invalidGR?"data-invalid":negativeGR?"negative":
       grQty<=0?"no-gr":grQty<poQty-1e-8?"partial":"complete";
     const r={
       index:i-1,file:String(c("file")).trim(),week:requestWeekFromFile(c("file")),rowNo:String(c("rowNo")).trim(),
@@ -1207,6 +1256,29 @@ async function readScript(filename,globalNames){
     document.head.appendChild(script);
   });
 }
+function acceptSource(kind,result){
+  // Validate headers before a source becomes eligible for reconciliation.
+  mapFields(result.data,kind);
+  state[kind]=result.data;state[kind+"Updated"]=result.updated;
+  state[kind+"Var"]=result.globalName;state[kind+"Error"]="";
+}
+function rejectSource(kind,error){
+  state[kind]=[];state[kind+"Updated"]="";state[kind+"Var"]="";
+  state[kind+"Error"]=error.message||String(error);
+}
+function updateSourceStatus(){
+  const errors=[state.poError,state.grError,state.reportError].filter(Boolean);
+  state.loaded=Boolean(state.po.length&&state.gr.length&&!errors.length);
+  for(const kind of ["po","gr"]){
+    id(kind+"-update").textContent=kind.toUpperCase()+": "+(state[kind+"Updated"]||"—");
+    id(kind+"-source-note").textContent=state[kind+"Error"]?"Lỗi: "+state[kind+"Error"]:
+      fmt(Math.max(0,state[kind].length-1))+" dòng · "+state[kind+"Var"]+" · cập nhật "+(state[kind+"Updated"]||"—");
+  }
+  id("status-dot").className="status-dot "+(state.loaded?"ready":"error");
+  id("source-status").textContent=state.loaded?"Đã kết nối PO / GR":"Nguồn PO / GR cần kiểm tra";
+  id("load-state").textContent=state.loaded?"Đã cập nhật lúc "+new Date().toLocaleTimeString("vi-VN"):
+    errors.join(" · ")||"Chưa đủ nguồn PO và GR hợp lệ";
+}
 async function loadAll(){
   if(state.loading||document.hidden)return;
   state.loading=true;id("reload-btn").disabled=true;id("load-state").textContent="Đang đọc PO.js và GR.js…";
@@ -1214,42 +1286,23 @@ async function loadAll(){
   try{
     try{
       const po=await readScript("PO.js",SOURCE_NAMES.po);
-      state.po=po.data;state.poUpdated=po.updated;state.poVar=po.globalName;state.poError="";
-    }catch(e){state.poError=e.message}
+      acceptSource("po",po);
+    }catch(e){rejectSource("po",e)}
     try{
       const gr=await readScript("GR.js",SOURCE_NAMES.gr);
-      state.gr=gr.data;state.grUpdated=gr.updated;state.grVar=gr.globalName;state.grError="";
-    }catch(e){state.grError=e.message}
-    state.loaded=Boolean(state.po.length&&state.gr.length);
-    id("po-update").textContent="PO: "+(state.poUpdated||"không rõ thời gian");
-    id("gr-update").textContent="GR: "+(state.grUpdated||"không rõ thời gian");
-    id("po-source-note").textContent=state.poError?"Lỗi: "+state.poError:
-      fmt(Math.max(0,state.po.length-1))+" dòng · "+state.poVar+" · cập nhật "+(state.poUpdated||"—");
-    id("gr-source-note").textContent=state.grError?"Lỗi: "+state.grError:
-      fmt(Math.max(0,state.gr.length-1))+" dòng · "+state.grVar+" · cập nhật "+(state.grUpdated||"—");
-    id("status-dot").className="status-dot "+(state.loaded?"ready":"error");
-    id("source-status").textContent=state.loaded?"Đã kết nối PO / GR":"Thiếu nguồn PO hoặc GR";
-    id("load-state").textContent=state.loaded?"Đã cập nhật lúc "+new Date().toLocaleTimeString("vi-VN"):
-      [state.poError,state.grError].filter(Boolean).join(" · ");
-    if(state.loaded){reportFresh()}
-    else{state.rows=[];render();id("join-note").textContent="Chọn file thủ công ở mục Nguồn dữ liệu nếu không nạp được."}
+      acceptSource("gr",gr);
+    }catch(e){rejectSource("gr",e)}
+    reportFresh();
     if(activeReportTab==="request")await loadRequestFile();
-  }finally{state.loading=false;id("reload-btn").disabled=false}
+  }finally{state.loading=false;id("reload-btn").disabled=false;updateSourceStatus()}
 }
 async function loadSelected(file,kind){
   if(!file)return;
   try{
     const content=await file.text(),result=fromJSText(content,SOURCE_NAMES[kind]);
-    state[kind]=result.data;state[kind+"Updated"]=result.updated;
-    state[kind+"Var"]=result.globalName;
-    state[kind+"Error"]="";id(kind+"-source-note").textContent=fmt(result.data.length-1)+" dòng · "+result.globalName+" (file thủ công)";
-    id(kind+"-update").textContent=kind.toUpperCase()+": "+(result.updated||"file đã chọn");
-    state.loaded=Boolean(state.po.length&&state.gr.length);
-    id("source-status").textContent=state.loaded?"Đã kết nối PO / GR":"Cần nguồn còn lại";
-    id("status-dot").className="status-dot "+(state.loaded?"ready":"error");
-    id("load-state").textContent=state.loaded?"Dữ liệu đã sẵn sàng":"Chưa đủ PO và GR";
-    if(state.loaded){reportFresh()}
-  }catch(err){id(kind+"-source-note").textContent="Lỗi: "+err.message}
+    acceptSource(kind,result);
+  }catch(err){rejectSource(kind,err)}
+  reportFresh();updateSourceStatus();
 }
 function colName(i){let name="";for(let n=i+1;n>0;n=Math.floor((n-1)/26))name=String.fromCharCode(65+(n-1)%26)+name;return name}
 function xml(v){return escapeText(v)}
@@ -1257,6 +1310,7 @@ function cellsXML(values,rowNum){
   return values.map((v,i)=>{
     const addr=colName(i)+rowNum;
     if(typeof v==="number"&&Number.isFinite(v))return '<c r="'+addr+'"><v>'+v+'</v></c>';
+    if(typeof v==="number")v=null;
     return '<c r="'+addr+'" t="inlineStr"><is><t>'+xml(v===null||v===undefined?"":v)+'</t></is></c>';
   }).join("");
 }
@@ -1428,18 +1482,23 @@ function refreshRequestChoices(){
 function rebuildRequests(){
   if(!requestState.data.length)return;
   try{
-    const poRows=state.rows,opts={poReady:state.po.length>0,grReady:state.gr.length>0};
+    const poRows=state.rows,opts={poReady:state.po.length>0&&!state.reportError,
+      grReady:state.gr.length>0&&!state.reportError};
     requestState.rows=buildRequestReport(requestState.data,poRows,opts);
     requestState.byIndex=new Map(requestState.rows.map(r=>[r.index,r]));
     refreshRequestChoices();
     renderRequests();
-    requestState.loaded=true;
+    requestState.loaded=true;requestState.error="";
     updateRequestSource(fmt(requestState.rows.length)+" yêu cầu · đã đọc Request.js");
   }catch(err){
-    requestState.error=err.message;
-    updateRequestSource("Lỗi cấu trúc: "+err.message,true);
-    requestState.loaded=false;
+    clearRequestReport("Lỗi cấu trúc: "+err.message);
   }
+}
+function clearRequestReport(message){
+  requestState.data=[];requestState.rows=[];requestState.filtered=[];
+  requestState.byIndex=new Map();requestState.loaded=false;
+  requestState.updated="";requestState.error=message;
+  refreshRequestChoices();renderRequests();updateRequestSource(message,true);
 }
 async function loadRequestFile(){
   if(requestState.loading)return;
@@ -1452,21 +1511,21 @@ async function loadRequestFile(){
     requestState.error="";
     rebuildRequests();
   }catch(err){
-    requestState.error=err.message;
-    updateRequestSource("Không tải được Request.js: "+err.message,true);
+    clearRequestReport("Không tải được Request.js: "+err.message);
   }finally{
     requestState.loading=false;requestId("reload").disabled=false;
   }
 }
-function applyRequestUpload(file){
+async function applyRequestUpload(file){
   if(!file)return;
-  file.text().then(text=>{
+  try{
+    const text=await file.text();
     const result=fromJSText(text,SOURCE_NAMES.request);
     requestState.data=result.data;
     requestState.updated=result.updated;
     requestState.error="";
     rebuildRequests();
-  }).catch(err=>updateRequestSource("File Request.js không hợp lệ: "+err.message,true));
+  }catch(err){clearRequestReport("File Request.js không hợp lệ: "+err.message)}
 }
 function updateRequestStats(rows){
   requestId("stat-total").textContent=fmt(rows.length);
@@ -1734,3 +1793,4 @@ loadAll();
 </script>
 </body>
 </html>
+

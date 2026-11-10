@@ -218,6 +218,18 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.equal((oneFile.match(/<row r="/g)||[]).length,2);
   await page.locator('#reset').click();
 
+  // A failed refresh must not keep old rows under a green success indicator.
+  poRouteText='';
+  await page.locator('#reload-btn').click();
+  await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='0');
+  assert.equal(await page.locator('#status-dot').getAttribute('class'),'status-dot error');
+  assert.match(await page.locator('#po-source-note').textContent(),/Không tải được PO/);
+  assert.doesNotMatch(await page.locator('#load-state').innerText(),/Đã cập nhật/);
+  poRouteText=js('duLieuPO',bigPO,'thoiGianCapNhatPO');
+  await page.locator('#reload-btn').click();
+  await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='121');
+  assert.equal(await page.locator('#status-dot').getAttribute('class'),'status-dot ready');
+
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.locator('.quick-tab').count(),4);
   assert.equal(await page.locator('#dataset-summary').isVisible(),true);
@@ -225,3 +237,4 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   console.log('PASS PO_GR browser: load sibling JS, Excel dates, PO+item+material reconciliation, movement reversals, filters, detail and XLSX.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
+

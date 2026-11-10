@@ -9,7 +9,7 @@ Dữ liệu đặt trong `window.duLieuRequest = [[...], ...];` và thời gian 
 ### Giao diện Request gọn và mã tuần từ File Name
 
 - Nút tab **Yêu cầu vật tư** và bốn thẻ thống kê được thu gọn để nhường không gian cho bảng.
-- Sáu bộ lọc Request (tìm kiếm, trạng thái, kết quả đối chiếu, Hall, từ ngày, đến ngày) được sắp trên **một hàng khi màn hình máy tính đủ rộng**; trên máy tính bảng/điện thoại chúng xuống hàng để không bị cắt chữ.
+- Bảy bộ lọc Request (tìm kiếm, trạng thái, kết quả đối chiếu, tuần, Hall, từ ngày, đến ngày) được sắp trên **một hàng khi màn hình máy tính đủ rộng**; trên máy tính bảng/điện thoại chúng xuống hàng để không bị cắt chữ.
 - Cột **Tuần (File Name)** được đặt **đầu tiên** trong bảng Request, chỉ hiển thị phần tuần ở cuối tên file: `Order sparepart list of ME56_5244_WK31.xlsx` → `WK31`; `..._Wk32.xlsx` → `WK32`.
 - Mã tuần được chuẩn hóa thành `WK01`–`WK53`; tên không có tuần hợp lệ hiển thị `—`. Khi di chuột lên cột tuần, bảng hiển thị **tên file gốc**. Popup chi tiết vẫn giữ `File Name` đầy đủ.
 - Có thể **sắp xếp theo tuần** với các dòng không có tuần được đưa xuống cuối; **Excel xuất theo bộ lọc** có cột Tuần đầu tiên và vẫn giữ cột File nguồn gốc.
@@ -82,6 +82,15 @@ Tệp PO.js mới có `window.thoiGianCapNhatPO`, và GR.js mới có `window.th
 - Ngày Excel serial như `46024` được đổi sang **02/01/2026**, dùng mốc Excel 1899-12-30.
 - `Net Price` và số lượng dùng định dạng số SAP có dấu phẩy thập phân. Không cộng gộp EUR và VND thành một tổng tiền.
 
+## Kiểm tra tính hợp lệ của số liệu và nguồn
+
+- Dấu phẩy trong số SAP là dấu thập phân, kể cả ba chữ số sau dấu phẩy: `81,078` là **81.078** ở dạng số JavaScript. Popup làm tròn để hiển thị, còn XLSX giữ giá trị số đầy đủ. Không tự diễn giải một dấu phẩy thành dấu phân cách hàng nghìn.
+- Chỉ tính lượng GR, tỷ lệ nhận và lượng còn thiếu khi đơn vị GR khớp đơn vị PO (không phân biệt hoa/thường). Nếu khác hoặc thiếu đơn vị, báo **Cần kiểm tra** và để trống các kết quả chưa xác định. Chưa có hệ số quy đổi trong nguồn nên không tự quy đổi BOX/PC hay các đơn vị khác. Popup giữ chứng từ và đơn vị gốc, kèm lý do lỗi.
+- GR lỗi số lượng được giữ trong lịch sử và làm dòng PO thành **Cần kiểm tra**, tránh hiểu thành chưa nhận hàng. Số lượng PO lỗi, bằng 0 hoặc âm cũng không được kết luận **Đã nhận đủ** trên tab Request. Các Item khác đơn vị không được cộng chung trên một dòng Request.
+- Bộ lọc **Kết quả đối chiếu** có thêm các mục thiếu nguồn PO/GR, khác đơn vị, lỗi số lượng, GR âm và thiếu mã SAP. XLSX để trống giá trị chưa xác định, không ghi chuỗi `NaN`.
+- Khi tải tự động hoặc chọn file thủ công thất bại/thiếu cột bắt buộc, nguồn đó bị loại khỏi phép đối chiếu và thanh trạng thái báo lỗi. Các nguồn còn hợp lệ vẫn được giữ. Thiếu PO thì Request báo chưa xác minh; thiếu GR thì lượng đã nhận để trống, không mặc định là 0. Nếu Request.js lỗi, xóa bảng, KPI và dữ liệu xuất cũ của tab Request. Có thể tải/chọn lại nguồn hợp lệ để khôi phục.
+- Hai file `PO_GR_Report` và `PO_GR_Report.html` phải giống hệt. Chạy `node tests/po_gr_integrity_logic.cjs` để kiểm tra số thập phân trên dữ liệu thật, XLSX, đơn vị, dữ liệu lỗi, tải nguồn thất bại và khôi phục. Workflow tiếp tục chạy cả hai bộ kiểm thử trình duyệt PO/GR và Request.
+
 ## Quy tắc phạm vi và tải toàn bộ PO.js
 
 - Ứng dụng tải và đọc **toàn bộ dữ liệu** trong `window.duLieuPO` (hoặc `window.duLieuCongTy` cũ), không chỉ một phần dữ liệu hay 25/50 dòng đầu.
@@ -119,3 +128,4 @@ Xuất **Excel .xlsx** theo toàn bộ kết quả lọc và thứ tự sắp x�
 Hai nguồn mẫu trước đó thiếu `];` kết thúc bảng. PR chỉ bổ sung dấu đóng mảng để chúng chạy được, giữ nguyên các hàng đã có. Khi cập nhật bằng PO.js/GR.js đầy đủ cùng cấu trúc, bảng tự đối chiếu theo dữ liệu mới.
 
 **Bảo mật:** Repository có thể công khai. Tránh tải dữ liệu mua hàng/nhà cung cấp thực tế lên GitHub công khai nếu đó là dữ liệu nội bộ.
+
