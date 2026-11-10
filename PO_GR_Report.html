@@ -338,7 +338,7 @@
       <strong id="stat-total">—</strong><small>Tất cả trạng thái theo bộ lọc</small></div>
     <div class="kpi"><div class="kpi-top"><span class="caption">Chưa hoàn tất</span><span class="kpi-icon amber">◷</span></div>
       <strong id="stat-pending">—</strong><small>Chưa nhận, nhận thiếu hoặc lỗi</small></div>
-    <div class="kpi"><div class="kpi-top"><span class="caption">Chờ trên 60 ngày</span><span class="kpi-icon rose">!</span></div>
+    <div class="kpi"><div class="kpi-top"><span class="caption">Chờ từ 60 ngày</span><span class="kpi-icon rose">!</span></div>
       <strong id="stat-overdue">—</strong><small>Đơn chưa hoàn tất cần chú ý</small></div>
     <div class="kpi"><div class="kpi-top"><span class="caption">Hoàn tất nhận hàng</span><span class="kpi-icon teal">✓</span></div>
       <strong id="stat-completion">—</strong><small>Tỷ lệ đơn đã nhận đủ</small></div>
@@ -550,7 +550,8 @@ function buildReport(poData,grData,allow105=false){
     if(!po.startsWith("48")){excludedPO++;continue}
     const item=itemCode(cell(raw,p.item)),
       material=normalizeCode(cell(raw,p.material));
-    if(!item||!material)continue;
+    // Keep every 48* PO row even when Item/Material is missing. Surface the
+    // incomplete record as "Cần kiểm tra" rather than silently dropping it.
     const poDate=excelDate(cell(raw,p.poDate));
     if(!poDate)invalidDate++;
     const related=(grByKey.get(po+"|"+item)||[]).filter(x=>{
@@ -572,7 +573,9 @@ function buildReport(poData,grData,allow105=false){
       buyer:String(cell(raw,p.buyer)).trim(),unit:String(cell(raw,p.unit)).trim(),
       netPrice:number(cell(raw,p.netPrice)),currency:String(cell(raw,p.currency)).trim(),
       receipts:related};
-    row.status=calculateStatus(row);
+    row.status=!item||!material?"invalid":calculateStatus(row);
+    row.searchText=[row.po,row.item,row.material,row.description,row.supplier,
+      row.buyer,row.plant,row.bill,row.key].join(" ").toLocaleLowerCase();
     rows.push(row);
   }
   return {rows,ignored,duplicates,mismatch,invalidDate,excludedPO,totalPO:poData.length-1,totalGR:grData.length-1};
@@ -583,7 +586,8 @@ function sortValue(r,key){if(key==="lastGr")return r.latestGr;return r[key]}
 function searchMatch(r,value){
   const terms=value.split(/[,;\n|]+/).map(t=>t.trim().toLocaleLowerCase()).filter(Boolean);
   if(!terms.length)return true;
-  const text=[r.po,r.item,r.material,r.description,r.supplier,r.buyer,r.plant,r.bill,r.key].join(" ").toLocaleLowerCase();
+  const text=r.searchText||[r.po,r.item,r.material,r.description,r.supplier,
+    r.buyer,r.plant,r.bill,r.key].join(" ").toLocaleLowerCase();
   return terms.some(term=>text.includes(term));
 }
 function filteredRows(rows,options){
@@ -787,7 +791,7 @@ async function readScript(filename,globalNames){
       }
       resolve({data,updated:String(updated||""),globalName:selected});
     }
-    const timeout=setTimeout(()=>finish("Hết thời gian tải "+filename),16000);
+    const timeout=setTimeout(()=>finish("Hết thời gian tải "+filename),45000);
     script.onerror=()=>finish("Không tải được "+filename+" từ cùng thư mục HTML");
     script.onload=()=>finish("");
     script.src=filename+"?t="+Date.now();
