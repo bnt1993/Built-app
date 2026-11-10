@@ -155,17 +155,29 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.match(await page.locator('#dataset-summary').innerText(),/123/);
   assert.equal(await page.locator('#stat-total').innerText(),'121');
   assert.equal(await page.locator('#report-body tr').count(),50);
-  assert.equal(await page.locator('#page-indicator').innerText(),'1 / 3');
   assert.equal(await page.locator('#result-summary').innerText().then(x=>x.includes('123')),true);
+  assert.equal(await page.locator('#plant-filter').count(),0);
+  assert.equal(await page.locator('[data-sort="key"]').count(),0);
+  assert.equal(await page.locator('.hero,.scope-banner').count(),0);
+  assert.equal(await page.locator('#export-btn').count(),1);
   assert.equal(await page.locator('#report-body tr').evaluateAll(rows=>
     rows.every(row=>row.querySelector('td').textContent.startsWith('48'))),true);
+  // Scrolling to the page footer automatically adds the next batch in the
+  // same table, rather than replacing the previous 50 rows.
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length>=100);
+  assert.equal(await page.locator('#report-body tr').count(),100);
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length===121);
+  assert.equal(await page.locator('#page-indicator').innerText(),'121/121');
+  await page.locator('#first').click();
+  assert.equal(await page.locator('#report-body tr').count(),50);
   await page.locator('#last').click();
-  assert.equal(await page.locator('#report-body tr').count(),21);
-  assert.equal(await page.locator('#page-indicator').innerText(),'3 / 3');
+  assert.equal(await page.locator('#report-body tr').count(),50);
+  assert.equal(await page.locator('#page-indicator').innerText(),'121/121');
   await page.locator('#first').click();
   await page.locator('#page-size').selectOption('100');
   assert.equal(await page.locator('#report-body tr').count(),100);
-  assert.equal(await page.locator('#page-indicator').innerText(),'1 / 2');
 
   // One fully received PO is still visible under the default All status.
   await page.locator('#file-gr').setInputFiles({name:'GR.js',
@@ -193,6 +205,15 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   const bulkDownload=await bulkDownloadPromise;
   const bulkFile=fs.readFileSync(await bulkDownload.path()).toString('utf8');
   assert.equal((bulkFile.match(/<row r="/g)||[]).length,122);
+  assert.equal(bulkFile.includes('Khóa đối chiếu'),false);
+  // Export respects the active filter even if only 1 of 121 rows matches.
+  await page.locator('#search').fill('4800200017');
+  await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='1');
+  const filteredDownload=page.waitForEvent('download');
+  await page.locator('#export-btn').click();
+  const oneFile=fs.readFileSync(await (await filteredDownload).path()).toString('utf8');
+  assert.equal((oneFile.match(/<row r="/g)||[]).length,2);
+  await page.locator('#reset').click();
 
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.locator('.quick-tab').count(),4);
