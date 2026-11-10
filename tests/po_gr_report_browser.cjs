@@ -43,7 +43,7 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   });
   await page.goto('http://po-gr-report.test/');
   await page.waitForFunction(()=>document.getElementById('source-status').textContent.includes('Đã kết nối'));
-  assert.match(await page.locator('#po-source-note').innerText(),/duLieuPO/);
+  assert.match(await page.locator('#po-source-note').textContent(),/duLieuPO/);
   assert.match(await page.locator('#po-update').innerText(),/17:12:44/);
   assert.match(await page.locator('#gr-update').innerText(),/17:12:55/);
   assert.equal(await page.locator('#stat-total').innerText(),'5');
@@ -94,16 +94,16 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   // Manual file import for network shares where browser blocks script loading.
   await page.locator('#file-po').setInputFiles({name:'PO.js',mimeType:'application/javascript',
     buffer:Buffer.from(js('duLieuPO',poData,'thoiGianCapNhatPO'))});
-  assert.match(await page.locator('#po-source-note').innerText(),/duLieuPO/);
+  assert.match(await page.locator('#po-source-note').textContent(),/duLieuPO/);
   await page.locator('#file-gr').setInputFiles({name:'GR.js',mimeType:'application/javascript',
     buffer:Buffer.from(js('duLieuGR',grData,'thoiGianCapNhatGR'))});
   await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='2');
   await page.locator('#file-po').setInputFiles({name:'PO.js',mimeType:'application/javascript',
     buffer:Buffer.from(js('duLieuCongTy',poData))});
-  assert.match(await page.locator('#po-source-note').innerText(),/duLieuCongTy/);
+  assert.match(await page.locator('#po-source-note').textContent(),/duLieuCongTy/);
   await page.locator('#file-po').setInputFiles({name:'PO.js',mimeType:'application/javascript',
     buffer:Buffer.from(js('duLieuPO',poData,'thoiGianCapNhatPO'))});
-  assert.match(await page.locator('#po-source-note').innerText(),/duLieuPO/);
+  assert.match(await page.locator('#po-source-note').textContent(),/duLieuPO/);
   assert.match(await page.locator('#join-note').innerText(),/mã vật tư khác PO/);
   const rows=await page.evaluate(()=>window.POGR.buildReport(JSON.parse(JSON.stringify([
     ["Pur. Doc.","Item","Created By","Doc. Date","Plnt","Supplier","Material","Short Text","PO Quantity","OUn","Net Price","Gross value","Crcy"],
