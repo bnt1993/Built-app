@@ -15,6 +15,15 @@ Dữ liệu đặt trong `window.duLieuRequest = [[...], ...];` và thời gian 
 - Có thể **sắp xếp theo tuần** với các dòng không có tuần được đưa xuống cuối; **Excel xuất theo bộ lọc** có cột Tuần đầu tiên và vẫn giữ cột File nguồn gốc.
 - Cách đối chiếu Request ↔ PO ↔ GR, trạng thái Hall và nội dung `Request.js` gốc không thay đổi.
 
+### Bộ lọc tuần từ File Name
+
+- Bộ lọc **Tuần (File Name)** nằm cùng hàng với các bộ lọc của tab Yêu cầu vật tư khi mở trên desktop; màn hình hẹp tự xuống 3/2/1 cột.
+- Danh sách tuần tự động lấy từ toàn bộ `Request.js`, dựa trên mã `WK01`–`WK53` nằm ở **cuối tên file**, không suy ra từ ngày yêu cầu.
+- Danh sách tuần sắp xếp theo số tăng dần, có số yêu cầu mỗi tuần: `WK31 · 18 yêu cầu`, `WK32 · 16 yêu cầu`. Khi file có hàng không có tuần hợp lệ, hiện thêm mục **Không có tuần**.
+- Lọc tuần có thể kết hợp **Hall, trạng thái Request, kết quả đối chiếu, khoảng ngày, ô tìm kiếm**. KPI, bảng, số dòng và **xuất XLSX theo bộ lọc** được cập nhật tương ứng.
+- Mục **Tất cả tuần** là mặc định. Bấm **Xóa bộ lọc** sẽ xóa cả lựa chọn tuần. Khi nạp lại Request.js, nếu tuần đang chọn vẫn tồn tại thì giữ lựa chọn; nếu tuần đã biến mất thì chọn lại Tất cả.
+- Danh sách luôn lấy số liệu từ nguồn Request.js gốc; không thay đổi nội dung nguồn hoặc quy tắc đối chiếu Request → PO → GR.
+
 ### Quy tắc đối chiếu ba nguồn
 
 1. Đọc **mọi dòng Request.js**, kể cả các yêu cầu chưa có PO và các yêu cầu ở nhiều Hall; Request không bị giới hạn PO 48* khi thống kê.
