@@ -70,6 +70,19 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.equal(sample.qty,7);assert.equal(sample.qty105,9);
   assert.equal(sample.percent,70);assert.equal(sample.remain,3);
   assert.equal(sample.duplicates,1);assert.equal(sample.mismatch,1);
+  // Every 48* row remains visible even if incomplete; 47*/49* never enter
+  // the report, stats or Excel. This is a scope rule, not a pagination cut.
+  const scope=await page.evaluate(({head,grHead})=>{
+    const row=(po,item,material)=>[po,item,'BUYER','46024','5244','502000',
+      material,'Scope test','1','PC','1,00','1,00','EUR'];
+    const result=window.POGR.buildReport([head,row('4810000001','10','500001'),
+      row('4710000002','20','500002'),row('4910000003','30','500003'),
+      row('4810000004','','')],[grHead]);
+    return {po:result.rows.map(r=>r.po),excluded:result.excludedPO,
+      invalid:result.rows.filter(r=>r.status==='invalid').length};
+  },{head:poHead,grHead});
+  assert.deepEqual(scope,{po:['4810000001','4810000004'],excluded:2,invalid:1});
+
   // The old window.duLieuCongTy syntax remains supported for manual uploads.
   const parserResult=await page.evaluate(({newSource,oldSource})=>({
     newer:(()=>{const r=window.POGR.fromJSText(newSource,['duLieuPO','duLieuCongTy']);
