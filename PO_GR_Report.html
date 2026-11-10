@@ -635,9 +635,10 @@
 (function(){
 "use strict";
 const id=name=>document.getElementById(name);
-const SOURCE_NAMES={po:["duLieuPO","duLieuCongTy"],gr:["duLieuGR"]};
+const SOURCE_NAMES={po:["duLieuPO","duLieuCongTy"],gr:["duLieuGR"],request:["duLieuRequest"]};
 const SOURCE_TIMESTAMPS={po:["thoiGianCapNhatPO","thoiGianCapNhat"],
-  gr:["thoiGianCapNhatGR","thoiGianCapNhat"]};
+  gr:["thoiGianCapNhatGR","thoiGianCapNhat"],
+  request:["thoiGianCapNhatRequest","thoiGianCapNhat"]};
 const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const numeric=new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2});
 const state={po:[],gr:[],rows:[],filtered:[],poUpdated:"",grUpdated:"",loaded:false,loading:false,
@@ -964,7 +965,8 @@ function fromJSText(text,globalNames){
   const array=JSON.parse(text.slice(start,end));
   if(!isTable(array))throw Error(name+" không đúng định dạng bảng.");
   // Separate PO and GR timestamps are preferred over the older common field.
-  const stampNames=names.includes("duLieuGR")?SOURCE_TIMESTAMPS.gr:SOURCE_TIMESTAMPS.po;
+  const stampNames=names.includes("duLieuGR")?SOURCE_TIMESTAMPS.gr:
+    names.includes("duLieuRequest")?SOURCE_TIMESTAMPS.request:SOURCE_TIMESTAMPS.po;
   let updated="";
   for(const stamp of stampNames){
     const found=new RegExp("window\\."+stamp+"\\s*=\\s*([\"'])(.*?)\\1").exec(text);
@@ -980,7 +982,8 @@ async function readScript(filename,globalNames){
   for(const name of names){
     try{delete window[name]}catch{window[name]=undefined}
   }
-  const stampNames=names.includes("duLieuGR")?SOURCE_TIMESTAMPS.gr:SOURCE_TIMESTAMPS.po;
+  const stampNames=names.includes("duLieuGR")?SOURCE_TIMESTAMPS.gr:
+    names.includes("duLieuRequest")?SOURCE_TIMESTAMPS.request:SOURCE_TIMESTAMPS.po;
   const oldStamps=new Map(stampNames.map(name=>[name,window[name]]));
   for(const name of stampNames){
     try{delete window[name]}catch{window[name]=undefined}
