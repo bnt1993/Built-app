@@ -438,6 +438,26 @@
       .report-tab{padding:8px 7px;font-size:10px}
     }
 
+  
+    /* Seven Request filters remain on a single desktop row; wrap gracefully. */
+    #request-panel .request-filters{
+      grid-template-columns:minmax(195px,2fr) minmax(110px,.8fr)
+        minmax(155px,1.3fr) minmax(105px,.8fr) minmax(82px,.62fr)
+        minmax(130px,.95fr) minmax(130px,.95fr)
+    }
+    @media(max-width:1240px){
+      #request-panel .request-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+      #request-panel .request-filters .field.search{grid-column:1/-1}
+    }
+    @media(max-width:760px){
+      #request-panel .request-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+      #request-panel .request-filters .field.search{grid-column:1/-1}
+    }
+    @media(max-width:480px){
+      #request-panel .request-filters{grid-template-columns:1fr}
+      #request-panel .request-filters .field.search{grid-column:auto}
+    }
+
   </style>
 </head>
 <body>
@@ -612,6 +632,9 @@
           <option value="no-gr">Có PO, chưa nhập GR</option>
           <option value="partial">Đã nhập một phần</option>
           <option value="complete">Đã nhận đủ</option></select></div>
+      <div class="field"><label for="request-week">Tuần (File Name)</label>
+        <select id="request-week" aria-label="Lọc yêu cầu theo tuần từ tên file">
+          <option value="">Tất cả tuần</option></select></div>
       <div class="field"><label for="request-hall">Khu vực</label>
         <select id="request-hall"><option value="">Tất cả Hall</option></select></div>
       <div class="field"><label for="request-from">Ngày yêu cầu từ</label><input id="request-from" type="date"/></div>
@@ -1080,6 +1103,8 @@ function filterRequestRows(rows,filters){
   return rows.filter(r=>{
     if(terms.length&&!terms.some(term=>r.searchText.includes(term)))return false;
     if(filters.status&&r.status!==filters.status)return false;
+    if(filters.week&&
+      (filters.week==="__no_week__"?Boolean(r.week):r.week!==filters.week))return false;
     if(filters.link&&r.link!==filters.link)return false;
     if(filters.hall&&r.hall!==filters.hall)return false;
     if(filters.from&&(!r.date||r.date<filters.from))return false;
@@ -1366,10 +1391,27 @@ function updateRequestSource(message,error=false){
 }
 function requestFilters(){
   return {query:requestId("search").value,status:requestId("status").value,
-    link:requestId("link").value,hall:requestId("hall").value,
+    link:requestId("link").value,week:requestId("week").value,hall:requestId("hall").value,
     from:requestId("from").value,to:requestId("to").value};
 }
 function refreshRequestChoices(){
+  const weekSelect=requestId("week"),selectedWeek=weekSelect.value;
+  const weeks=new Map();
+  for(const row of requestState.rows){
+    const week=row.week||"__no_week__";
+    weeks.set(week,(weeks.get(week)||0)+1);
+  }
+  weekSelect.replaceChildren(new Option("Tất cả tuần",""));
+  for(const week of [...weeks.keys()].filter(v=>v!=="__no_week__")
+    .sort((a,b)=>Number(a.slice(2))-Number(b.slice(2)))){
+    weekSelect.add(new Option(week+" · "+fmt(weeks.get(week))+" yêu cầu",week));
+  }
+  if(weeks.has("__no_week__")){
+    weekSelect.add(new Option("Không có tuần · "+
+      fmt(weeks.get("__no_week__"))+" yêu cầu","__no_week__"));
+  }
+  weekSelect.value=[...weekSelect.options].some(o=>o.value===selectedWeek)?
+    selectedWeek:"";
   const hallSelect=requestId("hall"),previous=hallSelect.value;
   hallSelect.replaceChildren(new Option("Tất cả Hall",""));
   for(const hall of [...new Set(requestState.rows.map(x=>x.hall))].filter(Boolean)
@@ -1621,14 +1663,14 @@ document.querySelector(".report-tabs").addEventListener("keydown",event=>{
 requestId("reload").addEventListener("click",loadRequestFile);
 requestId("file").addEventListener("change",event=>applyRequestUpload(event.target.files[0]));
 let requestDebounce=null;
-for(const name of ["search","status","link","hall","from","to"]){
+for(const name of ["search","status","link","week","hall","from","to"]){
   requestId(name).addEventListener(name==="search"?"input":"change",()=>{
     clearTimeout(requestDebounce);
     requestDebounce=setTimeout(renderRequests,name==="search"?150:0);
   });
 }
 requestId("clear").addEventListener("click",()=>{
-  for(const name of ["search","status","link","hall","from","to"])
+  for(const name of ["search","status","link","week","hall","from","to"])
     requestId(name).value="";
   renderRequests();
 });
