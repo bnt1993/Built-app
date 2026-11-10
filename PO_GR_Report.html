@@ -2072,6 +2072,7 @@ function updateFixedReportHeaders(){
 }
 let fixedHeaderScheduled=false;
 function scheduleFixedHeaders(){
+  if(!fixedReportHeaders.length||typeof requestAnimationFrame!=="function")return;
   if(fixedHeaderScheduled)return;
   fixedHeaderScheduled=true;
   requestAnimationFrame(()=>{
