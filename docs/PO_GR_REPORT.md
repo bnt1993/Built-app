@@ -48,6 +48,16 @@ Tệp PO.js mới có `window.thoiGianCapNhatPO`, và GR.js mới có `window.th
 
 Dashboard sử dụng thanh điều hướng gọn, header thông tin nguồn riêng của PO/GR, bốn KPI, thanh xác nhận phạm vi PO 48*, bộ lọc trực quan và thanh trạng thái nhanh. Bảng có tiêu đề cố định khi cuộn dọc, cột PO cố định khi cuộn ngang, tối ưu tương phản và bố cục trên điện thoại. Không cần thư viện CSS hoặc font tải từ internet.
 
+## Giao diện một trang và tự tải khi cuộn (10/11/2026)
+
+- Loại phần header "Trung tâm theo dõi PO & GR" và banner "Phạm vi báo cáo"; thay bằng dải trạng thái nguồn nhỏ ngay dưới thanh công cụ.
+- Bỏ **bộ lọc Nhà máy**. Nhà máy vẫn được giữ trong dữ liệu PO, popup chi tiết và file Excel, không ảnh hưởng phép đối chiếu.
+- Ẩn cột **Khóa đối chiếu** trên bảng **và trong file Excel**. Ứng dụng vẫn dùng PO + Item + Material nội bộ để ghép PO/GR chính xác.
+- Dữ liệu được hiển thị **trong một trang liên tục**, tự nối thêm 25/50/100/200 dòng (mặc định 50) khi cuộn đến cuối trang; **không thay thế các dòng đã tải**. Hai nút **Đầu / Cuối** nhảy nhanh đến lượt đầu hoặc lượt cuối.
+- Trường "Tải mỗi lượt" chỉ quyết định số dòng thêm vào giao diện, không giới hạn dữ liệu đã đọc từ PO.js.
+- **Xuất Excel theo bộ lọc** nằm trong thanh công cụ của bảng. File XLSX xuất **tất cả kết quả hiện được lọc và sắp xếp**, kể cả các dòng chưa cuộn tới. Không cần tải thêm từ mạng.
+- Vẫn chỉ nhận PO bắt đầu bằng `48`, mặc định hiện mọi trạng thái và hỗ trợ dữ liệu PO/GR mới cùng định dạng cũ.
+
 ## Giao diện và xuất kết quả
 
 Tìm theo PO, Item, Material, mô tả, nhà cung cấp, người tạo; lọc trạng thái, nhà cung cấp, nhà máy, khoảng ngày; lọc các dòng chờ từ 60 ngày. Có sắp xếp trên cột, phân trang 25/50/100/200, nhấp đúp hoặc Enter để xem chứng từ GR chi tiết.
