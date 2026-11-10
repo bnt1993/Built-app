@@ -1627,6 +1627,8 @@ function setReportTab(next){
   }
   if(next==="request"&&!requestState.loaded&&!requestState.loading)
     loadRequestFile();
+  // Hide the prior tab's floating header immediately on tab changes.
+  scheduleFixedHeaders();
 }
 function updateRequestSource(message,error=false){
   const status=id("request-source-status");
