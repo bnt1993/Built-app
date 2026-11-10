@@ -191,7 +191,10 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
     const pinned=document.querySelector('.fixed-report-head[data-source-table="report-table"] .fixed-head-first');
     return pinned&&!pinned.hidden;
   });
-  assert.ok((await sticky.locator('.head-track').getAttribute('style')).includes('translateX(-130px)'));
+  const actualHorizontalOffset=await scroller.evaluate(el=>el.scrollLeft);
+  assert.ok(actualHorizontalOffset>0);
+  assert.ok((await sticky.locator('.head-track').getAttribute('style'))
+    .includes('translateX(-'+actualHorizontalOffset+'px)'));
   // The mirrored header forwards clicks to the actual sort buttons.
   await sticky.locator('[data-sort="po"]').click();
   assert.equal(await page.locator('#report-body tr').count(),50);
