@@ -2,7 +2,7 @@
 
 ## Mở báo cáo
 
-Dùng file **PO_GR_Report.html** trong cùng thư mục với **PO.js** và **GR.js**. Có thể mở HTML trực tiếp trên máy tính hoặc qua máy chủ nội bộ. File `PO_GR_Report` (không có phần mở rộng) cũng chứa HTML giống hệt, nhưng trình duyệt dễ nhận diện `.html` hơn.
+Dùng file **PO_GR_Report.html** trong cùng thư mục với **PO.js** và **GR.js**. Có thể mở HTML trực tiếp trên máy tính hoặc qua máy chủ nội bộ. **Không cần đổi tên biến trong PO.js**: cả `duLieuPO` và `duLieuCongTy` đều được nhận tự động. File `PO_GR_Report` (không có phần mở rộng) cũng chứa HTML giống hệt, nhưng trình duyệt dễ nhận diện `.html` hơn.
 
 ```text
 Thư mục báo cáo/
@@ -15,13 +15,13 @@ Không cần thư viện CDN, dịch vụ web ngoài hay gửi dữ liệu SAP l
 
 ## Cấu trúc PO.js và GR.js
 
-PO.js đặt danh sách hai chiều trong `window.duLieuCongTy`, trong đó dòng đầu là các cột:
+PO.js phiên bản mới đặt danh sách hai chiều trong **`window.duLieuPO`**. Trang cũng tiếp tục chấp nhận **`window.duLieuCongTy`** của phiên bản cũ; khi một file khai báo cả hai, ứng dụng ưu tiên `duLieuPO`. Dòng đầu là các cột:
 
 `Pur. Doc.`, `Item`, `Created By`, `Doc. Date`, `Plnt`, `Supplier`, `Material`, `Short Text`, `PO Quantity`, `OUn`, `Net Price`, `Gross value`, `Crcy`.
 
-GR.js đặt danh sách hai chiều trong `window.duLieuGR`, có các cột `Purchase order`, `Item`, `Material`, `Movement Type`, `Posting Date`, `Qty in unit of entry`, `Unit of Entry`, `Material Document`, `Bill of Lading`.
+GR.js giữ danh sách hai chiều trong **`window.duLieuGR`**, có các cột `Purchase order`, `Item`, `Material`, `Movement Type`, `Posting Date`, `Qty in unit of entry`, `Unit of Entry`, `Material Document`, `Bill of Lading`.
 
-Cả hai có thể có `window.thoiGianCapNhat = "dd/mm/yyyy hh:mm:ss"`. Ứng dụng hiển thị ngày cập nhật nhưng **không sử dụng nó thay cho ngày PO/GR thực tế**.
+Tệp PO.js mới có `window.thoiGianCapNhatPO`, và GR.js mới có `window.thoiGianCapNhatGR`. Ứng dụng lấy **đúng mốc cập nhật riêng của từng file**; vẫn tương thích `window.thoiGianCapNhat` của bản cũ. Ngày cập nhật nguồn chỉ phục vụ kiểm tra, **không được sử dụng thay cho ngày PO/GR thực tế**.
 
 ## Quy tắc đối chiếu và tính toán
 
