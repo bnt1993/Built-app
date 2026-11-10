@@ -165,32 +165,42 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.equal(await page.locator('#export-btn').count(),1);
   assert.equal(await page.locator('#report-body tr').evaluateAll(rows=>
     rows.every(row=>row.querySelector('td').textContent.startsWith('48'))),true);
-  // All scrolling happens inside the report table; the page itself stays still.
+  // Vertical scrolling is on the page; a fixed, horizontally-synced table
+  // header remains available for identification and sorting.
   const scroller=page.locator('#table-scroller');
   const initialViewport=await scroller.evaluate(node=>({
-    height:node.clientHeight,scrollHeight:node.scrollHeight,overflow:getComputedStyle(node).overflowY
+    height:node.clientHeight,scrollHeight:node.scrollHeight,
+    overflowX:getComputedStyle(node).overflowX
   }));
-  console.log('SCROLLER_DEBUG',JSON.stringify(await page.evaluate(()=>({
-    scroller:(()=>{const e=document.getElementById('table-scroller');return {client:e.clientHeight,scroll:e.scrollHeight,
-      top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom}})(),
-    page:(()=>{const e=document.querySelector('.page');return {height:e.clientHeight,scroll:e.scrollHeight}})(),
-    kpi:document.querySelector('#po-gr-panel .kpis').getBoundingClientRect().height,
-    filters:document.querySelector('#po-gr-panel .filters').getBoundingClientRect().height,
-    report:document.querySelector('#po-gr-panel .report-panel').getBoundingClientRect().height,
-    viewport:window.innerHeight
-  }))));
-  assert.ok(initialViewport.height>=125&&initialViewport.height<850,
-    JSON.stringify(initialViewport));
-  assert.equal(initialViewport.overflow,'auto');
-  assert.ok(initialViewport.scrollHeight>initialViewport.height,'table should scroll internally');
+  assert.ok(initialViewport.height>1000,'the page owns vertical scrolling');
+  assert.equal(initialViewport.overflowX,'auto');
   assert.equal(await page.locator('#load-sentinel').evaluate(node=>
     node.parentElement.id),'table-scroller');
-  await scroller.evaluate(node=>node.scrollTop=node.scrollHeight);
+  await page.evaluate(()=>{
+    const table=document.getElementById('report-table');
+    window.scrollTo(0,window.scrollY+table.getBoundingClientRect().top+145);
+  });
+  await page.waitForFunction(()=>{
+    const overlay=document.querySelector('.fixed-report-head[data-source-table="report-table"]');
+    return overlay&&!overlay.hidden;
+  });
+  const sticky=page.locator('.fixed-report-head[data-source-table="report-table"]');
+  assert.equal(await sticky.locator('thead th').count(),12);
+  await scroller.evaluate(el=>el.scrollLeft=130);
+  await page.waitForFunction(()=>{
+    const pinned=document.querySelector('.fixed-report-head[data-source-table="report-table"] .fixed-head-first');
+    return pinned&&!pinned.hidden;
+  });
+  assert.match(await sticky.locator('.head-track').getAttribute('style'),/translateX\\(-130px\\)/);
+  // The mirrored header forwards clicks to the actual sort buttons.
+  await sticky.locator('[data-sort="po"]').click();
+  assert.equal(await page.locator('#report-body tr').count(),50);
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
   await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length>=100);
   assert.equal(await page.locator('#report-body tr').count(),100);
-  await scroller.evaluate(node=>node.scrollTop=node.scrollHeight);
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
   await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length===121);
-  assert.equal(await page.evaluate(()=>window.scrollY),0);
+  assert.ok(await page.evaluate(()=>window.scrollY)>0);
   assert.equal(await page.locator('#page-indicator').innerText(),'121/121');
   await page.locator('#first').click();
   assert.equal(await page.locator('#report-body tr').count(),50);
