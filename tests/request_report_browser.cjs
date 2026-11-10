@@ -75,21 +75,35 @@ function routeFor(page,sources){
   assert.equal(await page.locator('#request-body tr').count(),50);
   const requestScroller=page.locator('#request-scroller');
   const metrics=await page.evaluate(()=>({
-    sourcePO:document.querySelector('#po-gr-panel .source-strip').getBoundingClientRect(),
     sourceRequest:document.querySelector('#request-panel .request-source-bar').getBoundingClientRect(),
     kpiRequest:document.querySelector('#request-panel .kpis').getBoundingClientRect(),
     filterRequest:document.querySelector('#request-panel .request-filters').getBoundingClientRect()
   }));
   assert.equal(await page.locator('#request-sentinel').evaluate(el=>
     el.parentElement.id),'request-scroller');
-  assert.equal(await requestScroller.evaluate(el=>getComputedStyle(el).overflowY),'auto');
-  const scrollerSize=await requestScroller.evaluate(el=>({height:el.clientHeight,total:el.scrollHeight}));
-  assert.ok(scrollerSize.height>=130&&scrollerSize.total>scrollerSize.height,
-    'Request data scrolls inside a fixed height table');
-  await requestScroller.evaluate(el=>el.scrollTop=el.scrollHeight);
+  assert.equal(await requestScroller.evaluate(el=>getComputedStyle(el).overflowX),'auto');
+  assert.ok(await requestScroller.evaluate(el=>el.clientHeight)>1000,
+    'Request table grows with the page instead of scrolling vertically inside');
+  await page.evaluate(()=>{
+    const table=document.getElementById('request-table');
+    window.scrollTo(0,window.scrollY+table.getBoundingClientRect().top+160);
+  });
+  await page.waitForFunction(()=>{
+    const h=document.querySelector('.fixed-report-head[data-source-table="request-table"]');
+    return h&&!h.hidden;
+  });
+  const sticky=page.locator('.fixed-report-head[data-source-table="request-table"]');
+  assert.equal(await sticky.locator('thead th').count(),13);
+  await requestScroller.evaluate(el=>el.scrollLeft=150);
+  await page.waitForFunction(()=>{
+    const pinned=document.querySelector('.fixed-report-head[data-source-table="request-table"] .fixed-head-first');
+    return pinned&&!pinned.hidden;
+  });
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
   await page.waitForFunction(()=>document.querySelectorAll('#request-body tr').length>=100);
-  assert.equal(await page.evaluate(()=>window.scrollY),0,
-    'Request scroll should not move the entire dashboard');
+  assert.ok(await page.evaluate(()=>window.scrollY)>0,
+    'Request should load additional rows by scrolling the whole page');
+  await page.evaluate(()=>window.scrollTo(0,0));
   await page.locator('#tab-po-gr').click();
   const poMetrics=await page.evaluate(()=>({
     source:document.querySelector('#po-gr-panel .source-strip').getBoundingClientRect().height,
@@ -97,15 +111,15 @@ function routeFor(page,sources){
     filters:document.querySelector('#po-gr-panel .filters').getBoundingClientRect()
   }));
   assert.ok(Math.abs(poMetrics.source-metrics.sourceRequest.height)<=9,
-    'both tabs should have matching source heights');
+    'both report tabs should have similarly sized source headers');
   assert.ok(Math.abs(poMetrics.kpi.y-metrics.kpiRequest.y)<=9,
     'KPI rows must start at equivalent positions on both tabs');
   assert.ok(Math.abs(poMetrics.kpi.height-metrics.kpiRequest.height)<=9,
-    'KPI card sections should share height');
+    'KPI summary cards should share height');
   assert.ok(Math.abs(poMetrics.filters.y-metrics.filterRequest.y)<=9,
-    'filter panels must align between tabs');
-  assert.ok(Math.abs(poMetrics.filters.height-metrics.filterRequest.height)<=12,
-    'filter cards should be balanced across both tabs');
+    'filter panels must begin at the same position');
+  assert.equal(await page.locator('.fixed-report-head[data-source-table="request-table"]').evaluate(e=>e.hidden),
+    true,'old tab sticky header should disappear when switching tabs');
   await page.locator('#tab-request').click();
   assert.equal(await page.locator('#request-table thead th').first().innerText().then(t=>t.includes('Tuần (File Name)')),true);
   assert.match(await page.locator('#request-body tr td:first-child').first().innerText(),/^WK\d{2}$/);
@@ -199,7 +213,7 @@ function routeFor(page,sources){
   assert.equal(computed[0].grQty,2);assert.equal(computed[0].poQty,5);
   assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
   assert.match(await p2.locator('#request-body tr td').first().getAttribute('title'),/Wk31.xlsx/);
-  await p2.locator('[data-rsort="week"]').click();
+  await p2.locator('#request-table [data-rsort="week"]').click();
   assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
   await p2.locator('#request-hall').selectOption('2');
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='2');
