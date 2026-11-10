@@ -105,28 +105,49 @@
 <body>
 <div class="page">
   <div class="topbar">
-    <div class="brand"><span class="brand-icon">▦</span> SAP PROCUREMENT <span class="muted">/ PO &amp; GR</span></div>
+    <div class="brand"><span class="brand-icon">▦</span><div class="brand-wordmark">
+        <strong>SAP PROCUREMENT</strong><small>WORKSPACE / PO &amp; GR</small>
+      </div></div>
     <div class="top-actions">
-      <span id="load-state" class="muted" role="status" aria-live="polite">Chưa nạp dữ liệu</span>
-      <button class="button" id="reload-btn" type="button">↻ Làm mới dữ liệu</button>
-      <button class="button primary" id="export-btn" type="button">↓ Xuất Excel (.xlsx)</button>
+      <span id="load-state" class="muted load-status" role="status" aria-live="polite">Chưa nạp dữ liệu</span>
+      <button class="button" id="reload-btn" type="button"><span aria-hidden="true">↻</span> Làm mới dữ liệu</button>
+      <button class="button primary" id="export-btn" type="button"><span aria-hidden="true">↓</span> Xuất Excel</button>
     </div>
   </div>
   <section class="hero">
-    <div><p class="eyebrow">PURCHASE ORDER / GOODS RECEIPT</p>
-      <h1>Theo dõi PO &amp; GR</h1>
-      <p>Đối chiếu đơn mua hàng và phiếu nhập kho · Theo dõi tiến độ nhận hàng, thời gian chờ và tình trạng giao hàng.</p>
+    <div class="hero-copy"><p class="eyebrow"><span class="eyebrow-line"></span> PURCHASE ORDER INTELLIGENCE</p>
+      <h1>Trung tâm theo dõi <em>PO &amp; GR</em></h1>
+      <p>Toàn bộ đơn mua hàng bắt đầu bằng <b>48</b> · Theo dõi tiến độ nhập kho, tuổi đơn hàng và chênh lệch PO/GR trong một màn hình.</p>
+      <div class="hero-tags"><span>✓ Tự động đối chiếu PO / GR</span><span>✓ Dữ liệu từ file nội bộ</span></div>
     </div>
-    <div class="hero-meta"><strong><span class="status-dot" id="status-dot"></span> <span id="source-status">Đang kiểm tra nguồn</span></strong>
-      <div id="po-update">PO: —</div><div id="gr-update">GR: —</div></div>
+    <div class="hero-meta">
+      <div class="hero-status"><strong><span class="status-dot" id="status-dot"></span> <span id="source-status">Đang kiểm tra nguồn</span></strong>
+        <small>NGUỒN DỮ LIỆU</small></div>
+      <div class="hero-updates"><div id="po-update">PO: —</div><div id="gr-update">GR: —</div></div>
+      <div class="hero-watermark" aria-hidden="true">48</div>
+    </div>
   </section>
+  <div class="scope-banner" role="status">
+    <div class="scope-start"><span class="scope-icon" aria-hidden="true">◈</span><div>
+      <strong>Phạm vi báo cáo <span class="scope-code">PO 48*</span></strong>
+      <p id="dataset-summary">Đang đọc toàn bộ dữ liệu PO.js...</p></div>
+    </div>
+    <div class="scope-tip">Không giới hạn theo trang · Xuất Excel theo toàn bộ kết quả lọc</div>
+  </div>
   <section class="kpis" aria-label="Tổng quan theo bộ lọc">
-    <div class="kpi"><div class="caption">Dòng PO phù hợp</div><strong id="stat-total">—</strong><small>Tính theo Item</small></div>
-    <div class="kpi"><div class="caption">Chưa nhận đủ</div><strong id="stat-pending">—</strong><small>Số dòng PO còn thiếu hàng</small></div>
-    <div class="kpi"><div class="caption">Chờ từ 60 ngày</div><strong id="stat-overdue">—</strong><small>Chưa hoàn tất và quá hạn 60 ngày</small></div>
-    <div class="kpi"><div class="caption">Hoàn tất nhận hàng</div><strong id="stat-completion">—</strong><small>Tỷ lệ dòng đã nhận đủ</small></div>
+    <div class="kpi"><div class="kpi-top"><span class="caption">Dòng PO hiển thị</span><span class="kpi-icon blue">▤</span></div>
+      <strong id="stat-total">—</strong><small>Tất cả trạng thái theo bộ lọc</small></div>
+    <div class="kpi"><div class="kpi-top"><span class="caption">Chưa hoàn tất</span><span class="kpi-icon amber">◷</span></div>
+      <strong id="stat-pending">—</strong><small>Chưa nhận, nhận thiếu hoặc lỗi</small></div>
+    <div class="kpi"><div class="kpi-top"><span class="caption">Chờ trên 60 ngày</span><span class="kpi-icon rose">!</span></div>
+      <strong id="stat-overdue">—</strong><small>Đơn chưa hoàn tất cần chú ý</small></div>
+    <div class="kpi"><div class="kpi-top"><span class="caption">Hoàn tất nhận hàng</span><span class="kpi-icon teal">✓</span></div>
+      <strong id="stat-completion">—</strong><small>Tỷ lệ đơn đã nhận đủ</small></div>
   </section>
   <section class="panel filters" aria-label="Bộ lọc báo cáo">
+    <div class="filter-heading"><div><div class="section-eyebrow">BỘ LỌC THÔNG MINH</div>
+      <h2>Tìm kiếm &amp; bộ lọc</h2></div>
+      <span class="filter-hint">Chọn điều kiện · kết quả tự cập nhật</span></div>
     <div class="field search"><label for="search">Tìm mã PO, vật tư, mô tả, nhà cung cấp</label>
       <input id="search" type="search" autocomplete="off" placeholder="Nhập một hoặc nhiều mã, cách nhau bởi dấu phẩy…"></div>
     <div class="field"><label for="status-filter">Tình trạng nhận hàng</label>
@@ -145,14 +166,26 @@
       <span class="source-note" id="join-note">Đối chiếu theo PO + Item + mã vật tư</span>
     </div>
   </section>
-  <section class="panel">
+  <section class="panel report-panel">
+    <div class="quick-toolbar">
+      <div class="quick-tabs" role="group" aria-label="Lọc nhanh theo trạng thái">
+        <button type="button" data-mode="all" class="quick-tab active" aria-pressed="true">Tất cả PO</button>
+        <button type="button" data-mode="pending" class="quick-tab" aria-pressed="false">Chưa hoàn tất</button>
+        <button type="button" data-mode="overdue" class="quick-tab" aria-pressed="false">Chờ ≥ 60 ngày</button>
+        <button type="button" data-mode="done" class="quick-tab" aria-pressed="false">Đã nhận đủ</button>
+      </div>
+      <div class="quick-count"><span id="current-count">0</span><small> dòng phù hợp</small></div>
+    </div>
     <div class="table-header">
-      <div><h2>Danh sách theo dõi nhận hàng</h2><small id="result-summary">Đang nạp dữ liệu...</small></div>
+      <div><div class="section-eyebrow">DANH SÁCH ĐƠN MUA HÀNG</div>
+        <h2>Chi tiết tiến độ PO / GR</h2>
+        <small id="result-summary">Đang nạp dữ liệu...</small></div>
       <div class="legend" aria-label="Chú giải số ngày chờ">
         <span><i class="dot red"></i>≥ 80 ngày</span><span><i class="dot orange"></i>60–79 ngày</span>
         <span><i class="dot yellow"></i>30–59 ngày</span><span><i class="dot green"></i>&lt; 30 ngày</span>
       </div>
     </div>
+    <div class="table-scroll-tip">↔ Cuộn ngang để xem đầy đủ cột · Nhấp đúp một dòng để xem chứng từ GR</div>
     <div class="table-scroller" role="region" tabindex="0" aria-label="Bảng PO và GR có thể cuộn ngang">
       <table id="report-table"><thead><tr>
         <th><button data-sort="po">Số PO <span>↕</span></button></th>
