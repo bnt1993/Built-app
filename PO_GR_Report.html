@@ -387,6 +387,57 @@
       .request-source-actions{width:100%}.request-source-actions .button{flex:1;text-align:center}}
     @media(max-width:450px){.request-filters{grid-template-columns:1fr}.request-filters .field.search{grid-column:auto}}
 
+  
+    /* Compact Request report — six filter inputs aligned on one desktop row. */
+    .report-tabs{margin:2px 0 8px;gap:4px;padding:3px;border-radius:10px}
+    .report-tab{padding:8px 12px;font-size:11px;border-radius:8px;line-height:1.25}
+    .report-tab .tab-count{font-size:9px}
+    #request-panel .request-source-bar{padding:9px 13px;margin-bottom:8px}
+    #request-panel .request-source-actions .button{padding:7px 11px;min-height:34px}
+    #request-panel .kpis{gap:8px;margin-bottom:8px}
+    #request-panel .kpi{min-height:84px;padding:10px 13px}
+    #request-panel .kpi .caption{font-size:10px;margin-bottom:4px}
+    #request-panel .kpi strong{font-size:23px}
+    #request-panel .kpi small{font-size:9px}
+    #request-panel .request-filters{display:grid;grid-template-columns:
+      minmax(195px,2fr) minmax(120px,1fr) minmax(165px,1.35fr)
+      minmax(90px,.7fr) minmax(135px,1fr) minmax(135px,1fr);
+      align-items:end;column-gap:9px;row-gap:7px;
+      padding:10px 13px;margin-bottom:8px}
+    #request-panel .request-filters .filter-heading{grid-column:1/-1;margin-bottom:0}
+    #request-panel .request-filters .filter-heading h2{font-size:14px;margin:2px 0 0}
+    #request-panel .request-filters .field{min-width:0;gap:4px}
+    #request-panel .request-filters .field.search{grid-column:auto}
+    #request-panel .request-filters .field label{font-size:10px}
+    #request-panel .request-filters .field input,
+    #request-panel .request-filters .field select{height:36px;padding-left:9px;padding-right:9px;font-size:11px}
+    #request-panel .request-filters .field.search input{padding-left:34px}
+    #request-panel .request-table-toolbar{padding:10px 13px}
+    #request-panel .request-table-toolbar h2{font-size:14px}
+    #request-panel .request-note{padding:8px 13px;font-size:10px}
+    #request-panel .request-table{min-width:1590px}
+    #request-panel .request-table tbody td{padding-top:8px;padding-bottom:8px}
+    #request-panel .request-table thead th button{padding-top:10px;padding-bottom:10px}
+    #request-panel .request-week{font-weight:850;color:#265db9;background:#f0f5ff}
+    #request-panel .request-table tbody tr:nth-child(even) .request-week{background:#eaf2ff}
+    #request-panel .request-table tbody tr:hover .request-week{background:#dbeafe}
+    #request-panel .request-table thead th:nth-child(2),
+    #request-panel .request-table tbody td:nth-child(2){position:static}
+    #request-panel .request-table thead th:first-child{background:#e8f0fc}
+    @media(max-width:1240px){
+      #request-panel .request-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+      #request-panel .request-filters .field.search{grid-column:1/-1}
+    }
+    @media(max-width:760px){
+      #request-panel .request-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+      #request-panel .request-filters .field.search{grid-column:1/-1}
+    }
+    @media(max-width:480px){
+      #request-panel .request-filters{grid-template-columns:1fr}
+      #request-panel .request-filters .field.search{grid-column:auto}
+      .report-tab{padding:8px 7px;font-size:10px}
+    }
+
   </style>
 </head>
 <body>
@@ -579,6 +630,7 @@
       <div class="table-scroller" aria-label="Bảng yêu cầu và đối chiếu PO/GR" role="region" tabindex="0">
         <table id="request-table" class="request-table">
           <thead><tr>
+            <th><button data-rsort="week">Tuần (File Name) <span>↕</span></button></th>
             <th><button data-rsort="date">Ngày yêu cầu <span>↕</span></button></th>
             <th><button data-rsort="sap">Mã SAP <span>↕</span></button></th>
             <th><button data-rsort="description">Tên vật tư <span>↕</span></button></th>
@@ -962,6 +1014,16 @@ const REQUEST_LINK_LABELS={
   negative:"GR âm · cần kiểm tra",
   invalid:"Thiếu mã SAP"
 };
+// Extract the trailing WK code from File Name, e.g. ..._WK31.xlsx -> WK31.
+// File Name stays intact for details and export. A missing/invalid code is blank.
+function requestWeekFromFile(filename){
+  const base=String(filename??"").trim().split(/[\\/]/).pop()
+    .replace(/\.(?:xlsx|xls|xlsm|csv)$/i,"").trim();
+  const matched=/(?:^|[_\s.\-])WK[\s_\-]*([0-5]?\d)\s*$/i.exec(base);
+  if(!matched)return "";
+  const number=Number(matched[1]);
+  return number>=1&&number<=53?"WK"+String(number).padStart(2,"0"):"";
+}
 function buildRequestReport(source,poRows,opts={}){
   if(!Array.isArray(source)||!Array.isArray(source[0]))
     throw Error("Request.js không có dòng tiêu đề.");
@@ -995,7 +1057,7 @@ function buildRequestReport(source,poRows,opts={}){
       !opts.grReady?"gr-unavailable":grQty<0?"negative":
       grQty<=0?"no-gr":grQty<poQty-1e-8?"partial":"complete";
     const r={
-      index:i-1,file:String(c("file")).trim(),rowNo:String(c("rowNo")).trim(),
+      index:i-1,file:String(c("file")).trim(),week:requestWeekFromFile(c("file")),rowNo:String(c("rowNo")).trim(),
       group:String(c("group")).trim(),sap,po,date:excelDate(c("date")),
       orderedDate:excelDate(c("orderedDate")),
       description:String(c("description")).trim(),status:String(c("status")).trim(),
@@ -1006,7 +1068,7 @@ function buildRequestReport(source,poRows,opts={}){
       orderType:String(c("orderType")).trim(),note:String(c("note")).trim(),
       matches,poQty,grQty,percent,link
     };
-    r.searchText=[r.sap,r.po,r.description,r.note,r.supplier,r.file,r.group,
+    r.searchText=[r.sap,r.po,r.description,r.note,r.supplier,r.file,r.week,r.group,
       r.status,r.hall].join(" ").toLocaleLowerCase();
     rows.push(r);
   }
@@ -1029,6 +1091,12 @@ function sortRequestRows(rows,key,order){
   const d=order==="asc"?1:-1;
   return rows.slice().sort((a,b)=>{
     let x=a[key],y=b[key];
+    if(key==="week"){
+      // Missing filename week goes last in both directions.
+      if(!x&&!y)return a.index-b.index;
+      if(!x)return 1;
+      if(!y)return -1;
+    }
     if(typeof x==="number"||typeof y==="number"){
       const ax=Number.isFinite(x)?x:null,by=Number.isFinite(y)?y:null;
       if(ax===null||by===null)return (ax===null?1:-1)*(ax===null&&by===null?0:1);
@@ -1369,6 +1437,8 @@ function requestRowDOM(r){
   const tr=document.createElement("tr");
   tr.tabIndex=0;tr.dataset.requestIndex=String(r.index);
   tr.setAttribute("aria-label","Chi tiết yêu cầu "+r.sap+" "+r.po);
+  td(tr,r.week||"—",r.week?"request-week":"empty",
+    r.file?"File nguồn: "+r.file:"Không có File Name");
   td(tr,displayDate(r.date));
   td(tr,r.sap||"—","sap");
   td(tr,r.description||"—","desc",r.description);
@@ -1459,7 +1529,7 @@ function showRequestDetails(row){
   id("request-dialog-title").textContent="Yêu cầu "+row.sap+
     (row.po?" · PO "+row.po:"");
   const props=[
-    ["File nguồn",row.file],["STT trong file",row.rowNo],
+    ["File nguồn",row.file],["Tuần từ tên file",row.week||"—"],["STT trong file",row.rowNo],
     ["Ngày yêu cầu",displayDate(row.date)],["Ngày đặt PO",displayDate(row.orderedDate)],
     ["Mã SAP",row.sap],["Mô tả",row.description],
     ["Số lượng yêu cầu",fmt(row.qty)+" "+row.unit],
@@ -1496,12 +1566,12 @@ function showRequestDetails(row){
   id("request-dialog").showModal();
 }
 function requestXlsx(rows){
-  const cols=["Ngày yêu cầu","Mã SAP","Mô tả","SL yêu cầu","Đơn vị",
+  const cols=["Tuần (File Name)","Ngày yêu cầu","Mã SAP","Mô tả","SL yêu cầu","Đơn vị",
     "Hall","Trạng thái Request","Số PO","Ngày đặt PO","SL PO","SL GR",
     "% nhập/PO","Kết quả đối chiếu","Phụ trách","Đơn giá EUR","Giá trị EUR",
     "Tồn tại lúc yêu cầu","Điểm đặt hàng","Lô đặt hàng","Loại đặt",
     "Ghi chú","File nguồn","STT dòng","Nhóm mua hàng"];
-  const grid=[cols,...rows.map(r=>[displayDate(r.date),r.sap,r.description,r.qty,r.unit,
+  const grid=[cols,...rows.map(r=>[r.week,displayDate(r.date),r.sap,r.description,r.qty,r.unit,
     r.hall,r.status,r.po,displayDate(r.orderedDate),
     Number.isFinite(r.poQty)?r.poQty:null,
     Number.isFinite(r.grQty)?r.grQty:null,
@@ -1615,7 +1685,7 @@ requestId("jump-po").addEventListener("click",()=>{
 requestId("export").addEventListener("click",exportRequests);
 
 window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
-  loadNextBatch,buildRequestReport,filterRequestRows,sortRequestRows,requestXlsx,
+  loadNextBatch,buildRequestReport,filterRequestRows,sortRequestRows,requestXlsx,requestWeekFromFile,
   getRequestState:()=>requestState};
 loadAll();
 })();

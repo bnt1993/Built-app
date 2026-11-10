@@ -38,6 +38,11 @@ const requests=[reqHead,
   requestRow(3,"500111","Done","","1"),
   requestRow(4,"500111","Waiting for IR","4811770099","1"),
   requestRow(5,"999999","Done","4811770001","2")];
+requests[1][0]="Order sparepart list of ME56_5244_Wk31.xlsx";
+requests[2][0]="Order sparepart list of ME56_5244_WK32.xlsx";
+requests[3][0]="Order sparepart list of ME56_5244_WK45.xls";
+requests[4][0]="Order sparepart list of ME56_5244_WK54.xlsx";
+requests[5][0]="Order sparepart list of ME56_5244_unknown.xlsx";
 function routeFor(page,sources){
  return page.route('http://request-report.test/**',route=>{
    const name=new URL(route.request().url()).pathname;
@@ -65,6 +70,14 @@ function routeFor(page,sources){
   assert.equal(await page.locator('#request-stat-wait').innerText(),'20');
   assert.match(await page.locator('#request-source-update').innerText(),/19:00:49/);
   assert.equal(await page.locator('#request-body tr').count(),50);
+  assert.equal(await page.locator('#request-table thead th').first().innerText().then(t=>t.includes('Tuần (File Name)')),true);
+  assert.match(await page.locator('#request-body tr td:first-child').first().innerText(),/^WK\d{2}$/);
+  const tops=await page.locator('#request-panel .request-filters .field').evaluateAll(nodes=>
+    nodes.map(node=>Math.round(node.getBoundingClientRect().top)));
+  assert.equal(tops.length,6,'six Request filters must remain visible');
+  assert.equal(new Set(tops).size,1,'desktop Request filters should occupy one row');
+  const tabHeight=await page.locator('#tab-request').evaluate(el=>el.getBoundingClientRect().height);
+  assert.ok(tabHeight<=45,'compact tab height');
   await page.locator('#request-link').selectOption('missing');
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='87');
   await page.locator('#request-link').selectOption('unavailable');
@@ -79,6 +92,8 @@ function routeFor(page,sources){
   const xlsx=fs.readFileSync(await download.path()).toString('utf8');
   assert.equal((xlsx.match(/<row r="/g)||[]).length,335);
   assert.ok(xlsx.includes('Request_PO_GR'));
+  assert.ok(xlsx.includes('Tuần (File Name)'));
+  assert.ok(xlsx.includes('WK30')||xlsx.includes('WK31'));
   await page.locator('#tab-po-gr').click();
   assert.equal(await page.locator('#report-body tr').count(),5);
   assert.deepEqual(errors,[]);
@@ -96,11 +111,23 @@ function routeFor(page,sources){
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='5');
   assert.equal(await p2.locator('#request-stat-po').innerText(),'4');
   assert.equal(await p2.locator('#request-stat-match').innerText(),'2');
+  const weekCases=await p2.evaluate(()=>[
+    'Order sparepart list of ME56_5244_WK31.xlsx',
+    'Order sparepart list of ME56_5244_Wk32.XLSX',
+    'WK9.xlsx','missing_week.xlsx','ME56_5244_WK54.xlsx'
+  ].map(x=>window.POGR.requestWeekFromFile(x)));
+  assert.deepEqual(weekCases,['WK31','WK32','WK09','','']);
   const computed=await p2.evaluate(()=>window.POGR.getRequestState().rows
-    .map(r=>({sap:r.sap,po:r.po,link:r.link,poQty:r.poQty,grQty:r.grQty})));
+    .map(r=>({sap:r.sap,po:r.po,link:r.link,week:r.week,poQty:r.poQty,grQty:r.grQty})));
+  assert.deepEqual(computed.map(r=>r.week),['WK31','WK32','WK45','','']);
+
   assert.deepEqual(computed.map(r=>r.link),
     ['partial','complete','missing','unavailable','mismatch']);
   assert.equal(computed[0].grQty,2);assert.equal(computed[0].poQty,5);
+  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
+  assert.match(await p2.locator('#request-body tr td').first().getAttribute('title'),/Wk31.xlsx/);
+  await p2.locator('[data-rsort="week"]').click();
+  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
   await p2.locator('#request-hall').selectOption('2');
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='2');
   await p2.locator('#request-clear').click();
