@@ -71,7 +71,7 @@ function routeFor(page,sources){
   assert.match(await page.locator('#request-source-update').innerText(),/19:00:49/);
   assert.equal(await page.locator('#request-body tr').count(),50);
   assert.equal(await page.locator('#request-table thead th').first().innerText().then(t=>t.includes('Tuần (File Name)')),true);
-  assert.match(await page.locator('#request-body tr td:first-child').first().innerText(),/^WK\\d{2}$/);
+  assert.match(await page.locator('#request-body tr td:first-child').first().innerText(),/^WK\d{2}$/);
   const tops=await page.locator('#request-panel .request-filters .field').evaluateAll(nodes=>
     nodes.map(node=>Math.round(node.getBoundingClientRect().top)));
   assert.equal(tops.length,6,'six Request filters must remain visible');
