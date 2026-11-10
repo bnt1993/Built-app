@@ -440,7 +440,7 @@ const SOURCE_TIMESTAMPS={po:["thoiGianCapNhatPO","thoiGianCapNhat"],
 const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const numeric=new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2});
 const state={po:[],gr:[],rows:[],filtered:[],poUpdated:"",grUpdated:"",loaded:false,loading:false,
-  page:1,size:50,sort:"age",direction:"desc",warnings:[],poError:"",grError:"",poVar:"",grVar:"",totalPO:0,excludedPO:0};
+  start:0,visibleCount:0,size:50,sort:"age",direction:"desc",warnings:[],poError:"",grError:"",poVar:"",grVar:"",totalPO:0,excludedPO:0};
 const aliases={
   po:{po:["Pur. Doc.","Purchase Order","PO Num","PO Number","Purchasing Document"],
     item:["Item","PO Item","Purchasing Item"],material:["Material","Material Number","SAP"],
@@ -585,7 +585,6 @@ function filteredRows(rows,options){
     if(options.status==="pending"&&!(r.status==="none"||r.status==="partial"||r.status==="invalid"))return false;
     if(options.status!=="all"&&options.status!=="pending"&&options.status!==r.status)return false;
     if(options.supplier&&r.supplier!==options.supplier)return false;
-    if(options.plant&&r.plant!==options.plant)return false;
     if(options.from&&(!r.poDate||r.poDate<options.from))return false;
     if(options.to&&(!r.poDate||r.poDate>options.to))return false;
     if(options.overdue&&!(r.status!=="done"&&r.status!=="excess"&&r.age>=60))return false;
@@ -593,7 +592,7 @@ function filteredRows(rows,options){
   });
 }
 function options(){return {query:id("search").value,status:id("status-filter").value,
-  supplier:id("supplier-filter").value,plant:id("plant-filter").value,
+  supplier:id("supplier-filter").value,
   from:id("date-from").value,to:id("date-to").value,overdue:id("overdue-only").checked}}
 function sortRows(rows,key,dir){const d=dir==="asc"?1:-1;return rows.slice().sort((a,b)=>{
   const x=sortValue(a,key),y=sortValue(b,key);
@@ -629,13 +628,9 @@ function agingClass(r){if(r.status==="done"||r.status==="excess")return "complet
   return r.age>=80?"critical":r.age>=60?"high":r.age>=30?"medium":"low"}
 function td(tr,value,className="",title=""){const x=document.createElement("td");x.textContent=value;
   if(className)x.className=className;if(title)x.title=title;tr.appendChild(x);return x}
-function render(){
-  const list=sortRows(filteredRows(state.rows,options()),state.sort,state.direction);
-  state.filtered=list;const total=list.length;updateKPI(list);
-  const pages=Math.max(1,Math.ceil(total/state.size));state.page=Math.max(1,Math.min(state.page,pages));
-  const start=(state.page-1)*state.size,pageRows=list.slice(start,start+state.size);
+function appendRows(rows){
   const fragment=document.createDocumentFragment();
-  for(const r of pageRows){
+  for(const r of rows){
     const tr=document.createElement("tr");tr.tabIndex=0;
     tr.setAttribute("aria-label","Xem chi tiết PO "+r.po+" Item "+r.item);
     tr.addEventListener("dblclick",()=>openDetail(r));
@@ -643,7 +638,7 @@ function render(){
     td(tr,r.po,"sap", "Item: "+r.item);td(tr,r.material,"sap");td(tr,r.description,"desc",r.description);
     td(tr,displayDate(r.poDate));td(tr,fmt(r.poQty),"number");td(tr,fmt(r.grQty),"number");
     td(tr,displayDate(r.latestGr),r.latestGr?"":"empty");
-    td(tr,r.bill||"—",r.bill?"":"empty");td(tr,r.key,"key");
+    td(tr,r.bill||"—",r.bill?"":"empty");
     td(tr,Number.isFinite(r.age)?fmt(r.age):"—","age "+agingClass(r));
     const progress=td(tr,"");
     const outer=document.createElement("div");outer.className="progress-outer";
@@ -657,15 +652,42 @@ function render(){
     tag.className="tag "+r.status;tag.textContent=statusText(r.status);status.appendChild(tag);
     fragment.appendChild(tr);
   }
-  id("report-body").replaceChildren(fragment);id("empty").hidden=Boolean(pageRows.length);
-  id("result-summary").textContent=fmt(total)+" / "+fmt(state.rows.length)+
+  id("report-body").appendChild(fragment);
+}
+function updateVisibleStatus(){
+  const total=state.filtered.length,start=state.start,shown=state.visibleCount;
+  id("page-summary").textContent=total?fmt(start+1)+"–"+fmt(start+shown)+" / "+fmt(total)+" dòng":"0 dòng";
+  id("page-indicator").textContent=total?(start===0&&shown<total?"Tự tải khi cuộn · ":"")+
+    fmt(start+shown)+"/"+fmt(total):"0 / 0";
+  id("first").disabled=start===0&&shown<=state.size;
+  id("last").disabled=start+shown>=total;
+  id("load-sentinel").textContent=start+shown<total?"Cuộn xuống để tải thêm dữ liệu":"Đã hiển thị đến cuối danh sách";
+}
+function showWindow(start,count){
+  const total=state.filtered.length;
+  state.start=Math.max(0,Math.min(start,Math.max(0,total-1)));
+  state.visibleCount=Math.min(count,Math.max(0,total-state.start));
+  id("report-body").replaceChildren();
+  appendRows(state.filtered.slice(state.start,state.start+state.visibleCount));
+  id("empty").hidden=total!==0;
+  updateVisibleStatus();
+}
+function loadNextBatch(){
+  if(state.loading||state.start!==0||state.visibleCount>=state.filtered.length)return false;
+  const old=state.visibleCount;
+  state.visibleCount=Math.min(state.filtered.length,old+state.size);
+  appendRows(state.filtered.slice(old,state.visibleCount));
+  updateVisibleStatus();
+  return true;
+}
+function render(){
+  const list=sortRows(filteredRows(state.rows,options()),state.sort,state.direction);
+  state.filtered=list;updateKPI(list);
+  showWindow(0,Math.min(list.length,state.size));
+  id("result-summary").textContent=fmt(list.length)+" / "+fmt(state.rows.length)+
     " dòng PO đầu 48 · "+fmt(state.totalPO)+" dòng được đọc từ PO.js · Nhấp đúp xem lịch sử GR";
-  id("current-count").textContent=fmt(total);
+  id("current-count").textContent=fmt(list.length);
   updateQuickTabs();
-  id("page-summary").textContent=total?fmt(start+1)+"–"+fmt(start+pageRows.length)+" / "+fmt(total)+" dòng":"0 dòng";
-  id("page-indicator").textContent=state.page+" / "+pages;
-  for(const name of ["first","prev"])id(name).disabled=state.page===1;
-  for(const name of ["next","last"])id(name).disabled=state.page===pages;
   document.querySelectorAll("th button[data-sort]").forEach(button=>{
     const active=button.dataset.sort===state.sort;
     button.querySelector("span").textContent=active?(state.direction==="asc"?"↑":"↓"):"↕";
@@ -706,7 +728,6 @@ function reportFresh(){
     id("join-note").textContent=state.warnings.length?state.warnings.join(" · "):
       "Đã đọc "+fmt(info.totalPO)+" dòng PO, "+fmt(info.totalGR)+" dòng GR · đối chiếu theo PO + Item + mã vật tư";
     updateSelect("supplier-filter",state.rows.map(x=>x.supplier),"Tất cả nhà cung cấp");
-    updateSelect("plant-filter",state.rows.map(x=>x.plant),"Tất cả nhà máy");
     render();
   }catch(err){
     id("load-state").textContent=err.message;id("join-note").textContent=err.message;
@@ -812,7 +833,7 @@ async function loadAll(){
     id("source-status").textContent=state.loaded?"Đã kết nối PO / GR":"Thiếu nguồn PO hoặc GR";
     id("load-state").textContent=state.loaded?"Đã cập nhật lúc "+new Date().toLocaleTimeString("vi-VN"):
       [state.poError,state.grError].filter(Boolean).join(" · ");
-    if(state.loaded){state.page=1;reportFresh()}
+    if(state.loaded){reportFresh()}
     else{state.rows=[];render();id("join-note").textContent="Chọn file thủ công ở mục Nguồn dữ liệu nếu không nạp được."}
   }finally{state.loading=false;id("reload-btn").disabled=false}
 }
@@ -828,7 +849,7 @@ async function loadSelected(file,kind){
     id("source-status").textContent=state.loaded?"Đã kết nối PO / GR":"Cần nguồn còn lại";
     id("status-dot").className="status-dot "+(state.loaded?"ready":"error");
     id("load-state").textContent=state.loaded?"Dữ liệu đã sẵn sàng":"Chưa đủ PO và GR";
-    if(state.loaded){state.page=1;reportFresh()}
+    if(state.loaded){reportFresh()}
   }catch(err){id(kind+"-source-note").textContent="Lỗi: "+err.message}
 }
 function colName(i){let name="";for(let n=i+1;n>0;n=Math.floor((n-1)/26))name=String.fromCharCode(65+(n-1)%26)+name;return name}
@@ -864,16 +885,16 @@ function zipEncode(entries){
 }
 function makeXlsx(rows){
   const columns=["Số PO","Item","Mã vật tư","Tên vật tư","Ngày PO","SL đặt","SL nhận",
-    "Ngày GR gần nhất","Vận đơn","Khóa đối chiếu","Ngày chờ","% nhận","SL còn thiếu",
+    "Ngày GR gần nhất","Vận đơn","Ngày chờ","% nhận","SL còn thiếu",
     "Trạng thái","Nhà cung cấp","Nhà máy","Người tạo","Đơn vị","Đơn giá","Tiền tệ"];
   const grid=[columns,...rows.map(r=>[r.po,r.item,r.material,r.description,displayDate(r.poDate),
-    r.poQty,r.grQty,displayDate(r.latestGr),r.bill,r.key,r.age,
+    r.poQty,r.grQty,displayDate(r.latestGr),r.bill,r.age,
     Number.isFinite(r.percent)?r.percent:null,r.remain,statusText(r.status),
     r.supplier,r.plant,r.buyer,r.unit,r.netPrice,r.currency])];
   const worksheets='<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
     '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
     '<sheetData>'+grid.map((row,i)=>'<row r="'+(i+1)+'">'+cellsXML(row,i+1)+'</row>').join("")+'</sheetData>'+
-    '<autoFilter ref="A1:T'+grid.length+'"/></worksheet>';
+    '<autoFilter ref="A1:S'+grid.length+'"/></worksheet>';
   const contentTypes='<?xml version="1.0" encoding="UTF-8"?>'+
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
@@ -894,36 +915,56 @@ function exportXlsx(){
   setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 let timer;
-for(const key of ["search","status-filter","supplier-filter","plant-filter","date-from","date-to","overdue-only"]){
+for(const key of ["search","status-filter","supplier-filter","date-from","date-to","overdue-only"]){
   id(key).addEventListener(key==="search"?"input":"change",()=>{
-    clearTimeout(timer);timer=setTimeout(()=>{state.page=1;render()},key==="search"?160:0)});
+    clearTimeout(timer);timer=setTimeout(()=>render(),key==="search"?160:0)});
 }
- id("include-105").addEventListener("change",()=>{state.page=1;reportFresh()});
+ id("include-105").addEventListener("change",()=>reportFresh());
 for(const button of document.querySelectorAll(".quick-tab")){
   button.addEventListener("click",()=>{
     const mode=button.dataset.mode;
     if(mode==="overdue"){id("status-filter").value="all";id("overdue-only").checked=true}
     else{id("status-filter").value=mode;id("overdue-only").checked=false}
-    state.page=1;render();
+    render();
   });
 }
 
 id("reset").addEventListener("click",()=>{id("search").value="";id("status-filter").value="all";
-  id("supplier-filter").value="";id("plant-filter").value="";id("date-from").value="";
-  id("date-to").value="";id("overdue-only").checked=false;state.page=1;render()});
+  id("supplier-filter").value="";id("date-from").value="";
+  id("date-to").value="";id("overdue-only").checked=false;render()});
 document.querySelectorAll("th button[data-sort]").forEach(b=>b.addEventListener("click",()=>{
   const key=b.dataset.sort;state.direction=state.sort===key&&state.direction==="asc"?"desc":"asc";
-  state.sort=key;state.page=1;render()}));
-id("page-size").addEventListener("change",e=>{state.size=Number(e.target.value)||25;state.page=1;render()});
-id("first").addEventListener("click",()=>{state.page=1;render()});
-id("prev").addEventListener("click",()=>{state.page--;render()});
-id("next").addEventListener("click",()=>{state.page++;render()});
-id("last").addEventListener("click",()=>{state.page=Math.ceil(state.filtered.length/state.size);render()});
+  state.sort=key;render()}));
+id("page-size").addEventListener("change",event=>{
+  state.size=Number(event.target.value)||50;
+  showWindow(0,Math.min(state.size,state.filtered.length));
+});
+id("first").addEventListener("click",()=>{
+  showWindow(0,Math.min(state.size,state.filtered.length));
+  id("report-table").scrollIntoView({block:"start"});
+});
+id("last").addEventListener("click",()=>{
+  showWindow(Math.max(0,state.filtered.length-state.size),state.size);
+  id("table-footer").scrollIntoView({block:"end"});
+});
+if(typeof IntersectionObserver==="function"){
+  const observer=new IntersectionObserver(entries=>{
+    if(entries.some(entry=>entry.isIntersecting))loadNextBatch();
+  },{root:null,rootMargin:"0px 0px 180px 0px"});
+  observer.observe(id("load-sentinel"));
+}else{
+  const maybeLoad=()=>{
+    if(id("load-sentinel").getBoundingClientRect().top<=window.innerHeight+180)
+      loadNextBatch();
+  };
+  window.addEventListener("scroll",maybeLoad,{passive:true});
+  id("table-scroller").addEventListener("scroll",maybeLoad,{passive:true});
+}
 id("reload-btn").addEventListener("click",loadAll);id("export-btn").addEventListener("click",exportXlsx);
 id("close-dialog").addEventListener("click",()=>id("details-dialog").close());
 id("file-po").addEventListener("change",e=>loadSelected(e.target.files[0],"po"));
 id("file-gr").addEventListener("change",e=>loadSelected(e.target.files[0],"gr"));
-window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText};
+window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,loadNextBatch};
 loadAll();
 })();
 </script>
