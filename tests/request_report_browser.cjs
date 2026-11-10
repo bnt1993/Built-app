@@ -213,7 +213,7 @@ function routeFor(page,sources){
   assert.equal(computed[0].grQty,2);assert.equal(computed[0].poQty,5);
   assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
   assert.match(await p2.locator('#request-body tr td').first().getAttribute('title'),/Wk31.xlsx/);
-  await p2.locator('[data-rsort="week"]').click();
+  await p2.locator('#request-table [data-rsort="week"]').click();
   assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
   await p2.locator('#request-hall').selectOption('2');
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='2');
