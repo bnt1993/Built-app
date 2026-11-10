@@ -74,10 +74,38 @@ function routeFor(page,sources){
   assert.match(await page.locator('#request-body tr td:first-child').first().innerText(),/^WK\d{2}$/);
   const tops=await page.locator('#request-panel .request-filters .field').evaluateAll(nodes=>
     nodes.map(node=>Math.round(node.getBoundingClientRect().top)));
-  assert.equal(tops.length,6,'six Request filters must remain visible');
-  assert.equal(new Set(tops).size,1,'desktop Request filters should occupy one row');
+  assert.equal(tops.length,7,'seven Request filters must remain visible');
+  assert.equal(new Set(tops).size,1,'seven desktop Request filters should occupy one row');
   const tabHeight=await page.locator('#tab-request').evaluate(el=>el.getBoundingClientRect().height);
   assert.ok(tabHeight<=45,'compact tab height');
+  const choices=await page.locator('#request-week option').evaluateAll(nodes=>
+    nodes.map(n=>({value:n.value,label:n.textContent})));
+  assert.ok(choices.some(c=>c.value==='WK30'&&c.label.includes('22')));
+  assert.ok(choices.some(c=>c.value==='WK31'&&c.label.includes('18')));
+  assert.ok(choices.some(c=>c.value==='WK45'));
+  assert.equal(choices[0].value,'');
+  await page.locator('#request-week').selectOption('WK31');
+  await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='18');
+  assert.equal(await page.locator('#request-body tr').count(),18);
+  assert.equal(await page.locator('#request-body tr td:first-child').evaluateAll(rows=>
+    rows.every(cell=>cell.textContent==='WK31')),true);
+  await page.locator('#request-link').selectOption('missing');
+  const expectedCombined=await page.evaluate(()=>
+    window.POGR.getRequestState().rows.filter(r=>r.week==='WK31'&&r.link==='missing').length);
+  await page.waitForFunction(expected=>
+    Number(document.getElementById('request-stat-total').textContent.replace(/[^0-9]/g,''))===expected,
+    expectedCombined);
+  await page.locator('#request-link').selectOption('');
+  await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='18');
+  const weekDownloadPromise=page.waitForEvent('download');
+  await page.locator('#request-export').click();
+  const weekDownload=await weekDownloadPromise;
+  const weekExcel=fs.readFileSync(await weekDownload.path()).toString('utf8');
+  assert.equal((weekExcel.match(/<row r="/g)||[]).length,19);
+  assert.ok(weekExcel.includes('WK31'));
+  await page.locator('#request-clear').click();
+  assert.equal(await page.locator('#request-week').inputValue(),'');
+  await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='334');
   await page.locator('#request-link').selectOption('missing');
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='87');
   await page.locator('#request-link').selectOption('unavailable');
@@ -120,6 +148,13 @@ function routeFor(page,sources){
   const computed=await p2.evaluate(()=>window.POGR.getRequestState().rows
     .map(r=>({sap:r.sap,po:r.po,link:r.link,week:r.week,poQty:r.poQty,grQty:r.grQty})));
   assert.deepEqual(computed.map(r=>r.week),['WK31','WK32','WK45','','']);
+  await p2.locator('#request-week').selectOption('WK32');
+  await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='1');
+  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK32');
+  await p2.locator('#request-clear').click();
+  await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='5');
+  assert.ok((await p2.locator('#request-week option').allTextContents()).some(text=>text.includes('Không có tuần')));
+
 
   assert.deepEqual(computed.map(r=>r.link),
     ['partial','complete','missing','unavailable','mismatch']);
