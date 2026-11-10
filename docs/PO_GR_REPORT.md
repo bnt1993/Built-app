@@ -1,3 +1,13 @@
+## Cuộn toàn trang và cố định tiêu đề bảng
+
+- Khôi phục **cuộn dọc toàn trang** cho hai tab Theo dõi PO/GR và Yêu cầu vật tư. Phần bảng không còn khu vực cuộn dọc có chiều cao cố định; khi xuống cuối bảng, các dòng tiếp theo tự tải theo lượt như trước.
+- Khi tiêu đề của bảng đã cuộn qua mép trên màn hình, hệ thống hiện một **dải tiêu đề cột cố định** ở đầu cửa sổ. Dải này chỉ hiện khi đang xem nội dung của bảng; ẩn khi chưa đến bảng, đã rời bảng hoặc chuyển tab.
+- Vẫn **cuộn ngang riêng trong bảng** khi số cột vượt chiều rộng màn hình. Tiêu đề cố định tự đồng bộ vị trí ngang, chiều rộng từng cột và giữ cột đầu bên trái.
+- Nhấp vào tiêu đề cố định vẫn sắp xếp như nhấp vào tiêu đề trong bảng; tìm kiếm, lọc, popup, phân nhóm dữ liệu PO/GR và xuất Excel được giữ nguyên.
+- Nút Đầu / Cuối sẽ dẫn về nhóm dòng đầu hoặc cuối của bảng trong trang theo cách cuộn toàn trang trước đây.
+- PO đã nhận đủ không hiện số Ngày chờ (tiếp tục quy tắc từ bản trước).
+
+
 ## Đồng bộ bố cục hai tab và cuộn riêng trong bảng
 
 - Khi dòng PO ở trạng thái **Đã đủ** (hoặc **Nhận vượt**), cột **Ngày chờ** trên bảng hiển thị `—`, không hiển thị số ngày. Trong popup chi tiết cũng hiển thị `—`, và khi xuất Excel ô Ngày chờ được để trống. Ngày PO và thông tin GR vẫn được giữ nguyên; các dòng thiếu/chưa nhận vẫn hiển thị Ngày chờ bình thường.
