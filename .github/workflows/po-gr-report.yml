@@ -1,0 +1,39 @@
+name: PO / GR report browser tests
+
+on:
+  pull_request:
+    paths:
+      - PO_GR_Report
+      - PO_GR_Report.html
+      - PO.js
+      - GR.js
+      - tests/po_gr_report_browser.cjs
+      - .github/workflows/po-gr-report.yml
+  push:
+    branches: [main]
+    paths:
+      - PO_GR_Report
+      - PO_GR_Report.html
+      - PO.js
+      - GR.js
+      - tests/po_gr_report_browser.cjs
+      - .github/workflows/po-gr-report.yml
+
+permissions:
+  contents: read
+
+jobs:
+  po-gr-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium --with-deps
+      - name: Validate PO/GR web report
+        run: node tests/po_gr_report_browser.cjs
