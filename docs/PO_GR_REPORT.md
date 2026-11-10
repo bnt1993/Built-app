@@ -21,7 +21,7 @@ PO.js phiên bản mới đặt danh sách hai chiều trong **`window.duLieuPO`
 
 GR.js giữ danh sách hai chiều trong **`window.duLieuGR`**, có các cột `Purchase order`, `Item`, `Material`, `Movement Type`, `Posting Date`, `Qty in unit of entry`, `Unit of Entry`, `Material Document`, `Bill of Lading`.
 
-Cả hai có thể có `window.thoiGianCapNhat = "dd/mm/yyyy hh:mm:ss"`. Ứng dụng hiển thị ngày cập nhật nhưng **không sử dụng nó thay cho ngày PO/GR thực tế**.
+Tệp PO.js mới có `window.thoiGianCapNhatPO`, và GR.js mới có `window.thoiGianCapNhatGR`. Ứng dụng lấy **đúng mốc cập nhật riêng của từng file**; vẫn tương thích `window.thoiGianCapNhat` của bản cũ. Ngày cập nhật nguồn chỉ phục vụ kiểm tra, **không được sử dụng thay cho ngày PO/GR thực tế**.
 
 ## Quy tắc đối chiếu và tính toán
 
