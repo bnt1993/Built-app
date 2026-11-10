@@ -936,6 +936,106 @@ function reportFresh(){
     state.rows=[];render();
   }
 }
+// Request.js is a separate input source, not the GR transaction ledger.
+// A Request is only linked to a PO when the exact PO number AND SAP material
+// match. Rows without PO No. remain unverified rather than guessed by SAP.
+const REQUEST_COLUMNS={
+  file:["File Name"],rowNo:["No"],group:["Purchasing Group"],
+  sap:["SAP No","SAP Number","Material"],date:["Requested date","Request date"],
+  description:["Description"],stock:["Stock"],reorder:["Reorder Point"],
+  lot:["Lot size of reorder"],qty:["Qty need to order","Required Qty"],
+  unit:["Unit"],price:["Price(EUR)"],amount:["Amount(EUR)"],
+  orderType:["OrderType"],note:["Note"],supplier:["Supplier"],
+  hall:["Hall"],status:["Status"],po:["PO No.","PO No","Purchase order"],
+  orderedDate:["Ordered date","PO date"]
+};
+const REQUEST_LINK_LABELS={
+  missing:"Chưa ghi số PO",
+  unverified:"Chưa tải dữ liệu PO",
+  unavailable:"PO chưa có trong PO.js",
+  mismatch:"PO khác mã SAP",
+  "gr-unavailable":"Có PO · chưa tải GR.js",
+  "no-gr":"Có PO · chưa nhập GR",
+  partial:"Nhập một phần",
+  complete:"Đã nhận đủ",
+  negative:"GR âm · cần kiểm tra",
+  invalid:"Thiếu mã SAP"
+};
+function buildRequestReport(source,poRows,opts={}){
+  if(!Array.isArray(source)||!Array.isArray(source[0]))
+    throw Error("Request.js không có dòng tiêu đề.");
+  const header=source[0],cols={};
+  for(const [key,names] of Object.entries(REQUEST_COLUMNS))
+    cols[key]=findCol(header,names);
+  for(const key of ["sap","date","qty","status","po"]){
+    if(cols[key]<0)throw Error("Request.js thiếu cột: "+REQUEST_COLUMNS[key][0]);
+  }
+  const byPO=new Map();
+  for(const p of poRows||[]){
+    const po=normalizeCode(p.po);
+    if(!byPO.has(po))byPO.set(po,[]);
+    byPO.get(po).push(p);
+  }
+  const rows=[];
+  for(let i=1;i<source.length;i++){
+    const raw=source[i];if(!Array.isArray(raw))continue;
+    const c=key=>cols[key]>=0?raw[cols[key]]??"":"";
+    const sap=normalizeCode(c("sap")),po=normalizeCode(c("po"));
+    const matchesPO=po&&opts.poReady?byPO.get(po)||[]:[];
+    const matches=matchesPO.filter(p=>normalizeCode(p.material)===sap);
+    const linked=matches.length>0;
+    const poQty=linked?matches.reduce((sum,p)=>sum+(Number.isFinite(p.poQty)?p.poQty:0),0):NaN;
+    const grQty=linked&&opts.grReady?
+      matches.reduce((sum,p)=>sum+(Number.isFinite(p.grQty)?p.grQty:0),0):NaN;
+    const percent=Number.isFinite(poQty)&&poQty>0&&Number.isFinite(grQty)?
+      grQty/poQty*100:NaN;
+    const link=!sap?"invalid":!po?"missing":!opts.poReady?"unverified":
+      !matchesPO.length?"unavailable":!linked?"mismatch":
+      !opts.grReady?"gr-unavailable":grQty<0?"negative":
+      grQty<=0?"no-gr":grQty<poQty-1e-8?"partial":"complete";
+    const r={
+      index:i-1,file:String(c("file")).trim(),rowNo:String(c("rowNo")).trim(),
+      group:String(c("group")).trim(),sap,po,date:excelDate(c("date")),
+      orderedDate:excelDate(c("orderedDate")),
+      description:String(c("description")).trim(),status:String(c("status")).trim(),
+      hall:String(c("hall")).trim(),supplier:String(c("supplier")).trim(),
+      qty:number(c("qty")),unit:String(c("unit")).trim(),
+      stock:number(c("stock")),reorder:number(c("reorder")),
+      lot:number(c("lot")),price:number(c("price")),amount:number(c("amount")),
+      orderType:String(c("orderType")).trim(),note:String(c("note")).trim(),
+      matches,poQty,grQty,percent,link
+    };
+    r.searchText=[r.sap,r.po,r.description,r.note,r.supplier,r.file,r.group,
+      r.status,r.hall].join(" ").toLocaleLowerCase();
+    rows.push(r);
+  }
+  return rows;
+}
+function filterRequestRows(rows,filters){
+  const terms=String(filters.query||"").toLocaleLowerCase()
+    .split(/[,;\n|]+/).map(x=>x.trim()).filter(Boolean);
+  return rows.filter(r=>{
+    if(terms.length&&!terms.some(term=>r.searchText.includes(term)))return false;
+    if(filters.status&&r.status!==filters.status)return false;
+    if(filters.link&&r.link!==filters.link)return false;
+    if(filters.hall&&r.hall!==filters.hall)return false;
+    if(filters.from&&(!r.date||r.date<filters.from))return false;
+    if(filters.to&&(!r.date||r.date>filters.to))return false;
+    return true;
+  });
+}
+function sortRequestRows(rows,key,order){
+  const d=order==="asc"?1:-1;
+  return rows.slice().sort((a,b)=>{
+    let x=a[key],y=b[key];
+    if(typeof x==="number"||typeof y==="number"){
+      const ax=Number.isFinite(x)?x:null,by=Number.isFinite(y)?y:null;
+      if(ax===null||by===null)return (ax===null?1:-1)*(ax===null&&by===null?0:1);
+      return (ax-by)*d||a.index-b.index;
+    }
+    return String(x??"").localeCompare(String(y??""),"vi",{numeric:true})*d||a.index-b.index;
+  });
+}
 function isTable(value){return Array.isArray(value)&&value.length>0&&Array.isArray(value[0])}
 // PO.js uses window.duLieuPO in the new export; older exports use
 // window.duLieuCongTy. Prioritize the new name, never evaluate uploaded text.
