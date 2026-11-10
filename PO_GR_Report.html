@@ -1268,6 +1268,273 @@ id("reload-btn").addEventListener("click",loadAll);id("export-btn").addEventList
 id("close-dialog").addEventListener("click",()=>id("details-dialog").close());
 id("file-po").addEventListener("change",e=>loadSelected(e.target.files[0],"po"));
 id("file-gr").addEventListener("change",e=>loadSelected(e.target.files[0],"gr"));
+
+const requestState={data:[],rows:[],filtered:[],byIndex:new Map(),updated:"",
+  loading:false,loaded:false,error:"",size:50,start:0,visible:0,
+  sort:"date",direction:"desc"};
+let activeReportTab="po";
+const requestId=name=>id("request-"+name);
+function setReportTab(next){
+  activeReportTab=next;
+  for(const [name,tab,panel] of [["po","tab-po-gr","po-gr-panel"],
+    ["request","tab-request","request-panel"]]){
+    const selected=name===next,button=id(tab);
+    button.classList.toggle("active",selected);
+    button.setAttribute("aria-selected",String(selected));
+    button.tabIndex=selected?0:-1;
+    id(panel).hidden=!selected;
+  }
+  if(next==="request"&&!requestState.loaded&&!requestState.loading)
+    loadRequestFile();
+}
+function updateRequestSource(message,error=false){
+  const status=id("request-source-status");
+  status.textContent=message;status.classList.toggle("danger",error);
+  id("request-source-update").textContent="Request.js: "+(requestState.updated||"chưa rõ ngày cập nhật");
+  id("request-tab-count").textContent=requestState.loaded?
+    "("+fmt(requestState.rows.length)+")":"";
+}
+function requestFilters(){
+  return {query:requestId("search").value,status:requestId("status").value,
+    link:requestId("link").value,hall:requestId("hall").value,
+    from:requestId("from").value,to:requestId("to").value};
+}
+function refreshRequestChoices(){
+  const hallSelect=requestId("hall"),previous=hallSelect.value;
+  hallSelect.replaceChildren(new Option("Tất cả Hall",""));
+  for(const hall of [...new Set(requestState.rows.map(x=>x.hall))].filter(Boolean)
+    .sort((a,b)=>a.localeCompare(b,"vi",{numeric:true})))
+    hallSelect.add(new Option("Hall "+hall,hall));
+  hallSelect.value=[...hallSelect.options].some(x=>x.value===previous)?previous:"";
+  const select=requestId("status"),cur=select.value;
+  select.replaceChildren(new Option("Tất cả",""));
+  for(const value of [...new Set(requestState.rows.map(r=>r.status))].filter(Boolean)
+    .sort((a,b)=>a.localeCompare(b,"vi")))
+    select.add(new Option(value,value));
+  select.value=[...select.options].some(x=>x.value===cur)?cur:"";
+}
+function rebuildRequests(){
+  if(!requestState.data.length)return;
+  try{
+    const poRows=state.rows,opts={poReady:state.po.length>0,grReady:state.gr.length>0};
+    requestState.rows=buildRequestReport(requestState.data,poRows,opts);
+    requestState.byIndex=new Map(requestState.rows.map(r=>[r.index,r]));
+    refreshRequestChoices();
+    renderRequests();
+    requestState.loaded=true;
+    updateRequestSource(fmt(requestState.rows.length)+" yêu cầu · đã đọc Request.js");
+  }catch(err){
+    requestState.error=err.message;
+    updateRequestSource("Lỗi cấu trúc: "+err.message,true);
+    requestState.loaded=false;
+  }
+}
+async function loadRequestFile(){
+  if(requestState.loading)return;
+  requestState.loading=true;requestId("reload").disabled=true;
+  updateRequestSource("Đang tải Request.js...");
+  try{
+    const result=await readScript("Request.js",SOURCE_NAMES.request);
+    requestState.data=result.data;
+    requestState.updated=result.updated;
+    requestState.error="";
+    rebuildRequests();
+  }catch(err){
+    requestState.error=err.message;
+    updateRequestSource("Không tải được Request.js: "+err.message,true);
+  }finally{
+    requestState.loading=false;requestId("reload").disabled=false;
+  }
+}
+function applyRequestUpload(file){
+  if(!file)return;
+  file.text().then(text=>{
+    const result=fromJSText(text,SOURCE_NAMES.request);
+    requestState.data=result.data;
+    requestState.updated=result.updated;
+    requestState.error="";
+    rebuildRequests();
+  }).catch(err=>updateRequestSource("File Request.js không hợp lệ: "+err.message,true));
+}
+function updateRequestStats(rows){
+  requestId("stat-total").textContent=fmt(rows.length);
+  requestId("stat-po").textContent=fmt(rows.filter(r=>r.po).length);
+  requestId("stat-match").textContent=fmt(rows.filter(r=>r.matches.length>0).length);
+  requestId("stat-wait").textContent=fmt(rows.filter(r=>
+    r.status.toLocaleLowerCase()==="waiting for ir").length);
+}
+function requestRowDOM(r){
+  const tr=document.createElement("tr");
+  tr.tabIndex=0;tr.dataset.requestIndex=String(r.index);
+  tr.setAttribute("aria-label","Chi tiết yêu cầu "+r.sap+" "+r.po);
+  td(tr,displayDate(r.date));
+  td(tr,r.sap||"—","sap");
+  td(tr,r.description||"—","desc",r.description);
+  td(tr,fmt(r.qty),"number");
+  td(tr,r.hall||"—");
+  const status=td(tr,"");
+  const st=document.createElement("span");
+  st.className="tag "+(r.status.toLowerCase()==="done"?"done":"partial");
+  st.textContent=r.status||"—";status.appendChild(st);
+  td(tr,r.po||"—",r.po?"sap":"empty");
+  td(tr,displayDate(r.orderedDate));
+  td(tr,fmt(r.poQty),"number");
+  td(tr,fmt(r.grQty),"number");
+  const percent=td(tr,"");
+  const wrapper=document.createElement("div");wrapper.className="progress-outer";
+  const bar=document.createElement("div");bar.className="progress";
+  const fill=document.createElement("i");
+  fill.style.width=Math.max(0,Math.min(100,Number.isFinite(r.percent)?r.percent:0))+"%";
+  bar.appendChild(fill);wrapper.appendChild(bar);
+  const label=document.createElement("div");label.className="progress-text";
+  label.textContent=pct(r.percent);wrapper.appendChild(label);percent.appendChild(wrapper);
+  const col=td(tr,"");
+  const tag=document.createElement("span");
+  tag.className="request-link-tag "+r.link;
+  tag.textContent=REQUEST_LINK_LABELS[r.link]||r.link;
+  col.appendChild(tag);
+  return tr;
+}
+function requestVisibilityStatus(){
+  const total=requestState.filtered.length,end=requestState.start+requestState.visible;
+  requestId("visible").textContent=total?
+    fmt(requestState.start+1)+"–"+fmt(end)+" / "+fmt(total)+" yêu cầu":"0 yêu cầu";
+  requestId("first").disabled=requestState.start===0&&requestState.visible<=requestState.size;
+  requestId("last").disabled=end>=total;
+  requestId("sentinel").textContent=end<total?
+    "Cuộn xuống để tải thêm các yêu cầu":"Đã đến cuối danh sách yêu cầu";
+}
+function showRequestWindow(start,count){
+  const total=requestState.filtered.length;
+  requestState.start=Math.max(0,Math.min(start,Math.max(0,total-1)));
+  requestState.visible=Math.max(0,Math.min(count,total-requestState.start));
+  const fragment=document.createDocumentFragment();
+  for(const r of requestState.filtered.slice(
+    requestState.start,requestState.start+requestState.visible))
+    fragment.appendChild(requestRowDOM(r));
+  requestId("body").replaceChildren(fragment);
+  requestId("empty").hidden=total!==0;
+  requestVisibilityStatus();
+}
+function addRequestBatch(){
+  if(activeReportTab!=="request"||requestState.loading||
+    requestState.start!==0||requestState.start+requestState.visible>=requestState.filtered.length)
+    return false;
+  const from=requestState.visible;
+  const to=Math.min(requestState.filtered.length,from+requestState.size);
+  const fragment=document.createDocumentFragment();
+  for(const r of requestState.filtered.slice(from,to))
+    fragment.appendChild(requestRowDOM(r));
+  requestId("body").appendChild(fragment);
+  requestState.visible=to;requestVisibilityStatus();return true;
+}
+function renderRequests(){
+  const filters=requestFilters();
+  requestState.filtered=sortRequestRows(filterRequestRows(requestState.rows,filters),
+    requestState.sort,requestState.direction);
+  const rows=requestState.filtered;
+  updateRequestStats(rows);
+  showRequestWindow(0,Math.min(requestState.size,rows.length));
+  const count=fmt(rows.length),unassigned=rows.filter(r=>r.link==="missing").length,
+    unavailable=rows.filter(r=>r.link==="unavailable").length,
+    invalid=rows.filter(r=>r.link==="mismatch").length;
+  requestId("result-info").textContent=count+" / "+fmt(requestState.rows.length)+
+    " yêu cầu · Nhấp đúp dòng để xem chi tiết";
+  requestId("join-note").textContent="Chưa ghi số PO: "+fmt(unassigned)+
+    " · Có PO nhưng chưa thấy trong PO.js: "+fmt(unavailable)+
+    " · Mã SAP khác PO: "+fmt(invalid)+
+    " · Không ghép tự động theo mã SAP khi thiếu số PO.";
+  document.querySelectorAll("[data-rsort]").forEach(button=>{
+    const active=button.dataset.rsort===requestState.sort;
+    button.querySelector("span").textContent=active?
+      (requestState.direction==="asc"?"↑":"↓"):"↕";
+    button.parentElement.setAttribute("aria-sort",active?
+      (requestState.direction==="asc"?"ascending":"descending"):"none");
+  });
+}
+function showRequestDetails(row){
+  if(!row)return;
+  id("request-dialog-title").textContent="Yêu cầu "+row.sap+
+    (row.po?" · PO "+row.po:"");
+  const props=[
+    ["File nguồn",row.file],["STT trong file",row.rowNo],
+    ["Ngày yêu cầu",displayDate(row.date)],["Ngày đặt PO",displayDate(row.orderedDate)],
+    ["Mã SAP",row.sap],["Mô tả",row.description],
+    ["Số lượng yêu cầu",fmt(row.qty)+" "+row.unit],
+    ["Tồn kho khi yêu cầu",fmt(row.stock)],["Điểm đặt hàng",fmt(row.reorder)],
+    ["Lô đặt hàng",fmt(row.lot)],["Giá (EUR)",fmt(row.price)],
+    ["Giá trị (EUR)",fmt(row.amount)],["Loại đặt hàng",row.orderType],
+    ["Nhóm mua hàng",row.group],["Phụ trách / Supplier",row.supplier],
+    ["Hall",row.hall],["Trạng thái Request",row.status],["Ghi chú",row.note],
+    ["Số PO trong Request",row.po],["Kết quả đối chiếu",REQUEST_LINK_LABELS[row.link]||row.link]
+  ];
+  const fields=requestId("detail-fields");fields.replaceChildren();
+  for(const [key,value] of props){
+    const cell=document.createElement("div");cell.className="detail-cell";
+    const label=document.createElement("label");label.textContent=key;
+    const strong=document.createElement("strong");strong.textContent=value||"—";
+    cell.append(label,strong);fields.appendChild(cell);
+  }
+  const body=requestId("detail-po");body.replaceChildren();
+  for(const poRow of row.matches){
+    const tr=document.createElement("tr");
+    for(const value of [poRow.po,poRow.item,fmt(poRow.poQty),
+      state.gr.length?fmt(poRow.grQty):"—",
+      displayDate(poRow.latestGr),statusText(poRow.status)])
+      td(tr,value);
+    body.appendChild(tr);
+  }
+  if(!row.matches.length){const tr=document.createElement("tr");
+    const cell=td(tr,"Không có PO + mã SAP khớp trong nguồn đang tải");
+    cell.colSpan=6;body.appendChild(tr);
+  }
+  requestId("detail-note").textContent=REQUEST_LINK_LABELS[row.link]||row.link;
+  requestId("jump-po").hidden=!row.po||!row.matches.length;
+  requestId("jump-po").dataset.po=row.po;
+  id("request-dialog").showModal();
+}
+function requestXlsx(rows){
+  const cols=["Ngày yêu cầu","Mã SAP","Mô tả","SL yêu cầu","Đơn vị",
+    "Hall","Trạng thái Request","Số PO","Ngày đặt PO","SL PO","SL GR",
+    "% nhập/PO","Kết quả đối chiếu","Phụ trách","Đơn giá EUR","Giá trị EUR",
+    "Tồn tại lúc yêu cầu","Điểm đặt hàng","Lô đặt hàng","Loại đặt",
+    "Ghi chú","File nguồn","STT dòng","Nhóm mua hàng"];
+  const grid=[cols,...rows.map(r=>[displayDate(r.date),r.sap,r.description,r.qty,r.unit,
+    r.hall,r.status,r.po,displayDate(r.orderedDate),
+    Number.isFinite(r.poQty)?r.poQty:null,
+    Number.isFinite(r.grQty)?r.grQty:null,
+    Number.isFinite(r.percent)?r.percent:null,
+    REQUEST_LINK_LABELS[r.link]||r.link,r.supplier,
+    Number.isFinite(r.price)?r.price:null,Number.isFinite(r.amount)?r.amount:null,
+    Number.isFinite(r.stock)?r.stock:null,Number.isFinite(r.reorder)?r.reorder:null,
+    Number.isFinite(r.lot)?r.lot:null,r.orderType,r.note,r.file,r.rowNo,r.group])];
+  const last=colName(cols.length-1);
+  const sheet='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
+    '<sheetData>'+grid.map((row,i)=>'<row r="'+(i+1)+'">'+cellsXML(row,i+1)+'</row>').join("")+
+    '</sheetData><autoFilter ref="A1:'+last+grid.length+'"/></worksheet>';
+  const types='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+    '<Default Extension="xml" ContentType="application/xml"/>'+
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+    '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+  return zipEncode([["[Content_Types].xml",types],
+    ["_rels/.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ["xl/workbook.xml",'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Request_PO_GR" sheetId="1" r:id="rId1"/></sheets></workbook>'],
+    ["xl/_rels/workbook.xml.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'],
+    ["xl/worksheets/sheet1.xml",sheet]]);
+}
+function exportRequests(){
+  if(!requestState.filtered.length){
+    updateRequestSource("Không có yêu cầu phù hợp để xuất.",true);return;
+  }
+  const blob=requestXlsx(requestState.filtered),url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;
+  a.download="Request_PO_GR_"+todayISO()+".xlsx";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
 window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,loadNextBatch};
 loadAll();
 })();
