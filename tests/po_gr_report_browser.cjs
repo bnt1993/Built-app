@@ -223,7 +223,7 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   await page.locator('#reload-btn').click();
   await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='0');
   assert.equal(await page.locator('#status-dot').getAttribute('class'),'status-dot error');
-  assert.match(await page.locator('#po-source-note').innerText(),/Không tải được PO/);
+  assert.match(await page.locator('#po-source-note').textContent(),/Không tải được PO/);
   assert.doesNotMatch(await page.locator('#load-state').innerText(),/Đã cập nhật/);
   poRouteText=js('duLieuPO',bigPO,'thoiGianCapNhatPO');
   await page.locator('#reload-btn').click();
