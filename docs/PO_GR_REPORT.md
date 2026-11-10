@@ -34,6 +34,20 @@ Tệp PO.js mới có `window.thoiGianCapNhatPO`, và GR.js mới có `window.th
 - Ngày Excel serial như `46024` được đổi sang **02/01/2026**, dùng mốc Excel 1899-12-30.
 - `Net Price` và số lượng dùng định dạng số SAP có dấu phẩy thập phân. Không cộng gộp EUR và VND thành một tổng tiền.
 
+## Quy tắc phạm vi và tải toàn bộ PO.js
+
+- Ứng dụng tải và đọc **toàn bộ dữ liệu** trong `window.duLieuPO` (hoặc `window.duLieuCongTy` cũ), không chỉ một phần dữ liệu hay 25/50 dòng đầu.
+- Chỉ đưa vào báo cáo các dòng có **Pur. Doc. bắt đầu bằng chuỗi `48`**. PO bắt đầu 47, 49 hoặc trống bị loại khỏi danh sách và khỏi các KPI.
+- **Mặc định là Tất cả trạng thái**: chưa nhận, nhận một phần, đã nhận đủ, nhận vượt và cần kiểm tra. Không tự ẩn các PO đã hoàn tất.
+- Phân trang mặc định 50 dòng để bảng tải nhẹ, nhưng có thể chuyển 25/50/100/200 và qua các trang; số dòng đọc từ PO.js, số dòng đầu 48 và số dòng qua bộ lọc được hiển thị riêng.
+- Bộ lọc nhanh Tất cả / Chưa hoàn tất / Chờ từ 60 ngày / Đã nhận đủ giúp chuyển báo cáo tức thời. Nút Xóa bộ lọc quay về Tất cả trạng thái.
+- **Xuất Excel luôn xuất toàn bộ các dòng của kết quả lọc** theo thứ tự đang sắp xếp, không giới hạn trang phân trang hiện tại.
+- Bộ lọc theo số PO bắt đầu 48 là quy tắc cố định, không thể tắt trong giao diện. File PO.js và GR.js gốc không bị thay đổi.
+
+## Giao diện phiên bản mới
+
+Dashboard sử dụng thanh điều hướng gọn, header thông tin nguồn riêng của PO/GR, bốn KPI, thanh xác nhận phạm vi PO 48*, bộ lọc trực quan và thanh trạng thái nhanh. Bảng có tiêu đề cố định khi cuộn dọc, cột PO cố định khi cuộn ngang, tối ưu tương phản và bố cục trên điện thoại. Không cần thư viện CSS hoặc font tải từ internet.
+
 ## Giao diện và xuất kết quả
 
 Tìm theo PO, Item, Material, mô tả, nhà cung cấp, người tạo; lọc trạng thái, nhà cung cấp, nhà máy, khoảng ngày; lọc các dòng chờ từ 60 ngày. Có sắp xếp trên cột, phân trang 25/50/100/200, nhấp đúp hoặc Enter để xem chứng từ GR chi tiết.
