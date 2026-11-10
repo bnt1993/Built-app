@@ -125,6 +125,65 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   const file=fs.readFileSync(await download.path());
   assert.equal(file.toString('ascii',0,2),'PK');
   assert.ok(file.includes(Buffer.from('xl/worksheets/sheet1.xml')));
+
+  // Bulk PO.js must load every matching 48* row, not only the visible page or
+  // pending records. Two 47*/49* rows are explicitly outside the report scope.
+  const bigPO=[poHead,...Array.from({length:121},(_,i)=>[
+    String(4800200000+i),"10","BUYER","46024","5244","502000",
+    String(500000+i),"Material "+i,"4","PC","1,00","4,00","EUR"
+  ]),["4711110000","10","BUYER","46024","5244","502000",
+       "700001","Other prefix","4","PC","1,00","4,00","EUR"],
+    ["4911110000","10","BUYER","46024","5244","502000",
+       "700002","Other prefix 49","4","PC","1,00","4,00","EUR"]];
+  poRouteText=js('duLieuPO',bigPO,'thoiGianCapNhatPO');
+  await page.locator('#reload-btn').click();
+  await page.waitForFunction(()=>document.getElementById('dataset-summary').textContent.includes('121'));
+  assert.equal(await page.locator('#status-filter').inputValue(),'all');
+  assert.match(await page.locator('#dataset-summary').innerText(),/123/);
+  assert.equal(await page.locator('#stat-total').innerText(),'121');
+  assert.equal(await page.locator('#report-body tr').count(),50);
+  assert.equal(await page.locator('#page-indicator').innerText(),'1 / 3');
+  assert.equal(await page.locator('#result-summary').innerText().then(x=>x.includes('123')),true);
+  assert.equal(await page.locator('#report-body tr').evaluateAll(rows=>
+    rows.every(row=>row.querySelector('td').textContent.startsWith('48'))),true);
+  await page.locator('#last').click();
+  assert.equal(await page.locator('#report-body tr').count(),21);
+  assert.equal(await page.locator('#page-indicator').innerText(),'3 / 3');
+  await page.locator('#first').click();
+  await page.locator('#page-size').selectOption('100');
+  assert.equal(await page.locator('#report-body tr').count(),100);
+  assert.equal(await page.locator('#page-indicator').innerText(),'1 / 2');
+
+  // One fully received PO is still visible under the default All status.
+  await page.locator('#file-gr').setInputFiles({name:'GR.js',
+    mimeType:'application/javascript',
+    buffer:Buffer.from(js('duLieuGR',[grHead,
+      gr('990001','1','4800200000','10','500000',4)],
+      'thoiGianCapNhatGR'))});
+  await page.waitForFunction(()=>document.getElementById('stat-completion').textContent!=='0%' &&
+    document.getElementById('stat-completion').textContent!=='—');
+  assert.equal(await page.locator('#stat-total').innerText(),'121');
+  await page.locator('.quick-tab[data-mode="done"]').click();
+  assert.equal(await page.locator('#stat-total').innerText(),'1');
+  assert.equal(await page.locator('#report-body tr').count(),1);
+  await page.locator('.quick-tab[data-mode="pending"]').click();
+  assert.equal(await page.locator('#stat-total').innerText(),'120');
+  await page.locator('.quick-tab[data-mode="all"]').click();
+  assert.equal(await page.locator('#stat-total').innerText(),'121');
+  assert.equal(await page.locator('#status-filter').inputValue(),'all');
+  await page.locator('#reset').click();
+  assert.equal(await page.locator('#stat-total').innerText(),'121');
+
+  // The exported file must contain all 121 items, including rows on later pages.
+  const bulkDownloadPromise=page.waitForEvent('download');
+  await page.locator('#export-btn').click();
+  const bulkDownload=await bulkDownloadPromise;
+  const bulkFile=fs.readFileSync(await bulkDownload.path()).toString('utf8');
+  assert.equal((bulkFile.match(/<row r="/g)||[]).length,122);
+
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('.quick-tab').count(),4);
+  assert.equal(await page.locator('#dataset-summary').isVisible(),true);
   assert.deepEqual(errors,[]);
   console.log('PASS PO_GR browser: load sibling JS, Excel dates, PO+item+material reconciliation, movement reversals, filters, detail and XLSX.');
  }finally{await browser.close()}
