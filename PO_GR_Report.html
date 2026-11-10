@@ -636,6 +636,19 @@
       .fixed-report-head .head-table th button{padding:11px 9px;min-height:40px}
     }
 
+  
+    .fixed-report-head .fixed-head-first{
+      position:absolute;left:0;top:0;z-index:2;overflow:hidden;
+      box-shadow:3px 0 7px rgba(24,47,79,.14);
+    }
+    .fixed-report-head .fixed-head-first button{
+      width:100%;height:100%;min-height:43px;padding:13px 12px;
+      box-sizing:border-box;display:flex;align-items:center;
+      justify-content:space-between;gap:5px;text-align:left;
+      font-size:10.5px;font-weight:830;background:transparent;
+      color:#43617a;border:0;white-space:nowrap;cursor:pointer;
+    }
+
   </style>
 </head>
 <body>
@@ -1964,6 +1977,111 @@ requestId("jump-po").addEventListener("click",()=>{
   render();
 });
 requestId("export").addEventListener("click",exportRequests);
+
+
+// A horizontal scroll container prevents native position:sticky from following
+// page scrolling. Mirror the table header in a fixed strip, matching actual
+// column widths and horizontal scroll offset; keep sort buttons working.
+const fixedReportHeaders=[];
+function installFixedReportHeader(tableId,scrollerId,panelId){
+  const source=document.getElementById(tableId),
+    scroller=document.getElementById(scrollerId),
+    panel=document.getElementById(panelId);
+  const overlay=document.createElement("div");
+  overlay.className="fixed-report-head";overlay.hidden=true;
+  overlay.dataset.sourceTable=tableId;
+  const track=document.createElement("div");track.className="head-track";
+  const mirrored=document.createElement("table");
+  mirrored.className="head-table";
+  const cols=document.createElement("colgroup");
+  const clonedHead=source.tHead.cloneNode(true);
+  mirrored.append(cols,clonedHead);track.appendChild(mirrored);
+  const pinned=document.createElement("div");
+  pinned.className="fixed-head-first";pinned.hidden=true;
+  const pinnedButton=document.createElement("button");
+  pinnedButton.type="button";pinned.appendChild(pinnedButton);
+  overlay.append(track,pinned);
+  document.body.appendChild(overlay);
+  const originals=Array.from(source.tHead.querySelectorAll("th button"));
+  overlay.addEventListener("click",event=>{
+    const button=event.target.closest("button");
+    if(!button)return;
+    if(pinned.contains(button)){originals[0]?.click();return}
+    const buttons=Array.from(clonedHead.querySelectorAll("button"));
+    const index=buttons.indexOf(button);
+    if(index>=0)originals[index]?.click();
+  });
+  scroller.addEventListener("scroll",scheduleFixedHeaders,{passive:true});
+  if(typeof ResizeObserver==="function"){
+    const resize=new ResizeObserver(scheduleFixedHeaders);
+    resize.observe(source);resize.observe(scroller);
+  }
+  if(typeof MutationObserver==="function"){
+    new MutationObserver(scheduleFixedHeaders).observe(source.tHead,{
+      childList:true,subtree:true,characterData:true,attributes:true,
+      attributeFilter:["aria-sort"]
+    });
+  }
+  fixedReportHeaders.push({source,scroller,panel,overlay,track,mirrored,cols,
+    clonedHead,pinned,pinnedButton,originals});
+}
+function updateFixedReportHeaders(){
+  for(const h of fixedReportHeaders){
+    if(h.panel.hidden){h.overlay.hidden=true;continue}
+    const rect=h.scroller.getBoundingClientRect();
+    const headerRect=h.source.tHead.getBoundingClientRect();
+    const headerHeight=headerRect.height;
+    const visible=headerHeight>0&&headerRect.bottom<=1&&
+      rect.bottom>headerHeight+6&&rect.top<window.innerHeight&&
+      rect.right>0&&rect.left<window.innerWidth;
+    h.overlay.hidden=!visible;
+    if(!visible)continue;
+    const left=Math.max(0,rect.left);
+    h.overlay.style.left=left+"px";
+    h.overlay.style.width=Math.max(0,Math.min(rect.right,window.innerWidth)-left)+"px";
+    h.overlay.style.height=Math.ceil(headerHeight)+"px";
+    const originalCells=Array.from(h.source.tHead.querySelectorAll("th"));
+    const mirrorCells=Array.from(h.clonedHead.querySelectorAll("th"));
+    const widths=originalCells.map(cell=>cell.getBoundingClientRect().width);
+    while(h.cols.children.length<widths.length)
+      h.cols.appendChild(document.createElement("col"));
+    for(let i=0;i<widths.length;i++){
+      h.cols.children[i].style.width=widths[i]+"px";
+      mirrorCells[i].style.width=widths[i]+"px";
+      const a=h.originals[i],b=mirrorCells[i].querySelector("button");
+      if(a&&b&&a.innerHTML!==b.innerHTML)b.innerHTML=a.innerHTML;
+      const style=getComputedStyle(originalCells[i]);
+      mirrorCells[i].style.backgroundColor=style.backgroundColor;
+      mirrorCells[i].style.color=style.color;
+    }
+    const tableWidth=h.source.getBoundingClientRect().width;
+    h.mirrored.style.width=tableWidth+"px";
+    h.track.style.width=tableWidth+"px";
+    h.track.style.transform="translateX("+(-h.scroller.scrollLeft)+"px)";
+    const pin=h.scroller.scrollLeft>1;
+    h.pinned.hidden=!pin;
+    if(pin){
+      h.pinned.style.width=widths[0]+"px";
+      h.pinned.style.height=Math.ceil(headerHeight)+"px";
+      h.pinnedButton.innerHTML=h.originals[0].innerHTML;
+      h.pinned.style.backgroundColor=getComputedStyle(originalCells[0]).backgroundColor;
+    }
+  }
+}
+let fixedHeaderScheduled=false;
+function scheduleFixedHeaders(){
+  if(fixedHeaderScheduled)return;
+  fixedHeaderScheduled=true;
+  requestAnimationFrame(()=>{
+    fixedHeaderScheduled=false;
+    updateFixedReportHeaders();
+  });
+}
+installFixedReportHeader("report-table","table-scroller","po-gr-panel");
+installFixedReportHeader("request-table","request-scroller","request-panel");
+window.addEventListener("scroll",scheduleFixedHeaders,{passive:true});
+window.addEventListener("resize",scheduleFixedHeaders,{passive:true});
+scheduleFixedHeaders();
 
 window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
   loadNextBatch,buildRequestReport,filterRequestRows,sortRequestRows,requestXlsx,requestWeekFromFile,
