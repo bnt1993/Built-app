@@ -931,6 +931,7 @@ function reportFresh(){
       "Đã đọc "+fmt(info.totalPO)+" dòng PO, "+fmt(info.totalGR)+" dòng GR · đối chiếu theo PO + Item + mã vật tư";
     updateSelect("supplier-filter",state.rows.map(x=>x.supplier),"Tất cả nhà cung cấp");
     render();
+    if(requestState.data.length)rebuildRequests();
   }catch(err){
     id("load-state").textContent=err.message;id("join-note").textContent=err.message;
     state.rows=[];render();
@@ -1139,6 +1140,7 @@ async function loadAll(){
       [state.poError,state.grError].filter(Boolean).join(" · ");
     if(state.loaded){reportFresh()}
     else{state.rows=[];render();id("join-note").textContent="Chọn file thủ công ở mục Nguồn dữ liệu nếu không nạp được."}
+    if(activeReportTab==="request")await loadRequestFile();
   }finally{state.loading=false;id("reload-btn").disabled=false}
 }
 async function loadSelected(file,kind){
@@ -1535,7 +1537,86 @@ function exportRequests(){
   setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 
-window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,loadNextBatch};
+
+for(const [name,selector] of [["po","tab-po-gr"],["request","tab-request"]]){
+  id(selector).addEventListener("click",()=>setReportTab(name));
+}
+document.querySelector(".report-tabs").addEventListener("keydown",event=>{
+  if(event.key!=="ArrowLeft"&&event.key!=="ArrowRight")return;
+  const next=activeReportTab==="po"?"request":"po";
+  setReportTab(next);
+  id(next==="po"?"tab-po-gr":"tab-request").focus();
+  event.preventDefault();
+});
+requestId("reload").addEventListener("click",loadRequestFile);
+requestId("file").addEventListener("change",event=>applyRequestUpload(event.target.files[0]));
+let requestDebounce=null;
+for(const name of ["search","status","link","hall","from","to"]){
+  requestId(name).addEventListener(name==="search"?"input":"change",()=>{
+    clearTimeout(requestDebounce);
+    requestDebounce=setTimeout(renderRequests,name==="search"?150:0);
+  });
+}
+requestId("clear").addEventListener("click",()=>{
+  for(const name of ["search","status","link","hall","from","to"])
+    requestId(name).value="";
+  renderRequests();
+});
+document.querySelectorAll("[data-rsort]").forEach(button=>button.addEventListener("click",()=>{
+  const key=button.dataset.rsort;
+  requestState.direction=requestState.sort===key&&requestState.direction==="asc"?"desc":"asc";
+  requestState.sort=key;
+  renderRequests();
+}));
+requestId("page-size").addEventListener("change",event=>{
+  requestState.size=Number(event.target.value)||50;
+  showRequestWindow(0,Math.min(requestState.size,requestState.filtered.length));
+});
+requestId("first").addEventListener("click",()=>{
+  showRequestWindow(0,Math.min(requestState.size,requestState.filtered.length));
+  requestId("table").scrollIntoView({block:"start"});
+});
+requestId("last").addEventListener("click",()=>{
+  showRequestWindow(Math.max(0,requestState.filtered.length-requestState.size),
+    requestState.size);
+  requestId("visible").scrollIntoView({block:"end"});
+});
+if(typeof IntersectionObserver==="function"){
+  const observer=new IntersectionObserver(entries=>{
+    if(entries.some(entry=>entry.isIntersecting))addRequestBatch();
+  },{root:null,rootMargin:"0px 0px 200px 0px"});
+  observer.observe(requestId("sentinel"));
+}else{
+  window.addEventListener("scroll",()=>{
+    if(activeReportTab==="request"&&
+      requestId("sentinel").getBoundingClientRect().top<=window.innerHeight+200)
+      addRequestBatch();
+  },{passive:true});
+}
+function requestRowAction(event){
+  if(event.type==="keydown"&&event.key!=="Enter")return;
+  const element=event.target.closest("tr[data-request-index]");
+  if(!element)return;
+  if(event.type==="keydown")event.preventDefault();
+  showRequestDetails(requestState.byIndex.get(Number(element.dataset.requestIndex)));
+}
+requestId("body").addEventListener("dblclick",requestRowAction);
+requestId("body").addEventListener("keydown",requestRowAction);
+requestId("dialog-close").addEventListener("click",()=>id("request-dialog").close());
+requestId("jump-po").addEventListener("click",()=>{
+  const po=requestId("jump-po").dataset.po;
+  id("request-dialog").close();
+  setReportTab("po");
+  id("search").value=po;
+  id("status-filter").value="all";
+  id("overdue-only").checked=false;
+  render();
+});
+requestId("export").addEventListener("click",exportRequests);
+
+window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
+  loadNextBatch,buildRequestReport,filterRequestRows,sortRequestRows,requestXlsx,
+  getRequestState:()=>requestState};
 loadAll();
 })();
 </script>
