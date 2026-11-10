@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>PO / GR Report | Theo dõi đơn mua hàng</title>
+  <title>PO / GR Control Center | Theo dõi tất cả PO đầu 48</title>
   <style>
     :root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#182a40;background:#f2f5fa;font-synthesis:none;
       --ink:#172a3e;--muted:#64748b;--line:#dce5ef;--blue:#245dd6;--green:#087e67;--panel:#fff;
@@ -130,7 +130,7 @@
     <div class="field search"><label for="search">Tìm mã PO, vật tư, mô tả, nhà cung cấp</label>
       <input id="search" type="search" autocomplete="off" placeholder="Nhập một hoặc nhiều mã, cách nhau bởi dấu phẩy…"></div>
     <div class="field"><label for="status-filter">Tình trạng nhận hàng</label>
-      <select id="status-filter"><option value="pending">Chưa hoàn tất</option><option value="all">Tất cả</option>
+      <select id="status-filter"><option value="all" selected>Tất cả trạng thái</option><option value="pending">Chưa hoàn tất</option>
       <option value="none">Chưa nhận</option><option value="partial">Nhận một phần</option>
       <option value="done">Đã nhận đủ</option><option value="excess">Nhận vượt</option>
       <option value="invalid">Cần kiểm tra</option></select></div>
@@ -175,7 +175,7 @@
       <span id="page-summary">0 dòng</span>
       <div class="pager">
         <label for="page-size">Dòng/trang</label>
-        <select id="page-size"><option>25</option><option>50</option><option>100</option><option>200</option></select>
+        <select id="page-size"><option>25</option><option selected>50</option><option>100</option><option>200</option></select>
         <button id="first" type="button" title="Trang đầu">«</button><button id="prev" type="button" title="Trang trước">‹</button>
         <span id="page-indicator">1 / 1</span><button id="next" type="button" title="Trang sau">›</button>
         <button id="last" type="button" title="Trang cuối">»</button>
@@ -219,7 +219,7 @@ const SOURCE_TIMESTAMPS={po:["thoiGianCapNhatPO","thoiGianCapNhat"],
 const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const numeric=new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2});
 const state={po:[],gr:[],rows:[],filtered:[],poUpdated:"",grUpdated:"",loaded:false,loading:false,
-  page:1,size:25,sort:"age",direction:"desc",warnings:[],poError:"",grError:"",poVar:"",grVar:""};
+  page:1,size:50,sort:"age",direction:"desc",warnings:[],poError:"",grError:"",poVar:"",grVar:"",totalPO:0,excludedPO:0};
 const aliases={
   po:{po:["Pur. Doc.","Purchase Order","PO Num","PO Number","Purchasing Document"],
     item:["Item","PO Item","Purchasing Item"],material:["Material","Material Number","SAP"],
@@ -309,11 +309,16 @@ function buildReport(poData,grData,allow105=false){
     grByKey.get(key).push(entry);
   }
   const rows=[];let mismatch=0,invalidDate=0;
+  let excludedPO=0;
   for(const raw of poData.slice(1)){
     if(!Array.isArray(raw))continue;
-    const po=normalizeCode(cell(raw,p.po)),item=itemCode(cell(raw,p.item)),
+    const po=normalizeCode(cell(raw,p.po));
+    // Always read the complete PO.js dataset, then retain purchase orders
+    // whose document number starts with 48. Do not filter by pending status.
+    if(!po.startsWith("48")){excludedPO++;continue}
+    const item=itemCode(cell(raw,p.item)),
       material=normalizeCode(cell(raw,p.material));
-    if(!po||!item||!material)continue;
+    if(!item||!material)continue;
     const poDate=excelDate(cell(raw,p.poDate));
     if(!poDate)invalidDate++;
     const related=(grByKey.get(po+"|"+item)||[]).filter(x=>{
@@ -338,7 +343,7 @@ function buildReport(poData,grData,allow105=false){
     row.status=calculateStatus(row);
     rows.push(row);
   }
-  return {rows,ignored,duplicates,mismatch,invalidDate,totalPO:poData.length-1,totalGR:grData.length-1};
+  return {rows,ignored,duplicates,mismatch,invalidDate,excludedPO,totalPO:poData.length-1,totalGR:grData.length-1};
 }
 function pct(v){return Number.isFinite(v)?new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2}).format(v)+"%":"—"}
 function statusText(s){return {none:"Chưa nhận",partial:"Nhận một phần",done:"Đã đủ",excess:"Nhận vượt",invalid:"Cần kiểm tra"}[s]||s}
@@ -378,6 +383,15 @@ function updateSelect(name,items,all){
   for(const v of [...new Set(items)].filter(Boolean).sort((a,b)=>a.localeCompare(b,"vi",{numeric:true})))
     select.add(new Option(v,v));
   select.value=[...select.options].some(o=>o.value===current)?current:"";
+}
+function updateQuickTabs(){
+  const status=id("status-filter").value,overdue=id("overdue-only").checked;
+  for(const button of document.querySelectorAll(".quick-tab")){
+    const active=button.dataset.mode==="overdue"?overdue:
+      !overdue&&button.dataset.mode===status;
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-pressed",String(active));
+  }
 }
 function updateKPI(rows){
   const total=rows.length,pending=rows.filter(x=>x.status==="none"||x.status==="partial"||x.status==="invalid").length,
@@ -419,7 +433,10 @@ function render(){
     fragment.appendChild(tr);
   }
   id("report-body").replaceChildren(fragment);id("empty").hidden=Boolean(pageRows.length);
-  id("result-summary").textContent=fmt(total)+" / "+fmt(state.rows.length)+" dòng theo bộ lọc · Nhấp đúp một dòng để xem lịch sử GR";
+  id("result-summary").textContent=fmt(total)+" / "+fmt(state.rows.length)+
+    " dòng PO đầu 48 · "+fmt(state.totalPO)+" dòng được đọc từ PO.js · Nhấp đúp xem lịch sử GR";
+  id("current-count").textContent=fmt(total);
+  updateQuickTabs();
   id("page-summary").textContent=total?fmt(start+1)+"–"+fmt(start+pageRows.length)+" / "+fmt(total)+" dòng":"0 dòng";
   id("page-indicator").textContent=state.page+" / "+pages;
   for(const name of ["first","prev"])id(name).disabled=state.page===1;
@@ -454,12 +471,15 @@ function reportFresh(){
   if(!state.po.length){state.rows=[];render();return}
   try{
     const info=buildReport(state.po,state.gr.length?state.gr:[aliases.gr?Object.keys(aliases.gr):[]],id("include-105").checked);
-    state.rows=info.rows;state.warnings=[];
+    state.rows=info.rows;state.totalPO=info.totalPO;state.excludedPO=info.excludedPO;state.warnings=[];
+    id("dataset-summary").textContent=fmt(info.rows.length)+" dòng PO đầu 48 / "+
+      fmt(info.totalPO)+" dòng trong PO.js"+(info.excludedPO?
+        " · loại "+fmt(info.excludedPO)+" dòng PO khác 48":"");
     if(info.mismatch)state.warnings.push(info.mismatch+" dòng GR có mã vật tư khác PO");
     if(info.duplicates)state.warnings.push(info.duplicates+" chứng từ GR trùng đã bỏ qua");
     if(info.invalidDate)state.warnings.push(info.invalidDate+" dòng PO có ngày không hợp lệ");
     id("join-note").textContent=state.warnings.length?state.warnings.join(" · "):
-      "Khớp PO + Item + mã vật tư · "+fmt(info.totalGR)+" dòng GR đã nạp";
+      "Đã đọc "+fmt(info.totalPO)+" dòng PO, "+fmt(info.totalGR)+" dòng GR · đối chiếu theo PO + Item + mã vật tư";
     updateSelect("supplier-filter",state.rows.map(x=>x.supplier),"Tất cả nhà cung cấp");
     updateSelect("plant-filter",state.rows.map(x=>x.plant),"Tất cả nhà máy");
     render();
@@ -653,8 +673,17 @@ for(const key of ["search","status-filter","supplier-filter","plant-filter","dat
   id(key).addEventListener(key==="search"?"input":"change",()=>{
     clearTimeout(timer);timer=setTimeout(()=>{state.page=1;render()},key==="search"?160:0)});
 }
-id("include-105").addEventListener("change",()=>{state.page=1;reportFresh()});
-id("reset").addEventListener("click",()=>{id("search").value="";id("status-filter").value="pending";
+ id("include-105").addEventListener("change",()=>{state.page=1;reportFresh()});
+for(const button of document.querySelectorAll(".quick-tab")){
+  button.addEventListener("click",()=>{
+    const mode=button.dataset.mode;
+    if(mode==="overdue"){id("status-filter").value="all";id("overdue-only").checked=true}
+    else{id("status-filter").value=mode;id("overdue-only").checked=false}
+    state.page=1;render();
+  });
+}
+
+id("reset").addEventListener("click",()=>{id("search").value="";id("status-filter").value="all";
   id("supplier-filter").value="";id("plant-filter").value="";id("date-from").value="";
   id("date-to").value="";id("overdue-only").checked=false;state.page=1;render()});
 document.querySelectorAll("th button[data-sort]").forEach(b=>b.addEventListener("click",()=>{
