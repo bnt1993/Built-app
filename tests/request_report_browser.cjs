@@ -73,6 +73,40 @@ function routeFor(page,sources){
   assert.equal(actualAmount,81.078,'SAP decimal comma must survive in the browser');
   assert.match(await page.locator('#request-source-update').innerText(),/19:00:49/);
   assert.equal(await page.locator('#request-body tr').count(),50);
+  const requestScroller=page.locator('#request-scroller');
+  const metrics=await page.evaluate(()=>({
+    sourcePO:document.querySelector('#po-gr-panel .source-strip').getBoundingClientRect(),
+    sourceRequest:document.querySelector('#request-panel .request-source-bar').getBoundingClientRect(),
+    kpiRequest:document.querySelector('#request-panel .kpis').getBoundingClientRect(),
+    filterRequest:document.querySelector('#request-panel .request-filters').getBoundingClientRect()
+  }));
+  assert.equal(await page.locator('#request-sentinel').evaluate(el=>
+    el.parentElement.id),'request-scroller');
+  assert.equal(await requestScroller.evaluate(el=>getComputedStyle(el).overflowY),'auto');
+  const scrollerSize=await requestScroller.evaluate(el=>({height:el.clientHeight,total:el.scrollHeight}));
+  assert.ok(scrollerSize.height>=130&&scrollerSize.total>scrollerSize.height,
+    'Request data scrolls inside a fixed height table');
+  await requestScroller.evaluate(el=>el.scrollTop=el.scrollHeight);
+  await page.waitForFunction(()=>document.querySelectorAll('#request-body tr').length>=100);
+  assert.equal(await page.evaluate(()=>window.scrollY),0,
+    'Request scroll should not move the entire dashboard');
+  await page.locator('#tab-po-gr').click();
+  const poMetrics=await page.evaluate(()=>({
+    source:document.querySelector('#po-gr-panel .source-strip').getBoundingClientRect().height,
+    kpi:document.querySelector('#po-gr-panel .kpis').getBoundingClientRect(),
+    filters:document.querySelector('#po-gr-panel .filters').getBoundingClientRect()
+  }));
+  assert.ok(Math.abs(poMetrics.source-metrics.sourceRequest.height)<=9,
+    'both tabs should have matching source heights');
+  assert.ok(Math.abs(poMetrics.kpi.y-metrics.kpiRequest.y)<=9,
+    'KPI rows must start at equivalent positions on both tabs');
+  assert.ok(Math.abs(poMetrics.kpi.height-metrics.kpiRequest.height)<=9,
+    'KPI card sections should share height');
+  assert.ok(Math.abs(poMetrics.filters.y-metrics.filterRequest.y)<=9,
+    'filter panels must align between tabs');
+  assert.ok(Math.abs(poMetrics.filters.height-metrics.filterRequest.height)<=12,
+    'filter cards should be balanced across both tabs');
+  await page.locator('#tab-request').click();
   assert.equal(await page.locator('#request-table thead th').first().innerText().then(t=>t.includes('Tuần (File Name)')),true);
   assert.match(await page.locator('#request-body tr td:first-child').first().innerText(),/^WK\d{2}$/);
   const tops=await page.locator('#request-panel .request-filters .field').evaluateAll(nodes=>

@@ -165,13 +165,32 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.equal(await page.locator('#export-btn').count(),1);
   assert.equal(await page.locator('#report-body tr').evaluateAll(rows=>
     rows.every(row=>row.querySelector('td').textContent.startsWith('48'))),true);
-  // Scrolling to the page footer automatically adds the next batch in the
-  // same table, rather than replacing the previous 50 rows.
-  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  // All scrolling happens inside the report table; the page itself stays still.
+  const scroller=page.locator('#table-scroller');
+  const initialViewport=await scroller.evaluate(node=>({
+    height:node.clientHeight,scrollHeight:node.scrollHeight,overflow:getComputedStyle(node).overflowY
+  }));
+  console.log('SCROLLER_DEBUG',JSON.stringify(await page.evaluate(()=>({
+    scroller:(()=>{const e=document.getElementById('table-scroller');return {client:e.clientHeight,scroll:e.scrollHeight,
+      top:e.getBoundingClientRect().top,bottom:e.getBoundingClientRect().bottom}})(),
+    page:(()=>{const e=document.querySelector('.page');return {height:e.clientHeight,scroll:e.scrollHeight}})(),
+    kpi:document.querySelector('#po-gr-panel .kpis').getBoundingClientRect().height,
+    filters:document.querySelector('#po-gr-panel .filters').getBoundingClientRect().height,
+    report:document.querySelector('#po-gr-panel .report-panel').getBoundingClientRect().height,
+    viewport:window.innerHeight
+  }))));
+  assert.ok(initialViewport.height>=125&&initialViewport.height<850,
+    JSON.stringify(initialViewport));
+  assert.equal(initialViewport.overflow,'auto');
+  assert.ok(initialViewport.scrollHeight>initialViewport.height,'table should scroll internally');
+  assert.equal(await page.locator('#load-sentinel').evaluate(node=>
+    node.parentElement.id),'table-scroller');
+  await scroller.evaluate(node=>node.scrollTop=node.scrollHeight);
   await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length>=100);
   assert.equal(await page.locator('#report-body tr').count(),100);
-  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await scroller.evaluate(node=>node.scrollTop=node.scrollHeight);
   await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length===121);
+  assert.equal(await page.evaluate(()=>window.scrollY),0);
   assert.equal(await page.locator('#page-indicator').innerText(),'121/121');
   await page.locator('#first').click();
   assert.equal(await page.locator('#report-body tr').count(),50);
@@ -194,6 +213,17 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   await page.locator('.quick-tab[data-mode="done"]').click();
   assert.equal(await page.locator('#stat-total').innerText(),'1');
   assert.equal(await page.locator('#report-body tr').count(),1);
+  assert.equal(await page.locator('#report-body tr td.age').first().innerText(),'—',
+    'completed PO must not display waiting days');
+  await page.locator('#report-body tr').first().dblclick();
+  const waitDetail=page.locator('#detail-fields .detail-cell').filter({hasText:'Ngày chờ'});
+  assert.equal(await waitDetail.locator('strong').innerText(),'—');
+  await page.locator('#close-dialog').click();
+  const completedExportPromise=page.waitForEvent('download');
+  await page.locator('#export-btn').click();
+  const completedFile=fs.readFileSync(await (await completedExportPromise).path()).toString('utf8');
+  assert.ok(completedFile.includes('<c r="J2" t="inlineStr"><is><t></t></is></c>'),
+    'completed PO waiting day should be blank in Excel');
   await page.locator('.quick-tab[data-mode="pending"]').click();
   assert.equal(await page.locator('#stat-total').innerText(),'120');
   await page.locator('.quick-tab[data-mode="all"]').click();

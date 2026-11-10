@@ -461,6 +461,127 @@
       #request-panel .request-filters .field.search{grid-column:auto}
     }
 
+  
+    /* Shared geometry: same source, summary, filter, and table positions. */
+    #po-gr-panel .source-strip,
+    #request-panel .request-source-bar{
+      min-height:60px;
+      margin-bottom:10px;
+      padding:9px 14px;
+      border-radius:12px;
+    }
+    #po-gr-panel .kpis,#request-panel .kpis{
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+      margin:0 0 10px;
+    }
+    #po-gr-panel .kpi,#request-panel .kpi{
+      min-height:102px;
+      height:102px;
+      padding:13px 16px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    #po-gr-panel .kpi strong,#request-panel .kpi strong{
+      font-size:25px;
+    }
+    #po-gr-panel .filters,#request-panel .request-filters{
+      min-height:145px;
+      margin-bottom:10px;
+      padding:12px 15px;
+      border-radius:14px;
+      align-content:start;
+    }
+    #po-gr-panel .filters .field input,#po-gr-panel .filters .field select,
+    #request-panel .request-filters .field input,
+    #request-panel .request-filters .field select{
+      height:38px;
+    }
+    #po-gr-panel .filter-heading,#request-panel .filter-heading{
+      min-height:27px;
+      align-items:center;
+    }
+    #po-gr-panel .report-panel,#request-panel .report-panel{
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      overflow:hidden;
+    }
+    #po-gr-panel .report-panel .table-scroller,
+    #request-panel .report-panel .table-scroller{
+      min-height:240px;
+      height:clamp(300px,calc(100dvh - 525px),720px);
+      max-height:none;
+      overflow-x:auto;
+      overflow-y:auto;
+      overscroll-behavior:contain;
+      scrollbar-width:thin;
+      scrollbar-color:#b5c8e3 #f6f8fc;
+    }
+    #po-gr-panel .report-panel .table-footer,
+    #request-panel .report-panel .table-footer{
+      flex:0 0 auto;
+      padding:10px 15px;
+    }
+    #po-gr-panel .table-scroller thead th,
+    #request-panel .table-scroller thead th{
+      top:0;
+      position:sticky;
+      z-index:5;
+    }
+    #po-gr-panel .table-scroller thead th:first-child,
+    #request-panel .table-scroller thead th:first-child{
+      z-index:7;
+    }
+    #po-gr-panel .load-sentinel,#request-panel .load-sentinel{
+      padding:11px 16px;
+      min-height:38px;
+      text-align:center;
+      font-size:11px;
+      color:#7386a0;
+    }
+    #po-gr-panel .load-sentinel:empty{padding:0;min-height:1px}
+    @media(min-width:900px) and (min-height:720px){
+      html,body{height:100%;overflow:hidden}
+      .page{height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+      .topbar,.report-tabs{flex:0 0 auto}
+      #po-gr-panel,#request-panel{
+        flex:1;min-height:0;
+        display:flex;flex-direction:column;overflow:hidden;
+      }
+      #po-gr-panel .source-strip,#request-panel .request-source-bar,
+      #po-gr-panel .kpis,#request-panel .kpis,
+      #po-gr-panel .filters,#request-panel .request-filters{
+        flex:0 0 auto;
+      }
+      #po-gr-panel .report-panel,#request-panel .report-panel{
+        flex:1;min-height:0;
+      }
+      #po-gr-panel .report-panel .table-scroller,
+      #request-panel .report-panel .table-scroller{
+        flex:1;min-height:130px;height:auto;
+      }
+      #po-gr-panel .source-details,#po-gr-panel .footnote,
+      #request-panel .footnote{flex:0 0 auto}
+    }
+    @media(max-width:899px){
+      .page{overflow:visible}
+      #po-gr-panel .filters,#request-panel .request-filters{min-height:0}
+      #po-gr-panel .kpi,#request-panel .kpi{height:auto;min-height:105px}
+    }
+    @media(max-width:750px){
+      #po-gr-panel .kpis,#request-panel .kpis{
+        grid-template-columns:repeat(2,minmax(0,1fr))
+      }
+    }
+    @media(max-width:480px){
+      #po-gr-panel .report-panel .table-scroller,
+      #request-panel .report-panel .table-scroller{
+        height:clamp(320px,55dvh,560px);min-height:260px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -546,7 +667,7 @@
         <span><i class="dot yellow"></i>30–59 ngày</span><span><i class="dot green"></i>&lt; 30 ngày</span>
       </div>
     </div>
-    <div class="table-scroll-tip">↔ Cuộn ngang xem các cột · ↓ Cuộn xuống cuối trang để tự tải thêm · Nhấp đúp xem GR</div>
+    <div class="table-scroll-tip">↔ Cuộn ngang để xem cột · ↓ Cuộn bên trong bảng để tải thêm · Nhấp đúp xem GR</div>
     <div class="table-scroller" id="table-scroller" role="region" tabindex="0" aria-label="Bảng PO và GR có thể cuộn ngang">
       <table id="report-table"><thead><tr>
         <th><button data-sort="po">Số PO <span>↕</span></button></th>
@@ -563,6 +684,7 @@
         <th><button data-sort="status">Trạng thái <span>↕</span></button></th>
       </tr></thead><tbody id="report-body"></tbody></table>
       <div id="empty" class="empty-state" hidden>Không có dữ liệu phù hợp với bộ lọc.</div>
+      <div id="load-sentinel" class="load-sentinel" aria-hidden="true"></div>
     </div>
     <div class="table-footer" id="table-footer">
       <span id="page-summary">0 dòng</span>
@@ -574,7 +696,6 @@
         <button id="last" type="button" title="Đến cuối danh sách">Cuối »</button>
       </div>
     </div>
-    <div id="load-sentinel" class="load-sentinel" aria-hidden="true"></div>
   </section>
   <details class="panel source-details">
     <summary>Nguồn dữ liệu và tải file thủ công</summary>
@@ -659,7 +780,7 @@
       <div class="request-note" id="request-join-note">
         Chỉ ghép tự động khi Request có số PO và khớp mã SAP trong PO.js.
       </div>
-      <div class="table-scroller" aria-label="Bảng yêu cầu và đối chiếu PO/GR" role="region" tabindex="0">
+      <div class="table-scroller" id="request-scroller" aria-label="Bảng yêu cầu và đối chiếu PO/GR" role="region" tabindex="0">
         <table id="request-table" class="request-table">
           <thead><tr>
             <th><button data-rsort="week">Tuần (File Name) <span>↕</span></button></th>
@@ -679,6 +800,7 @@
           <tbody id="request-body"></tbody>
         </table>
         <div id="request-empty" class="empty-state" hidden>Không có yêu cầu phù hợp bộ lọc.</div>
+        <div class="load-sentinel" id="request-sentinel" aria-hidden="true">Cuộn trong bảng để xem thêm các yêu cầu</div>
       </div>
       <div class="table-footer">
         <span id="request-visible">0 dòng</span>
@@ -689,7 +811,6 @@
           <button type="button" id="request-last" title="Đến cuối danh sách">Cuối »</button>
         </div>
       </div>
-      <div class="load-sentinel" id="request-sentinel">Cuộn để tải tiếp các yêu cầu</div>
     </section>
     <p class="footnote">Request.js được ghép với PO.js bằng <b>số PO + mã SAP</b>, sau đó đối chiếu GR theo PO + Item + mã SAP. Dòng chưa ghi số PO không được tự gán theo mã vật tư vì có thể trùng nhiều đơn.</p>
   </section>
@@ -939,7 +1060,9 @@ function appendRows(rows){
     td(tr,displayDate(r.poDate));td(tr,fmt(r.poQty),"number");td(tr,fmt(r.grQty),"number");
     td(tr,displayDate(r.latestGr),r.latestGr?"":"empty");
     td(tr,r.bill||"—",r.bill?"":"empty");
-    td(tr,Number.isFinite(r.age)?fmt(r.age):"—","age "+agingClass(r));
+    td(tr,r.status==="done"||r.status==="excess"?"—":
+      (Number.isFinite(r.age)?fmt(r.age):"—"),
+      "age "+agingClass(r));
     const progress=td(tr,"");
     const outer=document.createElement("div");outer.className="progress-outer";
     const bar=document.createElement("div");bar.className="progress";
@@ -968,6 +1091,7 @@ function showWindow(start,count){
   state.start=Math.max(0,Math.min(start,Math.max(0,total-1)));
   state.visibleCount=Math.min(count,Math.max(0,total-state.start));
   id("report-body").replaceChildren();
+  id("table-scroller").scrollTop=0;
   appendRows(state.filtered.slice(state.start,state.start+state.visibleCount));
   id("empty").hidden=total!==0;
   updateVisibleStatus();
@@ -1000,7 +1124,7 @@ function openDetail(r){
     ["Nhà máy",r.plant],["Người tạo",r.buyer],["Ngày PO",displayDate(r.poDate)],
     ["Số lượng đặt",fmt(r.poQty)+" "+r.unit],["Đã nhận",fmt(r.grQty)+" "+r.unit],
     ["Chưa nhận",fmt(r.remain)+" "+r.unit],["Tỷ lệ nhận",pct(r.percent)],
-    ["Ngày chờ",fmt(r.age)],["Đơn giá",fmt(r.netPrice)+" "+r.currency],
+    ["Ngày chờ",r.status==="done"||r.status==="excess"?"—":fmt(r.age)],["Đơn giá",fmt(r.netPrice)+" "+r.currency],
     ["Tình trạng",statusText(r.status)],["Lưu ý dữ liệu",(r.issues||[]).join(" · ")||"—"]];
   const root=id("detail-fields");root.replaceChildren();
   for(const [label,value] of props){const box=document.createElement("div");box.className="detail-cell";
@@ -1341,7 +1465,8 @@ function makeXlsx(rows){
     "Ngày GR gần nhất","Vận đơn","Ngày chờ","% nhận","SL còn thiếu",
     "Trạng thái","Nhà cung cấp","Nhà máy","Người tạo","Đơn vị","Đơn giá","Tiền tệ"];
   const grid=[columns,...rows.map(r=>[r.po,r.item,r.material,r.description,displayDate(r.poDate),
-    r.poQty,r.grQty,displayDate(r.latestGr),r.bill,r.age,
+    r.poQty,r.grQty,displayDate(r.latestGr),r.bill,
+    r.status==="done"||r.status==="excess"?null:r.age,
     Number.isFinite(r.percent)?r.percent:null,r.remain,statusText(r.status),
     r.supplier,r.plant,r.buyer,r.unit,r.netPrice,r.currency])];
   const worksheets='<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
@@ -1394,24 +1519,25 @@ id("page-size").addEventListener("change",event=>{
 });
 id("first").addEventListener("click",()=>{
   showWindow(0,Math.min(state.size,state.filtered.length));
-  id("report-table").scrollIntoView({block:"start"});
+  id("table-scroller").scrollTop=0;
 });
 id("last").addEventListener("click",()=>{
   showWindow(Math.max(0,state.filtered.length-state.size),state.size);
-  id("table-footer").scrollIntoView({block:"end"});
+  id("table-scroller").scrollTop=id("table-scroller").scrollHeight;
 });
+const poScroller=id("table-scroller");
 if(typeof IntersectionObserver==="function"){
   const observer=new IntersectionObserver(entries=>{
-    if(entries.some(entry=>entry.isIntersecting))loadNextBatch();
-  },{root:null,rootMargin:"0px 0px 180px 0px"});
+    if(!id("po-gr-panel").hidden&&entries.some(entry=>entry.isIntersecting))
+      loadNextBatch();
+  },{root:poScroller,rootMargin:"0px 0px 120px 0px"});
   observer.observe(id("load-sentinel"));
 }else{
-  const maybeLoad=()=>{
-    if(id("load-sentinel").getBoundingClientRect().top<=window.innerHeight+180)
+  poScroller.addEventListener("scroll",()=>{
+    if(!id("po-gr-panel").hidden&&
+      poScroller.scrollTop+poScroller.clientHeight>=poScroller.scrollHeight-120)
       loadNextBatch();
-  };
-  window.addEventListener("scroll",maybeLoad,{passive:true});
-  id("table-scroller").addEventListener("scroll",maybeLoad,{passive:true});
+  },{passive:true});
 }
 id("reload-btn").addEventListener("click",loadAll);id("export-btn").addEventListener("click",exportXlsx);
 id("close-dialog").addEventListener("click",()=>id("details-dialog").close());
@@ -1586,6 +1712,7 @@ function showRequestWindow(start,count){
     requestState.start,requestState.start+requestState.visible))
     fragment.appendChild(requestRowDOM(r));
   requestId("body").replaceChildren(fragment);
+  requestId("scroller").scrollTop=0;
   requestId("empty").hidden=total!==0;
   requestVisibilityStatus();
 }
@@ -1745,22 +1872,23 @@ requestId("page-size").addEventListener("change",event=>{
 });
 requestId("first").addEventListener("click",()=>{
   showRequestWindow(0,Math.min(requestState.size,requestState.filtered.length));
-  requestId("table").scrollIntoView({block:"start"});
+  requestId("scroller").scrollTop=0;
 });
 requestId("last").addEventListener("click",()=>{
   showRequestWindow(Math.max(0,requestState.filtered.length-requestState.size),
     requestState.size);
-  requestId("visible").scrollIntoView({block:"end"});
+  requestId("scroller").scrollTop=requestId("scroller").scrollHeight;
 });
+const requestScroller=requestId("scroller");
 if(typeof IntersectionObserver==="function"){
   const observer=new IntersectionObserver(entries=>{
     if(entries.some(entry=>entry.isIntersecting))addRequestBatch();
-  },{root:null,rootMargin:"0px 0px 200px 0px"});
+  },{root:requestScroller,rootMargin:"0px 0px 120px 0px"});
   observer.observe(requestId("sentinel"));
 }else{
-  window.addEventListener("scroll",()=>{
+  requestScroller.addEventListener("scroll",()=>{
     if(activeReportTab==="request"&&
-      requestId("sentinel").getBoundingClientRect().top<=window.innerHeight+200)
+      requestScroller.scrollTop+requestScroller.clientHeight>=requestScroller.scrollHeight-120)
       addRequestBatch();
   },{passive:true});
 }
