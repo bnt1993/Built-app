@@ -1,3 +1,12 @@
+## Đồng bộ bố cục hai tab và cuộn riêng trong bảng
+
+- Khi dòng PO ở trạng thái **Đã đủ** (hoặc **Nhận vượt**), cột **Ngày chờ** trên bảng hiển thị `—`, không hiển thị số ngày. Trong popup chi tiết cũng hiển thị `—`, và khi xuất Excel ô Ngày chờ được để trống. Ngày PO và thông tin GR vẫn được giữ nguyên; các dòng thiếu/chưa nhận vẫn hiển thị Ngày chờ bình thường.
+- Bảng **Theo dõi PO/GR** và **Yêu cầu vật tư** có chiều cao cuộn cố định theo không gian còn lại, tiêu đề cột giữ nguyên ở đầu bảng. Khi cần xem thêm, **cuộn dọc hoặc ngang ngay bên trong bảng**; cuộn đến đáy vùng bảng sẽ tự nạp lượt tiếp theo (mặc định 50).
+- Hai nút **Đầu / Cuối** điều khiển vị trí và nhóm dòng ngay trong bảng, không làm cuộn toàn bộ trang.
+- Khung nguồn, thẻ KPI, khoảng cách và khung lọc hai tab dùng cùng hệ kích thước để tránh nhảy bố cục khi chuyển tab. Trên màn hình máy tính đủ cao, trang giữ cố định và chỉ bảng cuộn; trên màn hình nhỏ, phần điều khiển vẫn có thể cuộn trang để không che các bộ lọc, nhưng bảng luôn có vùng cuộn riêng.
+- Xuất XLSX vẫn lấy **toàn bộ dữ liệu sau lọc**, không phụ thuộc số dòng đã tải trong vùng bảng.
+
+
 ## Tab Yêu cầu vật tư (Request.js)
 
 Ứng dụng có hai tab độc lập: **Theo dõi PO / GR** và **Yêu cầu vật tư**. Đặt `Request.js` **cùng thư mục HTML** với `PO.js`, `GR.js`. Tab Request tải dữ liệu khi mở lần đầu, hỗ trợ làm mới và chọn file thủ công nếu quyền truy cập ổ mạng không cho phép tải script.
