@@ -3,7 +3,11 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const pageHTML=fs.readFileSync(path.join(__dirname,'../PO_GR_Report.html'),'utf8');
 const poReal=fs.readFileSync(path.join(__dirname,'../PO.js'),'utf8');
 const grReal=fs.readFileSync(path.join(__dirname,'../GR.js'),'utf8');
-const poNew=poReal.replace(/window\.duLieuCongTy\s*=/,'window.duLieuPO =');
+const poNew=poReal.replace(/window\.duLieuCongTy\s*=/,'window.duLieuPO =')
+  .replace(/window\.thoiGianCapNhat\s*=/,'window.thoiGianCapNhatPO =')
+  .replace('10/11/2026 16:48:43','10/11/2026 17:12:44');
+const grNew=grReal.replace(/window\.thoiGianCapNhat\s*=/,'window.thoiGianCapNhatGR =')
+  .replace('10/11/2026 16:48:44','10/11/2026 17:12:55');
 assert.notEqual(poNew,poReal,'fixture must include the legacy PO assignment');
 const poHead=["Pur. Doc.","Item","Created By","Doc. Date","Plnt","Supplier","Material","Short Text","PO Quantity","OUn","Net Price","Gross value","Crcy"];
 const poData=[poHead,
@@ -23,7 +27,7 @@ const grData=[grHead,
  gr("50005","1","4811110001","10","999999",99),
  gr("50001","1","4811110001","10","500100",3)
 ];
-const js=(name,data)=>'window.thoiGianCapNhat="10/11/2026 16:48";window.'+name+'='+JSON.stringify(data)+';';
+const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:48";window.'+name+'='+JSON.stringify(data)+';';
 (async()=>{
  const browser=await chromium.launch({headless:true});
  try{
@@ -33,13 +37,15 @@ const js=(name,data)=>'window.thoiGianCapNhat="10/11/2026 16:48";window.'+name+'
   let poRouteText=poNew;
   await page.route('http://po-gr-report.test/**',route=>{
     const pathname=new URL(route.request().url()).pathname;
-    let content=pathname==='/'?pageHTML:pathname==='/PO.js'?poRouteText:pathname==='/GR.js'?grReal:'';
+    let content=pathname==='/'?pageHTML:pathname==='/PO.js'?poRouteText:pathname==='/GR.js'?grNew:'';
     return route.fulfill({status:content?200:404,body:content,
       contentType:pathname==='/'?'text/html':'application/javascript'});
   });
   await page.goto('http://po-gr-report.test/');
   await page.waitForFunction(()=>document.getElementById('source-status').textContent.includes('Đã kết nối'));
   assert.match(await page.locator('#po-source-note').innerText(),/duLieuPO/);
+  assert.match(await page.locator('#po-update').innerText(),/17:12:44/);
+  assert.match(await page.locator('#gr-update').innerText(),/17:12:55/);
   assert.equal(await page.locator('#stat-total').innerText(),'5');
   assert.equal(await page.locator('#stat-pending').innerText(),'5');
   assert.equal(await page.locator('#report-body tr').count(),5);
@@ -66,31 +72,37 @@ const js=(name,data)=>'window.thoiGianCapNhat="10/11/2026 16:48";window.'+name+'
   assert.equal(sample.duplicates,1);assert.equal(sample.mismatch,1);
   // The old window.duLieuCongTy syntax remains supported for manual uploads.
   const parserResult=await page.evaluate(({newSource,oldSource})=>({
-    newer:window.POGR.fromJSText(newSource,['duLieuPO','duLieuCongTy']).globalName,
-    legacy:window.POGR.fromJSText(oldSource,['duLieuPO','duLieuCongTy']).globalName
+    newer:(()=>{const r=window.POGR.fromJSText(newSource,['duLieuPO','duLieuCongTy']);
+      return {name:r.globalName,time:r.updated}})(),
+    legacy:(()=>{const r=window.POGR.fromJSText(oldSource,['duLieuPO','duLieuCongTy']);
+      return {name:r.globalName,time:r.updated}})()
   }),{newSource:poNew,oldSource:poReal});
-  assert.deepEqual(parserResult,{newer:'duLieuPO',legacy:'duLieuCongTy'});
+  assert.deepEqual(parserResult,{
+    newer:{name:'duLieuPO',time:'10/11/2026 17:12:44'},
+    legacy:{name:'duLieuCongTy',time:'10/11/2026 16:48:43'}
+  });
   // Full reload must recognize both generated script formats, not just uploads.
   poRouteText=poReal;
   await page.locator('#reload-btn').click();
   await page.waitForFunction(()=>document.getElementById('po-source-note').textContent.includes('duLieuCongTy'));
   assert.equal(await page.locator('#stat-total').innerText(),'5');
+  assert.match(await page.locator('#po-update').innerText(),/16:48:43/);
   poRouteText=poNew;
   await page.locator('#reload-btn').click();
   await page.waitForFunction(()=>document.getElementById('po-source-note').textContent.includes('duLieuPO'));
   assert.equal(await page.locator('#stat-total').innerText(),'5');
   // Manual file import for network shares where browser blocks script loading.
   await page.locator('#file-po').setInputFiles({name:'PO.js',mimeType:'application/javascript',
-    buffer:Buffer.from(js('duLieuPO',poData))});
+    buffer:Buffer.from(js('duLieuPO',poData,'thoiGianCapNhatPO'))});
   assert.match(await page.locator('#po-source-note').innerText(),/duLieuPO/);
   await page.locator('#file-gr').setInputFiles({name:'GR.js',mimeType:'application/javascript',
-    buffer:Buffer.from(js('duLieuGR',grData))});
+    buffer:Buffer.from(js('duLieuGR',grData,'thoiGianCapNhatGR'))});
   await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='2');
   await page.locator('#file-po').setInputFiles({name:'PO.js',mimeType:'application/javascript',
     buffer:Buffer.from(js('duLieuCongTy',poData))});
   assert.match(await page.locator('#po-source-note').innerText(),/duLieuCongTy/);
   await page.locator('#file-po').setInputFiles({name:'PO.js',mimeType:'application/javascript',
-    buffer:Buffer.from(js('duLieuPO',poData))});
+    buffer:Buffer.from(js('duLieuPO',poData,'thoiGianCapNhatPO'))});
   assert.match(await page.locator('#po-source-note').innerText(),/duLieuPO/);
   assert.match(await page.locator('#join-note').innerText(),/mã vật tư khác PO/);
   const rows=await page.evaluate(()=>window.POGR.buildReport(JSON.parse(JSON.stringify([
