@@ -299,6 +299,51 @@
       .button,.kpi,.quick-tab,.field input,.field select,tbody tr{transition:none}
     }
 
+  
+    /* Compact one-page view: no oversized hero or separate scope section. */
+    .page{padding-top:10px;padding-bottom:24px}
+    .topbar{margin-bottom:8px;min-height:55px;padding:8px 15px}
+    .source-strip{display:flex;align-items:center;justify-content:space-between;gap:8px 18px;
+      padding:9px 15px;background:#fff;border:1px solid #e4ebf5;border-radius:12px;
+      margin:0 0 10px;box-shadow:0 5px 14px rgba(19,38,69,.03);flex-wrap:wrap}
+    .source-strip-status{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
+    .source-strip-status strong{font-size:11px;color:#29486b}
+    .source-strip-status #dataset-summary{font-size:10px;color:#768aa3}
+    .source-strip-dates{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:#6f87a2}
+    .kpis{margin:0 0 10px;gap:10px}
+    .kpi{min-height:95px;padding:12px 16px;border-radius:12px}
+    .kpi strong{font-size:25px}.kpi .caption{margin:0 0 6px}
+    .kpi-icon{width:27px;height:27px;font-size:15px}.kpi small{font-size:10px}
+    .filters{grid-template-columns:minmax(240px,2fr) repeat(2,minmax(130px,1fr)) repeat(2,minmax(135px,1fr));
+      margin-bottom:10px;padding:12px 15px 10px}
+    .filter-heading{margin-bottom:0}.filter-heading h2{font-size:14px;margin:2px 0 0}
+    .filter-bottom{margin-top:0;padding-top:6px}
+    .quick-toolbar{padding:10px 15px}
+    .toolbar-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .table-export{min-height:35px;padding:8px 13px;font-size:11px}
+    .table-header{padding:12px 15px 10px}
+    .table-header h2{font-size:15px}
+    .table-scroller{max-height:none;overflow-x:auto;overflow-y:visible}
+    table{min-width:1340px}
+    .table-footer{padding:11px 15px}
+    .load-sentinel{padding:10px 16px;margin:0 auto;text-align:center;color:#7386a0;
+      font-size:11px;font-weight:650;min-height:34px}
+    .load-sentinel:empty{min-height:0;padding:0}
+    @media(max-width:1200px){.filters{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:750px){
+      .source-strip{align-items:flex-start}.source-strip-dates{width:100%}
+      .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .table-scroller{max-height:none}
+      .toolbar-right{width:100%;justify-content:space-between}
+      .quick-toolbar{gap:8px}
+    }
+    @media(max-width:480px){
+      .filters{grid-template-columns:1fr}
+      .source-strip-status{gap:7px}.source-strip-dates{gap:7px}
+      .toolbar-right{align-items:stretch}.table-export{flex:1}
+      .pager{flex-wrap:wrap;justify-content:center}
+    }
+
   </style>
 </head>
 <body>
@@ -373,7 +418,7 @@
         <span><i class="dot yellow"></i>30–59 ngày</span><span><i class="dot green"></i>&lt; 30 ngày</span>
       </div>
     </div>
-    <div class="table-scroll-tip">↔ Cuộn ngang để xem đầy đủ cột · Nhấp đúp một dòng để xem chứng từ GR</div>
+    <div class="table-scroll-tip">↔ Cuộn ngang xem các cột · ↓ Cuộn xuống cuối trang để tự tải thêm · Nhấp đúp xem GR</div>
     <div class="table-scroller" id="table-scroller" role="region" tabindex="0" aria-label="Bảng PO và GR có thể cuộn ngang">
       <table id="report-table"><thead><tr>
         <th><button data-sort="po">Số PO <span>↕</span></button></th>
