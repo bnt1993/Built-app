@@ -1091,6 +1091,7 @@ function showWindow(start,count){
   state.start=Math.max(0,Math.min(start,Math.max(0,total-1)));
   state.visibleCount=Math.min(count,Math.max(0,total-state.start));
   id("report-body").replaceChildren();
+  id("table-scroller").scrollTop=0;
   appendRows(state.filtered.slice(state.start,state.start+state.visibleCount));
   id("empty").hidden=total!==0;
   updateVisibleStatus();
@@ -1518,24 +1519,25 @@ id("page-size").addEventListener("change",event=>{
 });
 id("first").addEventListener("click",()=>{
   showWindow(0,Math.min(state.size,state.filtered.length));
-  id("report-table").scrollIntoView({block:"start"});
+  id("table-scroller").scrollTop=0;
 });
 id("last").addEventListener("click",()=>{
   showWindow(Math.max(0,state.filtered.length-state.size),state.size);
-  id("table-footer").scrollIntoView({block:"end"});
+  id("table-scroller").scrollTop=id("table-scroller").scrollHeight;
 });
+const poScroller=id("table-scroller");
 if(typeof IntersectionObserver==="function"){
   const observer=new IntersectionObserver(entries=>{
-    if(entries.some(entry=>entry.isIntersecting))loadNextBatch();
-  },{root:null,rootMargin:"0px 0px 180px 0px"});
+    if(!id("po-gr-panel").hidden&&entries.some(entry=>entry.isIntersecting))
+      loadNextBatch();
+  },{root:poScroller,rootMargin:"0px 0px 120px 0px"});
   observer.observe(id("load-sentinel"));
 }else{
-  const maybeLoad=()=>{
-    if(id("load-sentinel").getBoundingClientRect().top<=window.innerHeight+180)
+  poScroller.addEventListener("scroll",()=>{
+    if(!id("po-gr-panel").hidden&&
+      poScroller.scrollTop+poScroller.clientHeight>=poScroller.scrollHeight-120)
       loadNextBatch();
-  };
-  window.addEventListener("scroll",maybeLoad,{passive:true});
-  id("table-scroller").addEventListener("scroll",maybeLoad,{passive:true});
+  },{passive:true});
 }
 id("reload-btn").addEventListener("click",loadAll);id("export-btn").addEventListener("click",exportXlsx);
 id("close-dialog").addEventListener("click",()=>id("details-dialog").close());
@@ -1710,6 +1712,7 @@ function showRequestWindow(start,count){
     requestState.start,requestState.start+requestState.visible))
     fragment.appendChild(requestRowDOM(r));
   requestId("body").replaceChildren(fragment);
+  requestId("scroller").scrollTop=0;
   requestId("empty").hidden=total!==0;
   requestVisibilityStatus();
 }
@@ -1869,22 +1872,23 @@ requestId("page-size").addEventListener("change",event=>{
 });
 requestId("first").addEventListener("click",()=>{
   showRequestWindow(0,Math.min(requestState.size,requestState.filtered.length));
-  requestId("table").scrollIntoView({block:"start"});
+  requestId("scroller").scrollTop=0;
 });
 requestId("last").addEventListener("click",()=>{
   showRequestWindow(Math.max(0,requestState.filtered.length-requestState.size),
     requestState.size);
-  requestId("visible").scrollIntoView({block:"end"});
+  requestId("scroller").scrollTop=requestId("scroller").scrollHeight;
 });
+const requestScroller=requestId("scroller");
 if(typeof IntersectionObserver==="function"){
   const observer=new IntersectionObserver(entries=>{
     if(entries.some(entry=>entry.isIntersecting))addRequestBatch();
-  },{root:null,rootMargin:"0px 0px 200px 0px"});
+  },{root:requestScroller,rootMargin:"0px 0px 120px 0px"});
   observer.observe(requestId("sentinel"));
 }else{
-  window.addEventListener("scroll",()=>{
+  requestScroller.addEventListener("scroll",()=>{
     if(activeReportTab==="request"&&
-      requestId("sentinel").getBoundingClientRect().top<=window.innerHeight+200)
+      requestScroller.scrollTop+requestScroller.clientHeight>=requestScroller.scrollHeight-120)
       addRequestBatch();
   },{passive:true});
 }
