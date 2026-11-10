@@ -30,9 +30,10 @@ const js=(name,data)=>'window.thoiGianCapNhat="10/11/2026 16:48";window.'+name+'
   const page=await browser.newPage({viewport:{width:1500,height:950},acceptDownloads:true});
   await page.clock.install({time:new Date('2026-11-10T08:00:00Z')});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  let poRouteText=poNew;
   await page.route('http://po-gr-report.test/**',route=>{
     const pathname=new URL(route.request().url()).pathname;
-    let content=pathname==='/'?pageHTML:pathname==='/PO.js'?poNew:pathname==='/GR.js'?grReal:'';
+    let content=pathname==='/'?pageHTML:pathname==='/PO.js'?poRouteText:pathname==='/GR.js'?grReal:'';
     return route.fulfill({status:content?200:404,body:content,
       contentType:pathname==='/'?'text/html':'application/javascript'});
   });
@@ -69,6 +70,15 @@ const js=(name,data)=>'window.thoiGianCapNhat="10/11/2026 16:48";window.'+name+'
     legacy:window.POGR.fromJSText(oldSource,['duLieuPO','duLieuCongTy']).globalName
   }),{newSource:poNew,oldSource:poReal});
   assert.deepEqual(parserResult,{newer:'duLieuPO',legacy:'duLieuCongTy'});
+  // Full reload must recognize both generated script formats, not just uploads.
+  poRouteText=poReal;
+  await page.locator('#reload-btn').click();
+  await page.waitForFunction(()=>document.getElementById('po-source-note').textContent.includes('duLieuCongTy'));
+  assert.equal(await page.locator('#stat-total').innerText(),'5');
+  poRouteText=poNew;
+  await page.locator('#reload-btn').click();
+  await page.waitForFunction(()=>document.getElementById('po-source-note').textContent.includes('duLieuPO'));
+  assert.equal(await page.locator('#stat-total').innerText(),'5');
   // Manual file import for network shares where browser blocks script loading.
   await page.locator('#file-po').setInputFiles({name:'PO.js',mimeType:'application/javascript',
     buffer:Buffer.from(js('duLieuPO',poData))});
