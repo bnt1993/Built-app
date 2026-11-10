@@ -192,7 +192,8 @@
         <label for="file-gr">Chọn GR.js nếu trình duyệt không đọc được file cùng thư mục</label><br>
         <input id="file-gr" type="file" accept=".js,.txt,text/javascript"></div>
     </div>
-    <p>Định dạng: <code>window.duLieuCongTy = [[tiêu đề], ...]</code> trong PO.js;
+    <p>Định dạng mới: <code>window.duLieuPO = [[tiêu đề], ...]</code> trong PO.js
+      (vẫn hỗ trợ <code>window.duLieuCongTy</code> từ file cũ);
       <code>window.duLieuGR = [[tiêu đề], ...]</code> trong GR.js.
       Không gửi file lên máy chủ hoặc dịch vụ khác. Nếu nguồn thiếu dấu đóng mảng, cần sửa file trước khi chạy.</p>
   </details>
@@ -210,10 +211,11 @@
 (function(){
 "use strict";
 const id=name=>document.getElementById(name);
+const SOURCE_NAMES={po:["duLieuPO","duLieuCongTy"],gr:["duLieuGR"]};
 const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const numeric=new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2});
 const state={po:[],gr:[],rows:[],filtered:[],poUpdated:"",grUpdated:"",loaded:false,loading:false,
-  page:1,size:25,sort:"age",direction:"desc",warnings:[],poError:"",grError:""};
+  page:1,size:25,sort:"age",direction:"desc",warnings:[],poError:"",grError:"",poVar:"",grVar:""};
 const aliases={
   po:{po:["Pur. Doc.","Purchase Order","PO Num","PO Number","Purchasing Document"],
     item:["Item","PO Item","Purchasing Item"],material:["Material","Material Number","SAP"],
@@ -463,39 +465,67 @@ function reportFresh(){
   }
 }
 function isTable(value){return Array.isArray(value)&&value.length>0&&Array.isArray(value[0])}
-function fromJSText(text,globalName){
-  const regex=new RegExp("window\\."+globalName+"\\s*=\\s*\\[");
-  const match=regex.exec(text);if(!match)throw Error("Không tìm thấy window."+globalName);
+// PO.js uses window.duLieuPO in the new export; older exports use
+// window.duLieuCongTy. Prioritize the new name, never evaluate uploaded text.
+function fromJSText(text,globalNames){
+  const names=Array.isArray(globalNames)?globalNames:[globalNames];
+  let name="",match=null;
+  for(const candidate of names){
+    const found=new RegExp("window\\."+candidate+"\\s*=\\s*\\[").exec(text);
+    if(found){name=candidate;match=found;break}
+  }
+  if(!match)throw Error("Không tìm thấy biến dữ liệu: "+names.map(n=>"window."+n).join(" hoặc "));
   const start=match.index+match[0].lastIndexOf("[");
   let depth=0,inString=false,escaped=false,end=-1;
   for(let i=start;i<text.length;i++){
-    const c=text[i];if(inString){if(escaped)escaped=false;else if(c==="\\")escaped=true;
-      else if(c==='"')inString=false;continue}
+    const c=text[i];
+    if(inString){
+      if(escaped)escaped=false;
+      else if(c==="\\")escaped=true;
+      else if(c==='"')inString=false;
+      continue;
+    }
     if(c==='"'){inString=true;continue}
-    if(c==="[")depth++;if(c==="]"){depth--;if(depth===0){end=i+1;break}}
+    if(c==="[")depth++;
+    if(c==="]"){depth--;if(depth===0){end=i+1;break}}
   }
-  if(end<0)throw Error(globalName+" thiếu dấu đóng mảng. Vui lòng kiểm tra dấu ]; trong file.");
+  if(end<0)throw Error(name+" thiếu dấu đóng mảng. Vui lòng kiểm tra dấu ]; trong file.");
   const array=JSON.parse(text.slice(start,end));
-  if(!isTable(array))throw Error(globalName+" không đúng định dạng bảng.");
+  if(!isTable(array))throw Error(name+" không đúng định dạng bảng.");
   const updated=/window\.thoiGianCapNhat\s*=\s*"([^"]*)"/.exec(text);
-  return {data:array,updated:updated?updated[1]:""};
+  return {data:array,updated:updated?updated[1]:"",globalName:name};
 }
-async function readScript(filename,globalName){
-  const before=window[globalName];
-  try{delete window[globalName]}catch{window[globalName]=undefined}
+async function readScript(filename,globalNames){
+  const names=Array.isArray(globalNames)?globalNames:[globalNames];
+  // Remove previous global values so an old PO version cannot be mistaken
+  // for the one just loaded. Restore them if the new script fails.
+  const previous=new Map(names.map(name=>[name,window[name]]));
+  for(const name of names){
+    try{delete window[name]}catch{window[name]=undefined}
+  }
   const oldUpdated=window.thoiGianCapNhat;window.thoiGianCapNhat=undefined;
   return new Promise((resolve,reject)=>{
     const script=document.createElement("script");let finished=false;
-    function finish(error){if(finished)return;finished=true;clearTimeout(timeout);script.remove();
-      const data=window[globalName],updated=window.thoiGianCapNhat;
-      if(error||!isTable(data)){window[globalName]=before;window.thoiGianCapNhat=oldUpdated;
-        reject(Error(error||filename+" không có bảng hợp lệ. Kiểm tra cú pháp file JS."));return}
-      resolve({data,updated:String(updated||"")});
+    function finish(error){
+      if(finished)return;
+      finished=true;clearTimeout(timeout);script.remove();
+      const selected=names.find(name=>isTable(window[name]));
+      const data=selected?window[selected]:null;
+      const updated=window.thoiGianCapNhat;
+      if(error||!selected){
+        for(const [name,value] of previous)window[name]=value;
+        window.thoiGianCapNhat=oldUpdated;
+        reject(Error(error||filename+" không chứa "+names.map(n=>"window."+n).join(" hoặc ")+" hợp lệ."));
+        return;
+      }
+      resolve({data,updated:String(updated||""),globalName:selected});
     }
     const timeout=setTimeout(()=>finish("Hết thời gian tải "+filename),16000);
     script.onerror=()=>finish("Không tải được "+filename+" từ cùng thư mục HTML");
     script.onload=()=>finish("");
-    script.src=filename+"?t="+Date.now();script.async=true;document.head.appendChild(script);
+    script.src=filename+"?t="+Date.now();
+    script.async=true;
+    document.head.appendChild(script);
   });
 }
 async function loadAll(){
@@ -504,20 +534,20 @@ async function loadAll(){
   id("source-status").textContent="Đang nạp dữ liệu";
   try{
     try{
-      const po=await readScript("PO.js","duLieuCongTy");
-      state.po=po.data;state.poUpdated=po.updated;state.poError="";
+      const po=await readScript("PO.js",SOURCE_NAMES.po);
+      state.po=po.data;state.poUpdated=po.updated;state.poVar=po.globalName;state.poError="";
     }catch(e){state.poError=e.message}
     try{
-      const gr=await readScript("GR.js","duLieuGR");
-      state.gr=gr.data;state.grUpdated=gr.updated;state.grError="";
+      const gr=await readScript("GR.js",SOURCE_NAMES.gr);
+      state.gr=gr.data;state.grUpdated=gr.updated;state.grVar=gr.globalName;state.grError="";
     }catch(e){state.grError=e.message}
     state.loaded=Boolean(state.po.length&&state.gr.length);
     id("po-update").textContent="PO: "+(state.poUpdated||"không rõ thời gian");
     id("gr-update").textContent="GR: "+(state.grUpdated||"không rõ thời gian");
     id("po-source-note").textContent=state.poError?"Lỗi: "+state.poError:
-      fmt(Math.max(0,state.po.length-1))+" dòng dữ liệu · cập nhật "+(state.poUpdated||"—");
+      fmt(Math.max(0,state.po.length-1))+" dòng · "+state.poVar+" · cập nhật "+(state.poUpdated||"—");
     id("gr-source-note").textContent=state.grError?"Lỗi: "+state.grError:
-      fmt(Math.max(0,state.gr.length-1))+" dòng dữ liệu · cập nhật "+(state.grUpdated||"—");
+      fmt(Math.max(0,state.gr.length-1))+" dòng · "+state.grVar+" · cập nhật "+(state.grUpdated||"—");
     id("status-dot").className="status-dot "+(state.loaded?"ready":"error");
     id("source-status").textContent=state.loaded?"Đã kết nối PO / GR":"Thiếu nguồn PO hoặc GR";
     id("load-state").textContent=state.loaded?"Đã cập nhật lúc "+new Date().toLocaleTimeString("vi-VN"):
@@ -529,9 +559,10 @@ async function loadAll(){
 async function loadSelected(file,kind){
   if(!file)return;
   try{
-    const content=await file.text(),result=fromJSText(content,kind==="po"?"duLieuCongTy":"duLieuGR");
+    const content=await file.text(),result=fromJSText(content,SOURCE_NAMES[kind]);
     state[kind]=result.data;state[kind+"Updated"]=result.updated;
-    state[kind+"Error"]="";id(kind+"-source-note").textContent=fmt(result.data.length-1)+" dòng (file thủ công)";
+    state[kind+"Var"]=result.globalName;
+    state[kind+"Error"]="";id(kind+"-source-note").textContent=fmt(result.data.length-1)+" dòng · "+result.globalName+" (file thủ công)";
     id(kind+"-update").textContent=kind.toUpperCase()+": "+(result.updated||"file đã chọn");
     state.loaded=Boolean(state.po.length&&state.gr.length);
     id("source-status").textContent=state.loaded?"Đã kết nối PO / GR":"Cần nguồn còn lại";
@@ -623,7 +654,7 @@ id("reload-btn").addEventListener("click",loadAll);id("export-btn").addEventList
 id("close-dialog").addEventListener("click",()=>id("details-dialog").close());
 id("file-po").addEventListener("change",e=>loadSelected(e.target.files[0],"po"));
 id("file-gr").addEventListener("change",e=>loadSelected(e.target.files[0],"gr"));
-window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx};
+window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText};
 loadAll();
 })();
 </script>
