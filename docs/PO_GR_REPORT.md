@@ -1,3 +1,33 @@
+## Tab Yêu cầu vật tư (Request.js)
+
+Ứng dụng có hai tab độc lập: **Theo dõi PO / GR** và **Yêu cầu vật tư**. Đặt `Request.js` **cùng thư mục HTML** với `PO.js`, `GR.js`. Tab Request tải dữ liệu khi mở lần đầu, hỗ trợ làm mới và chọn file thủ công nếu quyền truy cập ổ mạng không cho phép tải script.
+
+### Cấu trúc thực tế Request.js
+
+Dữ liệu đặt trong `window.duLieuRequest = [[...], ...];` và thời gian trong `window.thoiGianCapNhatRequest`. Các cột chính: `File Name`, `No`, `Purchasing Group `, `SAP No`, `Requested date`, `Description`, `Stock`, `Reorder Point`, `Lot size of reorder`, `Qty need to order`, `Unit`, `Price(EUR)`, `Amount(EUR)`, `OrderType`, `Note`, `Supplier`, `Hall`, `Status`, `PO No.`, `Ordered date`. Ngày lưu theo số ngày Excel (serial); tiền EUR có thể chứa dấu phẩy thập phân.
+
+### Quy tắc đối chiếu ba nguồn
+
+1. Đọc **mọi dòng Request.js**, kể cả các yêu cầu chưa có PO và các yêu cầu ở nhiều Hall; Request không bị giới hạn PO 48* khi thống kê.
+2. Khi Request có số PO, tìm đúng số đó trong PO.js và **phải trùng mã SAP**. Số PO thiếu hoặc chưa xuất hiện trong nguồn được giữ nguyên và ghi rõ từng trạng thái. Không tự nhận một PO chỉ vì có chung mã SAP.
+3. Với PO khớp, cộng lượng đặt của các Item có cùng PO + SAP, rồi sử dụng phép tính GR 101 cộng / 102 trừ của tab PO/GR để thể hiện **số lượng GR và % GR so với PO**. Số lượng Request được hiển thị **riêng**, không coi GR/PO là lượng đã giao riêng cho từng Request.
+4. Nếu một số PO + SAP gắn với nhiều yêu cầu, cột số lượng PO/GR có thể lặp lại ở các dòng Request, **không nên cộng tổng số lượng PO/GR từ bảng Request** để làm tổng thực tế.
+5. Các trạng thái phân biệt: *Chưa ghi số PO*, *PO chưa có trong PO.js*, *PO khác mã SAP*, *Có PO/chưa nhập*, *Đã nhập một phần*, *Đã nhận đủ*; nếu không có dữ liệu PO/GR thì báo rõ là chưa xác minh.
+6. `Status` (ví dụ `Done`, `Waiting for IR`) **là trạng thái Request**, không tự suy ra đã có PO hoặc đã nhập hàng. Với dữ liệu mẫu 334 dòng trên GitHub, có 247 dòng ghi số PO nhưng PO.js mẫu chưa có mã tương ứng; vì vậy cần thay bằng dữ liệu PO.js/GR.js đầy đủ để xác minh.
+7. Các bộ lọc Request: tìm mã, trạng thái Request, trạng thái đối chiếu, Hall, khoảng ngày yêu cầu. Nhấp đúp một dòng mở thông tin, Item PO khớp, và có nút chuyển sang PO/GR khi đã đối chiếu. Có chức năng cuộn tự thêm dữ liệu và **xuất Request_PO_GR.xlsx theo toàn bộ bộ lọc hiện tại**.
+
+Đặt file như sau:
+
+```text
+PO_GR_Report.html
+PO.js
+GR.js
+Request.js
+```
+
+Không tải dữ liệu Request lên dịch vụ ngoài; tránh commit dữ liệu Request/PO/GR thật nếu repository GitHub có thể công khai.
+
+
 # PO / GR Report (offline HTML)
 
 ## Mở báo cáo
