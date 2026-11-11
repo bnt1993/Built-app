@@ -99,7 +99,10 @@ async function run(){
     assert.deepEqual(multi,["0001002","0001102"]);
     await page.locator("#catalog-scope").selectOption("mpn");
     await page.locator("#catalog-search").fill("MPN-31");
-    await page.waitForFunction(()=>document.querySelector("#catalog-rows").children.length===1);
+    await page.waitForFunction(()=>{
+      const cell=document.querySelector("#catalog-rows tr td:first-child");
+      return cell&&cell.textContent==="0001031";
+    });
     assert.equal(await page.locator("#catalog-rows tr td:first-child").first().innerText(),"0001031");
 
     // XLSX export is based on active filters, never on current page-size only.
