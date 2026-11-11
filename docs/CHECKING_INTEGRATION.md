@@ -20,7 +20,7 @@ History.js
 Amount.js
 ```
 
-**Lưu ý về GitHub:** Tại thời điểm triển khai, file Database chưa xuất hiện trong cây thư mục của nhánh `main` trên repository `bnt1993/Built-app`. Cấu trúc `DATABASE_HEADERS`/`DATABASE_DATA` được xác định theo ảnh người dùng cung cấp; khả năng đọc nội dung thật sẽ được xác minh sau khi file được commit và có thể truy cập từ GitHub.
+**Tình trạng file Database trên GitHub (11/11/2026):** File `Database` **đã xuất hiện** ở gốc nhánh `main` của `bnt1993/Built-app`. Đọc file thực tế xác nhận `DATABASE_HEADERS` có **46 cột**, đúng 10 cột yêu cầu. Các vị trí (tính từ 0) là: Material=0, Material Description=1, Name 1=4, MPN=5, Size/dimensions=10, Typ=13, Reorder Point=14, Min. Lot Sze=16, BUn=7 (các bản sao ở 15 và 17), Stor. Bin=34. Tuy nhiên blob hiện chỉ **3.885 byte** và dừng giữa một dòng `DATABASE_DATA`, không có `];` kết thúc. Đây là bản **chưa đầy đủ**, trình duyệt không thể tải nguyên vẹn; cần tải lại file Database bản xuất đầy đủ. App sẽ thông báo lỗi nguồn bị cắt, không hiển thị dữ liệu thiếu để tránh sai lệch.
 
 
 # SAP Inventory — Hướng dẫn nâng cấp thống nhất
