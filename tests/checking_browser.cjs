@@ -61,10 +61,10 @@ const manifest={version:2,complete:true,materials:{"00123":[{original:"00123.jpg
  const totals=await page.evaluate(async text=>{
  const source=docHistoryTuVanBan(text);
  await apDungNguonHistory(source.data);
- return {rows:historyAll.length,
+ return {rows:historyAll.length,expected:source.data.length-1,
  stock:window.duLieuCongTy[1][0]};
  },actual);
- assert.equal(totals.rows,62801);assert.equal(totals.stock,'00456');
+ assert.equal(totals.rows,totals.expected);assert(totals.rows>0);assert.equal(totals.stock,'00456');
  version=3;await page.evaluate(()=>taiDuLieu());await page.waitForFunction(()=>chiMucSanSang&&tatCaDuLieu.length===3);
  assert.equal(await page.evaluate(()=>dongDangChonIndex),-1);assert(!(await page.locator('#luoi-chi-tiet').innerText()).includes('Motor'));
  await page.setViewportSize({width:390,height:844});

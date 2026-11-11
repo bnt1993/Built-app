@@ -18,7 +18,7 @@ class ImageBuildTests(unittest.TestCase):
             data=json.loads((folder/"manifest.json").read_text())
             self.assertTrue(data["complete"])
             entry=data["materials"]["00123"][0]
-            for key,size in (("thumb",160),("preview",960)):
+            for key,size in (("thumb",160),("previewSmall",480),("preview",960)):
                 with Image.open(folder/entry[key]) as img:self.assertLessEqual(max(img.size),size)
             self.assertEqual(source.read_bytes(),original)
             self.assertEqual(mod.build(folder),(1,[]))

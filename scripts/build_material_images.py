@@ -22,22 +22,25 @@ def build(folder):
             skipped.append(source.name)
             continue
         sap = match[1]
-        with Image.open(source) as opened:
-            photo = ImageOps.exif_transpose(opened)
-            photo = photo.convert("RGBA" if "A" in photo.getbands() or "transparency" in photo.info else "RGB")
-            digest = hashlib.sha256(source.read_bytes()+b"webp-v1-160-960-q82").hexdigest()[:16]
-            variants = {}
-            for kind, size in (("thumb", 160), ("preview", 960)):
-                relative = Path("_optimized") / (source.stem+"-"+digest+"-"+kind+".webp")
-                target = folder / relative
-                if not target.exists():
+        digest = hashlib.sha256(source.read_bytes()+b"webp-v2-160-480-960-q82").hexdigest()[:16]
+        sizes = {"thumb": 160, "previewSmall": 480, "preview": 960}
+        variants = {kind: (Path("_optimized") / (source.stem+"-"+digest+"-"+kind+".webp")).as_posix()
+                    for kind in sizes}
+        # Hashes identify immutable variants. Skip decoding unchanged originals.
+        if any(not (folder / relative).exists() for relative in variants.values()):
+            with Image.open(source) as opened:
+                photo = ImageOps.exif_transpose(opened)
+                photo = photo.convert("RGBA" if "A" in photo.getbands() or "transparency" in photo.info else "RGB")
+                for kind, size in sizes.items():
+                    target = folder / variants[kind]
+                    if target.exists():
+                        continue
                     target.parent.mkdir(exist_ok=True)
                     resized = photo.copy()
                     resized.thumbnail((size, size), Image.Resampling.LANCZOS)
                     temp = target.with_suffix(".tmp")
                     resized.save(temp, format="WEBP", quality=82, method=6)
                     temp.replace(target)
-                variants[kind] = relative.as_posix()
         entries.setdefault(sap, []).append({"original": source.name, **variants})
     if not entries:
         raise ValueError("No SAP-named images. Rename IMG_* using the actual SAP mapping first.")

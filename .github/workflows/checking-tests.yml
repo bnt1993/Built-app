@@ -6,6 +6,8 @@ on:
       - Checking
       - Amount.js
       - HistoryWorker.js
+      - History.js
+      - Database
       - scripts/**
       - tests/**
       - .github/workflows/checking-tests.yml
@@ -15,6 +17,8 @@ on:
       - Checking
       - Amount.js
       - HistoryWorker.js
+      - History.js
+      - Database
       - scripts/**
       - tests/**
       - .github/workflows/checking-tests.yml
@@ -38,6 +42,18 @@ jobs:
         run: node tests/dashboard_sources_logic.cjs
       - name: Validate local metadata generator
         run: python3 tests/test_prepare_stock_assets.py
+      - name: Validate Stock, History and performance regressions
+        run: |
+          node tests/checking_logic.cjs
+          node tests/history_logic.cjs
+          node tests/dashboard_logic.cjs
+          node tests/dashboard_scope_period_logic.cjs
+          node tests/checking_performance_logic.cjs
+      - name: Validate catalog exports and responsive image generation
+        run: |
+          python3 -m pip install -r scripts/requirements-images.txt
+          python3 tests/test_validate_catalog.py
+          python3 tests/test_material_images.py
   browser-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -54,3 +70,10 @@ jobs:
         run: node tests/dashboard_sources_browser.cjs
       - name: Verify independent Database material catalog
         run: node tests/checking_catalog_browser.cjs
+      - name: Verify Stock, History and performance updates in Chromium
+        run: |
+          node tests/checking_browser.cjs
+          node tests/dashboard_browser.cjs
+          node tests/dashboard_report_summary_browser.cjs
+          node tests/dashboard_scope_period_browser.cjs
+          node tests/checking_performance_browser.cjs
