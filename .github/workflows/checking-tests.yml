@@ -72,8 +72,8 @@ jobs:
         run: node tests/checking_catalog_browser.cjs
       - name: Verify Stock, History and performance updates in Chromium
         run: |
-          node tests/checking_browser.cjs
-          node tests/dashboard_browser.cjs
-          node tests/dashboard_report_summary_browser.cjs
-          node tests/dashboard_scope_period_browser.cjs
-          node tests/checking_performance_browser.cjs
+          checking_browser_status=0
+          for checking_browser_test in tests/checking_browser.cjs tests/dashboard_browser.cjs tests/dashboard_report_summary_browser.cjs tests/dashboard_scope_period_browser.cjs tests/checking_performance_browser.cjs; do
+            if ! node "$checking_browser_test"; then checking_browser_status=1; fi
+          done
+          exit "$checking_browser_status"
