@@ -1,3 +1,28 @@
+## Tra cứu danh mục vật tư từ Database (tab thứ ba)
+
+File `Checking` có thêm tab **Danh mục vật tư** / **Material catalog**, tách khỏi hai tab tồn kho và phân tích kho. Hai nguồn không bị trộn với nhau:
+
+- Tab **Tra cứu tồn kho** tiếp tục dùng `data.js` và biến `window.duLieuCongTy` như trước.
+- Tab **Danh mục vật tư** **không dùng data.js**, mà tìm **`Database.js` hoặc `Database`** trong cùng thư mục với HTML. Trình duyệt đọc hai mảng `const DATABASE_HEADERS=[...]` và `const DATABASE_DATA=[...]` trực tiếp từ file. Các tệp này không được thêm tự động vào repository; người dùng tự đặt vào thư mục chạy web.
+- Nếu trình duyệt không đọc được nguồn vì file chưa tồn tại hoặc đang mở từ `file://`, có thể chọn tệp Database thủ công bằng nút **Chọn file Database**. Việc chọn file chỉ xử lý tại trình duyệt, không gửi tệp lên máy chủ bên ngoài.
+- Danh mục chỉ hiện **10 cột** theo đúng thứ tự: `Material`, `Material Description`, `Name 1`, `MPN`, `Size/dimensions`, `Typ`, `Reorder Point`, `Min. Lot Sze` (hoặc `Min. Lot Size`), **`BUn` đầu tiên**, `Stor. Bin`. Các cột `Bin` và `Stor. Bin` được phân biệt, không lấy nhầm `Bin`. Cột tùy chọn bị thiếu sẽ để trống và được cảnh báo; thiếu Material hoặc Material Description sẽ hiển thị lỗi định dạng.
+- Hỗ trợ tìm một hoặc nhiều mã SAP (ngăn cách dấu phẩy, chấm phẩy, xuống dòng), tìm trong một trường cụ thể hoặc tất cả trường, lọc theo **Typ / Name 1 / BUn / giá trị Reorder Point / có hoặc không có Stor. Bin**. Có sắp xếp theo tất cả cột, phân trang 25/50/100/200, giao diện responsive và ngôn ngữ VI/EN đồng bộ với nút chọn ngôn ngữ chung.
+- **Xuất Excel (.xlsx)** gồm chính xác 10 cột và **mọi dòng sau bộ lọc hiện tại**, không giới hạn trang đang xem. Số liệu vẫn giữ thứ tự sắp xếp.
+- Tối ưu hiệu năng: chỉ tải khi mở tab lần đầu, chỉ mục tìm kiếm dựng một lần, chỉ tạo DOM cho một trang nhỏ thay vì toàn bộ file; làm mới khi nhấn nút.
+
+### Đặt tệp cạnh HTML
+
+```text
+Checking
+Database.js       ← hoặc file không phần mở rộng có tên Database
+data.js           ← nguồn tồn kho riêng của tab Tra cứu tồn kho
+History.js
+Amount.js
+```
+
+**Lưu ý về GitHub:** Tại thời điểm triển khai, file Database chưa xuất hiện trong cây thư mục của nhánh `main` trên repository `bnt1993/Built-app`. Cấu trúc `DATABASE_HEADERS`/`DATABASE_DATA` được xác định theo ảnh người dùng cung cấp; khả năng đọc nội dung thật sẽ được xác minh sau khi file được commit và có thể truy cập từ GitHub.
+
+
 # SAP Inventory — Hướng dẫn nâng cấp thống nhất
 
 ## Phạm vi của Pull Request
