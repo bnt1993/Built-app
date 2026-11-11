@@ -27,13 +27,6 @@ def prepare(root, images=True):
     keys={"stock":"data.js","history":"History.js","amount":"Amount.js"}
     versions={key:signature(root/name) if (root/name).is_file() else None
               for key,name in keys.items()}
-    path=root/"checking-versions.js"
-    path.write_text(
-        "window.checkingSourceVersions = "+
-        json.dumps(versions,ensure_ascii=True,separators=(",",":"))+";\n",
-        encoding="utf-8")
-    print("Wrote", path, "- versions:", ", ".join(
-        f"{key}={'found' if value else 'missing'}" for key,value in versions.items()))
     if images:
         material=root/"Material"
         if material.is_dir():
@@ -47,6 +40,18 @@ def prepare(root, images=True):
                 print("Images not generated:",exc)
         else:
             print("Material folder missing; place image files in Material/ and rerun.")
+    manifest=root/"Material"/"manifest.json"
+    versions["images"]=signature(manifest) if manifest.is_file() else None
+    # Publish metadata only after image variants and manifests are complete.
+    path=root/"checking-versions.js"
+    temporary=path.with_suffix(".js.tmp")
+    temporary.write_text(
+        "window.checkingSourceVersions = "+
+        json.dumps(versions,ensure_ascii=True,separators=(",",":"))+";\n",
+        encoding="utf-8")
+    temporary.replace(path)
+    print("Wrote", path, "- versions:", ", ".join(
+        f"{key}={'found' if value else 'missing'}" for key,value in versions.items()))
     return versions
 
 if __name__=="__main__":

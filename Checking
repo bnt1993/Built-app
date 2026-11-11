@@ -1774,6 +1774,10 @@
       #view-catalog .catalog-table-scroll { max-height:60vh; }
     }
 
+    .catalog-sap-link{border:0;background:none;padding:0;color:var(--blue);font:inherit;font-weight:700;cursor:pointer}
+    .catalog-sap-link:hover{text-decoration:underline}
+    #batch-sap-summary{white-space:normal;overflow-wrap:anywhere;max-width:100%;font-size:11px}
+    #batch-sap-summary[hidden]{display:none}
   </style>
 </head>
 <body>
@@ -1787,7 +1791,7 @@
         <div class="preference-group" role="group" data-i18n-aria="themeSettings" aria-label="Giao diện"><button type="button" id="theme-toggle" onclick="doiGiaoDien()" aria-pressed="false" aria-label="Chuyển sang giao diện tối" title="Chuyển sang giao diện tối">☾</button></div>
         <div class="preference-group" role="group" aria-label="Language / Ngôn ngữ"><button type="button" id="lang-vi" onclick="doiNgonNgu('vi')" aria-pressed="true">VI</button><button type="button" id="lang-en" onclick="doiNgonNgu('en')" aria-pressed="false">EN</button></div>
         <span class="online-pill loading" id="tinh-trang-du-lieu" role="status" data-status="connecting">Đang kết nối</span>
-        <button type="button" class="btn btn-secondary" onclick="taiDuLieu()" data-i18n-title="refreshTitle" title="Đồng bộ dữ liệu từ nguồn">↻ <span data-i18n="refresh">Đồng bộ</span></button>
+        <button type="button" class="btn btn-secondary" onclick="lamMoiToanBoNguon()" data-i18n-title="refreshTitle" title="Đồng bộ dữ liệu từ nguồn">↻ <span data-i18n="refresh">Đồng bộ</span></button>
       </div>
     </header>
 
@@ -1865,7 +1869,8 @@
 <span><b class="legend-yellow"></b><span data-i18n="stockEqual">Bằng định mức</span></span>
 <span><b class="legend-orange"></b><span data-i18n="stockBelow">Dưới định mức</span></span>
 <span><b class="legend-red"></b><span data-i18n="stockZero">Hết hàng (= 0)</span></span>
-</div><span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span></div>
+</div><span class="record-count" id="trang-thai-ban-ghi" aria-live="polite">Đang tải dữ liệu...</span>
+<span class="record-count" id="batch-sap-summary" role="status" hidden></span></div>
           </div>
           <div class="table-wrapper" role="region" data-i18n-aria="tableAria" aria-label="Bảng vật tư, có thể cuộn ngang" tabindex="0">
             <table id="bang-du-lieu"><thead id="dau-bang"></thead><tbody id="than-bang"><tr><td class="empty-table" data-i18n="loadingData">Đang kết nối dữ liệu...</td></tr></tbody></table>
@@ -3151,6 +3156,11 @@
     let ngonNguHienTai = "vi";
     let giaoDienHienTai = "light";
 
+    Object.assign(NGON_NGU.vi,{batchSapSummary:"Có trong nguồn: {found}/{total} mã SAP · Chưa có: {missing}",
+      batchSapNone:"không",catalogOpenStock:"Tra tồn kho và xem ảnh mã {sap}"});
+    Object.assign(NGON_NGU.en,{batchSapSummary:"Present in source: {found}/{total} SAP codes · Missing: {missing}",
+      batchSapNone:"none",catalogOpenStock:"Look up stock and images for {sap}"});
+
     function tuDien(key, values = {}) {
       const text = NGON_NGU[ngonNguHienTai][key] ?? NGON_NGU.vi[key] ?? key;
       return String(text).replace(/\{([a-zA-Z]+)\}/g, (_, variable) =>
@@ -3226,6 +3236,8 @@
       if (tieuDeCot.length) veTieuDe();
       if (chiMucSanSang) {
         hienThiTrangHienTai();
+        capNhatTomTatDanhSachSap(phanTichTimKiem(document.getElementById("o-tim-kiem").value,
+          document.querySelector('input[name="truongTim"]:checked').value).exactSap);
         document.getElementById("trang-thai-ban-ghi").textContent = tuDien("records", {
           found: dinhDangSoLuong.format(ketQuaLoc.length),
           total: dinhDangSoLuong.format(duLieuTimKiem.length)
@@ -3525,6 +3537,7 @@
     }
     function sapXepDanhMuc(records,key,dir){
       const numKey=key==="reorder"?"reorderNumber":key==="minLot"?"minLotNumber":null;
+      const collator=new Intl.Collator(ngonNguHienTai==="en"?"en":"vi",{numeric:true,sensitivity:"base"});
       return records.slice().sort((a,b)=>{
         if(numKey){
           const x=a[numKey],y=b[numKey];
@@ -3534,8 +3547,7 @@
         }
         const x=String(a[key]??""),y=String(b[key]??"");
         if(!x||!y)return x? -1:y? 1:0;
-        return x.localeCompare(y,ngonNguHienTai==="en"?"en":"vi",
-          {numeric:true,sensitivity:"base"})*dir;
+        return collator.compare(x,y)*dir;
       });
     }
     function layLocDanhMuc(){
@@ -3578,6 +3590,20 @@
         tuDien("catalogCount",{found:dinhDangSoLuong.format(state.filtered.length),
           total:dinhDangSoLuong.format(state.rows.length)}):"";
     }
+    function traTonKhoTuDanhMuc(sap){
+      chuyenTab("stock");
+      document.getElementById("o-tim-kiem").value=sap;
+      document.querySelector('input[name="truongTim"][value="sap"]').checked=true;
+      document.getElementById("chk-ton-kho").checked=false;
+      document.getElementById("loc-canh-bao").value="all";
+      locDuLieu();
+      const row=chiMucSap.get(chuanHoaMaSap(sap).toLowerCase())?.[0];
+      if(row){
+        const element=document.querySelector('#than-bang tr[data-row-index="'+row.chiSo+'"]');
+        chonDong(row.chiSo,element);
+        (element||document.getElementById("o-tim-kiem")).focus({preventScroll:true});
+      }else{dongDangChonIndex=-1;dongBoChiTietDaChon();document.getElementById("o-tim-kiem").focus();}
+    }
     function veTrangDanhMuc(){
       const state=danhMucTrangThai,total=state.filtered.length;
       const pages=Math.max(1,Math.ceil(total/state.pageSize));
@@ -3596,6 +3622,13 @@
         for(const col of DANH_MUC_COT){
           const td=document.createElement("td"),value=record[col.key];
           td.textContent=value||"—";
+          if(col.key==="material"&&value){
+            const link=document.createElement("button");link.type="button";
+            link.className="catalog-sap-link";link.textContent=value;
+            link.title=tuDien("catalogOpenStock",{sap:value});
+            link.addEventListener("click",()=>traTonKhoTuDanhMuc(value));
+            td.replaceChildren(link);
+          }
           if(col.key==="reorder"||col.key==="minLot")
             td.className="catalog-number";
           if(value.length>25)td.title=value;
@@ -3650,24 +3683,39 @@
       capNhatKetQuaDanhMuc();
     }
     async function taiDatabaseQuaScript(path){
+      // A fresh realm allows const DATABASE_* exports to be read again on file://.
+      // Only the generated arrays are posted back; no eval or redeclarations in the app.
       return new Promise((resolve,reject)=>{
-        const old=document.getElementById("catalog-script");
-        if(old)old.remove();
-        const script=document.createElement("script");
-        script.id="catalog-script";
-        script.src=path+(path.includes("?")?"&":"?")+"t="+Date.now();
-        script.onload=()=>{
-          const headers=typeof DATABASE_HEADERS!=="undefined"?
-            DATABASE_HEADERS:window.DATABASE_HEADERS;
-          const rows=typeof DATABASE_DATA!=="undefined"?
-            DATABASE_DATA:window.DATABASE_DATA;
-          if(Array.isArray(headers)&&Array.isArray(rows))resolve({headers,rows});
-          else reject(new Error("INVALID_DATABASE_ARRAYS"));
-        };
-        script.onerror=()=>reject(new Error("NOT_FOUND"));
-        document.head.appendChild(script);
+        const frame=document.createElement("iframe");frame.hidden=true;
+        const token="catalog-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+        let done=false;
+        function finish(value,error){
+          if(done)return;done=true;clearTimeout(timer);
+          window.removeEventListener("message",receive);frame.remove();
+          if(error)reject(new Error(error));else resolve(value);
+        }
+        function receive(event){
+          if(event.source!==frame.contentWindow||event.data?.token!==token)return;
+          const data=event.data;
+          if(data.error){finish(null,data.error);return;}
+          if(Array.isArray(data.headers)&&Array.isArray(data.rows))finish({headers:data.headers,rows:data.rows});
+          else finish(null,"INVALID_DATABASE_ARRAYS");
+        }
+        const timer=setTimeout(()=>finish(null,"DATABASE_TIMEOUT"),10000);
+        window.addEventListener("message",receive);
+        const end="<"+"/script>";
+        const url=new URL(path,location.href);url.searchParams.set("t",String(Date.now()));
+        frame.srcdoc='<!doctype html><meta charset="utf-8"><base href="'+thoatHTML(new URL(".",location.href).href)+'">'+
+          '<script>function send(value){parent.postMessage(Object.assign({token:'+JSON.stringify(token)+'},value),"*")};'+
+          'window.onerror=function(){send({error:"INVALID_DATABASE_ARRAYS"})};'+end+
+          '<script src="'+thoatHTML(url.href)+'" onerror="send({error:\'NOT_FOUND\'})">'+end+
+          '<script>try{send({headers:typeof DATABASE_HEADERS!=="undefined"?DATABASE_HEADERS:window.DATABASE_HEADERS,'+
+          'rows:typeof DATABASE_DATA!=="undefined"?DATABASE_DATA:window.DATABASE_DATA})}'+
+          'catch(error){send({error:"INVALID_DATABASE_ARRAYS"})}'+end;
+        document.body.appendChild(frame);
       });
     }
+
     async function taiDanhMuc(force=false){
       const state=danhMucTrangThai;
       if(state.loading||(!force&&state.loaded))return;
@@ -3689,11 +3737,6 @@
             }catch(error){lastError=error}
           }
         }else{
-          if(state.loaded){ // const declarations cannot safely be re-injected.
-            state.statusKey="catalogLoaded";
-            state.statusVars={count:dinhDangSoLuong.format(state.rows.length)};
-            capNhatTrangThaiDanhMuc();return;
-          }
           for(const filename of files){
             try{
               const parsed=await taiDatabaseQuaScript(filename);
@@ -3928,9 +3971,10 @@
         }
         const previous=phienBanFile.known;
         phienBanFile.known={...data};
-        if(data.stock!==previous.stock)taiDuLieu();
+        if(data.stock!==previous.stock){phienBanChoNap.stock="file:"+data.stock;taiDuLieu(true);}
         if(data.history!==previous.history&&historyLoaded)taiHistory(true);
         if(data.amount!==previous.amount)taiLaiAmount();
+        if(data.images!==previous.images)lamMoiAnh();
       }
       script.onload=()=>finish(true);
       script.onerror=()=>finish(false);
@@ -3953,86 +3997,87 @@
       return kiemTraPhienBanNguon("history",DUONG_DAN_HISTORY,()=>taiHistory(true));
     }
     function lamMoiToanBoNguon(){
-      taiDuLieu();
+      taiDuLieu(true);
       taiLaiAmount();
       if(historyLoaded||tabHienTai==="dashboard")taiHistory(true);
-      taiManifestAnh();
+      lamMoiAnh();
+      if(tabHienTai==="catalog")taiDanhMuc(true);
     }
 
-    function taiDuLieu() {
-      if (document.hidden || dangTaiScript) return;
-      dangTaiScript = true;
+    function thucThiScriptSap(task){
+      // Legacy Stock/History exports share window.duLieuCongTy. Serialize scripts
+      // so an offline History load cannot overwrite a Stock load in progress.
+      const previous=thucThiScriptSap.queue||Promise.resolve();
+      const next=previous.catch(()=>{}).then(task);
+      thucThiScriptSap.queue=next.catch(()=>{});
+      return next;
+    }
+
+    function taiDuLieu(force=false) {
+      if(document.hidden||dangTaiScript)return;
+      dangTaiScript=true;
       const batDauTai=Date.now();
       ghiNhanNguon("stock","loading");
-      const lanHienTai = ++lanTaiDuLieu;
-      const scriptCu = document.getElementById("script-data");
-      if (scriptCu) scriptCu.remove();
-
-      const s = document.createElement("script");
-      s.id = "script-data";
-      s.async = true;
-      s.src = duongDanOMang + "?t=" + Date.now();
-      datTrangThaiDuLieu("statusLoading", "loading");
-
-      let daHetGio = false;
-      const gioiHan = setTimeout(function() {
-        if (lanHienTai !== lanTaiDuLieu || !dangTaiScript) return;
-        daHetGio = true;
-        dangTaiScript = false;
-        s.remove();
-        datTrangThaiDuLieu("statusOffline", "error");
-        datThongBaoCapNhat("statusTimeout");
-        ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
-        phienBanChoNap.stock="";
-      }, 15000);
-
-      s.onload = function() {
-        if (lanHienTai !== lanTaiDuLieu || daHetGio) return;
-        clearTimeout(gioiHan);
-        dangTaiScript = false;
-        const duLieuMoi = window.duLieuCongTy;
-        const thoiGianCapNhat = window.thoiGianCapNhat;
-        const coMocCapNhat = thoiGianCapNhat !== undefined
-          && thoiGianCapNhat !== null && thoiGianCapNhat !== "";
-
-        if (!Array.isArray(duLieuMoi) || !duLieuMoi.length || !Array.isArray(duLieuMoi[0])) {
-          datTrangThaiDuLieu("statusInvalid", "error");
-          datThongBaoCapNhat("statusBadData");
-          ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
-          phienBanChoNap.stock="";
-          return;
+      datTrangThaiDuLieu("statusLoading","loading");
+      return thucThiScriptSap(()=>new Promise(resolve=>{
+        const sequence=++lanTaiDuLieu;
+        const old=document.getElementById("script-data");if(old)old.remove();
+        const previous={data:window.duLieuCongTy,time:window.thoiGianCapNhat,
+          hasData:Object.prototype.hasOwnProperty.call(window,"duLieuCongTy"),
+          hasTime:Object.prototype.hasOwnProperty.call(window,"thoiGianCapNhat")};
+        delete window.duLieuCongTy;delete window.thoiGianCapNhat;
+        const signature=phienBanChoNap.stock;
+        const script=document.createElement("script");
+        script.id="script-data";script.async=true;
+        script.src=duongDanOMang+(signature?"?v="+encodeURIComponent(signature):"?t="+Date.now());
+        let finished=false;
+        const timer=setTimeout(()=>finish(false,"statusTimeout"),15000);
+        function finish(ok,errorKey){
+          if(finished)return;
+          finished=true;clearTimeout(timer);script.remove();dangTaiScript=false;
+          if(!ok){
+            if(previous.hasData)window.duLieuCongTy=previous.data;else delete window.duLieuCongTy;
+            if(previous.hasTime)window.thoiGianCapNhat=previous.time;else delete window.thoiGianCapNhat;
+            datTrangThaiDuLieu(errorKey==="statusBadData"?"statusInvalid":"statusOffline","error");
+            datThongBaoCapNhat(errorKey,{file:duongDanOMang});
+            ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
+            if(phienBanChoNap.stock===signature)phienBanChoNap.stock="";
+          }
+          resolve(ok);
         }
-        if (!coMocCapNhat || thoiGianCapNhat !== mocCapNhatCu || !tatCaDuLieu.length) {
-          mocCapNhatCu = coMocCapNhat ? thoiGianCapNhat : "";
-          const selectedSap=dongDangChonIndex>0?chuanHoaMaSap(tatCaDuLieu[dongDangChonIndex]?.[0]):"";
-          tatCaDuLieu = duLieuMoi;
-          dongDangChonIndex=selectedSap?tatCaDuLieu.findIndex((row,i)=>i>0&&
-            chuanHoaMaSap(row[0]).toLowerCase()===selectedSap.toLowerCase()):-1;
-          tieuDeCot = tatCaDuLieu[0];
-          chiMucSanSang = false;
-          soLanLocDuLieu++;
-          veTieuDe();
-          taoChiMucTimKiem();
-        }
-        datTrangThaiDuLieu("statusOnline");
-        if(phienBanChoNap.stock){
-          phienBanNguon.stock=phienBanChoNap.stock;
-          phienBanChoNap.stock="";
-        }
-        ghiNhanNguon("stock","ready",{count:duLieuMoi.length-1,
-          updated:coMocCapNhat?String(thoiGianCapNhat):"",ms:Date.now()-batDauTai});
-        datThongBaoCapNhat("updated", {time: coMocCapNhat ? thoiGianCapNhat : new Date().toLocaleString(ngonNguHienTai === "en" ? "en-US" : "vi-VN")});
-      };
-      s.onerror = function() {
-        if (lanHienTai !== lanTaiDuLieu || daHetGio) return;
-        clearTimeout(gioiHan);
-        dangTaiScript = false;
-        datTrangThaiDuLieu("statusOffline", "error");
-        datThongBaoCapNhat("statusLoadFail", {file:duongDanOMang});
-        ghiNhanNguon("stock",tatCaDuLieu.length?"stale":"error");
-        phienBanChoNap.stock="";
-      };
-      document.body.appendChild(s);
+        script.onload=async()=>{
+          if(finished||sequence!==lanTaiDuLieu)return;
+          clearTimeout(timer);
+          const data=window.duLieuCongTy,time=window.thoiGianCapNhat;
+          if(!Array.isArray(data)||!data.length||!Array.isArray(data[0])||!data[0].length||
+              (previous.hasData&&data===previous.data)){
+            finish(false,"statusBadData");return;
+          }
+          const stamp=time==null?"":String(time);
+          const changedVersion=signature&&signature!==phienBanNguon.stock;
+          try{
+            if(force||changedVersion||!stamp||stamp!==mocCapNhatCu||!tatCaDuLieu.length){
+              const sap=dongDangChonIndex>0?chuanHoaMaSap(tatCaDuLieu[dongDangChonIndex]?.[0]):"";
+              tatCaDuLieu=data;tieuDeCot=data[0];mocCapNhatCu=stamp;
+              dongDangChonIndex=sap?data.findIndex((row,i)=>i>0&&Array.isArray(row)&&
+                chuanHoaMaSap(row[0]).toLowerCase()===sap.toLowerCase()):-1;
+              chiMucSanSang=false;soLanLocDuLieu++;veTieuDe();
+              const indexed=await taoChiMucTimKiem();
+              if(finished)return;
+              if(indexed===false){finish(false,"statusBadData");return;}
+            }
+            if(finished)return;
+            if(signature){phienBanNguon.stock=signature;
+              if(phienBanChoNap.stock===signature)phienBanChoNap.stock="";}
+            datTrangThaiDuLieu("statusOnline");
+            ghiNhanNguon("stock","ready",{count:data.length-1,updated:stamp,ms:Date.now()-batDauTai});
+            datThongBaoCapNhat("updated",{time:stamp||new Date().toLocaleString(ngonNguHienTai==="en"?"en-US":"vi-VN")});
+            finish(true);
+          }catch(error){console.warn("Stock:",error);finish(false,"statusBadData")}
+        };
+        script.onerror=()=>finish(false,"statusLoadFail");
+        document.body.appendChild(script);
+      }));
     }
 
     function thoatHTML(giaTri) {
@@ -4073,13 +4118,13 @@
           : chuoi.replace(/,/g, "");
       } else if (/^-?\d{1,3}(?:\.\d{3}){2,}$/.test(chuoi)) {
         daChuanHoa = chuoi.replace(/\./g, "");
-      } else if (/^-?\d{1,3}(?:,\d{3})+$/.test(chuoi)) {
-        daChuanHoa = chuoi.replace(/,/g, "");
       } else if (chuoi.includes(",")) {
+        // SAP decimal commas stay decimal even with three fractional digits.
         daChuanHoa = chuoi.replace(",", ".");
       }
 
-      return Number(daChuanHoa);
+      const number=Number(daChuanHoa);
+      return Number.isFinite(number)?number:NaN;
     }
 
     function hienThiGiaTri(chiSoCot, giaTri) {
@@ -4090,11 +4135,7 @@
       const soTien = chuyenThanhSo(giaTri);
       if (!Number.isFinite(soTien)) return giaTri;
 
-      return new Intl.NumberFormat("vi-VN", {
-        style: "currency",
-        currency: "VND",
-        maximumFractionDigits: 0
-      }).format(soTien);
+      return dinhDangGiaTriKho(soTien);
     }
 
     function timCotTheoTen(tenCot) {
@@ -4141,9 +4182,11 @@
 
     function dinhDangGiaTriKho(giaTri) {
       if (!Number.isFinite(giaTri)) return "—";
-      return new Intl.NumberFormat(ngonNguHienTai === "en" ? "en-US" : "vi-VN", {
-        style: "currency", currency: "VND", maximumFractionDigits: 0
-      }).format(giaTri);
+      const locale=ngonNguHienTai==="en"?"en-US":"vi-VN";
+      const formats=dinhDangGiaTriKho.formats??=new Map();
+      if(!formats.has(locale))formats.set(locale,new Intl.NumberFormat(locale,{
+        style:"currency",currency:"VND",maximumFractionDigits:0}));
+      return formats.get(locale).format(giaTri);
     }
 
     // Amount.js contains historical whole-warehouse balances: [DD/MM/YYYY, numeric VND, display].
@@ -4445,14 +4488,15 @@
     }
 
     function khopTuKhoaVatTu(muc,term,scope,ganDung) {
-      const keyword=chuanHoaTimKiem(term).trim();
+      const compiled=typeof term==="object"?term:null;
+      const keyword=compiled?compiled.keyword:chuanHoaTimKiem(term).trim();
       if(!keyword)return true;
       const text=muc[scope]||"";
       if(text.includes(keyword))return true;
       // Part numbers may contain spaces, hyphens, slashes or dots. Compare the
       // compact form only for code searches; descriptions retain phrase matching.
-      if(/\d/.test(keyword)){
-        const compact=keyword.replace(/[^a-z0-9]/g,"");
+      if(compiled?compiled.hasDigit:/\d/.test(keyword)){
+        const compact=compiled?compiled.compact:keyword.replace(/[^a-z0-9]/g,"");
         if(compact.length>=3){
           const candidates=scope==="all"?[muc.sapCompact,muc.partCompact,muc.bmCompact]:
             scope==="sap"?[muc.sapCompact]:
@@ -4461,7 +4505,11 @@
           if(candidates.some(value=>value&&value.includes(compact)))return true;
         }
       }
-      return ganDung&&coTuGanDung(text,keyword);
+      if(!ganDung||keyword.length<4||keyword.length>48)return false;
+      // The indexed text is already normalized. Tokenize at most once per scope.
+      const words=(muc.searchWords??=Object.create(null))[scope]??=
+        text.split(/[^a-z0-9]+/).filter(Boolean);
+      return words.some(word=>Math.abs(word.length-keyword.length)<=1&&trungGanDung(word,keyword));
     }
 
     function coTuGanDung(chuoi,tuKhoa) {
@@ -4472,6 +4520,7 @@
 
 
     const maSapDaLapChiMuc=new Set();
+    const chiMucSap=new Map(); // SAP -> all matching source rows (including duplicate SAP/bin rows).
 
     // One search box handles a phrase or many SAP codes separated by comma,
     // semicolon, pipe, newline or spaces for code-like tokens.
@@ -4493,9 +4542,13 @@
       const terms=[...new Set(parts.map(x=>chuanHoaTimKiem(x).trim()).filter(Boolean))].slice(0,2000);
       // Multi-code searches use exact SAP matches. Other multi-keyword
       // searches keep the existing substring/typo-tolerant OR semantics.
-      const sapList=terms.length>1&&(scope==="all"||scope==="sap")&&
+      const hasKnownSap=terms.some(x=>maSapDaLapChiMuc.has(chuanHoaMaSap(x).toLowerCase()));
+      const singleKnown=terms.length===1&&(scope==="all"||scope==="sap")&&
+        maSapDaLapChiMuc.has(chuanHoaMaSap(terms[0]).toLowerCase());
+      const sapList=singleKnown?new Set([chuanHoaMaSap(terms[0]).toLowerCase()]):
+        terms.length>1&&(scope==="all"||scope==="sap")&&
         terms.every(x=>/^[a-z0-9._-]+$/i.test(x)&&/\d/.test(x)&&
-          (scope==="sap"||maSapDaLapChiMuc.has(chuanHoaMaSap(x).toLowerCase())))
+          (scope==="sap"||hasKnownSap))
         ? new Set(terms.map(x=>chuanHoaMaSap(x).toLowerCase())):null;
       return {terms,exactSap:sapList};
     }
@@ -4973,6 +5026,23 @@
       const hasKnown=duLieuTimKiem.length>unknownCount;
       stockHallCache={records:duLieuTimKiem,index,hall,rows,unknownCount,unrecognized:!hasKnown};
       return hasKnown?rows:null;
+    }
+    function lichSuTheoSap(sap,hall="all"){
+      const scope=lichSuTheoHall(hall);if(scope===null)return null;
+      const column=cotMaSapLichSuKho();if(column<0)return [];
+      const previous=lichSuTheoSap.cache;
+      if(!previous||previous.source!==historyAll||previous.columns!==historyColumns){
+        const rows=new Map();
+        for(const record of historyAll){
+          const key=chuanHoaMaSap(record.cells[column]).toLowerCase();
+          if(!rows.has(key))rows.set(key,[]);rows.get(key).push(record);
+        }
+        lichSuTheoSap.cache={source:historyAll,columns:historyColumns,rows};
+      }
+      const rows=lichSuTheoSap.cache.rows.get(chuanHoaMaSap(sap).toLowerCase())||[];
+      if(hall==="all")return rows;
+      const location=cotStorageLocation(historyColumns);
+      return rows.filter(record=>hallTuStorageLocation(record.cells[location])===hall);
     }
     function loiCotHall(loai){
       if(loai==="stock")return coCotStockHall()?
@@ -5776,13 +5846,16 @@
     function ngayHistoryISO(value) {
       if(value==null || value==="")return "";
       const text=String(value).trim();
+      const valid=iso=>{const date=new Date(iso+"T00:00:00Z");
+        return !Number.isNaN(date.valueOf())&&date.toISOString().slice(0,10)===iso?iso:"";};
       let m=text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
-      if(m) return m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0");
+      if(m) return valid(m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0"));
       m=text.match(/^(\d{1,2})[/. -](\d{1,2})[/. -](\d{4})/);
-      if(m) return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
-      if(typeof value==="number" && value>20000 && value<100000) {
+      if(m) return valid(m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0"));
+      const serial=/^\d+(?:[.,]\d+)?$/.test(text)?Number(text.replace(",",".")):NaN;
+      if(serial>20000 && serial<100000) {
         // Excel date serial: Excel day 1 = 1900-01-01 (1900 leap-year quirk).
-        return new Date(Date.UTC(1899,11,30)+Math.floor(value)*86400000).toISOString().slice(0,10);
+        return new Date(Date.UTC(1899,11,30)+Math.floor(serial)*86400000).toISOString().slice(0,10);
       }
       return "";
     }
@@ -5875,7 +5948,7 @@
           req.onsuccess=()=>{
             const item=req.result;
             db.close();
-            resolve(item&&item.signature===signature&&
+            resolve(item&&item.schema===3&&item.signature===signature&&
               Date.now()-item.savedAt<86400000?item:null);
           };
           req.onerror=()=>{db.close();resolve(null)};
@@ -5888,7 +5961,7 @@
       try{
         const transaction=db.transaction("versions","readwrite");
         transaction.objectStore("versions").put({
-          signature,savedAt:Date.now(),updated,columns:historyColumns,
+          schema:3,signature,savedAt:Date.now(),updated,columns:historyColumns,
           records:historyAll,typeColumn:historyTypeColumn,
           output:[...ngayXuatCuoiTheoSap]
         },"latest");
@@ -5911,6 +5984,7 @@
         !Array.isArray(item.records))return false;
       historyColumns=item.columns;
       historyAll=item.records;
+      lichSuTheoSap.cache=null;
       historyTypeColumn=item.typeColumn;
       historyHallCache=null;stockHallCache=null;
       ngayXuatCuoiTheoSap.clear();
@@ -5959,8 +6033,8 @@
           if(message?.ready){
             clearTimeout(timer);
             timer=setTimeout(()=>finish(null),15000);
-            try{worker.postMessage({source})}catch{finish(null)}
-          }else if(message?.data)finish(message);
+            try{worker.postMessage({source,index:true})}catch{finish(null)}
+          }else if(message?.data||message?.indexed)finish(message);
           else if(message?.error)finish(null);
         };
       });
@@ -5968,7 +6042,9 @@
 
     async function apDungNguonHistory(source,origin="file",updated="",sequence=historySeq) {
       let parsed;
-      try {parsed=bienDoiHistory(source);}
+      const prepared=source?.schema==="checking-history-index-v3"&&
+        Array.isArray(source.columns)&&Array.isArray(source.records);
+      try {parsed=prepared?{headers:source.columns,rows:[]}:bienDoiHistory(source);}
       catch(err){capNhatTrangThaiHistory("historyInvalid");return false;}
       const columns=parsed.headers;
       const postingColumn=cotHistoryTheoTen(columns,["Posting Date","PostingDate","Ngày hạch toán"]);
@@ -5984,9 +6060,9 @@
         capNhatTrangThaiHistory("historyInvalid");
         return false;
       }
-      const indexed=[];
+      const indexed=prepared?source.records:[];
       const sapCol=cotHistoryTheoTen(columns,["Material","SAP","SAP Code","Material Number","Mã SAP","Mã vật tư"]);
-      const lastOutput=new Map();
+      const lastOutput=new Map(prepared?source.output:[]);
       for(let i=0;i<parsed.rows.length;i++) {
         if(sequence!==historySeq)return false;
         const row=parsed.rows[i];
@@ -6001,11 +6077,12 @@
         if(i>0 && i%1600===0)await new Promise(resolve=>setTimeout(resolve,0));
       }
       if(sequence!==historySeq)return false;
-      indexed.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
+      if(!prepared)indexed.sort((a,b)=>(b.date||"").localeCompare(a.date||"") || a.number-b.number);
       historyColumns=columns;
       historyHallCache=null;
       historyTypeColumn=typeColumn;
       historyAll=indexed;
+      lichSuTheoSap.cache=null;
       ngayXuatCuoiTheoSap.clear();
       for(const [sap,date] of lastOutput)ngayXuatCuoiTheoSap.set(sap,date);
       historyLoaded=true;
@@ -6026,7 +6103,7 @@
     // Local file:// environments cannot fetch JS text, so they use a temporary
     // script, snapshot its globals, then restore them immediately.
     function taiHistoryBangScript() {
-      return new Promise((resolve,reject)=>{
+      return thucThiScriptSap(()=>new Promise((resolve,reject)=>{
         const hasStock=Object.prototype.hasOwnProperty.call(window,"duLieuCongTy");
         const hasTime=Object.prototype.hasOwnProperty.call(window,"thoiGianCapNhat");
         const oldStock=window.duLieuCongTy;
@@ -6072,7 +6149,7 @@
         };
         script.onerror=()=>finish(null,Error("HISTORY_MISSING"));
         document.body.appendChild(script);
-      });
+      }));
     }
 
     async function taiHistory(force=false) {
@@ -6104,9 +6181,9 @@
           if(!response.ok)throw Error("HISTORY_MISSING");
           source=await docHistoryBangWorker(await response.text());
         } else source=await taiHistoryBangScript();
-        if(!source.data)throw Error("HISTORY_BAD_FORMAT");
+        if(!source.data&&!source.indexed)throw Error("HISTORY_BAD_FORMAT");
         capNhatHistory=source.updated||"";
-        const ok=await apDungNguonHistory(source.data,"file",source.updated,sequence);
+        const ok=await apDungNguonHistory(source.indexed||source.data,"file",source.updated,sequence);
         if(ok&&signature)luuCacheHistory(signature,source.updated);
         if(ok && phienBanChoNap.history){
           phienBanNguon.history=phienBanChoNap.history;
@@ -6370,8 +6447,7 @@
       const sapCol=cotHistoryTheoTen(historyColumns,
         ["Material","SAP","SAP Code","Material Number","Mã SAP","Mã vật tư"]);
       const historyScope=lichSuTheoHall(materialHistoryHall);
-      const sapRows=historyLoaded&&sapCol>=0?(historyScope||[]).filter(row=>
-        chuanHoaMaSap(row.cells[sapCol]).toLowerCase()===materialHistorySap.toLowerCase()):[];
+      const sapRows=historyLoaded&&sapCol>=0?(lichSuTheoSap(materialHistorySap,materialHistoryHall)||[]):[];
       capNhatLocCostCenter(sapRows);
       const cost=document.getElementById("material-history-cost").value;
       const scopeRows=sapRows.filter(row=>{
@@ -6625,6 +6701,7 @@
       let soDongGiaKhongHopLe = 0;
       duLieuTimKiem = [];
       maSapDaLapChiMuc.clear();
+      chiMucSap.clear();
       soCoTonKho = 0;
       chiMucSanSang = false;
       dangLocDuLieu = true;
@@ -6641,8 +6718,9 @@
       document.getElementById("than-bang").innerHTML =
         '<tr><td colspan="6" class="empty-table">' + tuDien("preparing") + '</td></tr>';
 
+      return new Promise(resolve=>{
       function xuLyNhom() {
-        if (lanHienTai !== lanLapChiMuc) return;
+        if (lanHienTai !== lanLapChiMuc){resolve(false);return;}
         const gioiHan = Math.min(viTri + 1000, tatCaDuLieu.length);
         for (; viTri < gioiHan; viTri++) {
           const dong = tatCaDuLieu[viTri];
@@ -6671,7 +6749,7 @@
               soDongGiaKhongHopLe++;
             }
           }
-          duLieuTimKiem.push({
+          const record={
             chiSo: viTri,
             dong: dong,
             all: giaTri.join("\u0001"),
@@ -6681,7 +6759,13 @@
             partCompact:compactCode(part),
             bmCompact:compactCode(bmno),
             coTonKho: coTonKho, soLuong, reorderPoint, trangThaiTon, giaTriDong
-          });
+          };
+          duLieuTimKiem.push(record);
+          const sapKey=chuanHoaMaSap(dong[chiSoSap]).toLowerCase();
+          if(sapKey){
+            if(!chiMucSap.has(sapKey))chiMucSap.set(sapKey,[]);
+            chiMucSap.get(sapKey).push(record);
+          }
         }
         if (viTri < tatCaDuLieu.length) {
           setTimeout(xuLyNhom, 0);
@@ -6695,9 +6779,11 @@
           capNhatThongKeNangCao();
           dongBoChiTietDaChon();
           locDuLieu();
+          resolve(true);
         }
       }
       xuLyNhom();
+      });
     }
 
     let boTriHoanTimKiem = null;
@@ -6721,22 +6807,26 @@
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
       const locCanhBao=document.getElementById("loc-canh-bao").value;
       const {terms:nhieuTuKhoa,exactSap:danhSachSap}=phanTichTimKiem(tuKhoa,cheDoTim);
+      const compiledTerms=nhieuTuKhoa.map(keyword=>({keyword,
+        hasDigit:/\d/.test(keyword),compact:keyword.replace(/[^a-z0-9]/g,"")}));
       const ganDung=document.getElementById("tim-gan-dung").checked;
       const truongTim = cheDoTim === "all" ? "all" : cheDoTim;
       const lanLocHienTai = ++soLanLocDuLieu;
       const moi = [];
       let viTri = 0;
-      const tong = duLieuTimKiem.length;
+      const candidates=danhSachSap?[...danhSachSap].flatMap(sap=>chiMucSap.get(sap)||[])
+        .sort((a,b)=>a.chiSo-b.chiSo):duLieuTimKiem;
+      const tong = candidates.length;
       document.getElementById("trang-thai-ban-ghi").textContent = tuDien("searching");
 
       function xuLyNhom() {
         if (lanLocHienTai !== soLanLocDuLieu) return;
         const gioiHan = Math.min(viTri + 2500, tong);
         for (; viTri < gioiHan; viTri++) {
-          const muc = duLieuTimKiem[viTri];
+          const muc = candidates[viTri];
           const hopTuKhoa=danhSachSap
-            ? danhSachSap.has(chuanHoaMaSap(muc.dong[0]).toLowerCase())
-            : !tuKhoa||nhieuTuKhoa.some(term=>
+            ? true
+            : !tuKhoa||compiledTerms.some(term=>
                 khopTuKhoaVatTu(muc,term,truongTim,ganDung));
           if (hopTuKhoa && (!chiTonKho || muc.coTonKho) &&
               (locCanhBao==="all" || muc.trangThaiTon===locCanhBao)) moi.push(muc);
@@ -6751,7 +6841,8 @@
         hienThiTrangHienTai();
         document.querySelector(".table-wrapper").scrollTop = 0;
         document.getElementById("trang-thai-ban-ghi").textContent =
-          tuDien("records",{found:dinhDangSoLuong.format(ketQuaLoc.length), total:dinhDangSoLuong.format(tong)});
+          tuDien("records",{found:dinhDangSoLuong.format(ketQuaLoc.length), total:dinhDangSoLuong.format(duLieuTimKiem.length)});
+        capNhatTomTatDanhSachSap(danhSachSap);
 
       }
       xuLyNhom();
@@ -6765,30 +6856,27 @@
       locDuLieu();
     }
 
+    function capNhatTomTatDanhSachSap(codes){
+      const el=document.getElementById("batch-sap-summary");if(!el)return;
+      el.hidden=!codes||codes.size<2;
+      if(!codes||codes.size<2){el.textContent="";el.title="";return;}
+      const missing=[...codes].filter(code=>!chiMucSap.has(code));
+      el.textContent=tuDien("batchSapSummary",{found:codes.size-missing.length,total:codes.size,
+        missing:missing.length?missing.slice(0,8).join(", ")+(missing.length>8?"…":""):tuDien("batchSapNone")});
+      el.title=missing.join("\n");
+    }
+
     function sapXepKetQua() {
-      if (cotSapXep < 0) return;
-      ketQuaLoc.sort((a, b) => {
-        const giaTriA = String(a.dong[cotSapXep] ?? "").trim();
-        const giaTriB = String(b.dong[cotSapXep] ?? "").trim();
-        const soA = chuyenThanhSo(giaTriA);
-        const soB = chuyenThanhSo(giaTriB);
-        let ketQua;
-
-        if (giaTriA === "" && giaTriB !== "") {
-          ketQua = 1;
-        } else if (giaTriA !== "" && giaTriB === "") {
-          ketQua = -1;
-        } else if (Number.isFinite(soA) && Number.isFinite(soB)) {
-          ketQua = soA - soB;
-        } else {
-          ketQua = giaTriA.localeCompare(giaTriB, "vi", {
-            numeric: true,
-            sensitivity: "base"
-          });
-        }
-
-        return ketQua * huongSapXep;
-      });
+      if(cotSapXep<0)return;
+      const collator=new Intl.Collator(ngonNguHienTai==="en"?"en":"vi",{numeric:true,sensitivity:"base"});
+      ketQuaLoc=ketQuaLoc.map(rec=>{const text=String(rec.dong[cotSapXep]??"").trim();
+        return {rec,text,number:chuyenThanhSo(text)};
+      }).sort((a,b)=>{
+        if(!a.text||!b.text)return a.text?-1:b.text?1:a.rec.chiSo-b.rec.chiSo;
+        const result=Number.isFinite(a.number)&&Number.isFinite(b.number)?
+          a.number-b.number:collator.compare(a.text,b.text);
+        return result*huongSapXep||a.rec.chiSo-b.rec.chiSo;
+      }).map(x=>x.rec);
     }
 
     function hienThiTrangHienTai() {
@@ -6971,8 +7059,8 @@
         tr.classList.remove("selected");
         tr.setAttribute("aria-selected", "false");
       });
-      element.classList.add("selected");
-      element.setAttribute("aria-selected", "true");
+      element?.classList.add("selected");
+      element?.setAttribute("aria-selected", "true");
       dongDangChonIndex = index;
 
       const dongData = tatCaDuLieu[index];
@@ -6997,6 +7085,7 @@
     }
 
     let lanTaiAnh = 0;
+    let boDieuKhienAnh=null;
     let dangQuetAnh = false;
     const boNhoAnh = new Map();
     const dangKiemTraAnh = new Map();
@@ -7004,107 +7093,101 @@
 
     // HEAD kiểm tra tên tệp mà không tải toàn bộ ảnh. Fallback Image() nếu
     // chạy file://, ổ mạng, hoặc server không hỗ trợ HEAD.
-    function kiemTraAnh(url) {
-      const daLuu = boNhoAnh.get(url);
-      if (daLuu && daLuu.hetHan > Date.now()) return Promise.resolve(daLuu.coAnh);
-      if (dangKiemTraAnh.has(url)) return dangKiemTraAnh.get(url);
-
-      const tacVu = (async function() {
-        let coAnh;
-        if (location.protocol === "http:" || location.protocol === "https:") {
-          const controller = new AbortController();
-          const gioiHan = setTimeout(() => controller.abort(), 3000);
-          try {
-            const response = await fetch(url, {
-              method: "HEAD", cache: "force-cache", signal: controller.signal
-            });
-            if (response.status === 404) {
-              coAnh = false;
-            } else if (response.ok) {
-              const loai = (response.headers.get("content-type") || "").toLowerCase();
-              coAnh = !loai || loai.startsWith("image/") || loai.includes("octet-stream");
-            }
-          } catch (e) {
-            // Trình duyệt hoặc server không hỗ trợ HEAD: thử Image().
-          } finally {
-            clearTimeout(gioiHan);
-          }
+    function kiemTraAnh(url,signal) {
+      if(signal?.aborted)return Promise.resolve(false);
+      const cached=boNhoAnh.get(url);
+      if(cached&&cached.hetHan>Date.now())return Promise.resolve(cached.coAnh);
+      const previous=dangKiemTraAnh.get(url);
+      if(previous&&!previous.signal?.aborted)return previous.promise;
+      const task=(async()=>{
+        let exists;
+        if(/^https?:$/.test(location.protocol)){
+          const controller=new AbortController();
+          const abort=()=>controller.abort();
+          signal?.addEventListener("abort",abort,{once:true});
+          const timer=setTimeout(abort,3000);
+          try{
+            const response=await fetch(url,{method:"HEAD",cache:"force-cache",signal:controller.signal});
+            if(response.status===404)exists=false;
+            else if(response.ok){const type=(response.headers.get("content-type")||"").toLowerCase();
+              exists=!type||type.startsWith("image/")||type.includes("octet-stream");}
+          }catch{}finally{clearTimeout(timer);signal?.removeEventListener("abort",abort)}
         }
-
-        if (coAnh === undefined) {
-          coAnh = await new Promise(resolve => {
-            const img = new Image();
-            let xong = false;
-            const gioiHan = setTimeout(() => ketThuc(false), 5000);
-            function ketThuc(ok) {
-              if (xong) return;
-              xong = true;
-              clearTimeout(gioiHan);
-              img.onload = null;
-              img.onerror = null;
-              resolve(ok);
-            }
-            img.onload = () => ketThuc(true);
-            img.onerror = () => ketThuc(false);
-            img.src = url;
+        if(signal?.aborted)return false;
+        if(exists===undefined){
+          exists=await new Promise(resolve=>{
+            const image=new Image();let done=false;
+            const timer=setTimeout(()=>finish(false),5000);
+            function finish(ok){if(done)return;done=true;clearTimeout(timer);
+              signal?.removeEventListener("abort",abort);image.onload=null;image.onerror=null;resolve(ok);}
+            function abort(){finish(false);image.src="";}
+            signal?.addEventListener("abort",abort,{once:true});
+            image.onload=()=>finish(true);image.onerror=()=>finish(false);
+            if(signal?.aborted)abort();else image.src=url;
           });
         }
-
-        boNhoAnh.set(url, {
-          coAnh: coAnh, hetHan: Date.now() + (coAnh ? 600000 : 60000)
-        });
-        if (boNhoAnh.size > 600) boNhoAnh.delete(boNhoAnh.keys().next().value);
-        return coAnh;
+        if(!signal?.aborted){
+          boNhoAnh.set(url,{coAnh:exists,hetHan:Date.now()+(exists?600000:60000)});
+          if(boNhoAnh.size>600)boNhoAnh.delete(boNhoAnh.keys().next().value);
+        }
+        return exists;
       })();
-
-      dangKiemTraAnh.set(url, tacVu);
-      return tacVu.finally(() => dangKiemTraAnh.delete(url));
+      const record={promise:task,signal};dangKiemTraAnh.set(url,record);
+      return task.finally(()=>{if(dangKiemTraAnh.get(url)===record)dangKiemTraAnh.delete(url)});
     }
 
     // Optional Material/manifest.json: {"SAP001":["SAP001_01.jpg","SAP001_02.png"]}.
     // A manifest avoids up to 22 HEAD requests per SAP; missing files fall back to scanning.
     let promiseManifestAnh = null;
+    let hanManifestAnh=0,lanManifestAnh=0;
     const bienTheAnh=new Map();
-    function taiManifestAnh() {
-      const source=window.MaterialImageManifest;
-      if(source&&typeof source==="object"){
-        const entries=source.version===2?source.materials:source;
-        const total=entries&&typeof entries==="object"?
-          Object.values(entries).reduce((n,v)=>n+(Array.isArray(v)?v.length:0),0):0;
-        ghiNhanNguon("images","ready",{count:total});
+    function taiManifestAnh(force=false) {
+      const now=Date.now(),source=window.MaterialImageManifest;
+      if(!force&&source&&typeof source==="object"&&(!hanManifestAnh||hanManifestAnh>now)){
+        if(!hanManifestAnh)hanManifestAnh=now+300000;
         return Promise.resolve(source);
       }
-      if(!promiseManifestAnh) {
-        const batDauTai=Date.now();
-        ghiNhanNguon("images","loading");
-        promiseManifestAnh=new Promise(resolve=>{
-          const script=document.createElement("script");
-          let done=false;
-          const finish=value=>{if(done)return;done=true;clearTimeout(timer);script.remove();resolve(value);};
-          const timer=setTimeout(()=>finish(null),2500);
-          script.src=THU_MUC_HINH+"manifest.js";
-          script.onload=()=>finish(window.MaterialImageManifest||null);
-          script.onerror=()=>finish(null);
-          document.head.appendChild(script);
-        }).then(async data=>{
-          if(data||!/^https?:$/.test(location.protocol))return data;
-          const controller=new AbortController();
-          const timer=setTimeout(()=>controller.abort(),2500);
-          try {
-            const response=await fetch(THU_MUC_HINH+"manifest.json",{cache:"no-cache",signal:controller.signal});
-            return response.ok?await response.json():null;
-          }catch{return null;}finally{clearTimeout(timer);}
-        }).then(data=>{
-          const manifest=data&&typeof data==="object"&&!Array.isArray(data)?data:null;
-          const entries=manifest?.version===2?manifest.materials:manifest;
-          const count=entries&&typeof entries==="object"?
-            Object.values(entries).reduce((n,v)=>n+(Array.isArray(v)?v.length:0),0):0;
-          ghiNhanNguon("images",manifest?"ready":"fallback",{
-            count,ms:Date.now()-batDauTai});
-          return manifest;
-        });
-      }
+      if(!force&&promiseManifestAnh&&hanManifestAnh>now)return promiseManifestAnh;
+      const sequence=++lanManifestAnh;
+      delete window.MaterialImageManifest;
+      bienTheAnh.clear();boNhoBoSuuTap.clear();
+      hanManifestAnh=now+300000;
+      ghiNhanNguon("images","loading");
+      const readScript=()=>new Promise(resolve=>{
+        const script=document.createElement("script");let done=false;
+        const finish=value=>{if(done)return;done=true;clearTimeout(timer);script.remove();resolve(value)};
+        const timer=setTimeout(()=>finish(null),2500);
+        script.src=THU_MUC_HINH+"manifest.js?t="+Date.now();
+        script.onload=()=>finish(window.MaterialImageManifest||null);
+        script.onerror=()=>finish(null);document.head.appendChild(script);
+      });
+      promiseManifestAnh=(async()=>{
+        let data=null;
+        // HTTP JSON avoids script globals; offline/network shares retain manifest.js.
+        if(/^https?:$/.test(location.protocol)){
+          const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),2500);
+          try{const response=await fetch(THU_MUC_HINH+"manifest.json",{cache:"no-cache",signal:controller.signal});
+            if(response.ok)data=await response.json();
+          }catch{}finally{clearTimeout(timer)}
+        }
+        if(!data)data=await readScript();
+        if(sequence!==lanManifestAnh)return null;
+        const manifest=data&&typeof data==="object"&&!Array.isArray(data)?data:null;
+        if(manifest)window.MaterialImageManifest=manifest;
+        hanManifestAnh=Date.now()+(manifest?300000:15000);
+        const entries=manifest?.version===2?manifest.materials:manifest;
+        const count=entries&&typeof entries==="object"?Object.values(entries)
+          .reduce((n,v)=>n+(Array.isArray(v)?v.length:0),0):0;
+        ghiNhanNguon("images",manifest?"ready":"fallback",{count,ms:Date.now()-now});
+        return manifest;
+      })();
       return promiseManifestAnh;
+    }
+    async function lamMoiAnh(){
+      boDieuKhienAnh?.abort();++lanTaiAnh;
+      const sap=maSapDangXem;
+      await taiManifestAnh(true);
+      if(sap&&sap===maSapDangXem)await taiBoSuuTapAnh(sap);
     }
 
     function hinhAnhTuManifest(manifest,sap) {
@@ -7124,6 +7207,7 @@
         const src=url(original);
         bienTheAnh.set(src,{
           preview:valid(item?.preview)?url(item.preview):src,
+          previewSmall:valid(item?.previewSmall)?url(item.previewSmall):null,
           thumb:valid(item?.thumb)?url(item.thumb):src
         });
         images.push(src);
@@ -7131,16 +7215,23 @@
       return [...new Set(images)];
     }
     function duongDanAnh(src,kind) {return bienTheAnh.get(src)?.[kind]||src;}
-    function ganAnh(img,src,original,priority="auto") {
-      if(img.dataset.requested===src)return;
-      img.dataset.requested=src;
+    function ganAnh(img,src,original,priority="auto",srcset="") {
+      const token=src+"|"+srcset;
+      if(img.dataset.requested===token)return;
+      img.dataset.requested=token;
       img.decoding="async";img.fetchPriority=priority;
-      img.onerror=()=>{if(img.dataset.requested===src&&img.getAttribute("src")!==original)img.src=original;};
+      if(srcset){img.srcset=srcset;img.sizes="(max-width: 760px) calc(100vw - 48px), 480px";}
+      else{img.removeAttribute("srcset");img.removeAttribute("sizes");}
+      img.onerror=()=>{if(img.dataset.requested===token&&img.getAttribute("src")!==original){
+        img.removeAttribute("srcset");img.src=original;}};
       img.src=src;
     }
 
     // Chỉ 4 tác vụ kiểm tra đồng thời, giữ dữ liệu từ SAP đã xem gần đây.
     async function taiBoSuuTapAnh(maSap) {
+      boDieuKhienAnh?.abort();
+      boDieuKhienAnh=new AbortController();
+      const signal=boDieuKhienAnh.signal;
       const lanHienTai = ++lanTaiAnh;
       maSapDangXem = chuanHoaMaSap(maSap);
       danhSachAnhDangXem = [];
@@ -7164,6 +7255,7 @@
         danhSachAnhDangXem=daBiet;
         dangQuetAnh=false;
         boNhoBoSuuTap.set(maSapDangXem,{urls:daBiet.slice(),hetHan:Date.now()+300000});
+        if(boNhoBoSuuTap.size>80)boNhoBoSuuTap.delete(boNhoBoSuuTap.keys().next().value);
         capNhatGiaoDienAnh();
         return;
       }
@@ -7180,7 +7272,7 @@
       async function congNhan() {
         while (viTri < hangDoi.length && lanHienTai === lanTaiAnh) {
           const url = THU_MUC_HINH + encodeURIComponent(hangDoi[viTri++]);
-          const tonTai = await kiemTraAnh(url);
+          const tonTai = await kiemTraAnh(url,signal);
           if (tonTai && lanHienTai === lanTaiAnh && !danhSachAnhDangXem.includes(url)) {
             const anhDangChon = danhSachAnhDangXem[viTriAnhDangXem];
             danhSachAnhDangXem.push(url);
@@ -7252,7 +7344,8 @@
         if (viTriAnhDangXem >= tong) viTriAnhDangXem = 0;
         const src = danhSachAnhDangXem[viTriAnhDangXem];
         const preview=duongDanAnh(src,"preview");
-        ganAnh(imgEl,preview,src,"high");
+        const small=bienTheAnh.get(src)?.previewSmall;
+        ganAnh(imgEl,preview,src,"high",small?small+" 480w, "+preview+" 960w":"");
         const lightboxImg = document.getElementById("lightbox-img");
         if (document.getElementById("lightbox").style.display === "flex" &&
             lightboxImg.getAttribute("src") !== src) {
@@ -7265,6 +7358,7 @@
         btnNext.style.display = tong > 1 ? "block" : "none";
       } else {
         imgEl.removeAttribute("src");
+        imgEl.removeAttribute("srcset");imgEl.removeAttribute("sizes");
         delete imgEl.dataset.requested;imgEl.onerror=null;
         document.getElementById("lightbox-img").removeAttribute("src");
         thongBaoAnh.textContent = dangQuetAnh ? tuDien("imagesSearching") :

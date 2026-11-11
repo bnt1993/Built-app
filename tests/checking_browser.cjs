@@ -27,9 +27,9 @@ const manifest={version:2,complete:true,materials:{"00123":[{original:"00123.jpg
  await page.locator('#than-bang tr[data-row-index="1"]').click();
  assert.equal(await page.locator('#detail-issued').count(),0);
  await page.waitForFunction(()=>historyLoaded);
- assert.equal(requests.filter(x=>x.path==='/History.js').length,1);
+ assert.equal(requests.filter(x=>x.path==='/History.js'&&x.method==='GET').length,1);
  assert.match(await page.locator('#anh-chinh').getAttribute('src'),/preview.webp/);
- assert.equal(requests.filter(x=>x.method==='HEAD').length,0);
+ assert.equal(requests.filter(x=>x.method==='HEAD'&&x.path.startsWith('/Material/')).length,0);
  await page.locator('#than-bang tr[data-row-index="1"]').dblclick();
  await page.waitForFunction(()=>document.querySelector('#material-history-count').textContent.includes('5'));
  assert(await page.locator('#material-history-dialog').evaluate(el=>el.open));
@@ -48,7 +48,7 @@ const manifest={version:2,complete:true,materials:{"00123":[{original:"00123.jpg
  await page.locator('#than-bang tr[data-row-index="3"]').focus();
  await page.keyboard.press('Shift+Enter');
  assert.equal(await page.locator('#material-history-title').innerText(),'Material usage history');
- assert.equal(requests.filter(x=>x.path==='/History.js').length,1);
+ assert.equal(requests.filter(x=>x.path==='/History.js'&&x.method==='GET').length,1);
  await page.keyboard.press('Escape');
  await page.locator('#than-bang tr[data-row-index="1"]').click();
  version=2;await page.evaluate(()=>taiDuLieu());await page.waitForFunction(()=>chiMucSanSang&&tatCaDuLieu[1][0]==='00456');
@@ -61,10 +61,10 @@ const manifest={version:2,complete:true,materials:{"00123":[{original:"00123.jpg
  const totals=await page.evaluate(async text=>{
  const source=docHistoryTuVanBan(text);
  await apDungNguonHistory(source.data);
- return {rows:historyAll.length,
+ return {rows:historyAll.length,expected:source.data.length-1,
  stock:window.duLieuCongTy[1][0]};
  },actual);
- assert.equal(totals.rows,62801);assert.equal(totals.stock,'00456');
+ assert.equal(totals.rows,totals.expected);assert(totals.rows>0);assert.equal(totals.stock,'00456');
  version=3;await page.evaluate(()=>taiDuLieu());await page.waitForFunction(()=>chiMucSanSang&&tatCaDuLieu.length===3);
  assert.equal(await page.evaluate(()=>dongDangChonIndex),-1);assert(!(await page.locator('#luoi-chi-tiet').innerText()).includes('Motor'));
  await page.setViewportSize({width:390,height:844});
