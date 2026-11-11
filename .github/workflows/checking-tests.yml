@@ -49,6 +49,7 @@ jobs:
           node tests/dashboard_logic.cjs
           node tests/dashboard_scope_period_logic.cjs
           node tests/checking_performance_logic.cjs
+          node tests/checking_image_loading_logic.cjs
       - name: Validate catalog exports and responsive image generation
         run: |
           python3 -m pip install -r scripts/requirements-images.txt
@@ -73,7 +74,7 @@ jobs:
       - name: Verify Stock, History and performance updates in Chromium
         run: |
           checking_browser_status=0
-          for checking_browser_test in tests/checking_browser.cjs tests/dashboard_browser.cjs tests/dashboard_report_summary_browser.cjs tests/dashboard_scope_period_browser.cjs tests/checking_performance_browser.cjs; do
+          for checking_browser_test in tests/checking_browser.cjs tests/dashboard_browser.cjs tests/dashboard_report_summary_browser.cjs tests/dashboard_scope_period_browser.cjs tests/checking_performance_browser.cjs tests/checking_image_loading_browser.cjs; do
             if ! node "$checking_browser_test"; then checking_browser_status=1; fi
           done
           exit "$checking_browser_status"

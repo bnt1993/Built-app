@@ -29,7 +29,8 @@ Chương trình tạo checking-versions.js chỉ chứa hash SHA-256 rút gọn,
 - Amount.js: nạp từ cùng thư mục với HTML, làm mới theo chu kỳ và nút trên giao diện. Tổng giá trị của Tất cả và Hall 1 bằng nhau; Hall 2 không có giá trị.
 - HistoryWorker.js: JSON.parse, chuẩn hóa ngày/chiều giao dịch, lập chỉ mục ngày xuất cuối và sắp xếp bản ghi trên luồng riêng. Kết quả đã lập chỉ mục được gửi về cho bảng và dashboard; một số phép tổng hợp dashboard vẫn chạy ở luồng chính. Worker cũ/không có vẫn dùng đường đọc dự phòng.
 - IndexedDB: cache một bản History đã lập chỉ mục có hiệu lực tối đa 24 giờ, gắn với ETag/Last-Modified và schema 3. Cache schema cũ được thay thế sau lần đọc lại đầu tiên. Người dùng có nút xóa cache ngay trên Dashboard. File mở trực tiếp qua file:// không lưu cache IndexedDB.
-- Material: HTTP ưu tiên manifest.json, mở file trực tiếp dùng manifest.js. Nút Đồng bộ tải lại manifest và bộ sưu tập đang chọn; lỗi tải manifest chỉ cache ngắn hạn rồi cho thử lại. Đổi SAP hủy các yêu cầu dò ảnh của SAP cũ, không ghi kết quả bị hủy thành lỗi "không có ảnh". Nếu manifest không tồn tại, tiếp tục cơ chế dò cũ.
+- Material: HTTP ưu tiên manifest.json, mở file trực tiếp dùng manifest.js. Manifest được đi trước tối đa 120ms; nếu vẫn chưa có kết quả, app tìm ảnh song song thay vì chờ hết hai lượt timeout JSON/JS. Bốn tên SAP_01.jpg, SAP.jpg, SAP_01.png, SAP.png được tải trực tiếp trước để ảnh đầu không chờ HEAD và tên không đánh số không nằm cuối hàng đợi. Các tên _02 đến _10 vẫn được dò với tối đa 4 tác vụ đồng thời, ảnh tìm được hiện ngay. Khi manifest đầy đủ đến muộn, app dừng dò và chuyển sang ảnh WebP/preview theo manifest. Manifest có sẵn trả ngay không phát sinh dò tên.
+- Nút Đồng bộ tải lại manifest và bộ sưu tập đang chọn; lỗi tải manifest/không tìm thấy ảnh chỉ cache ngắn hạn rồi cho thử lại. Đổi SAP hủy các yêu cầu dò ảnh của SAP cũ, không ghi kết quả bị hủy hoặc timeout tải ảnh thành lỗi "không có ảnh". Bộ sưu tập đã xem được dùng lại trong phiên. Khi không có manifest, app vẫn cần dò tên; chạy script tạo manifest/WebP ở trên sẽ bỏ được bước này và giảm dung lượng ảnh.
 
 ## Tìm kiếm và cập nhật nguồn
 
@@ -54,7 +55,7 @@ Chương trình tạo checking-versions.js chỉ chứa hash SHA-256 rút gọn,
 
 Với HTTP(S) nội bộ, bật nén văn bản cho JS/JSON. Các ảnh WebP có hash trong tên có thể dùng Cache-Control private, max-age=31536000, immutable. Manifest và file phiên bản cần revalidate bằng ETag/no-cache; không áp cache dài hạn bất biến cho đường dẫn manifest cố định. Các thiết lập này thuộc máy chủ triển khai, không được tự áp dụng bởi HTML.
 
-Workflow chạy kiểm thử Stock/History thật, số thập phân, Map SAP, Worker so với fallback, cập nhật cùng timestamp/ETag khác, hủy dò ảnh, preview responsive, VI/EN và làm mới Database nhiều lần trên file://. Không cam kết thời gian tải NAS/điện thoại từ phép thử Node mô phỏng; đo tại thiết bị/mạng thực tế trước khi đặt mục tiêu thời gian phản hồi.
+Workflow chạy kiểm thử Stock/History thật, số thập phân, Map SAP, Worker so với fallback, cập nhật cùng timestamp/ETag khác, hủy dò ảnh, preview responsive, VI/EN và làm mới Database nhiều lần trên file://. Kiểm thử ảnh giữ manifest chưa trả lời để xác nhận ảnh đầu vẫn hiện, rồi kiểm tra manifest đến muộn, đổi SAP và file:// không có manifest vẫn đọc được ảnh _10. Không cam kết thời gian tải NAS/điện thoại từ kiểm thử mô phỏng; đo tại thiết bị/mạng thực tế trước khi đặt mục tiêu thời gian phản hồi.
 
 ## Số liệu và cảnh báo
 
