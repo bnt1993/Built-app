@@ -7091,17 +7091,17 @@
     const dangKiemTraAnh = new Map();
     const boNhoBoSuuTap = new Map();
 
-    // HEAD kiểm tra tên tệp mà không tải toàn bộ ảnh. Fallback Image() nếu
-    // chạy file://, ổ mạng, hoặc server không hỗ trợ HEAD.
-    function kiemTraAnh(url,signal) {
+    // Tải trực tiếp các tên phổ biến để ảnh đầu không phải chờ thêm một lượt HEAD.
+    // Các tên còn lại dùng HEAD trên HTTP; ổ mạng/file:// vẫn dùng Image().
+    function kiemTraAnh(url,signal,trucTiep=false) {
       if(signal?.aborted)return Promise.resolve(false);
       const cached=boNhoAnh.get(url);
       if(cached&&cached.hetHan>Date.now())return Promise.resolve(cached.coAnh);
       const previous=dangKiemTraAnh.get(url);
       if(previous&&!previous.signal?.aborted)return previous.promise;
       const task=(async()=>{
-        let exists;
-        if(/^https?:$/.test(location.protocol)){
+        let exists,choLuu=true;
+        if(!trucTiep&&/^https?:$/.test(location.protocol)){
           const controller=new AbortController();
           const abort=()=>controller.abort();
           signal?.addEventListener("abort",abort,{once:true});
@@ -7117,7 +7117,8 @@
         if(exists===undefined){
           exists=await new Promise(resolve=>{
             const image=new Image();let done=false;
-            const timer=setTimeout(()=>finish(false),5000);
+            image.decoding="async";image.fetchPriority=trucTiep?"high":"low";
+            const timer=setTimeout(()=>{choLuu=false;finish(false);image.src="";},5000);
             function finish(ok){if(done)return;done=true;clearTimeout(timer);
               signal?.removeEventListener("abort",abort);image.onload=null;image.onerror=null;resolve(ok);}
             function abort(){finish(false);image.src="";}
@@ -7126,8 +7127,8 @@
             if(signal?.aborted)abort();else image.src=url;
           });
         }
-        if(!signal?.aborted){
-          boNhoAnh.set(url,{coAnh:exists,hetHan:Date.now()+(exists?600000:60000)});
+        if(!signal?.aborted&&choLuu){
+          boNhoAnh.set(url,{coAnh:exists,hetHan:Date.now()+(exists?600000:15000)});
           if(boNhoAnh.size>600)boNhoAnh.delete(boNhoAnh.keys().next().value);
         }
         return exists;
@@ -7227,7 +7228,8 @@
       img.src=src;
     }
 
-    // Chỉ 4 tác vụ kiểm tra đồng thời, giữ dữ liệu từ SAP đã xem gần đây.
+    // Manifest có tối đa 120ms đi trước; mạng chậm không chặn việc tìm ảnh đầu.
+    // Chỉ 4 tác vụ dò đồng thời, giữ dữ liệu từ SAP đã xem gần đây.
     async function taiBoSuuTapAnh(maSap) {
       boDieuKhienAnh?.abort();
       boDieuKhienAnh=new AbortController();
@@ -7239,8 +7241,9 @@
       dangQuetAnh = Boolean(maSapDangXem);
       capNhatGiaoDienAnh();
       if (!maSapDangXem) return;
+      const sap=maSapDangXem;
 
-      const boDaCo = boNhoBoSuuTap.get(maSapDangXem);
+      const boDaCo = boNhoBoSuuTap.get(sap);
       if (boDaCo && boDaCo.hetHan > Date.now()) {
         danhSachAnhDangXem = boDaCo.urls.slice();
         dangQuetAnh = false;
@@ -7248,51 +7251,58 @@
         return;
       }
 
-      const manifest=await taiManifestAnh();
-      if(lanHienTai!==lanTaiAnh)return;
-      const daBiet=hinhAnhTuManifest(manifest,maSapDangXem);
-      if(daBiet!==null) {
-        danhSachAnhDangXem=daBiet;
-        dangQuetAnh=false;
-        boNhoBoSuuTap.set(maSapDangXem,{urls:daBiet.slice(),hetHan:Date.now()+300000});
+      const boDo=new AbortController();
+      const dungDo=()=>boDo.abort();
+      signal.addEventListener("abort",dungDo,{once:true});
+      let daDungManifest=false;
+      const conHieuLuc=()=>!signal.aborted&&lanHienTai===lanTaiAnh;
+      const luuBoSuuTap=()=>{
+        boNhoBoSuuTap.set(sap,{urls:danhSachAnhDangXem.slice(),
+          hetHan:Date.now()+(danhSachAnhDangXem.length?300000:15000)});
         if(boNhoBoSuuTap.size>80)boNhoBoSuuTap.delete(boNhoBoSuuTap.keys().next().value);
-        capNhatGiaoDienAnh();
-        return;
+      };
+      function dungManifest(manifest){
+        if(!conHieuLuc())return false;
+        const daBiet=hinhAnhTuManifest(manifest,sap);
+        if(daBiet===null)return false;
+        const dangChon=danhSachAnhDangXem[viTriAnhDangXem];
+        daDungManifest=true;dungDo();
+        danhSachAnhDangXem=daBiet;
+        viTriAnhDangXem=Math.max(0,daBiet.indexOf(dangChon));
+        dangQuetAnh=false;luuBoSuuTap();capNhatGiaoDienAnh();
+        return true;
       }
-      const danhSachTen = [];
-      for (let k = 1; k <= SO_ANH_TOI_DA; k++) {
-        const hauTo = String(k).padStart(2, "0");
-        danhSachTen.push(maSapDangXem + "_" + hauTo + ".jpg");
-        danhSachTen.push(maSapDangXem + "_" + hauTo + ".png");
-      }
-      danhSachTen.push(maSapDangXem + ".jpg", maSapDangXem + ".png");
-
-      const hangDoi = [...new Set(danhSachTen)];
-      let viTri = 0;
-      async function congNhan() {
-        while (viTri < hangDoi.length && lanHienTai === lanTaiAnh) {
-          const url = THU_MUC_HINH + encodeURIComponent(hangDoi[viTri++]);
-          const tonTai = await kiemTraAnh(url,signal);
-          if (tonTai && lanHienTai === lanTaiAnh && !danhSachAnhDangXem.includes(url)) {
-            const anhDangChon = danhSachAnhDangXem[viTriAnhDangXem];
-            danhSachAnhDangXem.push(url);
-            danhSachAnhDangXem.sort();
-            viTriAnhDangXem = anhDangChon
-              ? danhSachAnhDangXem.indexOf(anhDangChon) : 0;
-            capNhatGiaoDienAnh();
+      let henDo;
+      try{
+        const choManifest=taiManifestAnh().then(dungManifest,()=>false);
+        await Promise.race([choManifest,new Promise(resolve=>{henDo=setTimeout(resolve,120)})]);
+        clearTimeout(henDo);
+        if(!conHieuLuc()||daDungManifest)return;
+        // SAP.jpg/PNG được dò ngay, không nằm sau 20 tên đánh số chưa chắc có.
+        const danhSachTen=[sap+"_01.jpg",sap+".jpg",sap+"_01.png",sap+".png"];
+        for(let k=2;k<=SO_ANH_TOI_DA;k++){
+          const hauTo=String(k).padStart(2,"0");
+          danhSachTen.push(sap+"_"+hauTo+".jpg",sap+"_"+hauTo+".png");
+        }
+        const hangDoi=[...new Set(danhSachTen)];let viTri=0;
+        async function congNhan(){
+          while(viTri<hangDoi.length&&conHieuLuc()&&!boDo.signal.aborted){
+            const chiSo=viTri++,url=THU_MUC_HINH+encodeURIComponent(hangDoi[chiSo]);
+            const tonTai=await kiemTraAnh(url,boDo.signal,chiSo<4);
+            if(tonTai&&conHieuLuc()&&!boDo.signal.aborted&&!danhSachAnhDangXem.includes(url)){
+              const anhDangChon=danhSachAnhDangXem[viTriAnhDangXem];
+              danhSachAnhDangXem.push(url);danhSachAnhDangXem.sort();
+              viTriAnhDangXem=anhDangChon?danhSachAnhDangXem.indexOf(anhDangChon):0;
+              capNhatGiaoDienAnh();
+            }
           }
         }
+        await Promise.all([congNhan(),congNhan(),congNhan(),congNhan()]);
+        if(!conHieuLuc()||daDungManifest)return;
+        dangQuetAnh=false;luuBoSuuTap();capNhatGiaoDienAnh();
+      }finally{
+        clearTimeout(henDo);signal.removeEventListener("abort",dungDo);
       }
-
-      await Promise.all([congNhan(), congNhan(), congNhan(), congNhan()]);
-      if (lanHienTai !== lanTaiAnh) return;
-      dangQuetAnh = false;
-      boNhoBoSuuTap.set(maSapDangXem, {
-        urls: danhSachAnhDangXem.slice(),
-        hetHan: Date.now() + (danhSachAnhDangXem.length ? 300000 : 60000)
-      });
-      if (boNhoBoSuuTap.size > 80) boNhoBoSuuTap.delete(boNhoBoSuuTap.keys().next().value);
-      capNhatGiaoDienAnh();
     }
 
     // Chuẩn bị ảnh tiếp theo sau khi chuyển ảnh để thao tác mượt hơn.
