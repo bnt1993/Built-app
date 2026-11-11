@@ -2995,13 +2995,14 @@
     Object.assign(NGON_NGU.vi,{
       catalogTab:"Danh mục vật tư",
       catalogHeading:"Tra cứu danh mục vật tư SAP",
-      catalogDesc:"Thông tin danh mục từ DATABASE_HEADERS và DATABASE_DATA trong Database.js.",
-      catalogReload:"Làm mới dữ liệu",catalogUpload:"Chọn Database.js",catalogExport:"Xuất Excel",
+      catalogDesc:"Thông tin danh mục từ DATABASE_HEADERS và DATABASE_DATA trong file Database.",
+      catalogReload:"Làm mới dữ liệu",catalogUpload:"Chọn file Database",catalogExport:"Xuất Excel",
       catalogLoading:"Chưa tải danh mục.",catalogLoadingNow:"Đang đọc Database.js...",
       catalogLoaded:"Đã đọc {count} dòng danh mục từ Database.",
       catalogFileLoaded:"Đã đọc {count} dòng từ file được chọn.",
       catalogSourceError:"Không tìm thấy Database.js / Database. Đặt file cạnh trang HTML hoặc chọn file thủ công.",
-      catalogFormatError:"Không thấy DATABASE_HEADERS và DATABASE_DATA hợp lệ trong data.js.",
+      catalogFormatError:"File Database không có DATABASE_HEADERS / DATABASE_DATA hợp lệ.",
+      catalogIncomplete:"File Database chưa đầy đủ: mảng DATABASE_DATA bị cắt giữa chừng. Hãy tải lại file gốc đầy đủ.",
       catalogMissingRequired:"Thiếu cột bắt buộc Material / Material Description trong data.js.",
       catalogMissingColumns:"Thiếu cột tùy chọn: {columns}. Các ô tương ứng sẽ để trống.",
       catalogFiltersAria:"Bộ lọc danh mục vật tư",
@@ -3030,13 +3031,14 @@
     Object.assign(NGON_NGU.en,{
       catalogTab:"Material catalog",
       catalogHeading:"SAP material master lookup",
-      catalogDesc:"Master data from DATABASE_HEADERS and DATABASE_DATA in Database.js.",
-      catalogReload:"Refresh data",catalogUpload:"Choose Database.js",catalogExport:"Export Excel",
+      catalogDesc:"Master data from DATABASE_HEADERS and DATABASE_DATA in the Database file.",
+      catalogReload:"Refresh data",catalogUpload:"Choose Database file",catalogExport:"Export Excel",
       catalogLoading:"Catalog not loaded.",catalogLoadingNow:"Loading Database.js...",
       catalogLoaded:"Loaded {count} catalog rows from Database.",
       catalogFileLoaded:"Loaded {count} rows from the selected file.",
       catalogSourceError:"Cannot read Database.js / Database. Place the file next to this HTML or select it manually.",
-      catalogFormatError:"Valid DATABASE_HEADERS and DATABASE_DATA were not found in data.js.",
+      catalogFormatError:"The Database file does not contain valid DATABASE_HEADERS / DATABASE_DATA.",
+      catalogIncomplete:"The Database file is incomplete: DATABASE_DATA was cut off. Please upload the complete file.",
       catalogMissingRequired:"Material / Material Description columns are missing from data.js.",
       catalogMissingColumns:"Optional columns missing: {columns}. Their cells will be blank.",
       catalogFiltersAria:"Material catalog filters",
@@ -3619,9 +3621,11 @@
         throw lastError||new Error("NOT_FOUND");
       }catch(error){
         if(ticket!==state.requestId)return;
-        state.statusKey=String(error.message).includes("DATABASE")||
-          String(error.message).includes("JSON")?"catalogFormatError":
-          "catalogSourceError";
+        const issue=String(error.message||"");
+        state.statusKey=/Unclosed DATABASE_DATA|Unexpected end of JSON/i.test(issue)?
+          "catalogIncomplete":
+          /DATABASE|JSON|INVALID_DATABASE/i.test(issue)?
+          "catalogFormatError":"catalogSourceError";
         state.statusVars={};capNhatTrangThaiDanhMuc();
       }finally{
         if(ticket===state.requestId)state.loading=false;
@@ -3634,7 +3638,9 @@
         const parsed=docDatabaseTuText(await file.text());
         nhanDuLieuDatabase(parsed.headers,parsed.rows,"file");
       }catch(error){
-        state.statusKey="catalogFormatError";
+        const issue=String(error.message||"");
+        state.statusKey=/Unclosed DATABASE_DATA|Unexpected end of JSON/i.test(issue)?
+          "catalogIncomplete":"catalogFormatError";
         capNhatTrangThaiDanhMuc();
       }
     }
