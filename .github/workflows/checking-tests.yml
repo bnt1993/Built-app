@@ -52,3 +52,5 @@ jobs:
           npx playwright install chromium --with-deps
       - name: Check dashboard interactions
         run: node tests/dashboard_sources_browser.cjs
+      - name: Verify independent Database material catalog
+        run: node tests/checking_catalog_browser.cjs
