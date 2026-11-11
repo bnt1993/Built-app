@@ -35,8 +35,9 @@ async function installRoutes(page,mode="database-js"){
       body:mode==="database-js"?script:""
     });
     if(name==="/Database")return route.fulfill({
-      status:mode==="database"?200:404,contentType:"text/javascript",
-      body:mode==="database"?script:""
+      status:mode==="database"||mode==="incomplete"?200:404,
+      contentType:"text/javascript",
+      body:mode==="database"?script:mode==="incomplete"?script.slice(0,-55):""
     });
     if(name==="/Amount.js")return route.fulfill({
       contentType:"text/javascript",body:"window.amountData=[];"
@@ -157,6 +158,17 @@ async function run(){
     assert.equal(await upload.locator("#catalog-table th").count(),10);
     assert.equal(seenUpload.filter(x=>x.name==="/data.js").length,1,
       "stock still reads its own data.js");
+
+    // The Database blob currently on GitHub ends mid-record. Such source
+    // must not silently show partial data or overwrite the stock dataset.
+    const incomplete=await browser.newPage();
+    await installRoutes(incomplete,"incomplete");
+    await incomplete.goto("http://catalog.test/");
+    await incomplete.locator("#tab-catalog").click();
+    await incomplete.waitForFunction(()=>document.getElementById(
+      "catalog-source-status").textContent.includes("chưa đầy đủ"));
+    assert.equal(await incomplete.locator("#catalog-count").innerText(),"");
+    assert.equal(await incomplete.locator("#catalog-rows tr").count(),0);
     console.log("PASS: independent Database catalog, exact ten columns, filters, pagination, VI/EN, XLSX, filename fallback, manual import.");
   }finally{await browser.close()}
 }
