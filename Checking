@@ -2123,10 +2123,10 @@
       <section id="view-catalog" class="view-pane catalog-pane" role="tabpanel" aria-labelledby="tab-catalog" hidden>
         <div class="pane-heading catalog-heading">
           <div><h1 data-i18n="catalogHeading">Tra cứu danh mục vật tư SAP</h1>
-            <p data-i18n="catalogDesc">Tra cứu thông tin mã vật tư từ DATABASE_HEADERS và DATABASE_DATA trong data.js.</p></div>
+            <p data-i18n="catalogDesc">Tra cứu danh mục từ DATABASE_HEADERS và DATABASE_DATA trong Database.js.</</p></div>
           <div class="catalog-actions">
             <button type="button" class="btn btn-secondary" id="catalog-reload" data-i18n="catalogReload">Làm mới dữ liệu</button>
-            <label class="btn btn-secondary catalog-upload" for="catalog-upload-input" data-i18n="catalogUpload">Chọn data.js</label>
+            <label class="btn btn-secondary catalog-upload" for="catalog-upload-input" data-i18n="catalogUpload">Chọn Database.js</label>
             <input id="catalog-upload-input" type="file" accept=".js,.txt,application/javascript,text/plain" hidden>
             <button type="button" class="btn btn-primary" id="catalog-export" data-i18n="catalogExport">Xuất Excel</button>
           </div>
@@ -2995,12 +2995,12 @@
     Object.assign(NGON_NGU.vi,{
       catalogTab:"Danh mục vật tư",
       catalogHeading:"Tra cứu danh mục vật tư SAP",
-      catalogDesc:"Thông tin danh mục từ DATABASE_HEADERS và DATABASE_DATA trong data.js.",
-      catalogReload:"Làm mới dữ liệu",catalogUpload:"Chọn data.js",catalogExport:"Xuất Excel",
-      catalogLoading:"Chưa tải danh mục.",catalogLoadingNow:"Đang đọc data.js...",
-      catalogLoaded:"Đã đọc {count} dòng danh mục từ data.js.",
+      catalogDesc:"Thông tin danh mục từ DATABASE_HEADERS và DATABASE_DATA trong Database.js.",
+      catalogReload:"Làm mới dữ liệu",catalogUpload:"Chọn Database.js",catalogExport:"Xuất Excel",
+      catalogLoading:"Chưa tải danh mục.",catalogLoadingNow:"Đang đọc Database.js...",
+      catalogLoaded:"Đã đọc {count} dòng danh mục từ Database.",
       catalogFileLoaded:"Đã đọc {count} dòng từ file được chọn.",
-      catalogSourceError:"Không thể đọc data.js. Đặt file cạnh trang HTML hoặc chọn file thủ công.",
+      catalogSourceError:"Không tìm thấy Database.js / Database. Đặt file cạnh trang HTML hoặc chọn file thủ công.",
       catalogFormatError:"Không thấy DATABASE_HEADERS và DATABASE_DATA hợp lệ trong data.js.",
       catalogMissingRequired:"Thiếu cột bắt buộc Material / Material Description trong data.js.",
       catalogMissingColumns:"Thiếu cột tùy chọn: {columns}. Các ô tương ứng sẽ để trống.",
@@ -3030,12 +3030,12 @@
     Object.assign(NGON_NGU.en,{
       catalogTab:"Material catalog",
       catalogHeading:"SAP material master lookup",
-      catalogDesc:"Master data from DATABASE_HEADERS and DATABASE_DATA in data.js.",
-      catalogReload:"Refresh data",catalogUpload:"Choose data.js",catalogExport:"Export Excel",
-      catalogLoading:"Catalog not loaded.",catalogLoadingNow:"Loading data.js...",
-      catalogLoaded:"Loaded {count} catalog rows from data.js.",
+      catalogDesc:"Master data from DATABASE_HEADERS and DATABASE_DATA in Database.js.",
+      catalogReload:"Refresh data",catalogUpload:"Choose Database.js",catalogExport:"Export Excel",
+      catalogLoading:"Catalog not loaded.",catalogLoadingNow:"Loading Database.js...",
+      catalogLoaded:"Loaded {count} catalog rows from Database.",
       catalogFileLoaded:"Loaded {count} rows from the selected file.",
-      catalogSourceError:"Cannot read data.js. Place it next to the HTML page or select the file manually.",
+      catalogSourceError:"Cannot read Database.js / Database. Place the file next to this HTML or select it manually.",
       catalogFormatError:"Valid DATABASE_HEADERS and DATABASE_DATA were not found in data.js.",
       catalogMissingRequired:"Material / Material Description columns are missing from data.js.",
       catalogMissingColumns:"Optional columns missing: {columns}. Their cells will be blank.",
