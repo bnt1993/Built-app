@@ -1625,6 +1625,72 @@
     }
     #view-dashboard .dashboard-sort-icon { display:inline-block; opacity:.6; min-width:9px; }
     #view-dashboard .dashboard-sort-button[data-active="true"] .dashboard-sort-icon { opacity:1; }
+  
+    /* SAP material master: modern searchable catalog, separate from stock analytics. */
+    .catalog-pane{min-width:0;padding-bottom:18px}
+    .catalog-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .catalog-heading h1{font-size:clamp(21px,2vw,28px);margin:0}
+    .catalog-heading p{font-size:12px;color:var(--muted);margin-top:4px}
+    .catalog-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .catalog-upload{display:inline-flex;align-items:center;cursor:pointer}
+    .catalog-status-row{display:flex;align-items:center;justify-content:space-between;
+      gap:12px;flex-wrap:wrap;padding:12px 16px;margin:14px 0;
+      background:var(--surface);border:1px solid var(--line);border-radius:12px;
+      font-size:12px;color:var(--muted)}
+    #catalog-count{font-weight:750;color:var(--blue-strong)}
+    .catalog-filters{display:grid;grid-template-columns:minmax(250px,2fr) repeat(3,minmax(140px,1fr));
+      align-items:end;gap:12px;background:var(--surface);border:1px solid var(--line);
+      border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+    .catalog-field{display:flex;flex-direction:column;gap:6px;min-width:0;
+      font-size:11px;color:var(--muted);font-weight:750}
+    .catalog-field input,.catalog-field select{
+      height:42px;width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;
+      background:var(--surface-subtle);color:var(--ink);padding:0 11px;font-size:12px;
+      outline:none}
+    .catalog-field input:focus,.catalog-field select:focus{border-color:var(--blue);
+      box-shadow:0 0 0 3px rgba(53,104,232,.12)}
+    .catalog-reset{height:42px;white-space:nowrap}
+    .catalog-table-panel{overflow:hidden;background:var(--surface);border:1px solid var(--line);
+      border-radius:16px;box-shadow:var(--shadow)}
+    .catalog-list-head{display:flex;justify-content:space-between;align-items:center;
+      padding:14px 18px;gap:12px;flex-wrap:wrap}
+    .catalog-list-head h2{font-size:16px;margin:0}
+    .catalog-list-head p{font-size:11px;color:var(--muted);margin:4px 0 0}
+    #catalog-result{font-size:12px;font-weight:750;color:var(--blue-strong)}
+    .catalog-table-scroll{width:100%;overflow-x:auto;max-height:min(68vh,760px);
+      overflow-y:auto;scrollbar-width:thin;border-top:1px solid var(--line)}
+    .catalog-table{border-collapse:separate;border-spacing:0;width:100%;min-width:1420px;
+      font-size:12px;table-layout:auto}
+    .catalog-table th{position:sticky;top:0;z-index:2;background:var(--surface-subtle);
+      color:var(--ink);border-bottom:1px solid var(--line);text-align:left;padding:0}
+    .catalog-table th button{display:flex;justify-content:space-between;align-items:center;
+      width:100%;padding:12px 11px;gap:7px;border:0;background:transparent;color:inherit;
+      font-size:11px;font-weight:800;text-align:left;white-space:nowrap;cursor:pointer}
+    .catalog-table th button:hover{background:var(--blue-soft)}
+    .catalog-table th b{color:var(--muted);font-size:12px}
+    .catalog-table td{padding:11px 12px;white-space:nowrap;border-bottom:1px solid var(--line);
+      color:var(--ink);vertical-align:top;max-width:340px;overflow:hidden;text-overflow:ellipsis}
+    .catalog-table tbody tr:nth-child(even){background:var(--surface-subtle)}
+    .catalog-table tbody tr:hover{background:var(--blue-soft)}
+    .catalog-table td:first-child{color:var(--blue-strong);font-weight:800}
+    .catalog-table td.catalog-number{text-align:right;font-variant-numeric:tabular-nums}
+    .catalog-table .catalog-empty{text-align:center;padding:40px 16px;color:var(--muted)}
+    .catalog-pagination{display:flex;align-items:center;justify-content:flex-end;
+      padding:12px 16px;gap:8px;flex-wrap:wrap;background:var(--surface)}
+    .catalog-pagination label{display:flex;align-items:center;gap:8px;
+      color:var(--muted);font-size:11px}
+    .catalog-pagination select{height:34px;border:1px solid var(--line);border-radius:8px;
+      color:var(--ink);background:var(--surface)}
+    .catalog-pagination .btn{min-width:36px;padding:7px 10px}
+    #catalog-page-label{min-width:90px;text-align:center;font-size:12px;color:var(--muted)}
+    @media(max-width:1200px){.catalog-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .catalog-search{grid-column:1/-1}}
+    @media(max-width:700px){.catalog-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .catalog-heading{align-items:flex-start}.catalog-actions{width:100%}}
+    @media(max-width:480px){.catalog-filters{grid-template-columns:1fr}
+      .catalog-search{grid-column:auto}.catalog-actions .btn{flex:1}
+      .catalog-pagination{justify-content:center}.catalog-table-scroll{max-height:65vh}}
+
   </style>
 </head>
 <body>
@@ -1647,6 +1713,7 @@
       <nav class="view-tabs" aria-label="Các màn hình quản lý kho" data-i18n-aria="tabsAria" role="tablist">
         <button type="button" id="tab-stock" class="view-tab active" role="tab" aria-selected="true" aria-controls="view-stock" tabindex="0" onclick="chuyenTab('stock')"><span aria-hidden="true">▤</span><span data-i18n="tabStock">Tra cứu tồn kho</span></button>
         <button type="button" id="tab-dashboard" class="view-tab" role="tab" aria-selected="false" aria-controls="view-dashboard" tabindex="-1" onclick="chuyenTab('dashboard')"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Phân tích kho</span></button>
+        <button type="button" id="tab-catalog" class="view-tab" role="tab" aria-selected="false" aria-controls="view-catalog" tabindex="-1" onclick="chuyenTab('catalog')"><span aria-hidden="true">▦</span><span data-i18n="catalogTab">Danh mục vật tư</span></button>
       </nav>
 
       <section id="view-stock" class="view-pane" role="tabpanel" aria-labelledby="tab-stock">
@@ -2050,6 +2117,102 @@
         </section>
         <div class="insight-note" data-i18n="insightNote">Lịch sử giao dịch lấy từ History.js; giá trị kho lấy từ Amount.js.</div>
       </section>
+      </section>
+
+
+      <section id="view-catalog" class="view-pane catalog-pane" role="tabpanel" aria-labelledby="tab-catalog" hidden>
+        <div class="pane-heading catalog-heading">
+          <div><h1 data-i18n="catalogHeading">Tra cứu danh mục vật tư SAP</h1>
+            <p data-i18n="catalogDesc">Tra cứu danh mục từ DATABASE_HEADERS và DATABASE_DATA trong Database.js.</</p></div>
+          <div class="catalog-actions">
+            <button type="button" class="btn btn-secondary" id="catalog-reload" data-i18n="catalogReload">Làm mới dữ liệu</button>
+            <label class="btn btn-secondary catalog-upload" for="catalog-upload-input" data-i18n="catalogUpload">Chọn Database.js</label>
+            <input id="catalog-upload-input" type="file" accept=".js,.txt,application/javascript,text/plain" hidden>
+            <button type="button" class="btn btn-primary" id="catalog-export" data-i18n="catalogExport">Xuất Excel</button>
+          </div>
+        </div>
+        <div class="catalog-status-row">
+          <span id="catalog-source-status" role="status" aria-live="polite" data-i18n="catalogLoading">Chưa tải danh mục.</span>
+          <span id="catalog-count" aria-live="polite"></span>
+        </div>
+        <section class="catalog-filters" aria-label="Bộ lọc danh mục" data-i18n-aria="catalogFiltersAria">
+          <label class="catalog-field catalog-search">
+            <span data-i18n="catalogSearch">Tìm mã SAP, tên, MPN, kích thước...</span>
+            <input id="catalog-search" type="search" autocomplete="off"
+              data-i18n-placeholder="catalogSearchPlaceholder" placeholder="Nhập mã SAP, tên hoặc nhiều mã cách nhau bởi dấu phẩy">
+          </label>
+          <label class="catalog-field"><span data-i18n="catalogSearchIn">Tìm trong</span>
+            <select id="catalog-scope">
+              <option value="all" data-i18n="catalogAllFields">Tất cả cột</option>
+              <option value="material" data-i18n="catalogColMaterial">Mã SAP</option>
+              <option value="description" data-i18n="catalogColDescription">Mô tả vật tư</option>
+              <option value="name1" data-i18n="catalogColName1">Tên 1 / nhà cung cấp</option>
+              <option value="mpn" data-i18n="catalogColMpn">Mã MPN</option>
+              <option value="size" data-i18n="catalogColSize">Kích thước</option>
+              <option value="bin" data-i18n="catalogColBin">Ô lưu kho</option>
+            </select>
+          </label>
+          <label class="catalog-field"><span data-i18n="catalogFilterType">Loại vật tư</span>
+            <select id="catalog-type"><option value="" data-i18n="catalogAny">Tất cả</option></select>
+          </label>
+          <label class="catalog-field"><span data-i18n="catalogFilterName">Tên 1 / nhà cung cấp</span>
+            <select id="catalog-name"><option value="" data-i18n="catalogAny">Tất cả</option></select>
+          </label>
+          <label class="catalog-field"><span data-i18n="catalogFilterUnit">Đơn vị</span>
+            <select id="catalog-unit"><option value="" data-i18n="catalogAny">Tất cả</option></select>
+          </label>
+          <label class="catalog-field"><span data-i18n="catalogFilterReorder">Điểm đặt hàng</span>
+            <select id="catalog-reorder">
+              <option value="" data-i18n="catalogAny">Tất cả</option>
+              <option value="positive" data-i18n="catalogReorderPositive">Lớn hơn 0</option>
+              <option value="zero" data-i18n="catalogReorderZero">Bằng 0</option>
+              <option value="empty" data-i18n="catalogReorderEmpty">Không có giá trị</option>
+            </select>
+          </label>
+          <label class="catalog-field"><span data-i18n="catalogFilterBin">Ô lưu kho</span>
+            <select id="catalog-bin">
+              <option value="" data-i18n="catalogAny">Tất cả</option>
+              <option value="present" data-i18n="catalogBinPresent">Có vị trí</option>
+              <option value="empty" data-i18n="catalogBinEmpty">Chưa có vị trí</option>
+            </select>
+          </label>
+          <button type="button" class="btn btn-secondary catalog-reset" id="catalog-clear"
+            data-i18n="catalogClear">Xóa bộ lọc</button>
+        </section>
+        <section class="catalog-table-panel" aria-labelledby="catalog-list-title">
+          <div class="catalog-list-head">
+            <div><h2 id="catalog-list-title" data-i18n="catalogListTitle">Dữ liệu danh mục</h2>
+              <p data-i18n="catalogTableHint">Nhấn tiêu đề cột để sắp xếp. Cuộn ngang để xem các cột.</p></div>
+            <span id="catalog-result" aria-live="polite"></span>
+          </div>
+          <div class="catalog-table-scroll" tabindex="0" role="region" data-i18n-aria="catalogTableAria" aria-label="Bảng danh mục vật tư">
+            <table class="catalog-table" id="catalog-table">
+              <thead><tr id="catalog-table-head">
+                <th><button type="button" data-catalog-sort="material"><span data-i18n="catalogColMaterial">Mã SAP</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="description"><span data-i18n="catalogColDescription">Mô tả vật tư</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="name1"><span data-i18n="catalogColName1">Tên 1 / nhà cung cấp</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="mpn"><span data-i18n="catalogColMpn">Mã MPN</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="size"><span data-i18n="catalogColSize">Kích thước</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="typ"><span data-i18n="catalogColType">Loại</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="reorder"><span data-i18n="catalogColReorder">Điểm đặt hàng</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="minLot"><span data-i18n="catalogColMinLot">Lô đặt hàng tối thiểu</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="bun"><span data-i18n="catalogColUnit">Đơn vị</span><b>↕</b></button></th>
+                <th><button type="button" data-catalog-sort="bin"><span data-i18n="catalogColBin">Ô lưu kho</span><b>↕</b></button></th>
+              </tr></thead>
+              <tbody id="catalog-rows"></tbody>
+            </table>
+          </div>
+          <div class="catalog-pagination">
+            <label><span data-i18n="catalogPageSize">Dòng/trang</span>
+              <select id="catalog-page-size"><option>25</option><option selected>50</option><option>100</option><option>200</option></select>
+            </label>
+            <button type="button" class="btn btn-secondary" id="catalog-first" data-i18n-title="firstPage" title="Trang đầu">«</button>
+            <button type="button" class="btn btn-secondary" id="catalog-prev" data-i18n="prev">Trước</button>
+            <span id="catalog-page-label" aria-live="polite"></span>
+            <button type="button" class="btn btn-secondary" id="catalog-next" data-i18n="next">Sau</button>
+            <button type="button" class="btn btn-secondary" id="catalog-last" data-i18n-title="lastPage" title="Trang cuối">»</button>
+          </div>
+        </section>
       </section>
 
       <footer class="footer-bar">
@@ -2828,6 +2991,80 @@
         colQuantity:"Quantity", colPrice:"Price", colBm:"BM No", colUnit:"Unit", colGroup:"Group"
       }
     };
+
+    Object.assign(NGON_NGU.vi,{
+      catalogTab:"Danh mục vật tư",
+      catalogHeading:"Tra cứu danh mục vật tư SAP",
+      catalogDesc:"Thông tin danh mục từ DATABASE_HEADERS và DATABASE_DATA trong file Database.",
+      catalogReload:"Làm mới dữ liệu",catalogUpload:"Chọn file Database",catalogExport:"Xuất Excel",
+      catalogLoading:"Chưa tải danh mục.",catalogLoadingNow:"Đang đọc Database.js...",
+      catalogLoaded:"Đã đọc {count} dòng danh mục từ Database.",
+      catalogFileLoaded:"Đã đọc {count} dòng từ file được chọn.",
+      catalogSourceError:"Không tìm thấy Database.js / Database. Đặt file cạnh trang HTML hoặc chọn file thủ công.",
+      catalogFormatError:"File Database không có DATABASE_HEADERS / DATABASE_DATA hợp lệ.",
+      catalogIncomplete:"File Database chưa đầy đủ: mảng DATABASE_DATA bị cắt giữa chừng. Hãy tải lại file gốc đầy đủ.",
+      catalogMissingRequired:"Thiếu cột bắt buộc Material / Material Description trong data.js.",
+      catalogMissingColumns:"Thiếu cột tùy chọn: {columns}. Các ô tương ứng sẽ để trống.",
+      catalogFiltersAria:"Bộ lọc danh mục vật tư",
+      catalogSearch:"Tìm mã SAP, tên, MPN, kích thước...",
+      catalogSearchPlaceholder:"Nhập từ khóa hoặc nhiều mã, cách nhau bởi dấu phẩy / chấm phẩy",
+      catalogSearchIn:"Tìm trong",catalogAllFields:"Tất cả cột",
+      catalogFilterType:"Loại vật tư",catalogFilterName:"Tên 1 / nhà cung cấp",
+      catalogFilterUnit:"Đơn vị",catalogFilterReorder:"Điểm đặt hàng",
+      catalogFilterBin:"Ô lưu kho",catalogAny:"Tất cả",
+      catalogReorderPositive:"Lớn hơn 0",catalogReorderZero:"Bằng 0",
+      catalogReorderEmpty:"Không có giá trị",catalogBinPresent:"Có vị trí",
+      catalogBinEmpty:"Chưa có vị trí",catalogClear:"Xóa bộ lọc",
+      catalogListTitle:"Dữ liệu danh mục",
+      catalogTableHint:"Nhấn tiêu đề cột để sắp xếp; cuộn ngang để xem các cột.",
+      catalogTableAria:"Bảng danh mục vật tư SAP",
+      catalogPageSize:"Dòng/trang",catalogPageInfo:"Trang {page}/{total}",
+      catalogCount:"{found} / {total} vật tư",catalogEmpty:"Không tìm thấy vật tư phù hợp.",
+      catalogColMaterial:"Mã SAP",catalogColDescription:"Mô tả vật tư",
+      catalogColName1:"Tên 1 / nhà cung cấp",catalogColMpn:"Mã MPN",
+      catalogColSize:"Kích thước",catalogColType:"Loại vật tư",
+      catalogColReorder:"Điểm đặt hàng",catalogColMinLot:"Lô tối thiểu",
+      catalogColUnit:"Đơn vị",catalogColBin:"Ô lưu kho",
+      catalogExportEmpty:"Không có dữ liệu danh mục phù hợp để xuất.",
+      catalogExportError:"Không tạo được file Excel. Vui lòng thử lại."
+    });
+    Object.assign(NGON_NGU.en,{
+      catalogTab:"Material catalog",
+      catalogHeading:"SAP material master lookup",
+      catalogDesc:"Master data from DATABASE_HEADERS and DATABASE_DATA in the Database file.",
+      catalogReload:"Refresh data",catalogUpload:"Choose Database file",catalogExport:"Export Excel",
+      catalogLoading:"Catalog not loaded.",catalogLoadingNow:"Loading Database.js...",
+      catalogLoaded:"Loaded {count} catalog rows from Database.",
+      catalogFileLoaded:"Loaded {count} rows from the selected file.",
+      catalogSourceError:"Cannot read Database.js / Database. Place the file next to this HTML or select it manually.",
+      catalogFormatError:"The Database file does not contain valid DATABASE_HEADERS / DATABASE_DATA.",
+      catalogIncomplete:"The Database file is incomplete: DATABASE_DATA was cut off. Please upload the complete file.",
+      catalogMissingRequired:"Material / Material Description columns are missing from data.js.",
+      catalogMissingColumns:"Optional columns missing: {columns}. Their cells will be blank.",
+      catalogFiltersAria:"Material catalog filters",
+      catalogSearch:"Search SAP code, description, MPN, dimensions...",
+      catalogSearchPlaceholder:"Enter keywords or multiple codes separated by commas/semicolons",
+      catalogSearchIn:"Search in",catalogAllFields:"All fields",
+      catalogFilterType:"Material type",catalogFilterName:"Name 1 / supplier",
+      catalogFilterUnit:"Unit",catalogFilterReorder:"Reorder point",
+      catalogFilterBin:"Storage bin",catalogAny:"All",
+      catalogReorderPositive:"Greater than 0",catalogReorderZero:"Equal to 0",
+      catalogReorderEmpty:"No value",catalogBinPresent:"Has a bin",
+      catalogBinEmpty:"No bin",catalogClear:"Clear filters",
+      catalogListTitle:"Material master records",
+      catalogTableHint:"Click a column heading to sort; scroll horizontally to see all fields.",
+      catalogTableAria:"SAP material master table",
+      catalogPageSize:"Rows/page",catalogPageInfo:"Page {page}/{total}",
+      catalogCount:"{found} / {total} materials",catalogEmpty:"No matching materials found.",
+      catalogColMaterial:"Material",catalogColDescription:"Material Description",
+      catalogColName1:"Name 1 / supplier",catalogColMpn:"MPN",
+      catalogColSize:"Size/dimensions",catalogColType:"Typ",
+      catalogColReorder:"Reorder Point",catalogColMinLot:"Min. Lot Size",
+      catalogColUnit:"BUn",catalogColBin:"Stor. Bin",
+      catalogExportEmpty:"No matching catalog records to export.",
+      catalogExportError:"Could not create the Excel file. Please try again."
+    });
+
     let ngonNguHienTai = "vi";
     let giaoDienHienTai = "light";
 
@@ -2902,6 +3139,7 @@
         time: capNhat.dataset.updateTime || "", file: duongDanOMang
       });
 
+      if (document.getElementById("view-catalog"))capNhatNgonNguDanhMuc();
       if (tieuDeCot.length) veTieuDe();
       if (chiMucSanSang) {
         hienThiTrangHienTai();
@@ -2933,7 +3171,7 @@
 
     // Tabs switch views without reloading or losing stock search/gallery state.
     let tabHienTai="stock";
-    const CAC_TAB=["stock","dashboard"];
+    const CAC_TAB=["stock","dashboard","catalog"];
     function chuyenTab(tab, opts={}) {
       if(!CAC_TAB.includes(tab))return;
       tabHienTai=tab;
@@ -2951,8 +3189,9 @@
         button.classList.toggle("active",selected);
       }
       document.querySelector(".breadcrumbs .active").textContent=tuDien(
-        tab==="stock"?"tabStock":"tabDashboard");
+        tab==="stock"?"tabStock":tab==="dashboard"?"tabDashboard":"catalogTab");
       if(opts.persist!==false)ghiTuyChon("checking-active-tab",tab);
+      if(tab==="catalog"&&!danhMucTrangThai.loaded&&!danhMucTrangThai.loading)taiDanhMuc();
       if(tab==="dashboard"){
         if(analyticsReady)capNhatThongKeNangCao();
         if(!historyLoaded&&!historyLoading&&!daThuTaiHistoryChoCard){
@@ -3093,6 +3332,419 @@
       }
       denTrang(number);
     }
+
+
+    // Independent SAP master catalog. The stock lookup still uses data.js;
+    // this tab loads Database.js (or the exact filename Database) only.
+    const DANH_MUC_COT=[
+      {key:"material",names:["Material"],i18n:"catalogColMaterial"},
+      {key:"description",names:["Material Description"],i18n:"catalogColDescription"},
+      {key:"name1",names:["Name 1","Name1"],i18n:"catalogColName1"},
+      {key:"mpn",names:["MPN"],i18n:"catalogColMpn"},
+      {key:"size",names:["Size/dimensions","Size / dimensions"],i18n:"catalogColSize"},
+      {key:"typ",names:["Typ","Type"],i18n:"catalogColType"},
+      {key:"reorder",names:["Reorder Point"],i18n:"catalogColReorder"},
+      {key:"minLot",names:["Min. Lot Sze","Min. Lot Size","Min Lot Size"],i18n:"catalogColMinLot"},
+      {key:"bun",names:["BUn","Base Unit of Measure"],i18n:"catalogColUnit"},
+      {key:"bin",names:["Stor. Bin","Storage Bin"],i18n:"catalogColBin"}
+    ];
+    const danhMucTrangThai={
+      loaded:false,loading:false,rows:[],filtered:[],
+      sortKey:"material",sortDir:1,page:1,pageSize:50,
+      statusKey:"catalogLoading",statusVars:{},missing:[],source:"",
+      requestId:0
+    };
+    function chuanHoaTenCotDanhMuc(name){
+      return String(name??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .toLowerCase().replace(/[^a-z0-9]/g,"");
+    }
+    function docMangDatabaseTuText(text,name){
+      // Generated Database files contain JSON-style arrays assigned to const
+      // DATABASE_HEADERS / DATABASE_DATA. Parse them without evaluating JS.
+      const re=new RegExp("(?:^|[^\\w$.])(?:(?:const|let|var)\\s+)?(?:window\\.)?"+name+"\\s*=","m");
+      const match=re.exec(text);
+      if(!match)throw new Error("Missing "+name);
+      let pos=match.index+match[0].length;
+      while(/\s/.test(text[pos]||""))pos++;
+      if(text[pos]!=="[")throw new Error("Invalid "+name+" array");
+      const start=pos;let depth=0,quote="",escaped=false;
+      for(;pos<text.length;pos++){
+        const c=text[pos];
+        if(quote){
+          if(escaped){escaped=false;continue}
+          if(c==="\\"){escaped=true;continue}
+          if(c===quote)quote="";
+        }else if(c==='"'||c==="'"){quote=c}
+        else if(c==="[")depth++;
+        else if(c==="]"&&!--depth){
+          // JSON is intentional: the generated arrays must contain only data.
+          return JSON.parse(text.slice(start,pos+1));
+        }
+      }
+      throw new Error("Unclosed "+name+" array");
+    }
+    function docDatabaseTuText(text){
+      return {
+        headers:docMangDatabaseTuText(text,"DATABASE_HEADERS"),
+        rows:docMangDatabaseTuText(text,"DATABASE_DATA")
+      };
+    }
+    function xuLyDuLieuDanhMuc(headers,rows){
+      if(!Array.isArray(headers)||!Array.isArray(rows)||!headers.length)
+        throw new Error("INVALID_DATABASE_ARRAYS");
+      const clean=headers.map(chuanHoaTenCotDanhMuc);
+      const fields={},missing=[];
+      for(const col of DANH_MUC_COT){
+        const aliases=new Set(col.names.map(chuanHoaTenCotDanhMuc));
+        // First BUn is the material base unit. Stor. Bin is not "Bin".
+        fields[col.key]=clean.findIndex(name=>aliases.has(name));
+        if(fields[col.key]<0)missing.push(col.names[0]);
+      }
+      if(fields.material<0||fields.description<0)
+        throw new Error("MISSING_MATERIAL_COLUMNS");
+      const parsed=[];
+      for(const raw of rows){
+        if(!Array.isArray(raw))continue;
+        const record={};
+        for(const col of DANH_MUC_COT){
+          const idx=fields[col.key];
+          record[col.key]=idx>=0?String(raw[idx]??"").trim():"";
+        }
+        record.reorderNumber=chuyenThanhSo(record.reorder);
+        record.minLotNumber=chuyenThanhSo(record.minLot);
+        record.searchAll=chuanHoaTimKiem(DANH_MUC_COT.map(x=>record[x.key]).join(" "));
+        parsed.push(record);
+      }
+      return {records:parsed,missing};
+    }
+    function locDanhMuc(records,query){
+      const terms=String(query.search||"").trim().split(/[,;\n|]+/)
+        .map(x=>chuanHoaTimKiem(x.trim())).filter(Boolean);
+      return records.filter(record=>{
+        if(terms.length){
+          const field=query.scope==="all"?record.searchAll:
+            chuanHoaTimKiem(record[query.scope]||"");
+          if(!terms.some(term=>field.includes(term)))return false;
+        }
+        if(query.typ&&record.typ!==query.typ)return false;
+        if(query.name1&&record.name1!==query.name1)return false;
+        if(query.bun&&record.bun!==query.bun)return false;
+        if(query.binFilter==="present"&&!record.bin)return false;
+        if(query.binFilter==="empty"&&record.bin)return false;
+        if(query.reorder==="positive"&&
+          !(Number.isFinite(record.reorderNumber)&&record.reorderNumber>0))return false;
+        if(query.reorder==="zero"&&
+          !(Number.isFinite(record.reorderNumber)&&record.reorderNumber===0))return false;
+        if(query.reorder==="empty"&&Number.isFinite(record.reorderNumber))return false;
+        return true;
+      });
+    }
+    function sapXepDanhMuc(records,key,dir){
+      const numKey=key==="reorder"?"reorderNumber":key==="minLot"?"minLotNumber":null;
+      return records.slice().sort((a,b)=>{
+        if(numKey){
+          const x=a[numKey],y=b[numKey];
+          if(!Number.isFinite(x)||!Number.isFinite(y))
+            return Number.isFinite(x)?-1:Number.isFinite(y)?1:0;
+          return (x-y)*dir;
+        }
+        const x=String(a[key]??""),y=String(b[key]??"");
+        if(!x||!y)return x? -1:y? 1:0;
+        return x.localeCompare(y,ngonNguHienTai==="en"?"en":"vi",
+          {numeric:true,sensitivity:"base"})*dir;
+      });
+    }
+    function layLocDanhMuc(){
+      return {
+        search:document.getElementById("catalog-search").value,
+        scope:document.getElementById("catalog-scope").value,
+        typ:document.getElementById("catalog-type").value,
+        name1:document.getElementById("catalog-name").value,
+        bun:document.getElementById("catalog-unit").value,
+        reorder:document.getElementById("catalog-reorder").value,
+        binFilter:document.getElementById("catalog-bin").value
+      };
+    }
+    function doiOptionDanhMuc(id,values){
+      const select=document.getElementById(id),before=select.value;
+      const fragment=document.createDocumentFragment();
+      fragment.appendChild(new Option(tuDien("catalogAny"),""));
+      for(const value of [...new Set(values.filter(Boolean))].sort((a,b)=>
+        a.localeCompare(b,ngonNguHienTai==="en"?"en":"vi",{numeric:true})))
+        fragment.appendChild(new Option(value,value));
+      select.replaceChildren(fragment);
+      select.value=[...select.options].some(option=>option.value===before)?before:"";
+    }
+    function taoBoLocDanhMuc(){
+      doiOptionDanhMuc("catalog-type",danhMucTrangThai.rows.map(r=>r.typ));
+      doiOptionDanhMuc("catalog-name",danhMucTrangThai.rows.map(r=>r.name1));
+      doiOptionDanhMuc("catalog-unit",danhMucTrangThai.rows.map(r=>r.bun));
+    }
+    function capNhatTrangThaiDanhMuc(){
+      const state=danhMucTrangThai;
+      const element=document.getElementById("catalog-source-status");
+      if(!element)return;
+      let caption=tuDien(state.statusKey,state.statusVars);
+      if(state.loaded&&state.missing.length)
+        caption+=" · "+tuDien("catalogMissingColumns",{
+          columns:state.missing.join(", ")
+        });
+      element.textContent=caption;
+      document.getElementById("catalog-count").textContent=state.loaded?
+        tuDien("catalogCount",{found:dinhDangSoLuong.format(state.filtered.length),
+          total:dinhDangSoLuong.format(state.rows.length)}):"";
+    }
+    function veTrangDanhMuc(){
+      const state=danhMucTrangThai,total=state.filtered.length;
+      const pages=Math.max(1,Math.ceil(total/state.pageSize));
+      state.page=Math.max(1,Math.min(pages,state.page));
+      const start=(state.page-1)*state.pageSize;
+      const subset=state.filtered.slice(start,start+state.pageSize);
+      const fragment=document.createDocumentFragment();
+      if(!subset.length){
+        const tr=document.createElement("tr"),cell=document.createElement("td");
+        cell.colSpan=DANH_MUC_COT.length;
+        cell.className="catalog-empty";
+        cell.textContent=tuDien("catalogEmpty");
+        tr.appendChild(cell);fragment.appendChild(tr);
+      }else for(const record of subset){
+        const tr=document.createElement("tr");
+        for(const col of DANH_MUC_COT){
+          const td=document.createElement("td"),value=record[col.key];
+          td.textContent=value||"—";
+          if(col.key==="reorder"||col.key==="minLot")
+            td.className="catalog-number";
+          if(value.length>25)td.title=value;
+          tr.appendChild(td);
+        }
+        fragment.appendChild(tr);
+      }
+      document.getElementById("catalog-rows").replaceChildren(fragment);
+      document.getElementById("catalog-result").textContent=
+        tuDien("catalogCount",{found:dinhDangSoLuong.format(total),
+          total:dinhDangSoLuong.format(state.rows.length)});
+      document.getElementById("catalog-page-label").textContent=
+        tuDien("catalogPageInfo",{page:state.page,total:pages});
+      for(const [name,disabled] of [
+        ["first",state.page<=1],["prev",state.page<=1],
+        ["next",state.page>=pages],["last",state.page>=pages]
+      ])document.getElementById("catalog-"+name).disabled=disabled;
+      document.querySelectorAll("[data-catalog-sort]").forEach(button=>{
+        const active=button.dataset.catalogSort===state.sortKey;
+        button.querySelector("b").textContent=active?(state.sortDir===1?"↑":"↓"):"↕";
+        button.closest("th").setAttribute("aria-sort",active?
+          (state.sortDir===1?"ascending":"descending"):"none");
+      });
+      capNhatTrangThaiDanhMuc();
+    }
+    function capNhatKetQuaDanhMuc(){
+      const state=danhMucTrangThai;
+      state.filtered=sapXepDanhMuc(locDanhMuc(state.rows,layLocDanhMuc()),
+        state.sortKey,state.sortDir);
+      state.page=1;
+      veTrangDanhMuc();
+    }
+    function capNhatNgonNguDanhMuc(){
+      const state=danhMucTrangThai;
+      // The default dynamic options are not decorated with data-i18n.
+      for(const id of ["catalog-type","catalog-name","catalog-unit"]){
+        const first=document.querySelector("#"+id+" option");
+        if(first)first.textContent=tuDien("catalogAny");
+      }
+      if(state.loaded)veTrangDanhMuc();
+      else capNhatTrangThaiDanhMuc();
+    }
+    function nhanDuLieuDatabase(headers,rows,source){
+      const parsed=xuLyDuLieuDanhMuc(headers,rows);
+      const state=danhMucTrangThai;
+      state.rows=parsed.records;state.missing=parsed.missing;
+      state.source=source;state.loaded=true;
+      state.statusKey=source==="file"?"catalogFileLoaded":"catalogLoaded";
+      state.statusVars={count:dinhDangSoLuong.format(state.rows.length)};
+      taoBoLocDanhMuc();
+      capNhatKetQuaDanhMuc();
+    }
+    async function taiDatabaseQuaScript(path){
+      return new Promise((resolve,reject)=>{
+        const old=document.getElementById("catalog-script");
+        if(old)old.remove();
+        const script=document.createElement("script");
+        script.id="catalog-script";
+        script.src=path+(path.includes("?")?"&":"?")+"t="+Date.now();
+        script.onload=()=>{
+          const headers=typeof DATABASE_HEADERS!=="undefined"?
+            DATABASE_HEADERS:window.DATABASE_HEADERS;
+          const rows=typeof DATABASE_DATA!=="undefined"?
+            DATABASE_DATA:window.DATABASE_DATA;
+          if(Array.isArray(headers)&&Array.isArray(rows))resolve({headers,rows});
+          else reject(new Error("INVALID_DATABASE_ARRAYS"));
+        };
+        script.onerror=()=>reject(new Error("NOT_FOUND"));
+        document.head.appendChild(script);
+      });
+    }
+    async function taiDanhMuc(force=false){
+      const state=danhMucTrangThai;
+      if(state.loading||(!force&&state.loaded))return;
+      const ticket=++state.requestId;
+      state.loading=true;state.statusKey="catalogLoadingNow";
+      state.statusVars={};capNhatTrangThaiDanhMuc();
+      const files=["Database.js","Database"]; // Never use data.js here.
+      let lastError=null;
+      try{
+        if(location.protocol==="http:"||location.protocol==="https:"){
+          for(const filename of files){
+            try{
+              const response=await fetch(filename+"?t="+Date.now(),{cache:"no-store"});
+              if(!response.ok)throw new Error("HTTP_"+response.status);
+              const parsed=docDatabaseTuText(await response.text());
+              if(ticket!==state.requestId)return;
+              nhanDuLieuDatabase(parsed.headers,parsed.rows,filename);
+              return;
+            }catch(error){lastError=error}
+          }
+        }else{
+          if(state.loaded){ // const declarations cannot safely be re-injected.
+            state.statusKey="catalogLoaded";
+            state.statusVars={count:dinhDangSoLuong.format(state.rows.length)};
+            capNhatTrangThaiDanhMuc();return;
+          }
+          for(const filename of files){
+            try{
+              const parsed=await taiDatabaseQuaScript(filename);
+              if(ticket!==state.requestId)return;
+              nhanDuLieuDatabase(parsed.headers,parsed.rows,filename);
+              return;
+            }catch(error){lastError=error}
+          }
+        }
+        throw lastError||new Error("NOT_FOUND");
+      }catch(error){
+        if(ticket!==state.requestId)return;
+        const issue=String(error.message||"");
+        state.statusKey=/Unclosed DATABASE_DATA|Unexpected end of JSON/i.test(issue)?
+          "catalogIncomplete":
+          /DATABASE|JSON|INVALID_DATABASE/i.test(issue)?
+          "catalogFormatError":"catalogSourceError";
+        state.statusVars={};capNhatTrangThaiDanhMuc();
+      }finally{
+        if(ticket===state.requestId)state.loading=false;
+      }
+    }
+    async function nhapFileDatabase(file){
+      if(!file)return;
+      const state=danhMucTrangThai;
+      try{
+        const parsed=docDatabaseTuText(await file.text());
+        nhanDuLieuDatabase(parsed.headers,parsed.rows,"file");
+      }catch(error){
+        const issue=String(error.message||"");
+        state.statusKey=/Unclosed DATABASE_DATA|Unexpected end of JSON/i.test(issue)?
+          "catalogIncomplete":"catalogFormatError";
+        capNhatTrangThaiDanhMuc();
+      }
+    }
+    function taoBaoCaoDanhMucXlsx(){
+      const state=danhMucTrangThai,records=state.filtered;
+      if(records.length>1048575)throw new Error("XLSX_LIMIT");
+      const safeXML=value=>String(value??"").replace(
+        /[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g,""
+      ).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+      const cellXML=(value,index,row)=>{
+        const letter="ABCDEFGHIJ"[index],ref=letter+row;
+        const numeric=(index===6||index===7)?chuyenThanhSo(value):NaN;
+        return Number.isFinite(numeric)?
+          '<c r="'+ref+'"><v>'+numeric+'</v></c>':
+          '<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+
+          safeXML(value)+'</t></is></c>';
+      };
+      const grid=[DANH_MUC_COT.map(x=>tuDien(x.i18n)),
+        ...records.map(record=>DANH_MUC_COT.map(x=>record[x.key]))];
+      const body=grid.map((row,i)=>'<row r="'+(i+1)+'">'+
+        row.map((v,c)=>cellXML(v,c,i+1)).join("")+'</row>').join("");
+      const worksheet='<?xml version="1.0" encoding="UTF-8"?>'+
+        '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+        '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
+        '<sheetData>'+body+'</sheetData><autoFilter ref="A1:J'+grid.length+'"/></worksheet>';
+      const types='<?xml version="1.0" encoding="UTF-8"?>'+
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+        '<Default Extension="xml" ContentType="application/xml"/>'+
+        '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+        '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+      const parts=[
+        {name:"[Content_Types].xml",data:types},
+        {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+        {name:"xl/workbook.xml",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+          '<sheets><sheet name="Database" sheetId="1" r:id="rId1"/></sheets></workbook>'},
+        {name:"xl/_rels/workbook.xml.rels",data:'<?xml version="1.0" encoding="UTF-8"?>'+
+          '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+          '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'},
+        {name:"xl/worksheets/sheet1.xml",data:worksheet}
+      ];
+      return new Blob([dongGoiZipXlsx(parts)],{
+        type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+    }
+    function xuatDanhMuc(){
+      if(!danhMucTrangThai.filtered.length){
+        alert(tuDien("catalogExportEmpty"));return;
+      }
+      try{
+        const blob=taoBaoCaoDanhMucXlsx(),url=URL.createObjectURL(blob);
+        const anchor=document.createElement("a");
+        anchor.href=url;anchor.download="SAP_Database_"+new Date().toISOString().slice(0,10)+".xlsx";
+        document.body.appendChild(anchor);anchor.click();anchor.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),1000);
+      }catch(error){alert(tuDien("catalogExportError"))}
+    }
+    function khoiTaoDanhMuc(){
+      let timer=null;
+      for(const id of ["catalog-search","catalog-scope","catalog-type","catalog-name",
+        "catalog-unit","catalog-reorder","catalog-bin"]){
+        const el=document.getElementById(id);
+        el.addEventListener(id==="catalog-search"?"input":"change",()=>{
+          clearTimeout(timer);
+          timer=setTimeout(capNhatKetQuaDanhMuc,id==="catalog-search"?160:0);
+        });
+      }
+      document.querySelectorAll("[data-catalog-sort]").forEach(button=>
+        button.addEventListener("click",()=>{
+          const state=danhMucTrangThai,key=button.dataset.catalogSort;
+          state.sortDir=state.sortKey===key?-state.sortDir:1;
+          state.sortKey=key;state.page=1;
+          capNhatKetQuaDanhMuc();
+        }));
+      document.getElementById("catalog-page-size").addEventListener("change",event=>{
+        danhMucTrangThai.pageSize=Number(event.target.value)||50;
+        danhMucTrangThai.page=1;veTrangDanhMuc();
+      });
+      const go=page=>{
+        danhMucTrangThai.page=page;veTrangDanhMuc();
+      };
+      document.getElementById("catalog-first").addEventListener("click",()=>go(1));
+      document.getElementById("catalog-prev").addEventListener("click",()=>go(danhMucTrangThai.page-1));
+      document.getElementById("catalog-next").addEventListener("click",()=>go(danhMucTrangThai.page+1));
+      document.getElementById("catalog-last").addEventListener("click",()=>go(
+        Math.ceil(danhMucTrangThai.filtered.length/danhMucTrangThai.pageSize)));
+      document.getElementById("catalog-clear").addEventListener("click",()=>{
+        for(const id of ["catalog-search","catalog-scope","catalog-type","catalog-name",
+          "catalog-unit","catalog-reorder","catalog-bin"])
+          document.getElementById(id).value=id==="catalog-scope"?"all":"";
+        capNhatKetQuaDanhMuc();
+      });
+      document.getElementById("catalog-reload").addEventListener("click",()=>taiDanhMuc(true));
+      document.getElementById("catalog-upload-input").addEventListener("change",event=>{
+        nhapFileDatabase(event.target.files?.[0]);
+        event.target.value="";
+      });
+      document.getElementById("catalog-export").addEventListener("click",xuatDanhMuc);
+      capNhatNgonNguDanhMuc();
+    }
+
 
     // Chỉ hiển thị các cột Excel 1, 2, 6, 4, 5, 3 trong bảng.
     const COT_HIEN_THI = [0, 1, 5, 3, 4, 2];
@@ -7650,6 +8302,7 @@
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
     taiManifestAnh();
     khoiTaoTuyChon();
+    khoiTaoDanhMuc();
       const storedPageSize=Number(docTuyChon("checking-rows-per-page"));
       if(Number.isInteger(storedPageSize)&&storedPageSize>=1)
         SO_DONG_MOI_TRANG=Math.min(storedPageSize,SO_DONG_TRANG_TOI_DA);
