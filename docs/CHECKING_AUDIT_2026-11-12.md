@@ -12,7 +12,7 @@ Nguồn: `main` tại commit `38fb1a2b73480981b876489d21d6179b649eea5a`.
 | Vừa | Yêu cầu chưa sắp xếp, chưa lọc vị trí; đơn vị nguồn `BUn` chưa được nhận diện. Yêu cầu cũ thiếu vị trí dò toàn bộ Stock nhiều lần. | Thêm lọc vị trí và chưa có vị trí; sắp xếp bảy cột; số lượng/tồn kho sắp xếp theo số; nhận `BUn`, `Unit of Entry`; dùng chỉ mục SAP cho vị trí cũ. |
 | Vừa | Dữ liệu localStorage là mảng nhưng chứa `null` hoặc bản ghi lỗi có thể làm phần dựng giao diện dừng. | Kiểm tra cấu trúc, thời gian, mã và số lượng trước khi hiển thị. Giữ bản ghi hợp lệ; không ghi đè bản lưu khi chỉ lọc/sắp xếp. |
 | Vừa | Loader ảnh đọc `manifest.js` ở thư mục gốc, trong khi cấu hình ảnh là `Material/`; bộ sưu tập chờ manifest hoàn tất trước khi dò ảnh. | Đọc từ thư mục ảnh đã cấu hình; chờ ưu tiên manifest tối đa 120ms rồi dò trực tiếp. Manifest đến sau vẫn hủy dò và thay đúng bộ ảnh. |
-| Thấp | Kiểm thử performance chưa cung cấp hàm ghi lịch sử và vẫn giả lập loader manifest JSON cũ. | Cập nhật mô phỏng sang manifest JS, kiểm tra đường dẫn và thành công/thất bại khi tải lại. |
+| Thấp | Kiểm thử performance chưa cung cấp hàm ghi lịch sử; một số bài kiểm tra ảnh vẫn giả lập loader manifest JSON cũ. | Cập nhật mô phỏng sang manifest JS, kiểm tra đường dẫn, thành công/thất bại khi tải lại và giới hạn số ảnh theo cấu hình hiện tại. |
 
 ## Hành vi của hai tab
 
@@ -31,7 +31,7 @@ Nguồn: `main` tại commit `38fb1a2b73480981b876489d21d6179b649eea5a`.
 - `python -m unittest discover -s tests -p 'test_*.py'`: 6 kiểm tra đạt.
 - Các script inline trong Checking, hai bản PO_GR_Report và VLOOKUP đều phân tích cú pháp thành công. Hai bản PO_GR_Report hiện giống nhau.
 - Bài mới `checking_activity_browser.cjs` được đưa vào GitHub Actions: kiểm tra khôi phục tab, đo header/brand/workspace/thanh tab giữa năm tab ở VI/EN, lọc kết hợp, sort số, phân trang/cuộn, tìm lại, xuất XLSX, tạo yêu cầu với BUn, sáng/tối và tràn ngang trên desktop/mobile.
-- Môi trường sửa code không khởi chạy được Chromium (lỗi hệ thống tạo socket). Trạng thái kiểm tra giao diện thực tế cần xem ở workflow của PR; không suy ra đạt từ kiểm tra cú pháp hoặc logic.
+- Môi trường sửa code không khởi chạy được Chromium (lỗi hệ thống tạo socket). Bài kiểm tra trình duyệt của hai tab đã đạt trên GitHub Actions, gồm đo header và các tương tác nêu trên. Trạng thái toàn bộ kiểm tra hồi quy cần xem ở workflow của PR.
 
 ## Các việc nên tách tiếp
 

@@ -4,6 +4,7 @@ const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'Checki
 const stock=[['SAP','Description','Part No','Stock','Price','Unit','Reorder Point'],['00123','Motor','P1',5,100,'PC',1]];
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
 const stockSource='window.duLieuCongTy='+JSON.stringify(stock)+';window.thoiGianCapNhat="image test";';
+const lastImage=String(Number(html.match(/const SO_ANH_TOI_DA\s*=\s*(\d+)/)[1])).padStart(2,'0');
 (async()=>{
   const browser=await chromium.launch({headless:true});let folder;
   try{
@@ -22,9 +23,9 @@ const stockSource='window.duLieuCongTy='+JSON.stringify(stock)+';window.thoiGian
       if(name==='/data.js')return route.fulfill({contentType:'text/javascript',body:stockSource,headers:{etag:'"stock"'}});
       if(name==='/Amount.js')return route.fulfill({contentType:'text/javascript',body:'window.amountData=[];'});
       if(name==='/History.js')return route.fulfill({contentType:'text/javascript',body:'window.materialHistory=[["Posting Date","Movement Type","Material"]];'});
-      if(name==='/Material/manifest.json'){
+      if(name==='/Material/manifest.js'){
         await manifestGate;
-        return route.fulfill({contentType:'application/json',body:JSON.stringify(manifest)}).catch(()=>{});
+        return route.fulfill({contentType:'text/javascript',body:'window.MaterialImageManifest='+JSON.stringify(manifest)}).catch(()=>{});
       }
       if(name==='/Material/00123.jpg'||name.startsWith('/Material/_optimized/'))
         return route.fulfill({contentType:'image/png',body:png,headers:{'cache-control':'max-age=600'}});
@@ -34,7 +35,7 @@ const stockSource='window.duLieuCongTy='+JSON.stringify(stock)+';window.thoiGian
       }
       return route.fulfill({status:404,body:''});
     });
-    await page.goto('http://checking-images.test/');
+    await page.goto('http://checking-images.test/',{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>chiMucSanSang&&!dangTaiScript);
     await page.evaluate(()=>{window.imageLoadingDone=false;void taiBoSuuTapAnh('00123').then(()=>{window.imageLoadingDone=true})});
     // The manifest is deliberately still blocked; the old loader waits for it here.
@@ -64,12 +65,12 @@ const stockSource='window.duLieuCongTy='+JSON.stringify(stock)+';window.thoiGian
     fs.writeFileSync(path.join(folder,'Amount.js'),'window.amountData=[];');
     fs.mkdirSync(path.join(folder,'Material'));
     fs.writeFileSync(path.join(folder,'Material','00123.jpg'),png);
-    fs.writeFileSync(path.join(folder,'Material','00123_10.png'),png);
+    fs.writeFileSync(path.join(folder,'Material','00123_'+lastImage+'.png'),png);
     const offline=await browser.newPage();
     await offline.goto(require('node:url').pathToFileURL(path.join(folder,'Checking.html')).href);
     await offline.evaluate(()=>taiBoSuuTapAnh('00123'));
     assert.equal(await offline.locator('#anh-chinh').getAttribute('src'),'Material/00123.jpg');
-    assert.deepEqual(await offline.evaluate(()=>danhSachAnhDangXem),['Material/00123.jpg','Material/00123_10.png']);
-    console.log('PASS browser images: first image before a blocked manifest, direct base-name GET, late responsive manifest, cancelled guesses, cached revisit and file:// fallback through image 10.');
+    assert.deepEqual(await offline.evaluate(()=>danhSachAnhDangXem),['Material/00123.jpg','Material/00123_'+lastImage+'.png']);
+    console.log('PASS browser images: first image before a blocked manifest, direct base-name GET, late responsive manifest, cancelled guesses, cached revisit and file:// fallback through the configured image limit.');
   }finally{await browser.close();if(folder)fs.rmSync(folder,{recursive:true,force:true})}
 })().catch(error=>{console.error(error);process.exitCode=1});
