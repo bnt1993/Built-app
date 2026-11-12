@@ -1262,35 +1262,43 @@
       .stock-row-menu button[role="menuitem"] { min-height:42px; font-size:13px; }
     }
 
-    /* One consistent brand/title and header toolbar in both desktop workspaces. */
+    /* Legacy workspace sizing retained for compatibility; final values are centralized in FINAL LAYOUT CONTROL LAYER. */
     @media(min-width:1100px) and (min-height:620px) {
       body.stock-one-screen .app-header,
-      body.dashboard-one-screen .app-header {
+      body.dashboard-one-screen .app-header,
+      body.catalog-one-screen .app-header {
         box-sizing:border-box; height:56px; min-height:56px; flex:0 0 56px;
         padding:0 clamp(12px,1.5vw,28px); gap:12px;
       }
       body.stock-one-screen .app-header .brand,
-      body.dashboard-one-screen .app-header .brand {
+      body.dashboard-one-screen .app-header .brand,
+      body.catalog-one-screen .app-header .brand {
         font-size:15px; font-weight:800; gap:9px;
       }
       body.stock-one-screen .app-header .brand-icon,
-      body.dashboard-one-screen .app-header .brand-icon {
+      body.dashboard-one-screen .app-header .brand-icon,
+      body.catalog-one-screen .app-header .brand-icon {
         width:34px; height:34px; font-size:19px; border-radius:10px;
       }
       body.stock-one-screen .app-header .brand-wordmark,
-      body.dashboard-one-screen .app-header .brand-wordmark { line-height:1.2; }
+      body.dashboard-one-screen .app-header .brand-wordmark,
+      body.catalog-one-screen .app-header .brand-wordmark { line-height:1.2; }
       body.stock-one-screen .app-header .brand-wordmark small,
-      body.dashboard-one-screen .app-header .brand-wordmark small {
+      body.dashboard-one-screen .app-header .brand-wordmark small,
+      body.catalog-one-screen .app-header .brand-wordmark small {
         font-size:9px; margin-top:3px;
       }
       body.stock-one-screen .app-header .header-actions,
-      body.dashboard-one-screen .app-header .header-actions { gap:8px; }
+      body.dashboard-one-screen .app-header .header-actions,
+      body.catalog-one-screen .app-header .header-actions { gap:8px; }
       body.stock-one-screen .app-header .header-actions .btn,
-      body.dashboard-one-screen .app-header .header-actions .btn {
+      body.dashboard-one-screen .app-header .header-actions .btn,
+      body.catalog-one-screen .app-header .header-actions .btn {
         min-height:34px; padding:6px 10px; font-size:11px;
       }
       body.stock-one-screen .app-header .online-pill,
-      body.dashboard-one-screen .app-header .online-pill {
+      body.dashboard-one-screen .app-header .online-pill,
+      body.catalog-one-screen .app-header .online-pill {
         padding:6px 10px; font-size:11px;
       }
     }
@@ -1778,7 +1786,157 @@
     .catalog-sap-link:hover{text-decoration:underline}
     #batch-sap-summary{white-space:normal;overflow-wrap:anywhere;max-width:100%;font-size:11px}
     #batch-sap-summary[hidden]{display:none}
-  </style>
+  
+
+    /* ======================================================================
+       FINAL LAYOUT CONTROL LAYER
+       Order: Header -> Toolbar -> Content spacing -> Card/Table -> Responsive
+       Keep layout changes here so later maintenance does not add new overrides.
+       ====================================================================== */
+
+    /* 1) HEADER ----------------------------------------------------------- */
+    .app-header {
+      background:var(--app-header);
+    }
+
+    @media (min-width:1100px) and (min-height:620px) {
+      body.stock-one-screen .app-header,
+      body.dashboard-one-screen .app-header,
+      body.catalog-one-screen .app-header {
+        box-sizing:border-box;
+        height:56px;
+        min-height:56px;
+        flex:0 0 56px;
+        padding:0 clamp(12px,1.5vw,28px);
+        gap:12px;
+      }
+      body.stock-one-screen .app-header .brand,
+      body.dashboard-one-screen .app-header .brand,
+      body.catalog-one-screen .app-header .brand {
+        font-size:15px;
+        font-weight:800;
+        gap:9px;
+      }
+      body.stock-one-screen .app-header .brand-icon,
+      body.dashboard-one-screen .app-header .brand-icon,
+      body.catalog-one-screen .app-header .brand-icon {
+        width:34px;
+        height:34px;
+        font-size:19px;
+        border-radius:10px;
+      }
+      body.stock-one-screen .app-header .brand-wordmark,
+      body.dashboard-one-screen .app-header .brand-wordmark,
+      body.catalog-one-screen .app-header .brand-wordmark { line-height:1.2; }
+      body.stock-one-screen .app-header .brand-wordmark small,
+      body.dashboard-one-screen .app-header .brand-wordmark small,
+      body.catalog-one-screen .app-header .brand-wordmark small {
+        font-size:9px;
+        margin-top:3px;
+      }
+      body.stock-one-screen .app-header .header-actions,
+      body.dashboard-one-screen .app-header .header-actions,
+      body.catalog-one-screen .app-header .header-actions { gap:8px; }
+      body.stock-one-screen .app-header .header-actions .btn,
+      body.dashboard-one-screen .app-header .header-actions .btn,
+      body.catalog-one-screen .app-header .header-actions .btn {
+        min-height:34px;
+        padding:6px 10px;
+        font-size:11px;
+      }
+      body.stock-one-screen .app-header .online-pill,
+      body.dashboard-one-screen .app-header .online-pill,
+      body.catalog-one-screen .app-header .online-pill {
+        padding:6px 10px;
+        font-size:11px;
+      }
+    }
+
+    /* 2) TOOLBAR ---------------------------------------------------------- */
+    .toolbar-primary,
+    .toolbar-filters {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .toolbar-primary { justify-content:space-between; }
+    .toolbar-filters {
+      border-top:1px solid var(--line);
+      padding-top:13px;
+    }
+
+    /* 3) CONTENT SPACING -------------------------------------------------- */
+    .main-container {
+      display:grid;
+      grid-template-columns:minmax(0,1.7fr) minmax(320px,.87fr);
+      align-items:start;
+      gap:20px;
+    }
+    .metric-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:15px;
+      margin-bottom:20px;
+    }
+
+    /* 4) CARD / TABLE ----------------------------------------------------- */
+    .table-wrapper {
+      overflow:auto;
+      height:min(57vh,670px);
+      min-height:330px;
+      scrollbar-color:#c8d5e5 transparent;
+    }
+    .detail-section {
+      position:sticky;
+      top:18px;
+      padding:0 20px 19px;
+      max-height:calc(100vh - 35px);
+      overflow-y:auto;
+    }
+    table {
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      text-align:left;
+      font-size:12px;
+    }
+
+    /* 5) RESPONSIVE ------------------------------------------------------- */
+    @media (max-width:1150px) {
+      .main-container { grid-template-columns:minmax(0,1.25fr) minmax(295px,.9fr); gap:14px; }
+      .detail-section { padding:0 14px 16px; }
+    }
+    @media (max-width:900px) {
+      .main-container { grid-template-columns:minmax(0,1fr); }
+      .detail-section { position:static; max-height:none; }
+      .table-wrapper { height:420px; }
+    }
+    @media (max-width:620px) {
+      .app-header {
+        height:auto;
+        min-height:62px;
+        flex-wrap:wrap;
+        padding:10px 12px;
+      }
+      .app-header .brand { font-size:14px; }
+      .app-header .brand-icon { width:33px; height:33px; font-size:18px; }
+      .app-header .brand-wordmark small { font-size:8px; }
+      .app-header .header-actions { gap:5px; }
+      .metric-grid { gap:7px; }
+      .toolbar { border-radius:14px; padding:13px; }
+      .toolbar-primary { gap:8px; }
+      .toolbar-primary > .btn { flex:1; }
+      .toolbar-filters { gap:8px; }
+      .table-wrapper { height:370px; }
+    }
+
+    /* PERFORMANCE UPGRADE V2: smart search, recent items and favorites. */
+    .smart-suggest{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:80;background:var(--app-panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:290px;overflow:auto;padding:5px}
+    .smart-suggest[hidden]{display:none}.smart-suggest button{width:100%;border:0;background:transparent;color:var(--ink);padding:8px 10px;border-radius:7px;text-align:left;display:grid;grid-template-columns:120px 1fr;gap:9px;font-size:11px}.smart-suggest button:hover,.smart-suggest button[aria-selected="true"]{background:var(--app-hover)}.smart-suggest b{color:var(--blue)}
+    .material-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 7px}.material-tools .btn{min-height:30px;padding:4px 8px;font-size:10px}.material-tools .fav-on{color:#b77900;background:#fff7d6;border-color:#f3cf63}.recent-strip{display:flex;gap:5px;overflow:auto;max-width:100%}.recent-chip{border:1px solid var(--line);background:var(--app-field);color:var(--ink);border-radius:999px;padding:4px 8px;font-size:10px;white-space:nowrap;cursor:pointer}
+
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -1814,10 +1972,11 @@
           <div class="search-box-group">
             <div class="search-input">
               <input type="search" id="o-tim-kiem" autocomplete="off" data-i18n-aria="searchAria"
-                aria-label="Tìm mã SAP, mô tả, mã phụ tùng" data-i18n-aria="searchAria" data-i18n-placeholder="searchPlaceholder"
+                aria-label="Tìm mã SAP, mô tả, mã phụ tùng" data-i18n-placeholder="searchPlaceholder"
                 placeholder="Tìm SAP001, SAP002 hoặc mô tả, mã phụ tùng..."
                 oninput="yeuCauLocDuLieu()" onpaste="xuLyDanTimKiem(event)">
               <span class="search-hint" aria-hidden="true">/</span>
+              <div id="smart-suggest" class="smart-suggest" role="listbox" aria-label="Gợi ý vật tư" hidden></div>
             </div>
             <button type="button" class="btn btn-primary" onclick="locDuLieu()" data-i18n="search">Tìm kiếm</button>
             <button type="button" class="btn btn-secondary" onclick="lamMoi()" data-i18n="clear">Xóa</button>
@@ -1915,6 +2074,7 @@
             <div class="img-counter" id="dem-anh">0/0 ảnh</div>
           </div>
           <div class="image-thumbs" id="image-thumbnails" aria-label="Image thumbnails"></div>
+          <div class="material-tools" id="material-tools"><button type="button" class="btn btn-secondary" id="favorite-toggle" onclick="doiYeuThichVatTu()">☆ Yêu thích</button><div class="recent-strip" id="recent-strip" aria-label="Vật tư xem gần đây"></div></div>
           <div class="detail-placeholder" id="chi-tiet-trong" data-i18n="emptyDetails">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
           <div class="detail-kpi-grid" aria-label="Thông tin tổng quan vật tư" data-i18n-aria="detailKpiAria">
             <div class="detail-kpi-card value"><span data-i18n="detailStockValue">Giá trị tồn kho</span>
@@ -2211,7 +2371,7 @@
       <section id="view-catalog" class="view-pane catalog-pane" role="tabpanel" aria-labelledby="tab-catalog" hidden>
         <div class="pane-heading catalog-heading">
           <div><h1 data-i18n="catalogHeading">Tra cứu danh mục vật tư SAP</h1>
-            <p data-i18n="catalogDesc">Tra cứu danh mục từ DATABASE_HEADERS và DATABASE_DATA trong Database.js.</</p></div>
+            <p data-i18n="catalogDesc">Tra cứu danh mục từ DATABASE_HEADERS và DATABASE_DATA trong Database.js.</p></div>
           <div class="catalog-actions">
             <button type="button" class="btn btn-secondary" id="catalog-reload" data-i18n="catalogReload">Làm mới dữ liệu</button>
             <label class="btn btn-secondary catalog-upload" for="catalog-upload-input" data-i18n="catalogUpload">Chọn Database.js</label>
@@ -3368,8 +3528,9 @@
 
     // ================= CẤU HÌNH THƯ MỤC Ổ MẠNG =================
     const duongDanOMang = "data.js";
-    const THU_MUC_HINH = "Material/"; // Thư mục chứa ảnh
-    const SO_ANH_TOI_DA = 10;        // Tự động quét từ _01 đến _10
+    const THU_MUC_HINH = "Material/"; // Images/Material/
+    const FILE_MANIFEST_HINH = "manifest.js"; // Images/manifest.js
+    const SO_ANH_TOI_DA = 4;        // Tự động quét từ _01 đến _10
     // Users can choose a preset or type a custom page size (safe render cap).
     let SO_DONG_MOI_TRANG = 75;
     const SO_DONG_TRANG_TOI_DA = 5000;
@@ -7118,7 +7279,7 @@
           exists=await new Promise(resolve=>{
             const image=new Image();let done=false;
             image.decoding="async";image.fetchPriority=trucTiep?"high":"low";
-            const timer=setTimeout(()=>{choLuu=false;finish(false);image.src="";},5000);
+            const timer=setTimeout(()=>{choLuu=false;finish(false);image.src="";},1200);
             function finish(ok){if(done)return;done=true;clearTimeout(timer);
               signal?.removeEventListener("abort",abort);image.onload=null;image.onerror=null;resolve(ok);}
             function abort(){finish(false);image.src="";}
@@ -7158,20 +7319,14 @@
         const script=document.createElement("script");let done=false;
         const finish=value=>{if(done)return;done=true;clearTimeout(timer);script.remove();resolve(value)};
         const timer=setTimeout(()=>finish(null),2500);
-        script.src=THU_MUC_HINH+"manifest.js?t="+Date.now();
+        script.src=FILE_MANIFEST_HINH+"?t="+Date.now();
         script.onload=()=>finish(window.MaterialImageManifest||null);
         script.onerror=()=>finish(null);document.head.appendChild(script);
       });
       promiseManifestAnh=(async()=>{
-        let data=null;
-        // HTTP JSON avoids script globals; offline/network shares retain manifest.js.
-        if(/^https?:$/.test(location.protocol)){
-          const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),2500);
-          try{const response=await fetch(THU_MUC_HINH+"manifest.json",{cache:"no-cache",signal:controller.signal});
-            if(response.ok)data=await response.json();
-          }catch{}finally{clearTimeout(timer)}
-        }
-        if(!data)data=await readScript();
+        // manifest.js in Images/ is the single authoritative image index.
+        // This avoids the old manifest.json check and all speculative image probes.
+        let data=await readScript();
         if(sequence!==lanManifestAnh)return null;
         const manifest=data&&typeof data==="object"&&!Array.isArray(data)?data:null;
         if(manifest)window.MaterialImageManifest=manifest;
@@ -7275,8 +7430,7 @@
       let henDo;
       try{
         const choManifest=taiManifestAnh().then(dungManifest,()=>false);
-        await Promise.race([choManifest,new Promise(resolve=>{henDo=setTimeout(resolve,120)})]);
-        clearTimeout(henDo);
+        await choManifest;
         if(!conHieuLuc()||daDungManifest)return;
         // SAP.jpg/PNG được dò ngay, không nằm sau 20 tên đánh số chưa chắc có.
         const danhSachTen=[sap+"_01.jpg",sap+".jpg",sap+"_01.png",sap+".png"];
@@ -8544,9 +8698,34 @@
     });
 
     // Khi tab nền, taiDuLieu() không tạo request. Trở lại tab sẽ cập nhật ngay.
-    taiManifestAnh();
     khoiTaoTuyChon();
     khoiTaoDanhMuc();
+
+    // ===== PERFORMANCE / PRODUCTIVITY UPGRADE V2 =====
+    // Exact SAP lookup already uses chiMucSap (Map). Add compact token indexes for fast smart suggestions.
+    const smartIndex={tokens:new Map(),ready:false};
+    const RECENT_KEY="checking-recent-materials-v2",FAVORITE_KEY="checking-favorite-materials-v2";
+    let recentMaterials=docTuyChon(RECENT_KEY);try{recentMaterials=JSON.parse(recentMaterials||"[]")}catch{recentMaterials=[]}
+    let favoriteMaterials=docTuyChon(FAVORITE_KEY);try{favoriteMaterials=new Set(JSON.parse(favoriteMaterials||"[]"))}catch{favoriteMaterials=new Set()}
+    function lapSmartIndex(){smartIndex.tokens.clear();for(const rec of duLieuTimKiem){
+      const words=(rec.sap+" "+rec.desc+" "+rec.part+" "+rec.bmno).split(/[^a-z0-9]+/).filter(x=>x.length>=2);
+      for(const word of new Set(words)){const key=word.slice(0,6);if(!smartIndex.tokens.has(key))smartIndex.tokens.set(key,[]);const a=smartIndex.tokens.get(key);if(a.length<60)a.push(rec)}
+    }smartIndex.ready=true}
+    function goiYVatTu(query){const q=chuanHoaTimKiem(query).trim();if(q.length<2)return[];const exact=chiMucSap.get(chuanHoaMaSap(q).toLowerCase());if(exact?.length)return exact.slice(0,8);
+      const pool=smartIndex.tokens.get(q.slice(0,6))||duLieuTimKiem;const out=[];for(const r of pool){if(r.sap.includes(q)||r.desc.includes(q)||r.part.includes(q)||r.bmno.includes(q)){out.push(r);if(out.length>=8)break}}return out}
+    function veGoiYVatTu(){const box=document.getElementById("smart-suggest"),input=document.getElementById("o-tim-kiem");if(!box||!smartIndex.ready)return;const rows=goiYVatTu(input.value);box.hidden=!rows.length;box.innerHTML=rows.map((r,i)=>'<button type="button" role="option" data-index="'+r.chiSo+'" aria-selected="false"><b>'+thoatHTML(chuanHoaMaSap(r.dong[0]))+'</b><span>'+thoatHTML(String(r.dong[1]||""))+'</span></button>').join("")}
+    function chonGoiY(index){const r=tatCaDuLieu[index];if(!r)return;document.getElementById("o-tim-kiem").value=chuanHoaMaSap(r[0]);document.querySelector('input[name="truongTim"][value="sap"]').checked=true;document.getElementById("smart-suggest").hidden=true;locDuLieu();setTimeout(()=>{const el=document.querySelector('#than-bang tr[data-row-index="'+index+'"]');if(el)chonDong(index,el)},0)}
+    function ghiDaXem(index){const row=tatCaDuLieu[index],sap=row?chuanHoaMaSap(row[0]):"";if(!sap)return;recentMaterials=[sap,...recentMaterials.filter(x=>x!==sap)].slice(0,10);ghiTuyChon(RECENT_KEY,JSON.stringify(recentMaterials));veRecentFavorite()}
+    function doiYeuThichVatTu(){const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";if(!sap)return;if(favoriteMaterials.has(sap))favoriteMaterials.delete(sap);else favoriteMaterials.add(sap);ghiTuyChon(FAVORITE_KEY,JSON.stringify([...favoriteMaterials]));veRecentFavorite()}
+    function moSapNhanh(sap){document.getElementById("o-tim-kiem").value=sap;document.querySelector('input[name="truongTim"][value="sap"]').checked=true;locDuLieu();setTimeout(()=>{const r=chiMucSap.get(sap.toLowerCase())?.[0];const el=r&&document.querySelector('#than-bang tr[data-row-index="'+r.chiSo+'"]');if(r&&el)chonDong(r.chiSo,el)},0)}
+    function veRecentFavorite(){const strip=document.getElementById("recent-strip"),button=document.getElementById("favorite-toggle");if(strip)strip.innerHTML=recentMaterials.slice(0,6).map(s=>'<button type="button" class="recent-chip" onclick="moSapNhanh(\''+s.replace(/'/g,"\\'")+'\')">'+(favoriteMaterials.has(s)?'★ ':'')+thoatHTML(s)+'</button>').join("");const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";if(button){const on=sap&&favoriteMaterials.has(sap);button.classList.toggle("fav-on",!!on);button.textContent=on?"★ Đã yêu thích":"☆ Yêu thích";button.disabled=!sap}}
+    const _taoChiMucTimKiem=taoChiMucTimKiem;taoChiMucTimKiem=async function(){const ok=await _taoChiMucTimKiem();if(ok)lapSmartIndex();return ok};
+    const _chonDong=chonDong;chonDong=function(index,element){_chonDong(index,element);ghiDaXem(index)};
+    document.getElementById("o-tim-kiem").addEventListener("input",()=>requestAnimationFrame(veGoiYVatTu));
+    document.getElementById("smart-suggest").addEventListener("click",e=>{const b=e.target.closest("button[data-index]");if(b)chonGoiY(Number(b.dataset.index))});
+    document.addEventListener("pointerdown",e=>{const b=document.getElementById("smart-suggest");if(b&&!e.target.closest(".search-input"))b.hidden=true});
+    veRecentFavorite();
+
       const storedPageSize=Number(docTuyChon("checking-rows-per-page"));
       if(Number.isInteger(storedPageSize)&&storedPageSize>=1)
         SO_DONG_MOI_TRANG=Math.min(storedPageSize,SO_DONG_TRANG_TOI_DA);
@@ -8590,8 +8769,7 @@
     veTrangThaiNguon();
     taiDuLieu();
     kiemTraPhienBanCucBo();
-    if(typeof requestIdleCallback==="function")requestIdleCallback(()=>taiManifestAnh());
-    else setTimeout(()=>taiManifestAnh(),1200);
+    taiManifestAnh();
     setInterval(kiemTraPhienBanStock, 30000);
     setInterval(kiemTraPhienBanHistory, 60000);
     setInterval(taiLaiAmount, 60000);
@@ -8605,7 +8783,3 @@
   </script>
 </body>
 </html>
-
-
-
-
