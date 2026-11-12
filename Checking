@@ -1788,6 +1788,12 @@
     #batch-sap-summary[hidden]{display:none}
   
 
+    .favorite-row-btn{border:0;background:transparent;color:#b57b16;font-size:21px;cursor:pointer;padding:2px 8px}
+    .favorite-row-btn[aria-pressed="true"]{color:#e4a500}
+    .search-history-toolbar{padding:10px 0;margin-bottom:12px}
+    .search-history-toolbar input{height:36px;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+    .search-history-panel{min-height:350px}
+    .search-history-panel .table-wrapper{height:min(62vh,650px)}
     /* ======================================================================
        FINAL LAYOUT CONTROL LAYER
        Order: Header -> Toolbar -> Content spacing -> Card/Table -> Responsive
@@ -1959,7 +1965,13 @@
         <button type="button" id="tab-stock" class="view-tab active" role="tab" aria-selected="true" aria-controls="view-stock" tabindex="0" onclick="chuyenTab('stock')"><span aria-hidden="true">▤</span><span data-i18n="tabStock">Tra cứu tồn kho</span></button>
         <button type="button" id="tab-dashboard" class="view-tab" role="tab" aria-selected="false" aria-controls="view-dashboard" tabindex="-1" onclick="chuyenTab('dashboard')"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Phân tích kho</span></button>
         <button type="button" id="tab-catalog" class="view-tab" role="tab" aria-selected="false" aria-controls="view-catalog" tabindex="-1" onclick="chuyenTab('catalog')"><span aria-hidden="true">▦</span><span data-i18n="catalogTab">Danh mục vật tư</span></button>
+        <button type="button" id="tab-search-history" class="view-tab" role="tab" aria-selected="false" aria-controls="view-search-history" tabindex="-1" onclick="chuyenTab('search-history')"><span aria-hidden="true">◷</span><span data-i18n="searchHistoryTab">Lịch sử tìm kiếm</span></button>
       </nav>
+      <section id="view-search-history" class="view-pane" role="tabpanel" aria-labelledby="tab-search-history" hidden>
+        <div class="pane-heading"><div><h1 data-i18n="searchHistoryTab">Lịch sử tìm kiếm</h1><p data-i18n="searchHistoryNote">Lưu trên trình duyệt này, tối đa 100 lượt tìm kiếm.</p></div></div>
+        <div class="toolbar-primary search-history-toolbar"><label><span data-i18n="searchHistoryFilter">Lọc lịch sử</span> <input id="search-history-filter" type="search" oninput="veLichSuTimKiem()"></label><button type="button" class="btn btn-secondary" onclick="xoaLichSuTimKiem()" data-i18n="searchHistoryClear">Xóa lịch sử</button></div>
+        <div class="table-section search-history-panel"><div class="table-wrapper"><table><thead><tr><th data-i18n="searchHistoryTime">Thời gian</th><th data-i18n="searchHistoryQuery">Từ khóa</th><th data-i18n="searchHistoryScope">Tìm trong</th><th data-i18n="searchHistoryAction">Thao tác</th></tr></thead><tbody id="search-history-rows"></tbody></table></div></div>
+      </section>
 
       <section id="view-stock" class="view-pane" role="tabpanel" aria-labelledby="tab-stock">
       <div class="intro">
@@ -2013,7 +2025,7 @@
             <label><input type="radio" name="truongTim" value="sap" onchange="yeuCauLocDuLieu()"><span data-i18n="searchSap">Mã SAP</span></label>
             <label><input type="radio" name="truongTim" value="desc" onchange="yeuCauLocDuLieu()"><span data-i18n="searchDesc">Mô tả</span></label>
             <label><input type="radio" name="truongTim" value="part" onchange="yeuCauLocDuLieu()"><span data-i18n="searchPart">Mã phụ tùng</span></label>
-            <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span data-i18n="searchBm">Mã BM</span></label>
+            <label><input type="radio" name="truongTim" value="bmno" onchange="yeuCauLocDuLieu()"><span data-i18n="searchBm">Mã BM</span></label><label><input type="radio" name="truongTim" value="favorites" onchange="yeuCauLocDuLieu()"><span data-i18n="favoriteFilter">Yêu thích</span></label>
           </div>
         </div>
       </section>
@@ -3313,6 +3325,18 @@
       catalogExportError:"Could not create the Excel file. Please try again."
     });
 
+    Object.assign(NGON_NGU.vi,{favoriteColumn:"Yêu thích",favoriteFilter:"Yêu thích",
+      searchHistoryTab:"Lịch sử tìm kiếm",searchHistoryNote:"Lưu trên trình duyệt này, tối đa 100 lượt tìm kiếm gần nhất.",
+      searchHistoryFilter:"Lọc lịch sử",searchHistoryClear:"Xóa lịch sử",searchHistoryTime:"Thời gian",
+      searchHistoryQuery:"Từ khóa",searchHistoryScope:"Tìm trong",searchHistoryAction:"Thao tác",
+      searchHistoryRepeat:"Tìm lại",searchHistoryEmpty:"Chưa có lịch sử tìm kiếm.",
+      searchHistoryConfirm:"Bạn muốn xóa toàn bộ lịch sử tìm kiếm trên thiết bị này?"});
+    Object.assign(NGON_NGU.en,{favoriteColumn:"Favorites",favoriteFilter:"Favorites",
+      searchHistoryTab:"Search history",searchHistoryNote:"Stored in this browser, up to 100 recent searches.",
+      searchHistoryFilter:"Filter history",searchHistoryClear:"Clear history",searchHistoryTime:"Time",
+      searchHistoryQuery:"Query",searchHistoryScope:"Search in",searchHistoryAction:"Action",
+      searchHistoryRepeat:"Search again",searchHistoryEmpty:"No search history yet.",
+      searchHistoryConfirm:"Delete all search history on this device?"});
     let ngonNguHienTai = "vi";
     let giaoDienHienTai = "light";
 
@@ -3426,7 +3450,7 @@
 
     // Tabs switch views without reloading or losing stock search/gallery state.
     let tabHienTai="stock";
-    const CAC_TAB=["stock","dashboard","catalog"];
+    const CAC_TAB=["stock","dashboard","catalog","search-history"];
     function chuyenTab(tab, opts={}) {
       if(!CAC_TAB.includes(tab))return;
       tabHienTai=tab;
@@ -3445,9 +3469,10 @@
         button.classList.toggle("active",selected);
       }
       document.querySelector(".breadcrumbs .active").textContent=tuDien(
-        tab==="stock"?"tabStock":tab==="dashboard"?"tabDashboard":"catalogTab");
+        tab==="stock"?"tabStock":tab==="dashboard"?"tabDashboard":tab==="catalog"?"catalogTab":"searchHistoryTab");
       if(opts.persist!==false)ghiTuyChon("checking-active-tab",tab);
       if(tab==="catalog"&&!danhMucTrangThai.loaded&&!danhMucTrangThai.loading)taiDanhMuc();
+      if(tab==="search-history")veLichSuTimKiem();
       if(tab==="dashboard"){
         if(analyticsReady)capNhatThongKeNangCao();
         if(!historyLoaded&&!historyLoading&&!daThuTaiHistoryChoCard){
@@ -4252,7 +4277,7 @@
     }
 
     function veTieuDe() {
-      document.getElementById("dau-bang").innerHTML = "<tr>" + COT_HIEN_THI.map(chiSo => {
+      document.getElementById("dau-bang").innerHTML = '<tr><th>'+thoatHTML(tuDien("favoriteColumn"))+"</th>" + COT_HIEN_THI.map(chiSo => {
         const c = thoatHTML(tenCotDaDich(tieuDeCot[chiSo]));
         const dangSapXep = cotSapXep === chiSo;
         const muiTen = dangSapXep ? (huongSapXep === 1 ? "▲" : "▼") : "↕";
@@ -6963,7 +6988,8 @@
       boTriHoanTimKiem = null;
       if (!chiMucSanSang) return;
       dangLocDuLieu = true;
-      const tuKhoa = chuanHoaTimKiem(document.getElementById("o-tim-kiem").value.trim());
+      const rawQuery=document.getElementById("o-tim-kiem").value.trim();
+      const tuKhoa = chuanHoaTimKiem(rawQuery);
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
       const locCanhBao=document.getElementById("loc-canh-bao").value;
@@ -6971,7 +6997,8 @@
       const compiledTerms=nhieuTuKhoa.map(keyword=>({keyword,
         hasDigit:/\d/.test(keyword),compact:keyword.replace(/[^a-z0-9]/g,"")}));
       const ganDung=document.getElementById("tim-gan-dung").checked;
-      const truongTim = cheDoTim === "all" ? "all" : cheDoTim;
+      const truongTim = cheDoTim === "favorites" ? "all" : cheDoTim;
+      if(rawQuery)ghiLichSuTimKiem(rawQuery,cheDoTim);
       const lanLocHienTai = ++soLanLocDuLieu;
       const moi = [];
       let viTri = 0;
@@ -6989,7 +7016,7 @@
             ? true
             : !tuKhoa||compiledTerms.some(term=>
                 khopTuKhoaVatTu(muc,term,truongTim,ganDung));
-          if (hopTuKhoa && (!chiTonKho || muc.coTonKho) &&
+          if (hopTuKhoa && (cheDoTim!=="favorites" || favoriteMaterials.has(chuanHoaMaSap(muc.dong[0]))) && (!chiTonKho || muc.coTonKho) &&
               (locCanhBao==="all" || muc.trangThaiTon===locCanhBao)) moi.push(muc);
         }
         if (viTri < tong) {
@@ -7068,13 +7095,17 @@
           }
           return '<td>' + giaTri + '</td>';
         }).join("");
+        const sapYeuThich=chuanHoaMaSap(muc.dong[0]);
+        const daYeuThich=favoriteMaterials.has(sapYeuThich);
+        const nutYeuThich='<td><button type="button" class="favorite-row-btn" data-sap="'+thoatHTML(sapYeuThich)+'" aria-pressed="'+daYeuThich+'" title="'+thoatHTML(tuDien("favoriteColumn"))+'" onclick="event.stopPropagation();doiYeuThichTheoMa(this.dataset.sap)">'
+          +(daYeuThich?'★':'☆')+'</button></td>';
         return '<tr class="' + selectedClass + (muc.coTonKho ? '' : ' out-of-stock') + '" data-row-index="' + muc.chiSo +
           '" tabindex="0" aria-selected="' + selectedAria +
-          '" onclick="chonDong(' + muc.chiSo + ', this)" ondblclick="moLichSuVatTu(' + muc.chiSo + ')">' + o + '</tr>';
+          '" onclick="chonDong(' + muc.chiSo + ', this)" ondblclick="moLichSuVatTu(' + muc.chiSo + ')">' + nutYeuThich + o + '</tr>';
       }).join("");
 
       document.getElementById("than-bang").innerHTML = html ||
-        '<tr><td colspan="6" class="empty-table">' + tuDien("noResults") + '</td></tr>';
+        '<tr><td colspan="' + (COT_HIEN_THI.length+1) + '" class="empty-table">' + tuDien("noResults") + '</td></tr>';
       capNhatDieuKhienPhanTrang();
     }
 
@@ -8703,6 +8734,33 @@
 
     // ===== PERFORMANCE / PRODUCTIVITY UPGRADE V2 =====
     // Exact SAP lookup already uses chiMucSap (Map). Add compact token indexes for fast smart suggestions.
+    const SEARCH_HISTORY_KEY="checking-search-history-v1";
+    let lichSuTimKiem=[];try{const data=JSON.parse(docTuyChon(SEARCH_HISTORY_KEY)||"[]");if(Array.isArray(data))lichSuTimKiem=data.slice(0,100)}catch{}
+    function ghiLichSuTimKiem(query,scope){
+      const last=lichSuTimKiem[0];
+      if(last&&last.query===query&&last.scope===scope&&Date.now()-last.time<30000)return;
+      lichSuTimKiem.unshift({query:String(query).slice(0,250),scope,time:Date.now()});
+      lichSuTimKiem.length=Math.min(lichSuTimKiem.length,100);
+      ghiTuyChon(SEARCH_HISTORY_KEY,JSON.stringify(lichSuTimKiem));
+    }
+    function veLichSuTimKiem(){
+      const body=document.getElementById("search-history-rows");if(!body)return;
+      const q=chuanHoaTimKiem(document.getElementById("search-history-filter").value);
+      body.replaceChildren();
+      const entries=lichSuTimKiem.filter(entry=>!q||chuanHoaTimKiem(entry.query).includes(q));
+      if(!entries.length){const tr=body.insertRow(),td=tr.insertCell();td.colSpan=4;td.textContent=tuDien("searchHistoryEmpty");return;}
+      for(const entry of entries){
+        const tr=body.insertRow();
+        tr.insertCell().textContent=new Date(entry.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US");
+        tr.insertCell().textContent=entry.query;
+        tr.insertCell().textContent=tuDien(({all:"searchAll",sap:"searchSap",desc:"searchDesc",part:"searchPart",bmno:"searchBm",favorites:"favoriteFilter"})[entry.scope]||"searchAll");
+        const btn=document.createElement("button");btn.type="button";btn.className="btn btn-soft";btn.textContent=tuDien("searchHistoryRepeat");
+        btn.addEventListener("click",()=>{chuyenTab("stock");document.getElementById("o-tim-kiem").value=entry.query;
+          const radio=document.querySelector('input[name="truongTim"][value="'+entry.scope+'"]');if(radio)radio.checked=true;locDuLieu();});
+        tr.insertCell().appendChild(btn);
+      }
+    }
+    function xoaLichSuTimKiem(){if(!confirm(tuDien("searchHistoryConfirm")))return;lichSuTimKiem=[];ghiTuyChon(SEARCH_HISTORY_KEY,"[]");veLichSuTimKiem();}
     const smartIndex={tokens:new Map(),ready:false};
     const RECENT_KEY="checking-recent-materials-v2",FAVORITE_KEY="checking-favorite-materials-v2";
     let recentMaterials=docTuyChon(RECENT_KEY);try{recentMaterials=JSON.parse(recentMaterials||"[]")}catch{recentMaterials=[]}
@@ -8716,7 +8774,14 @@
     function veGoiYVatTu(){const box=document.getElementById("smart-suggest"),input=document.getElementById("o-tim-kiem");if(!box||!smartIndex.ready)return;const rows=goiYVatTu(input.value);box.hidden=!rows.length;box.innerHTML=rows.map((r,i)=>'<button type="button" role="option" data-index="'+r.chiSo+'" aria-selected="false"><b>'+thoatHTML(chuanHoaMaSap(r.dong[0]))+'</b><span>'+thoatHTML(String(r.dong[1]||""))+'</span></button>').join("")}
     function chonGoiY(index){const r=tatCaDuLieu[index];if(!r)return;document.getElementById("o-tim-kiem").value=chuanHoaMaSap(r[0]);document.querySelector('input[name="truongTim"][value="sap"]').checked=true;document.getElementById("smart-suggest").hidden=true;locDuLieu();setTimeout(()=>{const el=document.querySelector('#than-bang tr[data-row-index="'+index+'"]');if(el)chonDong(index,el)},0)}
     function ghiDaXem(index){const row=tatCaDuLieu[index],sap=row?chuanHoaMaSap(row[0]):"";if(!sap)return;recentMaterials=[sap,...recentMaterials.filter(x=>x!==sap)].slice(0,10);ghiTuyChon(RECENT_KEY,JSON.stringify(recentMaterials));veRecentFavorite()}
-    function doiYeuThichVatTu(){const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";if(!sap)return;if(favoriteMaterials.has(sap))favoriteMaterials.delete(sap);else favoriteMaterials.add(sap);ghiTuyChon(FAVORITE_KEY,JSON.stringify([...favoriteMaterials]));veRecentFavorite()}
+    function doiYeuThichTheoMa(sap){
+      if(!sap)return;
+      if(favoriteMaterials.has(sap))favoriteMaterials.delete(sap);else favoriteMaterials.add(sap);
+      ghiTuyChon(FAVORITE_KEY,JSON.stringify([...favoriteMaterials]));
+      veRecentFavorite();hienThiTrangHienTai();
+      if(document.querySelector('input[name="truongTim"]:checked')?.value==="favorites")yeuCauLocDuLieu();
+    }
+    function doiYeuThichVatTu(){const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";doiYeuThichTheoMa(sap)}
     function moSapNhanh(sap){document.getElementById("o-tim-kiem").value=sap;document.querySelector('input[name="truongTim"][value="sap"]').checked=true;locDuLieu();setTimeout(()=>{const r=chiMucSap.get(sap.toLowerCase())?.[0];const el=r&&document.querySelector('#than-bang tr[data-row-index="'+r.chiSo+'"]');if(r&&el)chonDong(r.chiSo,el)},0)}
     function veRecentFavorite(){const strip=document.getElementById("recent-strip"),button=document.getElementById("favorite-toggle");if(strip)strip.innerHTML=recentMaterials.slice(0,6).map(s=>'<button type="button" class="recent-chip" onclick="moSapNhanh(\''+s.replace(/'/g,"\\'")+'\')">'+(favoriteMaterials.has(s)?'★ ':'')+thoatHTML(s)+'</button>').join("");const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";if(button){const on=sap&&favoriteMaterials.has(sap);button.classList.toggle("fav-on",!!on);button.textContent=on?"★ Đã yêu thích":"☆ Yêu thích";button.disabled=!sap}}
     const _taoChiMucTimKiem=taoChiMucTimKiem;taoChiMucTimKiem=async function(){const ok=await _taoChiMucTimKiem();if(ok)lapSmartIndex();return ok};
