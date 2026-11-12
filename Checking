@@ -1965,6 +1965,21 @@
 
     /* REQUEST WORKFLOW */
     .request-dialog{width:min(460px,calc(100vw - 28px));border:1px solid var(--line);border-radius:16px;background:var(--app-panel);color:var(--ink);padding:0;box-shadow:0 22px 60px rgba(15,23,42,.26)}.request-dialog::backdrop{background:rgba(15,23,42,.38)}.request-dialog-form{display:flex;flex-direction:column;gap:14px;padding:18px}.request-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.request-dialog-head h3{margin:0;font-size:16px}.request-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.request-field{display:flex;flex-direction:column;gap:4px;min-width:0}.request-field.request-wide{grid-column:1/-1}.request-field span{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase}.request-field strong{min-height:36px;display:flex;align-items:center;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);overflow-wrap:anywhere}.request-field input{height:36px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);color:var(--ink);padding:6px 9px}.request-dialog-actions{display:flex;justify-content:flex-end;gap:8px}.request-count{font-size:11px;color:var(--muted);font-weight:700}#view-requests .table-wrapper{height:min(62vh,650px)}@media(max-width:620px){.request-grid{grid-template-columns:1fr}.request-field.request-wide{grid-column:auto}.request-dialog-actions .btn{flex:1}}
+
+    /* FINAL STOCK + REQUEST FILTER UPGRADE */
+    #view-stock .toolbar-primary{align-items:center}
+    #view-stock .search-box-group{min-width:min(100%,420px)}
+    #view-stock .toolbar-filters{justify-content:flex-start}
+    #view-requests .request-filterbar{display:flex;align-items:flex-end;flex-wrap:wrap;gap:7px 9px;padding:10px 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--app-panel)}
+    #view-requests .request-filter{display:flex;flex-direction:column;gap:3px;min-width:130px;color:var(--muted);font-size:10px;font-weight:750}
+    #view-requests .request-search{flex:1 1 280px}
+    #view-requests .request-filter input,#view-requests .request-filter select{height:36px;min-height:36px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);color:var(--ink);padding:6px 9px;font:inherit;font-size:11px}
+    #view-requests .request-filterbar .btn{min-height:36px;height:36px;padding:6px 10px;font-size:11px}
+    #view-requests .request-panel{overflow:hidden;background:var(--app-panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    #view-requests .panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px}
+    #view-requests .panel-header h3{margin:0;font-size:15px}#view-requests .panel-header p{margin:3px 0 0;color:var(--muted);font-size:11px}
+    #view-requests .request-count{background:var(--blue-soft);color:var(--blue);border-radius:99px;padding:5px 9px}
+    @media(max-width:700px){#view-requests .request-filter{flex:1 1 calc(50% - 8px)}#view-requests .request-search{flex-basis:100%}#view-requests .request-filterbar .btn{flex:1 1 auto}}
 </style>
 </head>
 <body>
@@ -1997,7 +2012,15 @@
         <div class="table-section search-history-panel"><div class="table-wrapper"><table><thead><tr><th data-i18n="searchHistoryTime">Thời gian</th><th data-i18n="searchHistoryQuery">Từ khóa</th><th data-i18n="searchHistoryScope">Tìm trong</th><th data-i18n="searchHistoryAction">Thao tác</th></tr></thead><tbody id="search-history-rows"></tbody></table></div></div>
       </section>
 
-      <section id="view-requests" class="view-pane" role="tabpanel" aria-labelledby="tab-requests" hidden><div class="panel table-panel request-panel"><div class="panel-header"><div><h3 data-i18n="requestTab">Yêu cầu</h3><p data-i18n="requestSubtitle">Danh sách vật tư đã tạo yêu cầu trên thiết bị này.</p></div><span class="request-count" id="request-count"></span></div><div class="table-wrapper"><table><thead><tr><th data-i18n="requestTime">Thời gian</th><th data-i18n="colSap">Mã SAP</th><th data-i18n="requestName">Tên vật tư</th><th data-i18n="requestStock">Tồn kho</th><th data-i18n="requestBin">Vị trí vật tư</th><th data-i18n="requestUnit">Đơn vị</th><th data-i18n="requestQty">Số lượng yêu cầu</th></tr></thead><tbody id="request-rows"></tbody></table></div></div></section>
+      <section id="view-requests" class="view-pane" role="tabpanel" aria-labelledby="tab-requests" hidden><div class="panel table-panel request-panel"><div class="panel-header"><div><h3 data-i18n="requestTab">Yêu cầu</h3><p data-i18n="requestSubtitle">Danh sách vật tư đã tạo yêu cầu trên thiết bị này.</p></div><span class="request-count" id="request-count"></span></div>
+        <div class="request-filterbar">
+          <label class="request-filter request-search"><span data-i18n="requestSearch">Tìm kiếm</span><input id="request-search" type="search" autocomplete="off" data-i18n-placeholder="requestSearchPlaceholder" placeholder="Mã SAP, tên, vị trí, đơn vị..." oninput="veYeuCauVatTu()"></label>
+          <label class="request-filter"><span data-i18n="requestFrom">Từ ngày</span><input id="request-from" type="date" onchange="veYeuCauVatTu()"></label>
+          <label class="request-filter"><span data-i18n="requestTo">Đến ngày</span><input id="request-to" type="date" onchange="veYeuCauVatTu()"></label>
+          <label class="request-filter"><span data-i18n="requestUnitFilter">Đơn vị</span><select id="request-unit-filter" onchange="veYeuCauVatTu()"><option value="" data-i18n="requestAll">Tất cả</option></select></label>
+          <button type="button" class="btn btn-secondary" onclick="xoaLocYeuCau()" data-i18n="requestClear">Xóa lọc</button>
+          <button type="button" id="request-export" class="btn btn-soft" onclick="xuatExcelYeuCau()">↓ <span data-i18n="requestExport">Xuất Excel (.xlsx)</span></button>
+        </div><div class="table-wrapper"><table><thead><tr><th data-i18n="requestTime">Thời gian</th><th data-i18n="colSap">Mã SAP</th><th data-i18n="requestName">Tên vật tư</th><th data-i18n="requestStock">Tồn kho</th><th data-i18n="requestBin">Vị trí vật tư</th><th data-i18n="requestUnit">Đơn vị</th><th data-i18n="requestQty">Số lượng yêu cầu</th></tr></thead><tbody id="request-rows"></tbody></table></div></div></section>
 
       <section id="view-stock" class="view-pane" role="tabpanel" aria-labelledby="tab-stock">
       <div class="intro">
@@ -2948,7 +2971,7 @@
         reportNoSort:"Theo dữ liệu gốc",reportLineValue:"Thành tiền (đồng)",
         reportNote:"Giá trị kho = số lượng tồn dương × đơn giá hợp lệ; bỏ qua dòng không có giá hợp lệ.",
         reportDisclaimer:"Nguồn: dữ liệu SAP nội bộ · Chỉ bao gồm các mã phù hợp với bộ lọc hiện tại.",
-        colSap:"Mã BM", colDescription:"Mô tả", colPart:"Mã phụ tùng",
+        colSap:"Mã SAP", colDescription:"Mô tả", colPart:"Mã phụ tùng",
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
@@ -3355,8 +3378,8 @@
       catalogExportError:"Could not create the Excel file. Please try again."
     });
 
-    Object.assign(NGON_NGU.vi,{requestTab:"Yêu cầu",requestSubtitle:"Danh sách vật tư đã tạo yêu cầu trên thiết bị này.",stockMenuRequest:"Yêu cầu",requestDialogTitle:"Tạo yêu cầu vật tư",requestName:"Tên vật tư",requestStock:"Tồn kho",requestUnit:"Đơn vị",requestQty:"Số lượng yêu cầu",requestSubmit:"Yêu cầu",requestTime:"Thời gian",requestBin:"Vị trí vật tư",requestEmpty:"Chưa có yêu cầu nào.",requestSaved:"Đã thêm yêu cầu {code}.",requestInvalidQty:"Số lượng yêu cầu phải lớn hơn 0."});
-    Object.assign(NGON_NGU.en,{requestTab:"Requests",requestSubtitle:"Material requests created on this device.",stockMenuRequest:"Request",requestDialogTitle:"Create material request",requestName:"Material name",requestStock:"Stock",requestUnit:"Unit",requestQty:"Request quantity",requestSubmit:"Request",requestTime:"Time",requestBin:"Storage bin",requestEmpty:"No requests yet.",requestSaved:"Request added for {code}.",requestInvalidQty:"Request quantity must be greater than 0."});
+    Object.assign(NGON_NGU.vi,{requestTab:"Yêu cầu",requestSubtitle:"Danh sách vật tư đã tạo yêu cầu trên thiết bị này.",stockMenuRequest:"Yêu cầu",requestDialogTitle:"Tạo yêu cầu vật tư",requestName:"Tên vật tư",requestStock:"Tồn kho",requestUnit:"Đơn vị",requestQty:"Số lượng yêu cầu",requestSubmit:"Yêu cầu",requestTime:"Thời gian",requestBin:"Vị trí vật tư",requestEmpty:"Chưa có yêu cầu nào.",requestSaved:"Đã thêm yêu cầu {code}.",requestInvalidQty:"Số lượng yêu cầu phải lớn hơn 0.",requestSearch:"Tìm kiếm",requestSearchPlaceholder:"Mã SAP, tên, vị trí, đơn vị...",requestFrom:"Từ ngày",requestTo:"Đến ngày",requestUnitFilter:"Đơn vị",requestAll:"Tất cả",requestClear:"Xóa lọc",requestExport:"Xuất Excel (.xlsx)",requestExportEmpty:"Không có yêu cầu phù hợp để xuất."});
+    Object.assign(NGON_NGU.en,{requestTab:"Requests",requestSubtitle:"Material requests created on this device.",stockMenuRequest:"Request",requestDialogTitle:"Create material request",requestName:"Material name",requestStock:"Stock",requestUnit:"Unit",requestQty:"Request quantity",requestSubmit:"Request",requestTime:"Time",requestBin:"Storage bin",requestEmpty:"No requests yet.",requestSaved:"Request added for {code}.",requestInvalidQty:"Request quantity must be greater than 0.",requestSearch:"Search",requestSearchPlaceholder:"SAP code, material, bin, unit...",requestFrom:"From date",requestTo:"To date",requestUnitFilter:"Unit",requestAll:"All",requestClear:"Clear filters",requestExport:"Export Excel (.xlsx)",requestExportEmpty:"No matching requests to export."});
     Object.assign(NGON_NGU.vi,{favoriteColumn:"Yêu thích",favoriteFilter:"Yêu thích",
       searchHistoryTab:"Lịch sử tìm kiếm",searchHistoryNote:"Lưu trên trình duyệt này, tối đa 100 lượt tìm kiếm gần nhất.",
       searchHistoryFilter:"Lọc lịch sử",searchHistoryClear:"Xóa lịch sử",searchHistoryTime:"Thời gian",
@@ -6936,7 +6959,7 @@
       document.getElementById("metric-value-note").textContent = tuDien("inventoryValueNote");
       document.getElementById("trang-thai-ban-ghi").textContent = tuDien("processing");
       document.getElementById("than-bang").innerHTML =
-        '<tr><td colspan="6" class="empty-table">' + tuDien("preparing") + '</td></tr>';
+        '<tr><td colspan="' + (COT_HIEN_THI.length+1) + '" class="empty-table">' + tuDien("preparing") + '</td></tr>';
 
       return new Promise(resolve=>{
       function xuLyNhom() {
@@ -8686,8 +8709,16 @@
     function moYeuCauVatTu(index){const row=tatCaDuLieu[index];if(!row)return;requestRowIndex=index;const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotYeuCau(["Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"],-1);document.getElementById("request-sap").textContent=chuanHoaMaSap(row[0])||"—";document.getElementById("request-name").textContent=String(row[dc]??"").trim()||"—";document.getElementById("request-stock").textContent=String(row[chiSoSoLuong]??"").trim()||"—";document.getElementById("request-unit").textContent=uc>=0?(String(row[uc]??"").trim()||"—"):"—";const q=document.getElementById("request-qty");q.value="1";const dlg=document.getElementById("request-dialog");if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");setTimeout(()=>{q.focus();q.select()},0)}
     function dongYeuCauVatTu(){const d=document.getElementById("request-dialog");if(d.open&&typeof d.close==="function")d.close();else d.removeAttribute("open");requestRowIndex=-1}
     function xacNhanYeuCauVatTu(){if(requestRowIndex<0)return;const row=tatCaDuLieu[requestRowIndex],qty=Number(document.getElementById("request-qty").value);if(!Number.isFinite(qty)||qty<=0){thongBaoMenuVatTu("requestInvalidQty");document.getElementById("request-qty").focus();return}const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotYeuCau(["Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"],-1),sap=chuanHoaMaSap(row[0]);materialRequests.unshift({time:Date.now(),sap,name:String(row[dc]??"").trim(),stock:String(row[chiSoSoLuong]??"").trim(),unit:uc>=0?String(row[uc]??"").trim():"",bin:viTriYeuCau(row),qty});materialRequests=materialRequests.slice(0,500);ghiTuyChon(REQUESTS_KEY,JSON.stringify(materialRequests));dongYeuCauVatTu();veYeuCauVatTu();thongBaoMenuVatTu("requestSaved",{code:sap})}
-    function veYeuCauVatTu(){const body=document.getElementById("request-rows"),count=document.getElementById("request-count");if(!body)return;count.textContent=String(materialRequests.length);body.replaceChildren();if(!materialRequests.length){const tr=body.insertRow(),td=tr.insertCell();td.colSpan=7;td.className="empty-table";td.textContent=tuDien("requestEmpty");return}for(const r of materialRequests){const tr=body.insertRow();tr.insertCell().textContent=new Date(r.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US");tr.insertCell().textContent=r.sap;tr.insertCell().textContent=r.name;tr.insertCell().textContent=r.stock;tr.insertCell().textContent=r.bin||viTriTheoMaSap(r.sap)||"—";tr.insertCell().textContent=r.unit;tr.insertCell().textContent=String(r.qty)}}
-
+    function ngayYeuCau(time){const d=new Date(time);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+    function yeuCauDangLoc(){
+      const search=document.getElementById("request-search"),from=document.getElementById("request-from"),to=document.getElementById("request-to"),unit=document.getElementById("request-unit-filter");
+      const q=chuanHoaTimKiem(search?.value||""),f=from?.value||"",t=to?.value||"",u=unit?.value||"";
+      return materialRequests.filter(r=>{const day=ngayYeuCau(r.time),hay=chuanHoaTimKiem([r.sap,r.name,r.stock,r.bin||viTriTheoMaSap(r.sap),r.unit,r.qty].join(" "));return(!q||hay.includes(q))&&(!f||day>=f)&&(!t||day<=t)&&(!u||r.unit===u)});
+    }
+    function capNhatDonViYeuCau(){const select=document.getElementById("request-unit-filter");if(!select)return;const before=select.value,values=[...new Set(materialRequests.map(r=>String(r.unit||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));select.replaceChildren(new Option(tuDien("requestAll"),""),...values.map(v=>new Option(v,v)));select.value=values.includes(before)?before:""}
+    function veYeuCauVatTu(){const body=document.getElementById("request-rows"),count=document.getElementById("request-count");if(!body)return;capNhatDonViYeuCau();const rows=yeuCauDangLoc();count.textContent=dinhDangSoLuong.format(rows.length)+" / "+dinhDangSoLuong.format(materialRequests.length);body.replaceChildren();if(!rows.length){const tr=body.insertRow(),td=tr.insertCell();td.colSpan=7;td.className="empty-table";td.textContent=tuDien("requestEmpty");return}for(const r of rows){const tr=body.insertRow();tr.insertCell().textContent=new Date(r.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US");tr.insertCell().textContent=r.sap;tr.insertCell().textContent=r.name;tr.insertCell().textContent=r.stock;tr.insertCell().textContent=r.bin||viTriTheoMaSap(r.sap)||"—";tr.insertCell().textContent=r.unit;tr.insertCell().textContent=String(r.qty)}}
+    function xoaLocYeuCau(){for(const id of ["request-search","request-from","request-to"])document.getElementById(id).value="";document.getElementById("request-unit-filter").value="";veYeuCauVatTu()}
+    async function xuatExcelYeuCau(){const rows=yeuCauDangLoc();if(!rows.length){alert(tuDien("requestExportEmpty"));return}const headers=[tuDien("requestTime"),tuDien("colSap"),tuDien("requestName"),tuDien("requestStock"),tuDien("requestBin"),tuDien("requestUnit"),tuDien("requestQty")];const xmlRows=[hangXlsx(1,headers.map((h,i)=>oChuXlsx(i,1,h,7)),30)];rows.forEach((r,i)=>{const row=i+2,style=i%2===0?8:9;xmlRows.push(hangXlsx(row,[oChuXlsx(0,row,new Date(r.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US"),style),oChuXlsx(1,row,r.sap,style),oChuXlsx(2,row,r.name,style),oChuXlsx(3,row,r.stock,style),oChuXlsx(4,row,r.bin||viTriTheoMaSap(r.sap)||"",style),oChuXlsx(5,row,r.unit,style),oSoXlsx(6,row,Number(r.qty),i%2===0?12:13)],23))});const last=Math.max(1,rows.length+1),ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main",sheet='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="'+ns+'"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="1" width="21" customWidth="1"/><col min="2" max="2" width="16" customWidth="1"/><col min="3" max="3" width="42" customWidth="1"/><col min="4" max="7" width="18" customWidth="1"/></cols><sheetData>'+xmlRows.join("")+'</sheetData><autoFilter ref="A1:G'+last+'"/></worksheet>',types='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>',rels='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',workbook='<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="'+ns+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Requests" sheetId="1" r:id="rId1"/></sheets></workbook>';const files=[{name:"[Content_Types].xml",data:types},{name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},{name:"xl/workbook.xml",data:workbook},{name:"xl/_rels/workbook.xml.rels",data:rels},{name:"xl/styles.xml",data:taoKieuXlsx()},{name:"xl/worksheets/sheet1.xml",data:sheet}];const blob=new Blob([dongGoiZipXlsx(files)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="Yeu_cau_vat_tu_"+new Date().toLocaleDateString("sv-SE")+".xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
     const stockMenuBody=document.getElementById("than-bang");
     stockMenuBody.addEventListener("contextmenu",event=>{
       const row=event.target.closest("tr[data-row-index]");
@@ -8791,9 +8822,9 @@
     const SEARCH_HISTORY_KEY="checking-search-history-v1";
     let lichSuTimKiem=[];try{const data=JSON.parse(docTuyChon(SEARCH_HISTORY_KEY)||"[]");if(Array.isArray(data))lichSuTimKiem=data.slice(0,100)}catch{}
     function ghiLichSuTimKiem(query,scope){
-      const last=lichSuTimKiem[0];
-      if(last&&last.query===query&&last.scope===scope&&Date.now()-last.time<30000)return;
-      lichSuTimKiem.unshift({query:String(query).slice(0,250),scope,time:Date.now()});
+      query=String(query||"").trim();if(!query)return;const normalized=chuanHoaTimKiem(query);
+      lichSuTimKiem=lichSuTimKiem.filter(item=>!(item.scope===scope&&chuanHoaTimKiem(item.query)===normalized));
+      lichSuTimKiem.unshift({query:query.slice(0,250),scope,time:Date.now()});
       lichSuTimKiem.length=Math.min(lichSuTimKiem.length,100);
       ghiTuyChon(SEARCH_HISTORY_KEY,JSON.stringify(lichSuTimKiem));
     }
@@ -8841,6 +8872,7 @@
     const _taoChiMucTimKiem=taoChiMucTimKiem;taoChiMucTimKiem=async function(){const ok=await _taoChiMucTimKiem();if(ok)lapSmartIndex();return ok};
     const _chonDong=chonDong;chonDong=function(index,element){_chonDong(index,element);ghiDaXem(index)};
     document.getElementById("o-tim-kiem").addEventListener("input",()=>requestAnimationFrame(veGoiYVatTu));
+    document.getElementById("o-tim-kiem").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();document.getElementById("smart-suggest").hidden=true;locDuLieu()}});
     document.getElementById("smart-suggest").addEventListener("click",e=>{const b=e.target.closest("button[data-index]");if(b)chonGoiY(Number(b.dataset.index))});
     document.addEventListener("pointerdown",e=>{const b=document.getElementById("smart-suggest");if(b&&!e.target.closest(".search-input"))b.hidden=true});
     veRecentFavorite();
