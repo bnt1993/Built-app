@@ -27,7 +27,7 @@ for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new vm.S
     duLieuTimKiem:[a,b,...Array(10000).fill(unrelated)],chiMucSanSang:true,
     boTriHoanTimKiem:null,soLanLocDuLieu:0,dangLocDuLieu:false,ketQuaLoc:[],
     cotSapXep:-1,huongSapXep:1,ngonNguHienTai:'vi',dinhDangSoLuong:new Intl.NumberFormat('vi'),
-    hienThiTrangHienTai(){},tuDien:(key,p)=>key+JSON.stringify(p)
+    hienThiTrangHienTai(){},ghiLichSuTimKiem(){},tuDien:(key,p)=>key+JSON.stringify(p)
   });
   assert.equal(search.phanTichTimKiem(nodes['o-tim-kiem'].value,'all').exactSap.size,2);
   assert.equal(search.phanTichTimKiem('MPN-50,MPN-70','all').exactSap,null);
@@ -85,9 +85,12 @@ for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new vm.S
   const images=load(['taiManifestAnh'],{AbortController,
     window:{MaterialImageManifest:{version:2,complete:true,materials:{OLD:['OLD.jpg']}}},
     location:{protocol:'https:'},promiseManifestAnh:null,hanManifestAnh:0,lanManifestAnh:0,
-    bienTheAnh:new Map(),boNhoBoSuuTap:new Map(),THU_MUC_HINH:'Material/',ghiNhanNguon(){},
-    fetch:async()=>{loads++;return {ok:canLoad,json:async()=>({version:2,complete:true,materials:{NEW:['NEW.jpg']}})}},
-    document:{createElement:()=>({remove(){}}),head:{appendChild:s=>queueMicrotask(()=>s.onerror())}}
+    bienTheAnh:new Map(),boNhoBoSuuTap:new Map(),THU_MUC_HINH:'Material/',FILE_MANIFEST_HINH:'manifest.js',ghiNhanNguon(){},
+    document:{createElement:()=>({remove(){}}),head:{appendChild:s=>queueMicrotask(()=>{
+      loads++;assert.match(s.src,/^Material\/manifest\.js\?/);
+      if(canLoad){images.window.MaterialImageManifest={version:2,complete:true,materials:{NEW:['NEW.jpg']}};s.onload()}
+      else s.onerror();
+    })}}
   });
   assert.ok((await images.taiManifestAnh()).materials.OLD);assert.equal(loads,0);
   assert.ok((await images.taiManifestAnh(true)).materials.NEW);assert.equal(loads,1);
