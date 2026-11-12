@@ -100,7 +100,7 @@ async function geometry(page){
     await page.locator('#view-requests button[data-i18n="requestClear"]').click();
 
     // Native wheel events move only the visible table, in either direction.
-    await page.locator('#request-first').click();
+    assert.equal(await page.locator('#request-first').isEnabled(),false,'already on first page');
     const box=await page.locator('#view-requests .activity-scroll').boundingBox();
     await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
     await page.locator('#view-requests .activity-scroll').evaluate(el=>{el.scrollTop=el.scrollHeight});
