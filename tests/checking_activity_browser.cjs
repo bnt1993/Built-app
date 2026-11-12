@@ -61,6 +61,7 @@ async function deletionScenarios(page,view,prefix){
   const remaining=await read();assert(chosen.every(id=>!remaining.includes(id)),'delete follows IDs after sort');
   assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).length,storageKey),original.length-3);
   await page.locator('#'+prefix+'-undo').click();assert.deepEqual(new Set(await read()),new Set(original));
+  assert.equal(await page.locator('#'+prefix+'-undo').isVisible(),false,'undo hides after use');
 
   const singleId=await row.getAttribute('data-activity-id');
   page.once('dialog',dialog=>dialog.accept());await row.locator('.activity-delete').click();
