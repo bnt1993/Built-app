@@ -1633,7 +1633,7 @@
     }
     #view-dashboard .dashboard-sort-icon { display:inline-block; opacity:.6; min-width:9px; }
     #view-dashboard .dashboard-sort-button[data-active="true"] .dashboard-sort-icon { opacity:1; }
-  
+
     /* SAP material master: modern searchable catalog, separate from stock analytics. */
     .catalog-pane{min-width:0;padding-bottom:18px}
     .catalog-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
@@ -1786,7 +1786,7 @@
     .catalog-sap-link:hover{text-decoration:underline}
     #batch-sap-summary{white-space:normal;overflow-wrap:anywhere;max-width:100%;font-size:11px}
     #batch-sap-summary[hidden]{display:none}
-  
+
 
     .favorite-row-btn{border:0;background:transparent;color:#b57b16;font-size:21px;cursor:pointer;padding:2px 8px}
     .favorite-row-btn[aria-pressed="true"]{color:#e4a500}
@@ -1973,6 +1973,10 @@
     #view-stock .search-box-group{min-width:min(100%,420px)}
     #view-stock .toolbar-filters{justify-content:flex-start}
     /* Search history and requests share compact controls, tables and pagination. */
+    .activity-pane > .activity-heading,.activity-pane > .activity-filterbar,
+    .activity-pane > .activity-panel,.activity-pane > .activity-filter-message {width:100%;max-width:1100px}
+    #view-search-history > .activity-heading,#view-search-history > .activity-filterbar,
+    #view-search-history > .activity-panel,#view-search-history > .activity-filter-message {max-width:900px}
     .activity-pane .activity-heading {margin:5px 0 10px;align-items:center}
     .activity-pane .activity-heading h1 {font-size:clamp(21px,2vw,26px);line-height:1.2}
     .activity-pane .activity-heading p {margin:3px 0 0;line-height:1.3;font-size:12px}
@@ -1983,14 +1987,33 @@
     .activity-pane .btn {min-height:34px;padding:6px 10px;font-size:11px}
     .activity-panel {overflow:hidden;background:var(--app-panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
     .activity-panel .activity-scroll {height:min(58vh,650px);min-height:160px;overscroll-behavior:contain}
-    .activity-table {min-width:680px}
+    .activity-table {min-width:1060px;table-layout:fixed;font-size:11px}
+    #search-history-table {min-width:820px}
     .activity-table th {position:sticky;top:0;z-index:2;padding:0;font-weight:800}
-    .activity-table th > button {width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:38px;padding:9px 10px;border:0;background:transparent;color:inherit;font:inherit;font-weight:800;text-align:left;white-space:nowrap}
-    .activity-table th > span {display:block;padding:9px 10px}
+    .activity-table th > button {width:100%;display:flex;align-items:center;justify-content:space-between;gap:4px;min-height:34px;padding:7px 8px;border:0;background:transparent;color:inherit;font:inherit;font-weight:800;text-align:left;white-space:nowrap}
+    .activity-table th > span {display:block;padding:7px 8px}
     .activity-table th > button:hover,.activity-table th[aria-sort]:not([aria-sort="none"]) {color:var(--blue)}
     .activity-table th > button:focus-visible {outline:2px solid var(--blue);outline-offset:-2px}
-    .activity-table td {padding:8px 10px;overflow-wrap:anywhere;max-width:320px}
+    .activity-table td {padding:6px 8px;overflow-wrap:anywhere;vertical-align:middle;line-height:1.35}
+    .activity-table .activity-time {white-space:nowrap;font-size:10px;font-variant-numeric:tabular-nums}
+    .activity-table .activity-material {font-weight:700;color:var(--blue)}
     .activity-table .activity-number {text-align:right;font-variant-numeric:tabular-nums}
+    .activity-table .activity-check-cell {padding:0;text-align:center}
+    .activity-check-cell label {display:grid;place-items:center;min-height:34px;cursor:pointer}
+    .activity-check {width:16px;height:16px;margin:0;accent-color:var(--blue);cursor:pointer}
+    .activity-check:focus-visible {outline:2px solid var(--blue);outline-offset:3px}
+    .activity-table tr.activity-selected {background:var(--app-selection)}
+    .activity-row-actions {display:flex;align-items:center;gap:5px;white-space:nowrap}
+    .activity-pane .activity-row-actions .btn {min-height:28px;padding:4px 7px;font-size:10px}
+    .activity-pane .activity-delete {color:var(--red);border-color:var(--line);background:var(--app-field)}
+    .activity-pane .activity-delete:hover:not(:disabled) {border-color:var(--red)}
+    .activity-bulkbar {display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--surface-subtle);font-size:11px}
+    .activity-bulkbar > [role="status"] {margin-right:auto;color:var(--muted)}
+    .activity-bulkbar .btn {min-height:30px;padding:4px 8px;font-size:10px}
+    .activity-feedback {display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid var(--line);background:var(--blue-soft);font-size:11px}
+    .activity-feedback[hidden] {display:none}
+    .activity-feedback[data-error="true"] {color:var(--red)}
+    .activity-feedback .btn {min-height:28px;padding:3px 8px;font-size:10px}
     .activity-pagination {display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px;padding:8px 12px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
     .activity-pagination label {display:flex;align-items:center;gap:6px;margin-right:auto}
     .activity-pagination select {height:30px;border:1px solid var(--line);border-radius:7px;background:var(--app-field);color:var(--ink);font:inherit}
@@ -2002,7 +2025,8 @@
       body.activity-one-screen .workspace {flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
       body.activity-one-screen .activity-pane {flex:1 1 0;min-height:0;display:flex;flex-direction:column}
       body.activity-one-screen .activity-pane[hidden] {display:none!important}
-      body.activity-one-screen .activity-heading,body.activity-one-screen .activity-filterbar,body.activity-one-screen .activity-pagination {flex:0 0 auto}
+      body.activity-one-screen .activity-heading,body.activity-one-screen .activity-filterbar,body.activity-one-screen .activity-pagination,
+      body.activity-one-screen .activity-bulkbar,body.activity-one-screen .activity-feedback {flex:0 0 auto}
       body.activity-one-screen .activity-panel {flex:1 1 0;min-height:0;display:flex;flex-direction:column}
       body.activity-one-screen .activity-panel .activity-scroll {flex:1 1 0;min-height:0;height:auto}
       body.activity-one-screen .footer-bar {flex:0 0 auto;padding:5px 0 0;font-size:10px;gap:5px;line-height:1.2}
@@ -2051,7 +2075,15 @@
           <button type="button" id="search-history-clear" class="btn btn-secondary" onclick="xoaLichSuTimKiem()" data-i18n="searchHistoryClear"></button>
         </div>
         <p id="search-history-filter-message" class="activity-filter-message" role="status" hidden></p>
-        <div class="activity-panel search-history-panel"><div class="table-wrapper activity-scroll" tabindex="0"><table id="search-history-table" class="activity-table" data-i18n-aria="searchHistoryTab"><thead><tr>
+        <div class="activity-panel search-history-panel">
+          <div class="activity-bulkbar" role="group" data-i18n-aria="activitySelectionActions">
+            <span id="search-history-selection-count" role="status"></span>
+            <button type="button" id="search-history-select-all" class="btn btn-soft" onclick="chonTatCaHoatDong('search-history')"></button>
+            <button type="button" id="search-history-unselect" class="btn btn-secondary" onclick="boChonHoatDong('search-history')" data-i18n="activityUnselect"></button>
+            <button type="button" id="search-history-delete-selected" class="btn activity-delete" onclick="xoaDongDaChonHoatDong('search-history')" data-i18n="activityDeleteSelected"></button>
+          </div>
+          <div id="search-history-feedback" class="activity-feedback" role="status" hidden><span></span><button type="button" id="search-history-undo" class="btn btn-soft" onclick="hoanTacHoatDong('search-history')" data-i18n="activityUndo"></button></div><div class="table-wrapper activity-scroll" tabindex="0"><table id="search-history-table" class="activity-table" data-i18n-aria="searchHistoryTab"><colgroup><col style="width:40px"><col style="width:142px"><col style="width:350px"><col style="width:116px"><col style="width:170px"></colgroup><thead><tr>
+              <th scope="col" class="activity-check-cell"><label><input type="checkbox" class="activity-check" id="search-history-select-page" data-i18n-aria="activitySelectPage" onchange="chonTrangHoatDong('search-history',this.checked)"></label></th>
               <th scope="col" data-activity-sort="time" aria-sort="descending"><button type="button" onclick="doiSapXepHoatDong('search-history','time')"><span data-i18n="searchHistoryTime"></span><span data-sort-arrow aria-hidden="true">↓</span></button></th>
               <th scope="col" data-activity-sort="query" aria-sort="none"><button type="button" onclick="doiSapXepHoatDong('search-history','query')"><span data-i18n="searchHistoryQuery"></span><span data-sort-arrow aria-hidden="true">↕</span></button></th>
               <th scope="col" data-activity-sort="scope" aria-sort="none"><button type="button" onclick="doiSapXepHoatDong('search-history','scope')"><span data-i18n="searchHistoryScope"></span><span data-sort-arrow aria-hidden="true">↕</span></button></th>
@@ -2079,7 +2111,15 @@
           <button type="button" id="request-export" class="btn btn-soft" onclick="xuatExcelYeuCau()">↓ <span data-i18n="requestExport"></span></button>
         </div>
         <p id="request-filter-message" class="activity-filter-message" role="status" hidden></p>
-        <div class="activity-panel request-panel"><div class="table-wrapper activity-scroll" tabindex="0"><table id="request-table" class="activity-table" data-i18n-aria="requestTab"><thead><tr>
+        <div class="activity-panel request-panel">
+          <div class="activity-bulkbar" role="group" data-i18n-aria="activitySelectionActions">
+            <span id="request-selection-count" role="status"></span>
+            <button type="button" id="request-select-all" class="btn btn-soft" onclick="chonTatCaHoatDong('requests')"></button>
+            <button type="button" id="request-unselect" class="btn btn-secondary" onclick="boChonHoatDong('requests')" data-i18n="activityUnselect"></button>
+            <button type="button" id="request-delete-selected" class="btn activity-delete" onclick="xoaDongDaChonHoatDong('requests')" data-i18n="activityDeleteSelected"></button>
+          </div>
+          <div id="request-feedback" class="activity-feedback" role="status" hidden><span></span><button type="button" id="request-undo" class="btn btn-soft" onclick="hoanTacHoatDong('requests')" data-i18n="activityUndo"></button></div><div class="table-wrapper activity-scroll" tabindex="0"><table id="request-table" class="activity-table" data-i18n-aria="requestTab"><colgroup><col style="width:40px"><col style="width:142px"><col style="width:100px"><col style="width:226px"><col style="width:76px"><col style="width:100px"><col style="width:58px"><col style="width:116px"><col style="width:80px"></colgroup><thead><tr>
+              <th scope="col" class="activity-check-cell"><label><input type="checkbox" class="activity-check" id="request-select-page" data-i18n-aria="activitySelectPage" onchange="chonTrangHoatDong('requests',this.checked)"></label></th>
               <th scope="col" data-activity-sort="time" aria-sort="descending"><button type="button" onclick="doiSapXepHoatDong('requests','time')"><span data-i18n="requestTime"></span><span data-sort-arrow aria-hidden="true">↓</span></button></th>
               <th scope="col" data-activity-sort="sap" aria-sort="none"><button type="button" onclick="doiSapXepHoatDong('requests','sap')"><span data-i18n="colSap"></span><span data-sort-arrow aria-hidden="true">↕</span></button></th>
               <th scope="col" data-activity-sort="name" aria-sort="none"><button type="button" onclick="doiSapXepHoatDong('requests','name')"><span data-i18n="requestName"></span><span data-sort-arrow aria-hidden="true">↕</span></button></th>
@@ -2087,6 +2127,8 @@
               <th scope="col" data-activity-sort="bin" aria-sort="none"><button type="button" onclick="doiSapXepHoatDong('requests','bin')"><span data-i18n="requestBin"></span><span data-sort-arrow aria-hidden="true">↕</span></button></th>
               <th scope="col" data-activity-sort="unit" aria-sort="none"><button type="button" onclick="doiSapXepHoatDong('requests','unit')"><span data-i18n="requestUnit"></span><span data-sort-arrow aria-hidden="true">↕</span></button></th>
               <th scope="col" data-activity-sort="qty" aria-sort="none"><button type="button" onclick="doiSapXepHoatDong('requests','qty')"><span data-i18n="requestQty"></span><span data-sort-arrow aria-hidden="true">↕</span></button></th>
+
+              <th scope="col"><span data-i18n="searchHistoryAction"></span></th>
             </tr></thead><tbody id="request-rows"></tbody></table></div>
           <div class="activity-pagination" role="group" data-i18n-aria="activityPagination">
             <label><span data-i18n="catalogPageSize"></span><select id="request-page-size" onchange="doiSoDongHoatDong('requests',this.value)"><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></label>
@@ -3473,13 +3515,27 @@
       searchHistoryPlaceholder:"Nhập từ khóa đã tìm...",activityCount:"{found} / {total} bản ghi",
       activityPagination:"Phân trang bảng",activityInvalidDates:"Từ ngày phải trước hoặc bằng Đến ngày.",
       activityNoResults:"Không có bản ghi phù hợp với bộ lọc.",activityMissingBin:"Chưa có vị trí",
-      requestCancel:"Hủy"
+      requestCancel:"Hủy",activitySelectionActions:"Chọn và xóa dòng",
+      activitySelectPage:"Chọn tất cả dòng trên trang này",activitySelectRow:"Chọn {name}",
+      activitySelectAll:"Chọn tất cả {count} kết quả",activitySelected:"Đã chọn {count} / {total} dòng",
+      activityUnselect:"Bỏ chọn",activityDeleteSelected:"Xóa dòng đã chọn",activityDelete:"Xóa",
+      activityDeleteRow:"Xóa {name}",activityDeleteConfirm:"Xóa {count} dòng trong {tab}? Bạn có thể hoàn tác lần xóa này.",
+      activityDeleted:"Đã xóa {count} dòng.",activityUndo:"Hoàn tác lần xóa gần nhất",
+      activityRestored:"Đã khôi phục {count} dòng.",activitySaveFailed:"Không thể lưu thay đổi. Dữ liệu chưa bị xóa hoặc thay đổi.",
+      activityUndoLimit:"Chưa đủ chỗ để khôi phục. Hãy xóa bớt bản ghi rồi thử lại."
     });
     Object.assign(NGON_NGU.en,{
       searchHistoryPlaceholder:"Find a previous query...",activityCount:"{found} / {total} records",
       activityPagination:"Table pagination",activityInvalidDates:"From date must be on or before To date.",
       activityNoResults:"No records match the filters.",activityMissingBin:"No storage bin",
-      requestCancel:"Cancel"
+      requestCancel:"Cancel",activitySelectionActions:"Select and delete rows",
+      activitySelectPage:"Select all rows on this page",activitySelectRow:"Select {name}",
+      activitySelectAll:"Select all {count} results",activitySelected:"{count} / {total} rows selected",
+      activityUnselect:"Clear selection",activityDeleteSelected:"Delete selected",activityDelete:"Delete",
+      activityDeleteRow:"Delete {name}",activityDeleteConfirm:"Delete {count} rows from {tab}? You can undo this deletion.",
+      activityDeleted:"Deleted {count} rows.",activityUndo:"Undo last deletion",
+      activityRestored:"Restored {count} rows.",activitySaveFailed:"Could not save changes. Your records have not been deleted or changed.",
+      activityUndoLimit:"There is not enough room to restore these records. Remove some records and try again."
     });
     let ngonNguHienTai = "vi";
     let giaoDienHienTai = "light";
@@ -8792,8 +8848,8 @@
     // Shared state is initialized before language setup renders the local tables.
     const PHAM_VI_LICH_SU={all:"searchAll",sap:"searchSap",desc:"searchDesc",part:"searchPart",bmno:"searchBm",favorites:"favoriteFilter"};
     const trangThaiHoatDong={
-      "search-history":{sort:"time",direction:-1,page:1,pageSize:25},
-      requests:{sort:"time",direction:-1,page:1,pageSize:25}
+      "search-history":{sort:"time",direction:-1,page:1,pageSize:25,selected:new Set(),undo:null,notice:null},
+      requests:{sort:"time",direction:-1,page:1,pageSize:25,selected:new Set(),undo:null,notice:null}
     };
     function docBanGhiHoatDong(key,limit,normalize) {
       try {
@@ -8807,15 +8863,135 @@
     const SEARCH_HISTORY_KEY="checking-search-history-v1";
     let lichSuTimKiem=docBanGhiHoatDong(SEARCH_HISTORY_KEY,100,row=>{
       if(typeof row.query!=="string"||!row.query.trim())return null;
-      return {time:row.time,query:row.query.trim().slice(0,250),
+      return {id:row.id,time:row.time,query:row.query.trim().slice(0,250),
         scope:Object.hasOwn(PHAM_VI_LICH_SU,row.scope)?row.scope:"all"};
     });
     const REQUESTS_KEY="checking-material-requests-v1";
     let materialRequests=docBanGhiHoatDong(REQUESTS_KEY,500,row=>{
       if(typeof row.sap!=="string"||!row.sap.trim()||!Number.isFinite(Number(row.qty))||Number(row.qty)<=0)return null;
-      return {time:row.time,sap:row.sap.trim(),name:String(row.name??""),stock:String(row.stock??""),
+      return {id:row.id,time:row.time,sap:row.sap.trim(),name:String(row.name??""),stock:String(row.stock??""),
         unit:String(row.unit??"").trim(),bin:String(row.bin??"").trim(),qty:Number(row.qty)};
     });
+    let demDinhDanhHoatDong=0;
+    function taoMaBanGhiHoatDong() {
+      return typeof crypto!=="undefined"&&typeof crypto.randomUUID==="function"?crypto.randomUUID():
+        "activity-"+Date.now().toString(36)+"-"+(++demDinhDanhHoatDong).toString(36)+"-"+Math.random().toString(36).slice(2,10);
+    }
+    function ganDinhDanhHoatDong(rows,key) {
+      const seen=new Set();let changed=false;
+      for(const row of rows){
+        if(typeof row.id!=="string"||!/^[-a-zA-Z0-9_]{1,100}$/.test(row.id)||seen.has(row.id)){
+          do {row.id=taoMaBanGhiHoatDong()}while(seen.has(row.id));
+          changed=true;
+        }
+        seen.add(row.id);
+      }
+      if(changed)ghiTuyChon(key,JSON.stringify(rows));
+    }
+    ganDinhDanhHoatDong(materialRequests,REQUESTS_KEY);
+    ganDinhDanhHoatDong(lichSuTimKiem,SEARCH_HISTORY_KEY);
+    function banGhiHoatDong(view) {return view==="requests"?materialRequests:lichSuTimKiem}
+    function banGhiDangLocHoatDong(view) {return view==="requests"?yeuCauDangLoc():lichSuTimKiemDangLoc()}
+    function capNhatLuaChonHoatDong(view,rows=banGhiDangLocHoatDong(view)) {
+      const prefix=tienToHoatDong(view),state=trangThaiHoatDong[view],available=new Set(rows.map(row=>row.id));
+      for(const id of state.selected)if(!available.has(id))state.selected.delete(id);
+      const page=rows.slice((state.page-1)*state.pageSize,state.page*state.pageSize);
+      const selectedPage=page.filter(row=>state.selected.has(row.id)).length;
+      const checkbox=document.getElementById(prefix+"-select-page");
+      checkbox.checked=page.length>0&&selectedPage===page.length;
+      checkbox.indeterminate=selectedPage>0&&selectedPage<page.length;checkbox.disabled=!page.length;
+      document.getElementById(prefix+"-selection-count").textContent=tuDien("activitySelected",{
+        count:dinhDangSoLuong.format(state.selected.size),total:dinhDangSoLuong.format(rows.length)});
+      const all=document.getElementById(prefix+"-select-all");
+      all.textContent=tuDien("activitySelectAll",{count:dinhDangSoLuong.format(rows.length)});
+      all.disabled=!rows.length||state.selected.size===rows.length;
+      document.getElementById(prefix+"-unselect").disabled=!state.selected.size;
+      document.getElementById(prefix+"-delete-selected").disabled=!state.selected.size;
+      document.querySelectorAll("#"+prefix+"-rows tr[data-activity-id]").forEach(tr=>{
+        const selected=state.selected.has(tr.dataset.activityId);
+        tr.classList.toggle("activity-selected",selected);
+        tr.querySelector(".activity-check").checked=selected;
+      });
+      const feedback=document.getElementById(prefix+"-feedback");
+      feedback.hidden=!state.notice&&!state.undo;
+      feedback.dataset.error=String(Boolean(state.notice?.error));
+      feedback.querySelector("span").textContent=state.notice?tuDien(state.notice.key,{count:state.notice.count}):"";
+      document.getElementById(prefix+"-undo").hidden=!state.undo;
+    }
+    function doiChonHoatDong(view,id,checked) {
+      const state=trangThaiHoatDong[view];
+      if(checked)state.selected.add(id);else state.selected.delete(id);
+      capNhatLuaChonHoatDong(view);
+    }
+    function chonTrangHoatDong(view,checked) {
+      const state=trangThaiHoatDong[view],rows=banGhiDangLocHoatDong(view);
+      for(const row of rows.slice((state.page-1)*state.pageSize,state.page*state.pageSize)){
+        if(checked)state.selected.add(row.id);else state.selected.delete(row.id);
+      }
+      capNhatLuaChonHoatDong(view,rows);
+    }
+    function chonTatCaHoatDong(view) {
+      const rows=banGhiDangLocHoatDong(view);
+      trangThaiHoatDong[view].selected=new Set(rows.map(row=>row.id));
+      capNhatLuaChonHoatDong(view,rows);
+    }
+    function boChonHoatDong(view) {
+      trangThaiHoatDong[view].selected.clear();capNhatLuaChonHoatDong(view);
+    }
+    function taoOChonHoatDong(tr,view,row) {
+      tr.dataset.activityId=row.id;
+      tr.classList.toggle("activity-selected",trangThaiHoatDong[view].selected.has(row.id));
+      const td=tr.insertCell();td.className="activity-check-cell";
+      const label=document.createElement("label"),input=document.createElement("input");
+      input.type="checkbox";input.className="activity-check";
+      input.checked=trangThaiHoatDong[view].selected.has(row.id);
+      input.setAttribute("aria-label",tuDien("activitySelectRow",{name:row.sap||row.query}));
+      input.addEventListener("change",()=>doiChonHoatDong(view,row.id,input.checked));
+      label.appendChild(input);td.appendChild(label);
+    }
+    function nutXoaHoatDong(view,row) {
+      const button=document.createElement("button");button.type="button";button.className="btn activity-delete";
+      button.textContent=tuDien("activityDelete");
+      button.setAttribute("aria-label",tuDien("activityDeleteRow",{name:row.sap||row.query}));
+      button.addEventListener("click",()=>xoaBanGhiHoatDong(view,[row.id]));
+      return button;
+    }
+    function luuBanGhiHoatDong(view,rows) {
+      try {
+        localStorage.setItem(view==="requests"?REQUESTS_KEY:SEARCH_HISTORY_KEY,JSON.stringify(rows));
+      } catch {
+        trangThaiHoatDong[view].notice={key:"activitySaveFailed",error:true};
+        veBangHoatDong(view);return false;
+      }
+      if(view==="requests")materialRequests=rows;else lichSuTimKiem=rows;
+      return true;
+    }
+    function xoaBanGhiHoatDong(view,ids) {
+      const wanted=new Set(ids),original=banGhiHoatDong(view),removed=original.filter(row=>wanted.has(row.id));
+      if(!removed.length)return;
+      if(!confirm(tuDien("activityDeleteConfirm",{count:removed.length,tab:tuDien(view==="requests"?"requestTab":"searchHistoryTab")})))return;
+      if(!luuBanGhiHoatDong(view,original.filter(row=>!wanted.has(row.id))))return;
+      const state=trangThaiHoatDong[view];state.undo=removed;
+      for(const row of removed)state.selected.delete(row.id);
+      state.notice={key:"activityDeleted",count:removed.length};
+      veBangHoatDong(view);
+    }
+    function xoaDongDaChonHoatDong(view) {
+      xoaBanGhiHoatDong(view,[...trangThaiHoatDong[view].selected]);
+    }
+    function hoanTacHoatDong(view) {
+      const state=trangThaiHoatDong[view];if(!state.undo)return;
+      const current=banGhiHoatDong(view),ids=new Set(current.map(row=>row.id));
+      const queryKey=row=>row.scope+"\0"+chuanHoaTimKiem(row.query);
+      const queries=view==="search-history"?new Set(current.map(queryKey)):null;
+      const restore=state.undo.filter(row=>!ids.has(row.id)&&(!queries||!queries.has(queryKey(row))));
+      if(current.length+restore.length>(view==="requests"?500:100)){
+        state.notice={key:"activityUndoLimit",error:true};veBangHoatDong(view);return;
+      }
+      if(!luuBanGhiHoatDong(view,[...current,...restore].sort((a,b)=>b.time-a.time)))return;
+      state.undo=null;state.notice={key:"activityRestored",count:restore.length};
+      veBangHoatDong(view);
+    }
     let requestRowIndex=-1;
     function cotYeuCau(names,fallback=-1) {return cotTheoTenTimKiem(names,fallback)}
     function cotDonViYeuCau() {
@@ -8835,7 +9011,8 @@
     function veBangHoatDong(view) {
       if(view==="requests")veYeuCauVatTu();else veLichSuTimKiem();
     }
-    function locBangHoatDong(view) {
+    function locBangHoatDong(view,opts={}) {
+      if(!opts.giuChon)trangThaiHoatDong[view].selected.clear();
       trangThaiHoatDong[view].page=1;
       veBangHoatDong(view);
       document.querySelector("#view-"+view+" .activity-scroll").scrollTop=0;
@@ -8845,7 +9022,7 @@
       if(!state||!document.querySelector('#view-'+view+' th[data-activity-sort="'+key+'"]'))return;
       state.direction=state.sort===key?-state.direction:key==="time"?-1:1;
       state.sort=key;
-      locBangHoatDong(view);
+      locBangHoatDong(view,{giuChon:true});
     }
     function sapXepHoatDong(rows,view) {
       const {sort,direction}=trangThaiHoatDong[view];
@@ -8884,6 +9061,7 @@
       });
       if(view==="requests")document.getElementById("request-export").disabled=!rows.length;
       else document.getElementById("search-history-clear").disabled=!total;
+      capNhatLuaChonHoatDong(view,rows);
       return rows.slice((state.page-1)*state.pageSize,state.page*state.pageSize);
     }
     function denTrangHoatDong(view,page) {
@@ -8894,14 +9072,14 @@
     function doiSoDongHoatDong(view,value) {
       if(![25,50,100].includes(Number(value)))return;
       trangThaiHoatDong[view].pageSize=Number(value);
-      locBangHoatDong(view);
+      locBangHoatDong(view,{giuChon:true});
     }
     function dongTrongHoatDong(body,columns,key) {
       const td=body.insertRow().insertCell();td.colSpan=columns;td.className="empty-table";td.textContent=tuDien(key);
     }
     function moYeuCauVatTu(index){const row=tatCaDuLieu[index];if(!row)return;requestRowIndex=index;const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotDonViYeuCau();document.getElementById("request-sap").textContent=chuanHoaMaSap(row[0])||"—";document.getElementById("request-name").textContent=String(row[dc]??"").trim()||"—";document.getElementById("request-stock").textContent=String(row[chiSoSoLuong]??"").trim()||"—";document.getElementById("request-unit").textContent=uc>=0?(String(row[uc]??"").trim()||"—"):"—";const q=document.getElementById("request-qty");q.value="1";const dlg=document.getElementById("request-dialog");if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");setTimeout(()=>{q.focus();q.select()},0)}
     function dongYeuCauVatTu(){const d=document.getElementById("request-dialog");if(d.open&&typeof d.close==="function")d.close();else d.removeAttribute("open");requestRowIndex=-1}
-    function xacNhanYeuCauVatTu(){if(requestRowIndex<0)return;const row=tatCaDuLieu[requestRowIndex],qty=Number(document.getElementById("request-qty").value);if(!Number.isFinite(qty)||qty<=0){thongBaoMenuVatTu("requestInvalidQty");document.getElementById("request-qty").focus();return}const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotDonViYeuCau(),sap=chuanHoaMaSap(row[0]);materialRequests.unshift({time:Date.now(),sap,name:String(row[dc]??"").trim(),stock:String(row[chiSoSoLuong]??"").trim(),unit:uc>=0?String(row[uc]??"").trim():"",bin:viTriYeuCau(row),qty});materialRequests=materialRequests.slice(0,500);ghiTuyChon(REQUESTS_KEY,JSON.stringify(materialRequests));dongYeuCauVatTu();veYeuCauVatTu();thongBaoMenuVatTu("requestSaved",{code:sap})}
+    function xacNhanYeuCauVatTu(){if(requestRowIndex<0)return;const row=tatCaDuLieu[requestRowIndex],qty=Number(document.getElementById("request-qty").value);if(!Number.isFinite(qty)||qty<=0){thongBaoMenuVatTu("requestInvalidQty");document.getElementById("request-qty").focus();return}const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotDonViYeuCau(),sap=chuanHoaMaSap(row[0]);materialRequests.unshift({id:taoMaBanGhiHoatDong(),time:Date.now(),sap,name:String(row[dc]??"").trim(),stock:String(row[chiSoSoLuong]??"").trim(),unit:uc>=0?String(row[uc]??"").trim():"",bin:viTriYeuCau(row),qty});materialRequests=materialRequests.slice(0,500);ghiTuyChon(REQUESTS_KEY,JSON.stringify(materialRequests));dongYeuCauVatTu();veYeuCauVatTu();thongBaoMenuVatTu("requestSaved",{code:sap})}
     function ngayYeuCau(time) {
       return ngayDiaPhuongISO(new Date(time));
     }
@@ -8924,6 +9102,8 @@
       for(const [id,key] of [["request-unit-filter","unit"],["request-bin-filter","bin"]]){
         const select=document.getElementById(id),before=select.value;
         const values=[...new Set(rows.map(r=>r[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,ngonNguHienTai,{numeric:true}));
+        // Keep the active filter when its last record is deleted, so deletion does not reveal other results.
+        if(before&&before!=="__missing__"&&!values.includes(before))values.push(before);
         select.replaceChildren(new Option(tuDien("requestAll"),""));
         if(key==="bin")select.add(new Option(tuDien("activityMissingBin"),"__missing__"));
         for(const value of values)select.add(new Option(value,value));
@@ -8935,12 +9115,19 @@
       capNhatDonViYeuCau();
       const rows=yeuCauDangLoc(),page=capNhatBangHoatDong("requests",rows,materialRequests.length);
       body.replaceChildren();
-      if(!page.length){dongTrongHoatDong(body,7,materialRequests.length?"activityNoResults":"requestEmpty");return}
+      if(!page.length){dongTrongHoatDong(body,9,materialRequests.length?"activityNoResults":"requestEmpty");return}
       const fragment=document.createDocumentFragment();
       for(const r of page){
-        const tr=document.createElement("tr");
+        const tr=document.createElement("tr");taoOChonHoatDong(tr,"requests",r);
+        const keys=["time","sap","name","stock","bin","unit","qty"];
         const values=[new Date(r.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US"),r.sap,r.name,r.stock||"—",r.bin||"—",r.unit||"—",dinhDangSoLuong.format(r.qty)];
-        values.forEach((value,i)=>{const td=tr.insertCell();td.textContent=value;if(i===3||i===6)td.className="activity-number"});
+        values.forEach((value,i)=>{
+          const td=tr.insertCell();td.dataset.activityField=keys[i];td.textContent=value;td.title=String(value);
+          if(i===3||i===6)td.className="activity-number";
+          if(i===0)td.className="activity-time";if(i===1)td.className="activity-material";
+        });
+        const actions=tr.insertCell(),group=document.createElement("div");group.className="activity-row-actions";
+        group.appendChild(nutXoaHoatDong("requests",r));actions.appendChild(group);
         fragment.appendChild(tr);
       }
       body.appendChild(fragment);
@@ -9061,8 +9248,9 @@
       query=String(query||"").trim().slice(0,250);if(!query)return;
       if(!Object.hasOwn(PHAM_VI_LICH_SU,scope))scope="all";
       const normalized=chuanHoaTimKiem(query);
+      const previous=lichSuTimKiem.find(item=>item.scope===scope&&chuanHoaTimKiem(item.query)===normalized);
       lichSuTimKiem=lichSuTimKiem.filter(item=>!(item.scope===scope&&chuanHoaTimKiem(item.query)===normalized));
-      lichSuTimKiem.unshift({query,scope,time:Date.now()});
+      lichSuTimKiem.unshift({id:previous?.id||taoMaBanGhiHoatDong(),query,scope,time:Date.now()});
       lichSuTimKiem.length=Math.min(lichSuTimKiem.length,100);
       ghiTuyChon(SEARCH_HISTORY_KEY,JSON.stringify(lichSuTimKiem));
     }
@@ -9080,11 +9268,12 @@
       const body=document.getElementById("search-history-rows");if(!body)return;
       const rows=lichSuTimKiemDangLoc(),page=capNhatBangHoatDong("search-history",rows,lichSuTimKiem.length);
       body.replaceChildren();
-      if(!page.length){dongTrongHoatDong(body,4,lichSuTimKiem.length?"activityNoResults":"searchHistoryEmpty");return}
+      if(!page.length){dongTrongHoatDong(body,5,lichSuTimKiem.length?"activityNoResults":"searchHistoryEmpty");return}
       for(const entry of page){
-        const tr=body.insertRow();
-        tr.insertCell().textContent=new Date(entry.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US");
-        tr.insertCell().textContent=entry.query;
+        const tr=body.insertRow();taoOChonHoatDong(tr,"search-history",entry);
+        const time=tr.insertCell();time.className="activity-time";
+        time.textContent=new Date(entry.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US");
+        const query=tr.insertCell();query.dataset.activityField="query";query.textContent=entry.query;query.title=entry.query;
         tr.insertCell().textContent=tuDien(PHAM_VI_LICH_SU[entry.scope]||"searchAll");
         const btn=document.createElement("button");btn.type="button";btn.className="btn btn-soft";btn.textContent=tuDien("searchHistoryRepeat");
         btn.addEventListener("click",()=>{
@@ -9094,7 +9283,8 @@
           document.getElementById("smart-suggest").hidden=true;
           locDuLieu();
         });
-        tr.insertCell().appendChild(btn);
+        const actions=tr.insertCell(),group=document.createElement("div");group.className="activity-row-actions";
+        group.append(btn,nutXoaHoatDong("search-history",entry));actions.appendChild(group);
       }
     }
     function xoaLocLichSuTimKiem() {
@@ -9102,8 +9292,7 @@
       locBangHoatDong("search-history");
     }
     function xoaLichSuTimKiem() {
-      if(!confirm(tuDien("searchHistoryConfirm")))return;
-      lichSuTimKiem=[];ghiTuyChon(SEARCH_HISTORY_KEY,"[]");locBangHoatDong("search-history");
+      xoaBanGhiHoatDong("search-history",lichSuTimKiem.map(row=>row.id));
     }
     const smartIndex={tokens:new Map(),ready:false};
     const RECENT_KEY="checking-recent-materials-v2",FAVORITE_KEY="checking-favorite-materials-v2";

@@ -33,6 +33,70 @@ async function geometry(page){
     return data;
   });
 }
+async function deletionScenarios(page,view,prefix){
+  await page.setViewportSize({width:1440,height:900});
+  await page.locator('#lang-'+(view==='requests'?'vi':'en')).click();
+  await page.locator('#tab-'+view).click();
+  await page.locator('#view-'+view+' button[data-i18n="requestClear"]').click();
+  await page.locator('#'+prefix+'-page-size').selectOption('25');
+  const read=()=>page.evaluate(view=>(view==='requests'?materialRequests:lichSuTimKiem).map(r=>r.id),view);
+  const selected=()=>page.evaluate(view=>[...trangThaiHoatDong[view].selected],view);
+  const original=await read(),storageKey=view==='requests'?'checking-material-requests-v1':'checking-search-history-v1';
+  assert.equal(new Set(original).size,original.length,'migration assigns unique IDs');
+  const width=await page.locator('#view-'+view+' .activity-panel').evaluate(el=>el.getBoundingClientRect().width);
+  assert(width<=(view==='requests'?1100:900),'compact table does not stretch over the full workspace');
+  const row=page.locator('#'+prefix+'-rows tr').first();
+  assert((await row.boundingBox()).height<42,'short rows stay compact');
+  const checks=()=>page.locator('#'+prefix+'-rows .activity-check');
+  await checks().nth(0).check();await checks().nth(1).check();
+  assert.equal(await page.locator('#'+prefix+'-select-page').evaluate(el=>el.indeterminate),true);
+  await page.locator('#'+prefix+'-next').click();await checks().first().check();
+  const chosen=await selected();assert.equal(chosen.length,3,'selection spans pages');
+  await page.locator('#'+prefix+'-table th[data-activity-sort="time"] button').click();
+  assert.deepEqual(new Set(await selected()),new Set(chosen),'sorting keeps exact selected records');
+  page.once('dialog',dialog=>dialog.dismiss());await page.locator('#'+prefix+'-delete-selected').click();
+  assert.deepEqual(await read(),original,'cancel leaves data unchanged');
+  page.once('dialog',dialog=>dialog.accept());await page.locator('#'+prefix+'-delete-selected').click();
+  assert.equal((await read()).length,original.length-3);
+  const remaining=await read();assert(chosen.every(id=>!remaining.includes(id)),'delete follows IDs after sort');
+  assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).length,storageKey),original.length-3);
+  await page.locator('#'+prefix+'-undo').click();assert.deepEqual(new Set(await read()),new Set(original));
+
+  const singleId=await row.getAttribute('data-activity-id');
+  page.once('dialog',dialog=>dialog.accept());await row.locator('.activity-delete').click();
+  assert(!(await read()).includes(singleId),'single-row delete');
+  await page.locator('#'+prefix+'-undo').click();
+
+  // Select all targets every matching page, while preserving records outside the filter.
+  await checks().first().check();
+  if(view==='requests')await page.locator('#request-unit-filter').selectOption('PC');
+  else await page.locator('#search-history-scope').selectOption('desc');
+  assert.equal((await selected()).length,0,'changing filters clears selection');
+  const filtered=await page.evaluate(view=>banGhiDangLocHoatDong(view).map(r=>r.id),view);
+  assert.equal(filtered.length,31);
+  await page.locator('#'+prefix+'-select-all').click();assert.equal((await selected()).length,31);
+  await page.locator('#'+prefix+'-select-page').uncheck();assert.equal((await selected()).length,6,'page checkbox affects this page only');
+  await page.locator('#'+prefix+'-select-page').check();assert.equal((await selected()).length,31);
+  page.once('dialog',dialog=>dialog.accept());await page.locator('#'+prefix+'-delete-selected').click();
+  assert.equal((await read()).length,original.length-filtered.length);
+  assert.equal(await page.locator('#'+prefix+'-rows tr .empty-table').count(),1);
+  assert.equal(await page.locator('#'+prefix+'-select-all').isEnabled(),false);
+  await page.locator('#'+prefix+'-undo').click();assert.deepEqual(new Set(await read()),new Set(original));
+  await page.locator('#view-'+view+' button[data-i18n="requestClear"]').click();
+  await page.locator('#'+prefix+'-select-all').click();
+  page.once('dialog',dialog=>dialog.accept());await page.locator('#'+prefix+'-delete-selected').click();
+  assert.equal((await read()).length,0,'delete all');
+  assert.equal(await page.locator('#'+prefix+'-rows .empty-table').getAttribute('colspan'),view==='requests'?'9':'5');
+  assert.equal(await page.locator('#'+prefix+'-delete-selected').isEnabled(),false);
+  await page.locator('#'+prefix+'-undo').click();
+  const restored=new Set(await read());await page.reload();await page.waitForFunction(()=>chiMucSanSang);
+  assert.deepEqual(new Set(await read()),restored,'restored records and IDs survive reload');
+  assert.equal((await selected()).length,0,'selection resets on reload');
+  await page.setViewportSize({width:390,height:844});
+  await checks().first().check();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'selection toolbar stays inside mobile viewport');
+  await page.locator('#'+prefix+'-unselect').click();assert.equal((await selected()).length,0);
+}
 (async()=>{
   const browser=await chromium.launch({headless:true});
   try{
@@ -61,7 +125,7 @@ async function geometry(page){
     assert.match(await page.locator('#search-history-page-label').innerText(),/2\/3/);
     await page.locator('#search-history-table th[data-activity-sort="query"] button').click();
     assert.match(await page.locator('#search-history-page-label').innerText(),/1\/3/);
-    assert.equal(await page.locator('#search-history-rows tr td:nth-child(2)').first().innerText(),'Động cơ 0');
+    assert.equal(await page.locator('#search-history-rows [data-activity-field="query"]').first().innerText(),'Động cơ 0');
     await page.locator('#search-history-page-size').selectOption('100');
     assert.equal(await page.locator('#search-history-rows tr').count(),63);
     await page.locator('#search-history-rows button').first().click();
@@ -80,9 +144,9 @@ async function geometry(page){
     await page.locator('#lang-vi').click();
     assert.equal(await page.locator('#request-rows tr').count(),25);
     await page.locator('#request-table th[data-activity-sort="qty"] button').click();
-    assert.equal(await page.locator('#request-rows tr td:last-child').first().innerText(),'1');
+    assert.equal(await page.locator('#request-rows [data-activity-field="qty"]').first().innerText(),'1');
     await page.locator('#request-table th[data-activity-sort="qty"] button').click();
-    assert.equal(await page.locator('#request-rows tr td:last-child').first().innerText(),'63');
+    assert.equal(await page.locator('#request-rows [data-activity-field="qty"]').first().innerText(),'63');
     await page.locator('#request-unit-filter').selectOption('PC');
     await page.locator('#request-bin-filter').selectOption('A-2');
     await page.locator('#request-from').fill('2026-11-12');await page.locator('#request-to').fill('2026-11-12');
@@ -96,7 +160,7 @@ async function geometry(page){
     assert.equal(await page.locator('#request-export').isEnabled(),false);
     await page.locator('#view-requests button[data-i18n="requestClear"]').click();
     await page.locator('#request-bin-filter').selectOption('LEGACY-2');
-    assert.equal(await page.locator('#request-rows tr td:nth-child(5)').innerText(),'LEGACY-2');
+    assert.equal(await page.locator('#request-rows [data-activity-field="bin"]').innerText(),'LEGACY-2');
     await page.locator('#view-requests button[data-i18n="requestClear"]').click();
 
     // Native wheel events move only the visible table, in either direction.
@@ -132,6 +196,8 @@ async function geometry(page){
     }
     await page.reload();await page.waitForFunction(()=>chiMucSanSang);
     assert.equal(await page.locator('#view-requests').isVisible(),true);
+    await deletionScenarios(page,'requests','request');
+    await deletionScenarios(page,'search-history','search-history');
     assert.deepEqual(errors,[]);
     console.log('PASS activity browser: all-tab header geometry, filters, sorting, pagination/wheel isolation, replay, BUn requests, XLSX, persisted tab, VI/EN, themes and mobile.');
   }finally{await browser.close()}
