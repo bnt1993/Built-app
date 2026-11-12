@@ -28,7 +28,7 @@ const catSource=description=>'const DATABASE_HEADERS='+JSON.stringify(catHeaders
       if(name==='/HistoryWorker.js')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(path.join(root,'HistoryWorker.js'),'utf8')});
       if(name==='/Amount.js')return route.fulfill({contentType:'text/javascript',body:'window.amountData=[];'});
       if(name==='/Database.js')return route.fulfill({contentType:'text/javascript',body:catSource('Catalog motor')});
-      if(name==='/Material/manifest.json')return route.fulfill({contentType:'application/json',body:JSON.stringify({
+      if(name==='/Material/manifest.js')return route.fulfill({contentType:'text/javascript',body:'window.MaterialImageManifest='+JSON.stringify({
         version:2,complete:true,materials:{'500000001':[{original:'500000001.jpg',
           preview:'_optimized/'+imageVersion+'-preview.webp',previewSmall:'_optimized/'+imageVersion+'-small.webp',
           thumb:'_optimized/'+imageVersion+'-thumb.webp'}]}})});
