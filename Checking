@@ -1942,6 +1942,9 @@
     .smart-suggest[hidden]{display:none}.smart-suggest button{width:100%;border:0;background:transparent;color:var(--ink);padding:8px 10px;border-radius:7px;text-align:left;display:grid;grid-template-columns:120px 1fr;gap:9px;font-size:11px}.smart-suggest button:hover,.smart-suggest button[aria-selected="true"]{background:var(--app-hover)}.smart-suggest b{color:var(--blue)}
     .material-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 7px}.material-tools .btn{min-height:30px;padding:4px 8px;font-size:10px}.material-tools .fav-on{color:#b77900;background:#fff7d6;border-color:#f3cf63}.recent-strip{display:flex;gap:5px;overflow:auto;max-width:100%}.recent-chip{border:1px solid var(--line);background:var(--app-field);color:var(--ink);border-radius:999px;padding:4px 8px;font-size:10px;white-space:nowrap;cursor:pointer}
 
+
+    /* REQUEST WORKFLOW */
+    .request-dialog{width:min(460px,calc(100vw - 28px));border:1px solid var(--line);border-radius:16px;background:var(--app-panel);color:var(--ink);padding:0;box-shadow:0 22px 60px rgba(15,23,42,.26)}.request-dialog::backdrop{background:rgba(15,23,42,.38)}.request-dialog-form{display:flex;flex-direction:column;gap:14px;padding:18px}.request-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.request-dialog-head h3{margin:0;font-size:16px}.request-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.request-field{display:flex;flex-direction:column;gap:4px;min-width:0}.request-field.request-wide{grid-column:1/-1}.request-field span{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase}.request-field strong{min-height:36px;display:flex;align-items:center;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);overflow-wrap:anywhere}.request-field input{height:36px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);color:var(--ink);padding:6px 9px}.request-dialog-actions{display:flex;justify-content:flex-end;gap:8px}.request-count{font-size:11px;color:var(--muted);font-weight:700}#view-requests .table-wrapper{height:min(62vh,650px)}@media(max-width:620px){.request-grid{grid-template-columns:1fr}.request-field.request-wide{grid-column:auto}.request-dialog-actions .btn{flex:1}}
 </style>
 </head>
 <body>
@@ -1966,12 +1969,15 @@
         <button type="button" id="tab-dashboard" class="view-tab" role="tab" aria-selected="false" aria-controls="view-dashboard" tabindex="-1" onclick="chuyenTab('dashboard')"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Phân tích kho</span></button>
         <button type="button" id="tab-catalog" class="view-tab" role="tab" aria-selected="false" aria-controls="view-catalog" tabindex="-1" onclick="chuyenTab('catalog')"><span aria-hidden="true">▦</span><span data-i18n="catalogTab">Danh mục vật tư</span></button>
         <button type="button" id="tab-search-history" class="view-tab" role="tab" aria-selected="false" aria-controls="view-search-history" tabindex="-1" onclick="chuyenTab('search-history')"><span aria-hidden="true">◷</span><span data-i18n="searchHistoryTab">Lịch sử tìm kiếm</span></button>
+        <button type="button" id="tab-requests" class="view-tab" role="tab" aria-selected="false" aria-controls="view-requests" tabindex="-1" onclick="chuyenTab('requests')"><span aria-hidden="true">＋</span><span data-i18n="requestTab">Yêu cầu</span></button>
       </nav>
       <section id="view-search-history" class="view-pane" role="tabpanel" aria-labelledby="tab-search-history" hidden>
         <div class="pane-heading"><div><h1 data-i18n="searchHistoryTab">Lịch sử tìm kiếm</h1><p data-i18n="searchHistoryNote">Lưu trên trình duyệt này, tối đa 100 lượt tìm kiếm.</p></div></div>
         <div class="toolbar-primary search-history-toolbar"><label><span data-i18n="searchHistoryFilter">Lọc lịch sử</span> <input id="search-history-filter" type="search" oninput="veLichSuTimKiem()"></label><button type="button" class="btn btn-secondary" onclick="xoaLichSuTimKiem()" data-i18n="searchHistoryClear">Xóa lịch sử</button></div>
         <div class="table-section search-history-panel"><div class="table-wrapper"><table><thead><tr><th data-i18n="searchHistoryTime">Thời gian</th><th data-i18n="searchHistoryQuery">Từ khóa</th><th data-i18n="searchHistoryScope">Tìm trong</th><th data-i18n="searchHistoryAction">Thao tác</th></tr></thead><tbody id="search-history-rows"></tbody></table></div></div>
       </section>
+
+      <section id="view-requests" class="view-pane" role="tabpanel" aria-labelledby="tab-requests" hidden><div class="panel table-panel request-panel"><div class="panel-header"><div><h3 data-i18n="requestTab">Yêu cầu</h3><p data-i18n="requestSubtitle">Danh sách vật tư đã tạo yêu cầu trên thiết bị này.</p></div><span class="request-count" id="request-count"></span></div><div class="table-wrapper"><table><thead><tr><th data-i18n="requestTime">Thời gian</th><th data-i18n="colSap">Mã SAP</th><th data-i18n="requestName">Tên vật tư</th><th data-i18n="requestStock">Tồn kho</th><th data-i18n="requestUnit">Đơn vị</th><th data-i18n="requestQty">Số lượng yêu cầu</th></tr></thead><tbody id="request-rows"></tbody></table></div></div></section>
 
       <section id="view-stock" class="view-pane" role="tabpanel" aria-labelledby="tab-stock">
       <div class="intro">
@@ -2512,8 +2518,12 @@
     </div>
   </dialog>
 
+  <dialog id="request-dialog" class="request-dialog"><form class="request-dialog-form" method="dialog" onsubmit="return false"><div class="request-dialog-head"><h3 data-i18n="requestDialogTitle">Tạo yêu cầu vật tư</h3><button type="button" class="btn btn-soft" onclick="dongYeuCauVatTu()" aria-label="Đóng">×</button></div><div class="request-grid"><div class="request-field"><span data-i18n="colSap">Mã SAP</span><strong id="request-sap">—</strong></div><div class="request-field"><span data-i18n="requestStock">Tồn kho</span><strong id="request-stock">—</strong></div><div class="request-field request-wide"><span data-i18n="requestName">Tên vật tư</span><strong id="request-name">—</strong></div><div class="request-field"><span data-i18n="requestUnit">Đơn vị</span><strong id="request-unit">—</strong></div><label class="request-field"><span data-i18n="requestQty">Số lượng yêu cầu</span><input id="request-qty" type="number" min="1" step="1" value="1" required></label></div><div class="request-dialog-actions"><button type="button" class="btn btn-secondary" onclick="dongYeuCauVatTu()">Hủy</button><button type="button" class="btn btn-primary" onclick="xacNhanYeuCauVatTu()" data-i18n="requestSubmit">Yêu cầu</button></div></form></dialog>
+
   <div id="stock-row-menu" class="stock-row-menu" role="menu" data-i18n-aria="stockRowMenuAria"
     aria-label="Thao tác vật tư" tabindex="-1" hidden>
+    <button type="button" role="menuitem" data-stock-menu-action="request" onclick="thaoTacMenuVatTu('request')"><span class="row-menu-icon" aria-hidden="true">＋</span><span data-i18n="stockMenuRequest">Yêu cầu</span></button>
+    <div class="row-menu-divider" role="separator"></div>
     <button type="button" role="menuitem" data-stock-menu-action="history" onclick="thaoTacMenuVatTu('history')">
       <span class="row-menu-icon" aria-hidden="true">◷</span><span data-i18n="stockMenuHistory">Xem lịch sử</span>
     </button>
@@ -3325,6 +3335,8 @@
       catalogExportError:"Could not create the Excel file. Please try again."
     });
 
+    Object.assign(NGON_NGU.vi,{requestTab:"Yêu cầu",requestSubtitle:"Danh sách vật tư đã tạo yêu cầu trên thiết bị này.",stockMenuRequest:"Yêu cầu",requestDialogTitle:"Tạo yêu cầu vật tư",requestName:"Tên vật tư",requestStock:"Tồn kho",requestUnit:"Đơn vị",requestQty:"Số lượng yêu cầu",requestSubmit:"Yêu cầu",requestTime:"Thời gian",requestEmpty:"Chưa có yêu cầu nào.",requestSaved:"Đã thêm yêu cầu {code}.",requestInvalidQty:"Số lượng yêu cầu phải lớn hơn 0."});
+    Object.assign(NGON_NGU.en,{requestTab:"Requests",requestSubtitle:"Material requests created on this device.",stockMenuRequest:"Request",requestDialogTitle:"Create material request",requestName:"Material name",requestStock:"Stock",requestUnit:"Unit",requestQty:"Request quantity",requestSubmit:"Request",requestTime:"Time",requestEmpty:"No requests yet.",requestSaved:"Request added for {code}.",requestInvalidQty:"Request quantity must be greater than 0."});
     Object.assign(NGON_NGU.vi,{favoriteColumn:"Yêu thích",favoriteFilter:"Yêu thích",
       searchHistoryTab:"Lịch sử tìm kiếm",searchHistoryNote:"Lưu trên trình duyệt này, tối đa 100 lượt tìm kiếm gần nhất.",
       searchHistoryFilter:"Lọc lịch sử",searchHistoryClear:"Xóa lịch sử",searchHistoryTime:"Thời gian",
@@ -3417,6 +3429,7 @@
       });
 
       if (document.getElementById("view-catalog"))capNhatNgonNguDanhMuc();
+      if(document.getElementById("request-rows"))veYeuCauVatTu();
       if (tieuDeCot.length) veTieuDe();
       if (chiMucSanSang) {
         hienThiTrangHienTai();
@@ -3450,7 +3463,7 @@
 
     // Tabs switch views without reloading or losing stock search/gallery state.
     let tabHienTai="stock";
-    const CAC_TAB=["stock","dashboard","catalog","search-history"];
+    const CAC_TAB=["stock","dashboard","catalog","search-history","requests"];
     function chuyenTab(tab, opts={}) {
       if(!CAC_TAB.includes(tab))return;
       tabHienTai=tab;
@@ -3469,10 +3482,11 @@
         button.classList.toggle("active",selected);
       }
       document.querySelector(".breadcrumbs .active").textContent=tuDien(
-        tab==="stock"?"tabStock":tab==="dashboard"?"tabDashboard":tab==="catalog"?"catalogTab":"searchHistoryTab");
+        tab==="stock"?"tabStock":tab==="dashboard"?"tabDashboard":tab==="catalog"?"catalogTab":tab==="search-history"?"searchHistoryTab":"requestTab");
       if(opts.persist!==false)ghiTuyChon("checking-active-tab",tab);
       if(tab==="catalog"&&!danhMucTrangThai.loaded&&!danhMucTrangThai.loading)taiDanhMuc();
       if(tab==="search-history")veLichSuTimKiem();
+      if(tab==="requests")veYeuCauVatTu();
       if(tab==="dashboard"){
         if(analyticsReady)capNhatThongKeNangCao();
         if(!historyLoaded&&!historyLoading&&!daThuTaiHistoryChoCard){
@@ -8611,6 +8625,10 @@
       dongMenuVatTu();
       const row=tatCaDuLieu[index];
       if(!row)return;
+      if(action==="request") {
+        moYeuCauVatTu(index);
+        return;
+      }
       if(action==="history") {
         moLichSuVatTu(index);
         return;
@@ -8633,6 +8651,13 @@
       const copied=await saoChepTuMenu(value);
       thongBaoMenuVatTu(copied?"stockMenuCopied":"stockMenuCopyFailed",{value});
     }
+
+    const REQUESTS_KEY="checking-material-requests-v1";let materialRequests=[];try{materialRequests=JSON.parse(docTuyChon(REQUESTS_KEY)||"[]");if(!Array.isArray(materialRequests))materialRequests=[]}catch{materialRequests=[]}let requestRowIndex=-1;
+    function cotYeuCau(names,fallback=-1){const n=names.map(chuanHoaTimKiem);const at=tieuDeCot.findIndex(x=>n.includes(chuanHoaTimKiem(x)));return at>=0?at:fallback}
+    function moYeuCauVatTu(index){const row=tatCaDuLieu[index];if(!row)return;requestRowIndex=index;const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotYeuCau(["Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"],-1);document.getElementById("request-sap").textContent=chuanHoaMaSap(row[0])||"—";document.getElementById("request-name").textContent=String(row[dc]??"").trim()||"—";document.getElementById("request-stock").textContent=String(row[chiSoSoLuong]??"").trim()||"—";document.getElementById("request-unit").textContent=uc>=0?(String(row[uc]??"").trim()||"—"):"—";const q=document.getElementById("request-qty");q.value="1";const dlg=document.getElementById("request-dialog");if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");setTimeout(()=>{q.focus();q.select()},0)}
+    function dongYeuCauVatTu(){const d=document.getElementById("request-dialog");if(d.open&&typeof d.close==="function")d.close();else d.removeAttribute("open");requestRowIndex=-1}
+    function xacNhanYeuCauVatTu(){if(requestRowIndex<0)return;const row=tatCaDuLieu[requestRowIndex],qty=Number(document.getElementById("request-qty").value);if(!Number.isFinite(qty)||qty<=0){thongBaoMenuVatTu("requestInvalidQty");document.getElementById("request-qty").focus();return}const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotYeuCau(["Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"],-1),sap=chuanHoaMaSap(row[0]);materialRequests.unshift({time:Date.now(),sap,name:String(row[dc]??"").trim(),stock:String(row[chiSoSoLuong]??"").trim(),unit:uc>=0?String(row[uc]??"").trim():"",qty});materialRequests=materialRequests.slice(0,500);ghiTuyChon(REQUESTS_KEY,JSON.stringify(materialRequests));dongYeuCauVatTu();veYeuCauVatTu();thongBaoMenuVatTu("requestSaved",{code:sap})}
+    function veYeuCauVatTu(){const body=document.getElementById("request-rows"),count=document.getElementById("request-count");if(!body)return;count.textContent=String(materialRequests.length);body.replaceChildren();if(!materialRequests.length){const tr=body.insertRow(),td=tr.insertCell();td.colSpan=6;td.className="empty-table";td.textContent=tuDien("requestEmpty");return}for(const r of materialRequests){const tr=body.insertRow();tr.insertCell().textContent=new Date(r.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US");tr.insertCell().textContent=r.sap;tr.insertCell().textContent=r.name;tr.insertCell().textContent=r.stock;tr.insertCell().textContent=r.unit;tr.insertCell().textContent=String(r.qty)}}
 
     const stockMenuBody=document.getElementById("than-bang");
     stockMenuBody.addEventListener("contextmenu",event=>{
