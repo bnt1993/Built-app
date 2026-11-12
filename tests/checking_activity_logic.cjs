@@ -70,6 +70,51 @@ ctx.docTuyChon=()=>JSON.stringify([null,[],{},'bad',{time:'bad'},{time:time(12),
 assert.equal(ctx.docBanGhiHoatDong('key',100,row=>row).length,1,'malformed local records are ignored');
 ctx.docTuyChon=()=>'{';assert.equal(ctx.docBanGhiHoatDong('key',100,row=>row).length,0);
 
+// Stable IDs protect duplicate requests from accidental grouped deletion.
+const saved=new Map();let allowDelete=true,failWrites=false;
+Object.assign(ctx,{demDinhDanhHoatDong:0,REQUESTS_KEY:'requests',SEARCH_HISTORY_KEY:'searches',
+  ghiTuyChon:(key,text)=>saved.set(key,text),confirm:()=>allowDelete,veBangHoatDong(){},
+  localStorage:{setItem(key,text){if(failWrites)throw Error('quota');saved.set(key,text)}}
+});
+for(const name of ['taoMaBanGhiHoatDong','ganDinhDanhHoatDong','banGhiHoatDong','luuBanGhiHoatDong',
+  'xoaBanGhiHoatDong','xoaDongDaChonHoatDong','hoanTacHoatDong','ghiLichSuTimKiem'])vm.runInContext(fn(name),ctx);
+const duplicates=[{...data[0],id:'same'},{...data[0],id:'same'},{...data[1],id:'<invalid>'}];
+ctx.ganDinhDanhHoatDong(duplicates,'requests');
+assert.equal(new Set(duplicates.map(row=>row.id)).size,3);
+const ids=duplicates.map(row=>row.id);ctx.ganDinhDanhHoatDong(duplicates,'requests');
+assert.deepEqual(duplicates.map(row=>row.id),ids,'IDs stay stable');
+ctx.materialRequests=duplicates;
+ctx.trangThaiHoatDong.requests={selected:new Set([ids[0]]),undo:null,notice:null};
+allowDelete=false;ctx.xoaDongDaChonHoatDong('requests');assert.equal(ctx.materialRequests.length,3);
+allowDelete=true;ctx.xoaDongDaChonHoatDong('requests');
+assert.equal(ctx.materialRequests.length,2);assert(ctx.materialRequests.some(row=>row.id===ids[1]));
+assert.equal(JSON.parse(saved.get('requests')).length,2,'deletions persist');
+ctx.materialRequests.unshift({...data[2],id:'new-request'});
+ctx.hoanTacHoatDong('requests');
+assert.equal(ctx.materialRequests.length,4,'undo preserves requests added since deletion');
+assert.equal(ctx.trangThaiHoatDong.requests.undo,null);
+failWrites=true;const before=JSON.stringify(ctx.materialRequests);
+ctx.xoaBanGhiHoatDong('requests',[ids[1]]);
+assert.equal(JSON.stringify(ctx.materialRequests),before,'failed storage write never deletes in memory');
+assert.equal(ctx.trangThaiHoatDong.requests.notice.key,'activitySaveFailed');
+failWrites=false;ctx.xoaBanGhiHoatDong('requests',[ids[1]]);
+const deleted=JSON.stringify(ctx.materialRequests);failWrites=true;ctx.hoanTacHoatDong('requests');
+assert.equal(JSON.stringify(ctx.materialRequests),deleted);assert(ctx.trangThaiHoatDong.requests.undo);
+failWrites=false;ctx.hoanTacHoatDong('requests');assert.equal(ctx.materialRequests.length,4);
+ctx.trangThaiHoatDong.requests.undo=[{...data[0],id:'restore-1'},{...data[0],id:'restore-2'}];
+ctx.materialRequests=Array.from({length:499},(_,i)=>({...data[0],id:'existing-'+i}));
+ctx.hoanTacHoatDong('requests');assert.equal(ctx.materialRequests.length,499);
+assert.equal(ctx.trangThaiHoatDong.requests.notice.key,'activityUndoLimit');
+
+ctx.lichSuTimKiem=[{id:'old-query',query:'Động cơ',scope:'desc',time:time(11)}];
+ctx.trangThaiHoatDong['search-history']={selected:new Set(),undo:null,notice:null};
+ctx.xoaBanGhiHoatDong('search-history',['old-query']);
+ctx.ghiLichSuTimKiem('Động cơ','desc');const currentId=ctx.lichSuTimKiem[0].id;
+ctx.ghiLichSuTimKiem('dong co','desc');assert.equal(ctx.lichSuTimKiem[0].id,currentId,'repeated query keeps its ID');
+ctx.hoanTacHoatDong('search-history');assert.equal(ctx.lichSuTimKiem.length,1,'undo does not duplicate a repeated query');
+assert.equal(ctx.lichSuTimKiem[0].id,currentId);
+console.log('PASS activity deletion: stable/duplicate IDs, cancellation, exact deletion, persistence, undo with new records, write failures and capacity.');
+
 // Exercise the actual XLSX writer: the complete sorted filter, not just the first page.
 (async()=>{
   let blob;
