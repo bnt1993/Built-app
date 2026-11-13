@@ -242,7 +242,7 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   const completedExportPromise=page.waitForEvent('download');
   await page.locator('#export-btn').click();
   const completedFile=fs.readFileSync(await (await completedExportPromise).path()).toString('utf8');
-  assert.ok(completedFile.includes('<c r="J2" t="inlineStr"><is><t></t></is></c>'),
+  assert.ok(/<c r="K2"[^>]*><is><t><\/t><\/is><\/c>/.test(completedFile),
     'completed PO waiting day should be blank in Excel');
   await page.locator('.quick-tab[data-mode="pending"]').click();
   assert.equal(await page.locator('#stat-total').innerText(),'120');

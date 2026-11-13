@@ -48,7 +48,7 @@ Hai bảng dùng cùng bộ điều khiển: cuộn dọc trang, cuộn ngang tr
 
 Cuộn xuống đến cuối tải lượt kế tiếp, cuộn lên ở đầu cửa sổ hiện tại tải lại lượt trước. Số dòng đang dựng giới hạn 200, với mốc cuộn được giữ khi bỏ các dòng ngoài cửa sổ. Các nút Đầu/Cuối và cỡ lượt 25/50/100/200 vẫn hoạt động. Thay bộ lọc/sắp xếp quay về cửa sổ đầu; vẽ lại hoặc cuộn bằng code không tự nạp thêm. Cuộn trong menu bộ lọc/popup không làm bảng nền tải thêm; tab ẩn không được thay đổi cửa sổ.
 
-Excel luôn xuất toàn bộ tập lọc theo thứ tự hiện tại, kể cả các dòng chưa dựng trong DOM; có hàng tiêu đề cố định và AutoFilter. Báo cáo PO thêm Tuần PO; báo cáo Request có cả trạng thái tính lại và trạng thái gốc.
+Excel luôn xuất toàn bộ tập lọc theo thứ tự hiện tại, kể cả các dòng chưa dựng trong DOM; có hàng tiêu đề xanh đậm, độ rộng cột, hàng tiêu đề cố định và AutoFilter. Ngày là ô ngày thực, tiền/số có định dạng riêng, phần trăm lưu dạng tỷ lệ và hiển thị đúng định dạng %. Báo cáo PO thêm Tuần PO; báo cáo Request có cả trạng thái tính lại và trạng thái gốc.
 
 ## Kiểm thử
 

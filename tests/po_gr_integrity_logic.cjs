@@ -73,6 +73,10 @@ const linked=rows=>api.buildRequestReport([rh,request],rows,{poReady:true,grRead
   const receipt=gr('8');
   const reversal=report([po()],[receipt,gr('1','PC','102','90002'),receipt]);
   assert.equal(reversal.rows[0].grQty,7);assert.equal(reversal.duplicates,1);
+  const styled=Buffer.from(await api.makeXlsx(reversal.rows).arrayBuffer()).toString('utf8');
+  assert.ok(styled.includes('xl/styles.xml'));assert.ok(styled.includes('formatCode="dd/mm/yyyy"'));
+  assert.ok(styled.includes('<c r="L2" s="5"><v>0.7</v>'),'70% stored as an Excel fraction');
+  assert.ok(styled.includes('autoFilter ref="A1:T2"'));assert.ok(styled.includes('Tuần PO'));
   const with105=[gh,gr('8'),gr('1','PC','102','90002'),gr('2','PC','105','90003')];
   assert.equal(api.buildReport([ph,po()],with105,true).rows[0].grQty,9);
   assert.equal(report([po()],[gr('3','pc')]).rows[0].status,'partial');

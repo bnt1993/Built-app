@@ -37,6 +37,9 @@ for(let i=0;i<601;i++){
   await page.waitForFunction(()=>!document.getElementById('po-filter-error').hidden);
   assert.equal(await page.locator('#stat-total').innerText(),'0');
   await page.locator('#reset').click();await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='600');
+  const weeks=await page.locator('#po-week option').evaluateAll(items=>items.map(o=>o.value).filter(Boolean));
+  assert.equal(weeks.length,2);await page.locator('#po-week').selectOption([weeks[0]],{force:true});await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='300');
+  await page.locator('#po-week').selectOption(weeks,{force:true});await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='600');
   assert.equal(await page.locator('#report-body tr').count(),50);
   await page.waitForTimeout(500);assert.equal(await page.locator('#report-body tr').count(),50,'redraws never auto-load');
   await page.evaluate(()=>{for(let i=0;i<8;i++)window.POGR.moveReportWindow('po',1)});
@@ -44,7 +47,9 @@ for(let i=0;i<601;i++){
   const before=await page.locator('#page-summary').innerText();
   await page.evaluate(()=>window.POGR.moveReportWindow('po',-1));
   assert.notEqual(await page.locator('#page-summary').innerText(),before,'shared backward window');
-  await page.evaluate(()=>window.scrollTo(0,0));await page.mouse.wheel(0,-300);await page.waitForTimeout(100);
+  const wheelBefore=await page.locator('#page-summary').innerText();
+  await page.evaluate(()=>window.scrollTo(0,0));await page.mouse.wheel(0,-300);
+  await page.waitForFunction(before=>document.getElementById('page-summary').textContent!==before,wheelBefore);
   await page.locator('#tab-request').click();await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='601');
   const rows=await page.evaluate(()=>window.POGR.getRequestState().rows.map(r=>({status:r.status,source:r.sourceStatus,link:r.link,po:r.po})));
   assert.equal(rows.filter(r=>r.status==='Waiting for GR').length,201);

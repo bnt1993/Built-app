@@ -1587,13 +1587,39 @@ async function loadSelected(file,kind){
 }
 function colName(i){let name="";for(let n=i+1;n>0;n=Math.floor((n-1)/26))name=String.fromCharCode(65+(n-1)%26)+name;return name}
 function xml(v){return escapeText(v)}
-function cellsXML(values,rowNum){
+function xlsxDate(value){return value?Math.round((Date.parse(value+"T00:00:00Z")-Date.UTC(1899,11,30))/86400000):null}
+function cellsXML(values,rowNum,formats={}){
   return values.map((v,i)=>{
     const addr=colName(i)+rowNum;
-    if(typeof v==="number"&&Number.isFinite(v))return '<c r="'+addr+'"><v>'+v+'</v></c>';
+    const style=rowNum===1?1:(formats.dates||[]).includes(i)?4:(formats.percent||[]).includes(i)?5:
+      (formats.money||[]).includes(i)?3:typeof v==="number"?2:0;
+    if(typeof v==="number"&&Number.isFinite(v))return '<c r="'+addr+'" s="'+style+'"><v>'+v+'</v></c>';
     if(typeof v==="number")v=null;
-    return '<c r="'+addr+'" t="inlineStr"><is><t>'+xml(v===null||v===undefined?"":v)+'</t></is></c>';
+    return '<c r="'+addr+'" s="'+style+'" t="inlineStr"><is><t>'+xml(v??"")+'</t></is></c>';
   }).join("");
+}
+function workbookColumns(headers){
+  return '<cols>'+headers.map((label,i)=>{
+    const width=/Tên vật tư|Mô tả|File nguồn|Ghi chú|Trạng thái gốc/.test(label)?42:/Trạng thái|Kết quả|Nhà cung cấp|Phụ trách/.test(label)?24:/Số PO|Mã vật tư|Mã SAP|Tuần/.test(label)?18:15;
+    return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+width+'" customWidth="1"/>';
+  }).join("")+'</cols>';
+}
+function reportWorkbook(entries){
+  const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+  const styles='<styleSheet xmlns="'+ns+'"><numFmts count="4">'+
+    '<numFmt numFmtId="164" formatCode="#,##0.####"/><numFmt numFmtId="165" formatCode="#,##0.00####"/>'+
+    '<numFmt numFmtId="166" formatCode="dd/mm/yyyy"/><numFmt numFmtId="167" formatCode="0.0%"/></numFmts>'+
+    '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/></font></fonts>'+
+    '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF245DD6"/><bgColor indexed="64"/></patternFill></fill></fills>'+
+    '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+    '<cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+    '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>'+
+    [164,165,166,167].map(id=>'<xf numFmtId="'+id+'" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>').join("")+
+    '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  const files=entries.map(([name,text])=>[name,name==='[Content_Types].xml'?text.replace('</Types>','<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'):
+    name==='xl/_rels/workbook.xml.rels'?text.replace('</Relationships>','<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'):text]);
+  files.push(['xl/styles.xml',styles]);return zipEncode(files);
 }
 function zipEncode(entries){
   const encoder=new TextEncoder(),output=[],central=[],table=(()=>{const t=[];
@@ -1621,14 +1647,14 @@ function makeXlsx(rows){
   const columns=["Tuần PO","Số PO","Item","Mã vật tư","Tên vật tư","Ngày PO","SL đặt","SL nhận",
     "Ngày GR gần nhất","Vận đơn","Ngày chờ","% nhận","SL còn thiếu",
     "Trạng thái","Nhà cung cấp","Nhà máy","Người tạo","Đơn vị","Đơn giá","Tiền tệ"];
-  const grid=[columns,...rows.map(r=>[weekText(r.week),r.po,r.item,r.material,r.description,displayDate(r.poDate),
-    r.poQty,r.grQty,displayDate(r.latestGr),r.bill,
+  const grid=[columns,...rows.map(r=>[weekText(r.week),r.po,r.item,r.material,r.description,xlsxDate(r.poDate),
+    r.poQty,r.grQty,xlsxDate(r.latestGr),r.bill,
     r.status==="done"||r.status==="excess"?null:r.age,
-    Number.isFinite(r.percent)?r.percent:null,r.remain,statusText(r.status),
+    Number.isFinite(r.percent)?r.percent/100:null,r.remain,statusText(r.status),
     r.supplier,r.plant,r.buyer,r.unit,r.netPrice,r.currency])];
   const worksheets='<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
     '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
-    '<sheetData>'+grid.map((row,i)=>'<row r="'+(i+1)+'">'+cellsXML(row,i+1)+'</row>').join("")+'</sheetData>'+
+    workbookColumns(columns)+'<sheetData>'+grid.map((row,i)=>'<row r="'+(i+1)+'">'+cellsXML(row,i+1,{dates:[5,8],percent:[11],money:[18]})+'</row>').join("")+'</sheetData>'+
     '<autoFilter ref="A1:T'+grid.length+'"/></worksheet>';
   const contentTypes='<?xml version="1.0" encoding="UTF-8"?>'+
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
@@ -1637,7 +1663,7 @@ function makeXlsx(rows){
     '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
     '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'+
     '</Types>';
-  return zipEncode([["[Content_Types].xml",contentTypes],
+  return reportWorkbook([["[Content_Types].xml",contentTypes],
     ["_rels/.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
     ["xl/workbook.xml",'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="PO_GR_Report" sheetId="1" r:id="rId1"/></sheets></workbook>'],
     ["xl/_rels/workbook.xml.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'],
@@ -1914,11 +1940,11 @@ function requestXlsx(rows){
     "% nhập/PO","Kết quả đối chiếu","Phụ trách","Đơn giá EUR","Giá trị EUR",
     "Tồn tại lúc yêu cầu","Điểm đặt hàng","Lô đặt hàng","Loại đặt",
     "Ghi chú","File nguồn","STT dòng","Nhóm mua hàng","Trạng thái gốc trong nguồn"];
-  const grid=[cols,...rows.map(r=>[r.week,displayDate(r.date),r.sap,r.description,r.qty,r.unit,
-    r.hall,r.status,r.po,displayDate(r.orderedDate),
+  const grid=[cols,...rows.map(r=>[r.week,xlsxDate(r.date),r.sap,r.description,r.qty,r.unit,
+    r.hall,r.status,r.po,xlsxDate(r.orderedDate),
     Number.isFinite(r.poQty)?r.poQty:null,
     Number.isFinite(r.grQty)?r.grQty:null,
-    Number.isFinite(r.percent)?r.percent:null,
+    Number.isFinite(r.percent)?r.percent/100:null,
     REQUEST_LINK_LABELS[r.link]||r.link,r.supplier,
     Number.isFinite(r.price)?r.price:null,Number.isFinite(r.amount)?r.amount:null,
     Number.isFinite(r.stock)?r.stock:null,Number.isFinite(r.reorder)?r.reorder:null,
@@ -1926,14 +1952,14 @@ function requestXlsx(rows){
   const last=colName(cols.length-1);
   const sheet='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
     '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
-    '<sheetData>'+grid.map((row,i)=>'<row r="'+(i+1)+'">'+cellsXML(row,i+1)+'</row>').join("")+
+    workbookColumns(cols)+'<sheetData>'+grid.map((row,i)=>'<row r="'+(i+1)+'">'+cellsXML(row,i+1,{dates:[1,9],percent:[12],money:[15,16]})+'</row>').join("")+
     '</sheetData><autoFilter ref="A1:'+last+grid.length+'"/></worksheet>';
   const types='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
     '<Default Extension="xml" ContentType="application/xml"/>'+
     '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
     '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
-  return zipEncode([["[Content_Types].xml",types],
+  return reportWorkbook([["[Content_Types].xml",types],
     ["_rels/.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
     ["xl/workbook.xml",'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Request_PO_GR" sheetId="1" r:id="rId1"/></sheets></workbook>'],
     ["xl/_rels/workbook.xml.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'],
