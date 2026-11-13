@@ -649,6 +649,22 @@
       color:#43617a;border:0;white-space:nowrap;cursor:pointer;
     }
 
+
+    .field select[hidden],.filter-error[hidden]{display:none!important}
+    .multi-filter{position:relative;min-width:0;color:var(--ink);font-size:11px}
+    .multi-filter summary{height:38px;display:block;cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:10px 25px 8px 10px;background:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;list-style:none}
+    .multi-filter summary::-webkit-details-marker{display:none}
+    .multi-filter summary:after{content:"▾";position:absolute;right:9px;top:10px}
+    .multi-filter summary:focus-visible{outline:3px solid #80b4f5;outline-offset:2px}
+    .multi-options{position:absolute;left:0;top:calc(100% + 4px);z-index:150;width:100%;min-width:0;max-width:min(330px,calc(100vw - 40px));max-height:310px;overflow:auto;padding:9px;background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 35px #18344926}
+    .multi-options label{display:flex!important;align-items:center;gap:8px;padding:8px 5px;cursor:pointer;font-size:11px!important;color:var(--ink)!important;white-space:normal;overflow-wrap:anywhere}
+    .multi-options label:hover{background:#eef4ff}
+    .multi-options input[type=checkbox]{width:16px!important;height:16px!important;min-width:16px;accent-color:var(--blue);margin:0;padding:0!important}
+    .multi-options .ghost-link{font-size:11px;margin-bottom:5px}
+    .filter-error{color:#b72e54;font-size:12px;margin:0 0 10px}
+    .po-week{font-weight:800;color:#245dd6;white-space:nowrap}
+    #report-table{min-width:1560px}
+    .filters,.request-filters{overflow:visible!important}
   </style>
 </head>
 <body>
@@ -703,6 +719,7 @@
       <option value="done">Đã nhận đủ</option><option value="excess">Nhận vượt</option>
       <option value="invalid">Cần kiểm tra</option></select></div>
     <div class="field"><label for="supplier-filter">Nhà cung cấp</label><select id="supplier-filter"><option value="">Tất cả nhà cung cấp</option></select></div>
+    <div class="field"><label for="po-week">Tuần PO</label><select id="po-week"><option value="">Tất cả tuần</option></select></div>
     <div class="field"><label for="date-from">Ngày PO từ</label><input id="date-from" type="date"></div>
     <div class="field"><label for="date-to">Đến ngày</label><input id="date-to" type="date"></div>
     <div class="filter-bottom">
@@ -712,6 +729,7 @@
       <span class="source-note" id="join-note">Đối chiếu theo PO + Item + mã vật tư</span>
     </div>
   </section>
+  <p id="po-filter-error" class="filter-error" role="status" hidden></p>
   <section class="panel report-panel">
     <div class="quick-toolbar">
       <div class="quick-tabs" role="group" aria-label="Lọc nhanh theo trạng thái">
@@ -734,9 +752,10 @@
         <span><i class="dot yellow"></i>30–59 ngày</span><span><i class="dot green"></i>&lt; 30 ngày</span>
       </div>
     </div>
-    <div class="table-scroll-tip">↔ Kéo ngang để xem các cột · ↓ Cuộn trang để tải thêm · Tiêu đề cột luôn hiển thị khi cuộn · Nhấp đúp xem GR</div>
+    <div class="table-scroll-tip">↔ Kéo ngang để xem các cột · ↕ Cuộn xuống/lên để tải tiếp/trước · Tiêu đề cột luôn hiển thị khi cuộn · Nhấp đúp xem GR</div>
     <div class="table-scroller" id="table-scroller" role="region" tabindex="0" aria-label="Bảng PO và GR có thể cuộn ngang">
       <table id="report-table"><thead><tr>
+        <th><button data-sort="week">Tuần PO <span>↕</span></button></th>
         <th><button data-sort="po">Số PO <span>↕</span></button></th>
         <th><button data-sort="material">Mã vật tư <span>↕</span></button></th>
         <th><button data-sort="description">Tên vật tư <span>↕</span></button></th>
@@ -803,8 +822,8 @@
         <strong id="request-stat-po">—</strong><small>Không đồng nghĩa đã có trong PO.js</small></div>
       <div class="kpi"><div class="kpi-top"><span class="caption">PO được đối chiếu</span><span class="kpi-icon teal">✓</span></div>
         <strong id="request-stat-match">—</strong><small>Khớp cả số PO và mã SAP</small></div>
-      <div class="kpi"><div class="kpi-top"><span class="caption">Đang chờ IR</span><span class="kpi-icon rose">!</span></div>
-        <strong id="request-stat-wait">—</strong><small>Theo trạng thái trong Request.js</small></div>
+      <div class="kpi"><div class="kpi-top"><span class="caption">Đang chờ GR</span><span class="kpi-icon rose">!</span></div>
+        <strong id="request-stat-wait">—</strong><small>Có PO, chưa có GR ròng</small></div>
     </section>
     <section class="panel request-filters" aria-label="Bộ lọc yêu cầu">
       <div class="filter-heading"><div><div class="section-eyebrow">ĐỐI CHIẾU NGUỒN DỮ LIỆU</div>
@@ -837,6 +856,7 @@
       <div class="field"><label for="request-from">Ngày yêu cầu từ</label><input id="request-from" type="date"/></div>
       <div class="field"><label for="request-to">Đến ngày</label><input id="request-to" type="date"/></div>
     </section>
+    <p id="request-filter-error" class="filter-error" role="status" hidden></p>
     <section class="panel report-panel">
       <div class="table-header request-table-toolbar">
         <div><div class="section-eyebrow">REQUEST / PURCHASE ORDER / GOODS RECEIPT</div>
@@ -913,7 +933,8 @@ const SOURCE_TIMESTAMPS={po:["thoiGianCapNhatPO","thoiGianCapNhat"],
   request:["thoiGianCapNhatRequest","thoiGianCapNhat"]};
 const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const numeric=new Intl.NumberFormat("vi-VN",{maximumFractionDigits:2});
-const state={po:[],gr:[],rows:[],filtered:[],poUpdated:"",grUpdated:"",loaded:false,loading:false,
+const loadVersions={po:0,gr:0,request:0};
+const state={po:[],gr:[],allRows:[],rows:[],filtered:[],poUpdated:"",grUpdated:"",loaded:false,loading:false,
   start:0,visibleCount:0,size:50,sort:"age",direction:"desc",warnings:[],poError:"",grError:"",reportError:"",poVar:"",grVar:"",totalPO:0,excludedPO:0};
 const aliases={
   po:{po:["Pur. Doc.","Purchase Order","PO Num","PO Number","Purchasing Document"],
@@ -929,6 +950,27 @@ const aliases={
     docItem:["Material Doc.Item","Document Item"],bill:["Bill of Lading","Bill"],
     description:["Material Description","Short Text"]}
 };
+function foldText(text){return String(text??"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d")}
+function poWeek(date){
+  if(!date)return "";
+  const d=new Date(date+"T00:00:00Z");if(!Number.isFinite(d.getTime()))return "";
+  d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+  const year=d.getUTCFullYear(),week=Math.ceil(((d-Date.UTC(year,0,1))/86400000+1)/7);
+  return year+"-W"+String(week).padStart(2,"0");
+}
+function weekText(key){return key?"WK"+key.slice(-2)+" · "+key.slice(0,4):"—"}
+function selectedValues(name){
+  const select=id(name);
+  if(!select.multiple)return select.value||"";
+  return Array.from(select.options).filter(o=>o.selected&&o.value&&o.value!=="all").map(o=>o.value);
+}
+function filterValues(value){return (Array.isArray(value)?value:[value]).filter(v=>v&&v!=="all")}
+function matchesFilter(selected,value){const values=filterValues(selected);return !values.length||values.includes(value)}
+function validRange(from,to,node){
+  const valid=!from||!to||from<=to;
+  if(node){node.textContent=valid?"":"Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.";node.hidden=valid}
+  return valid;
+}
 function norm(text){return String(text??"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"")}
 function findCol(head,names){for(const name of names){const ix=head.findIndex(v=>norm(v)===norm(name));if(ix>=0)return ix}return -1}
 function normalizeCode(v){return String(v??"").trim().replace(/\.0+$/,"")}
@@ -983,10 +1025,10 @@ function mapFields(source,kind){
   return out;
 }
 function cell(row,col){return col<0?"":row[col]??""}
-function buildReport(poData,grData,allow105=false){
+function buildReport(poData,grData,allow105=false,only48=true){
   const p=mapFields(poData,"po"),g=mapFields(grData,"gr");
   const grByKey=new Map(),seen=new Set();
-  let ignored=0,duplicates=0,invalidQty=0,unitMismatches=0;
+  let ignored=0,duplicates=0,invalidQty=0,unitMismatches=0,missingReceiptItem=0;
   const signs={"101":1,"102":-1};if(allow105){signs["105"]=1;signs["106"]=-1}
   for(const raw of grData.slice(1)){
     if(!Array.isArray(raw))continue;
@@ -994,7 +1036,8 @@ function buildReport(poData,grData,allow105=false){
       material=normalizeCode(cell(raw,g.material)),movement=String(cell(raw,g.movement)).trim();
     if(!po||!item||!material||!(movement in signs)){ignored++;continue}
     const doc=normalizeCode(cell(raw,g.doc)),docItem=itemCode(cell(raw,g.docItem));
-    const date=excelDate(cell(raw,g.date)),dedup=doc?doc+"|"+docItem+"|"+date:"";
+    const date=excelDate(cell(raw,g.date)),dedup=doc&&docItem?doc+"|"+docItem+"|"+date:"";
+    if(doc&&!docItem)missingReceiptItem++;
     if(dedup&&seen.has(dedup)){duplicates++;continue}
     if(dedup)seen.add(dedup);
     const qty=number(cell(raw,g.qty));
@@ -1015,7 +1058,7 @@ function buildReport(poData,grData,allow105=false){
     const po=normalizeCode(cell(raw,p.po));
     // Always read the complete PO.js dataset, then retain purchase orders
     // whose document number starts with 48. Do not filter by pending status.
-    if(!po.startsWith("48")){excludedPO++;continue}
+    if(only48&&!po.startsWith("48")){excludedPO++;continue}
     const item=itemCode(cell(raw,p.item)),
       material=normalizeCode(cell(raw,p.material));
     // Keep every 48* PO row even when Item/Material is missing. Surface the
@@ -1042,7 +1085,7 @@ function buildReport(poData,grData,allow105=false){
     const latest=related.find(x=>x.date)?.date||"";
     const bill=(related.find(x=>x.bill)||{}).bill||"";
     const row={po,item,material,description:String(cell(raw,p.description)).trim(),
-      poDate,poQty,grQty,latestGr:latest,bill,
+      poDate,week:poWeek(poDate),poQty,grQty,latestGr:latest,bill,
       key:po+"|"+item+"|"+material,age:daysOld(poDate),
       percent:!issues.length&&Number.isFinite(poQty)&&poQty>0?grQty/poQty*100:NaN,
       remain:!issues.length&&Number.isFinite(poQty)?Math.max(0,poQty-grQty):NaN,
@@ -1051,56 +1094,102 @@ function buildReport(poData,grData,allow105=false){
       netPrice:number(cell(raw,p.netPrice)),currency:String(cell(raw,p.currency)).trim(),
       receipts:related};
     row.status=!item||!material?"invalid":calculateStatus(row);
-    row.searchText=[row.po,row.item,row.material,row.description,row.supplier,
-      row.buyer,row.plant,row.bill,row.key].join(" ").toLocaleLowerCase();
+    row.searchText=foldText([row.po,row.item,row.material,row.description,row.supplier,
+      row.buyer,row.plant,row.bill,row.key,row.week,weekText(row.week)].join(" "));
     rows.push(row);
   }
-  return {rows,ignored,duplicates,mismatch,invalidDate,invalidQty,unitMismatches,excludedPO,totalPO:poData.length-1,totalGR:grData.length-1};
+  return {rows,ignored,duplicates,missingReceiptItem,mismatch,invalidDate,invalidQty,unitMismatches,excludedPO,totalPO:poData.length-1,totalGR:grData.length-1};
 }
 function pct(v){return Number.isFinite(v)?numeric.format(v)+"%":"—"}
 function statusText(s){return {none:"Chưa nhận",partial:"Nhận một phần",done:"Đã đủ",excess:"Nhận vượt",invalid:"Cần kiểm tra"}[s]||s}
 function sortValue(r,key){if(key==="lastGr")return r.latestGr;return r[key]}
 function searchMatch(r,value){
-  const terms=value.split(/[,;\n|]+/).map(t=>t.trim().toLocaleLowerCase()).filter(Boolean);
+  const terms=foldText(value).split(/[,;\n|]+/).map(t=>t.trim()).filter(Boolean);
   if(!terms.length)return true;
-  const text=r.searchText||[r.po,r.item,r.material,r.description,r.supplier,
-    r.buyer,r.plant,r.bill,r.key].join(" ").toLocaleLowerCase();
+  const text=r.searchText||foldText([r.po,r.item,r.material,r.description,r.supplier,
+    r.buyer,r.plant,r.bill,r.key].join(" "));
   return terms.some(term=>text.includes(term));
 }
 function filteredRows(rows,options){
   return rows.filter(r=>{
     if(!searchMatch(r,options.query||""))return false;
-    if(options.status==="pending"&&!(r.status==="none"||r.status==="partial"||r.status==="invalid"))return false;
-    if(options.status!=="all"&&options.status!=="pending"&&options.status!==r.status)return false;
-    if(options.supplier&&r.supplier!==options.supplier)return false;
+    const statuses=filterValues(options.status);
+    if(statuses.length&&!statuses.some(status=>status==="pending"?["none","partial","invalid"].includes(r.status):status===r.status))return false;
+    if(!matchesFilter(options.supplier,r.supplier)||!matchesFilter(options.week,r.week))return false;
     if(options.from&&(!r.poDate||r.poDate<options.from))return false;
     if(options.to&&(!r.poDate||r.poDate>options.to))return false;
     if(options.overdue&&!(r.status!=="done"&&r.status!=="excess"&&r.age>=60))return false;
     return true;
   });
 }
-function options(){return {query:id("search").value,status:id("status-filter").value,
-  supplier:id("supplier-filter").value,
+function options(){return {query:id("search").value,status:selectedValues("status-filter"),week:selectedValues("po-week"),
+  supplier:selectedValues("supplier-filter"),
   from:id("date-from").value,to:id("date-to").value,overdue:id("overdue-only").checked}}
 function sortRows(rows,key,dir){const d=dir==="asc"?1:-1;return rows.slice().sort((a,b)=>{
   const x=sortValue(a,key),y=sortValue(b,key);
-  if(typeof x==="number"||typeof y==="number"){
-    const ax=Number.isFinite(x)?x:-Infinity,bx=Number.isFinite(y)?y:-Infinity;
-    return (ax-bx)*d||a.key.localeCompare(b.key);
-  }
+  const missing=v=>v==null||v===""||typeof v==="number"&&!Number.isFinite(v);
+  if(missing(x)||missing(y))return missing(x)===missing(y)?a.key.localeCompare(b.key):missing(x)?1:-1;
+  if(typeof x==="number"&&typeof y==="number")return (x-y)*d||a.key.localeCompare(b.key);
   return String(x??"").localeCompare(String(y??""),"vi",{numeric:true})*d||a.key.localeCompare(b.key);
 })}
+const multiFilters=new Map();
+function refreshMultiFilter(name){
+  const ui=multiFilters.get(name);if(!ui)return;
+  const options=Array.from(ui.select.options).filter(o=>o.value&&o.value!=="all");
+  const signature=JSON.stringify(options.map(o=>[o.value,o.textContent]));
+  if(signature!==ui.signature){
+    ui.list.replaceChildren();ui.signature=signature;
+    for(const option of options){
+      const label=document.createElement("label"),check=document.createElement("input"),text=document.createElement("span");
+      check.type="checkbox";check.value=option.value;text.textContent=name==="po-week"?weekText(option.value):option.textContent;
+      check.addEventListener("change",()=>{
+        option.selected=check.checked;
+        for(const other of Array.from(ui.select.options))if(!other.value||other.value==="all")other.selected=false;
+        refreshMultiFilter(name);ui.select.dispatchEvent(new Event("change",{bubbles:true}));
+      });
+      label.append(check,text);ui.list.appendChild(label);
+    }
+  }
+  const selected=filterValues(selectedValues(name));
+  const labels=options.filter(o=>selected.includes(o.value)).map(o=>name==="po-week"?weekText(o.value):o.textContent);
+  ui.summary.textContent=labels.length?labels.length===1?labels[0]:labels.length+" mục đã chọn":"Tất cả";
+  ui.summary.title=labels.join("; ")||"Tất cả";
+  ui.summary.setAttribute("aria-label",ui.label+": "+ui.summary.textContent);
+  for(const input of ui.list.querySelectorAll("input"))input.checked=selected.includes(input.value);
+}
+function refreshAllMultiFilters(){for(const name of multiFilters.keys())refreshMultiFilter(name)}
+function setupMultiFilters(){
+  if(typeof document.createElement("div").querySelectorAll!=="function")return;
+  for(const name of ["status-filter","supplier-filter","po-week","request-status","request-link","request-week","request-hall"]){
+    const select=id(name);if(!select?.parentElement)continue;
+    const current=select.value;select.multiple=true;select.hidden=true;select.setAttribute("aria-hidden","true");
+    for(const option of Array.from(select.options))option.selected=Boolean(current&&current!=="all"&&option.value===current);
+    const details=document.createElement("details"),summary=document.createElement("summary"),box=document.createElement("div");
+    details.className="multi-filter";box.className="multi-options";
+    const label=select.parentElement.querySelector("label")?.textContent||name;
+    const clear=document.createElement("button");clear.type="button";clear.className="ghost-link";clear.textContent="Bỏ chọn tất cả";
+    clear.addEventListener("click",()=>{for(const o of Array.from(select.options))o.selected=false;refreshMultiFilter(name);select.dispatchEvent(new Event("change",{bubbles:true}))});
+    const list=document.createElement("div");list.setAttribute("role","group");list.setAttribute("aria-label",label);
+    box.append(clear,list);details.append(summary,box);select.parentElement.appendChild(details);
+    multiFilters.set(name,{select,details,summary,list,label,signature:""});
+    select.addEventListener("change",()=>refreshMultiFilter(name));refreshMultiFilter(name);
+    details.addEventListener("toggle",()=>{if(details.open)for(const other of multiFilters.values())if(other.details!==details)other.details.open=false});
+  }
+  document.addEventListener("pointerdown",event=>{for(const ui of multiFilters.values())if(!ui.details.contains(event.target))ui.details.open=false});
+}
 function updateSelect(name,items,all){
-  const select=id(name),current=select.value;select.replaceChildren(new Option(all,""));
+  const select=id(name),current=filterValues(selectedValues(name));select.replaceChildren(new Option(all,""));
   for(const v of [...new Set(items)].filter(Boolean).sort((a,b)=>a.localeCompare(b,"vi",{numeric:true})))
     select.add(new Option(v,v));
-  select.value=[...select.options].some(o=>o.value===current)?current:"";
+  if(select.multiple){for(const option of Array.from(select.options))option.selected=current.includes(option.value)}
+  else select.value=Array.from(select.options).some(o=>o.value===current[0])?current[0]:"";
+  refreshMultiFilter(name);
 }
 function updateQuickTabs(){
-  const status=id("status-filter").value,overdue=id("overdue-only").checked;
+  const status=filterValues(selectedValues("status-filter")),overdue=id("overdue-only").checked;
   for(const button of document.querySelectorAll(".quick-tab")){
     const active=button.dataset.mode==="overdue"?overdue:
-      !overdue&&button.dataset.mode===status;
+      !overdue&&(status.length===0?button.dataset.mode==="all":status.length===1&&button.dataset.mode===status[0]);
     button.classList.toggle("active",active);
     button.setAttribute("aria-pressed",String(active));
   }
@@ -1123,6 +1212,7 @@ function appendRows(rows){
     tr.setAttribute("aria-label","Xem chi tiết PO "+r.po+" Item "+r.item);
     tr.addEventListener("dblclick",()=>openDetail(r));
     tr.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();openDetail(r)}});
+    tr.dataset.reportRow=r.key;td(tr,weekText(r.week),"po-week");
     td(tr,r.po,"sap", "Item: "+r.item);td(tr,r.material,"sap");td(tr,r.description,"desc",r.description);
     td(tr,displayDate(r.poDate));td(tr,fmt(r.poQty),"number");td(tr,fmt(r.grQty),"number");
     td(tr,displayDate(r.latestGr),r.latestGr?"":"empty");
@@ -1162,16 +1252,9 @@ function showWindow(start,count){
   id("empty").hidden=total!==0;
   updateVisibleStatus();
 }
-function loadNextBatch(){
-  if(state.loading||state.start!==0||state.visibleCount>=state.filtered.length)return false;
-  const old=state.visibleCount;
-  state.visibleCount=Math.min(state.filtered.length,old+state.size);
-  appendRows(state.filtered.slice(old,state.visibleCount));
-  updateVisibleStatus();
-  return true;
-}
+function loadNextBatch(){return moveReportWindow("po",1)}
 function render(){
-  const list=sortRows(filteredRows(state.rows,options()),state.sort,state.direction);
+  const filters=options(),list=validRange(filters.from,filters.to,id("po-filter-error"))?sortRows(filteredRows(state.rows,filters),state.sort,state.direction):[];
   state.filtered=list;updateKPI(list);
   showWindow(0,Math.min(list.length,state.size));
   id("result-summary").textContent=fmt(list.length)+" / "+fmt(state.rows.length)+
@@ -1206,17 +1289,18 @@ function openDetail(r){
 }
 function reportFresh(){
   state.reportError="";
-  state.rows=[];state.totalPO=0;state.excludedPO=0;state.warnings=[];
+  state.rows=[];state.allRows=[];state.totalPO=0;state.excludedPO=0;state.warnings=[];
   try{
     if(!state.po.length){
       id("dataset-summary").textContent="Chưa có dữ liệu PO hợp lệ";
       id("join-note").textContent=state.poError||"Cần tải PO.js để đối chiếu";
     }else{
       const emptyGR=[Object.values(aliases.gr).map(names=>names[0])];
-      const info=buildReport(state.po,state.gr.length?state.gr:emptyGR,id("include-105").checked);
-      state.rows=info.rows;state.totalPO=info.totalPO;state.excludedPO=info.excludedPO;state.warnings=[];
+      const info=buildReport(state.po,state.gr.length?state.gr:emptyGR,id("include-105").checked,false);
+      state.allRows=info.rows;state.rows=info.rows.filter(row=>row.po.startsWith("48"));
+      info.excludedPO=info.rows.length-state.rows.length;info.rows=state.rows;state.totalPO=info.totalPO;state.excludedPO=info.excludedPO;state.warnings=[];
       if(!state.gr.length){
-        for(const row of state.rows){
+        for(const row of state.allRows){
           row.grQty=NaN;row.percent=NaN;row.remain=NaN;row.status="invalid";
           row.issues.push("Chưa có dữ liệu GR hợp lệ");
         }
@@ -1226,6 +1310,7 @@ function reportFresh(){
         fmt(info.totalPO)+" dòng trong PO.js"+(info.excludedPO?
           " · loại "+fmt(info.excludedPO)+" dòng PO khác 48":"");
       if(info.mismatch)state.warnings.push(info.mismatch+" dòng GR có mã vật tư khác PO");
+      if(info.missingReceiptItem)state.warnings.push(info.missingReceiptItem+" dòng GR thiếu số dòng chứng từ; được giữ để tránh bỏ nhầm");
       if(info.duplicates)state.warnings.push(info.duplicates+" chứng từ GR trùng đã bỏ qua");
       if(info.invalidDate)state.warnings.push(info.invalidDate+" dòng PO có ngày không hợp lệ");
       if(info.invalidQty)state.warnings.push(info.invalidQty+" dòng GR có số lượng không hợp lệ");
@@ -1237,9 +1322,10 @@ function reportFresh(){
     state.reportError=err.message;
     id("load-state").textContent=err.message;id("join-note").textContent=err.message;
     id("dataset-summary").textContent="Nguồn dữ liệu cần kiểm tra";
-    state.rows=[];state.totalPO=0;state.excludedPO=0;
+    state.rows=[];state.allRows=[];state.totalPO=0;state.excludedPO=0;
   }
   updateSelect("supplier-filter",state.rows.map(x=>x.supplier),"Tất cả nhà cung cấp");
+  updateSelect("po-week",state.rows.map(x=>x.week),"Tất cả tuần");
   render();
   if(requestState.data.length)rebuildRequests();
 }
@@ -1330,22 +1416,24 @@ function buildRequestReport(source,poRows,opts={}){
       orderType:String(c("orderType")).trim(),note:String(c("note")).trim(),
       matches,poQty,grQty,percent,link
     };
-    r.searchText=[r.sap,r.po,r.description,r.note,r.supplier,r.file,r.week,r.group,
-      r.status,r.hall].join(" ").toLocaleLowerCase();
+    r.sourceStatus=r.status;
+    if(r.po){
+      r.status=["partial","complete"].includes(r.link)?"Done":r.link==="no-gr"?"Waiting for GR":"Cần kiểm tra";
+    }
+    r.searchText=foldText([r.sap,r.po,r.description,r.note,r.supplier,r.file,r.week,r.group,
+      r.status,r.sourceStatus,r.hall].join(" "));
     rows.push(r);
   }
   return rows;
 }
 function filterRequestRows(rows,filters){
-  const terms=String(filters.query||"").toLocaleLowerCase()
+  const terms=foldText(filters.query||"")
     .split(/[,;\n|]+/).map(x=>x.trim()).filter(Boolean);
   return rows.filter(r=>{
     if(terms.length&&!terms.some(term=>r.searchText.includes(term)))return false;
-    if(filters.status&&r.status!==filters.status)return false;
-    if(filters.week&&
-      (filters.week==="__no_week__"?Boolean(r.week):r.week!==filters.week))return false;
-    if(filters.link&&r.link!==filters.link)return false;
-    if(filters.hall&&r.hall!==filters.hall)return false;
+    if(!matchesFilter(filters.status,r.status))return false;
+    if(!matchesFilter(filters.week,r.week||"__no_week__"))return false;
+    if(!matchesFilter(filters.link,r.link)||!matchesFilter(filters.hall,r.hall))return false;
     if(filters.from&&(!r.date||r.date<filters.from))return false;
     if(filters.to&&(!r.date||r.date>filters.to))return false;
     return true;
@@ -1471,27 +1559,30 @@ function updateSourceStatus(){
 }
 async function loadAll(){
   if(state.loading||document.hidden)return;
+  const version={po:++loadVersions.po,gr:++loadVersions.gr};
   state.loading=true;id("reload-btn").disabled=true;id("load-state").textContent="Đang đọc PO.js và GR.js…";
   id("source-status").textContent="Đang nạp dữ liệu";
   try{
     try{
       const po=await readScript("PO.js",SOURCE_NAMES.po);
-      acceptSource("po",po);
-    }catch(e){rejectSource("po",e)}
+      if(version.po===loadVersions.po)acceptSource("po",po);
+    }catch(e){if(version.po===loadVersions.po)rejectSource("po",e)}
     try{
       const gr=await readScript("GR.js",SOURCE_NAMES.gr);
-      acceptSource("gr",gr);
-    }catch(e){rejectSource("gr",e)}
+      if(version.gr===loadVersions.gr)acceptSource("gr",gr);
+    }catch(e){if(version.gr===loadVersions.gr)rejectSource("gr",e)}
     reportFresh();
     if(activeReportTab==="request")await loadRequestFile();
   }finally{state.loading=false;id("reload-btn").disabled=false;updateSourceStatus()}
 }
 async function loadSelected(file,kind){
   if(!file)return;
+  const version=++loadVersions[kind];
   try{
     const content=await file.text(),result=fromJSText(content,SOURCE_NAMES[kind]);
+    if(version!==loadVersions[kind])return;
     acceptSource(kind,result);
-  }catch(err){rejectSource(kind,err)}
+  }catch(err){if(version!==loadVersions[kind])return;rejectSource(kind,err)}
   reportFresh();updateSourceStatus();
 }
 function colName(i){let name="";for(let n=i+1;n>0;n=Math.floor((n-1)/26))name=String.fromCharCode(65+(n-1)%26)+name;return name}
@@ -1527,10 +1618,10 @@ function zipEncode(entries){
   return new Blob(output,{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
 }
 function makeXlsx(rows){
-  const columns=["Số PO","Item","Mã vật tư","Tên vật tư","Ngày PO","SL đặt","SL nhận",
+  const columns=["Tuần PO","Số PO","Item","Mã vật tư","Tên vật tư","Ngày PO","SL đặt","SL nhận",
     "Ngày GR gần nhất","Vận đơn","Ngày chờ","% nhận","SL còn thiếu",
     "Trạng thái","Nhà cung cấp","Nhà máy","Người tạo","Đơn vị","Đơn giá","Tiền tệ"];
-  const grid=[columns,...rows.map(r=>[r.po,r.item,r.material,r.description,displayDate(r.poDate),
+  const grid=[columns,...rows.map(r=>[weekText(r.week),r.po,r.item,r.material,r.description,displayDate(r.poDate),
     r.poQty,r.grQty,displayDate(r.latestGr),r.bill,
     r.status==="done"||r.status==="excess"?null:r.age,
     Number.isFinite(r.percent)?r.percent:null,r.remain,statusText(r.status),
@@ -1538,7 +1629,7 @@ function makeXlsx(rows){
   const worksheets='<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
     '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
     '<sheetData>'+grid.map((row,i)=>'<row r="'+(i+1)+'">'+cellsXML(row,i+1)+'</row>').join("")+'</sheetData>'+
-    '<autoFilter ref="A1:S'+grid.length+'"/></worksheet>';
+    '<autoFilter ref="A1:T'+grid.length+'"/></worksheet>';
   const contentTypes='<?xml version="1.0" encoding="UTF-8"?>'+
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
@@ -1559,7 +1650,7 @@ function exportXlsx(){
   setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 let timer;
-for(const key of ["search","status-filter","supplier-filter","date-from","date-to","overdue-only"]){
+for(const key of ["search","status-filter","supplier-filter","po-week","date-from","date-to","overdue-only"]){
   id(key).addEventListener(key==="search"?"input":"change",()=>{
     clearTimeout(timer);timer=setTimeout(()=>render(),key==="search"?160:0)});
 }
@@ -1569,13 +1660,13 @@ for(const button of document.querySelectorAll(".quick-tab")){
     const mode=button.dataset.mode;
     if(mode==="overdue"){id("status-filter").value="all";id("overdue-only").checked=true}
     else{id("status-filter").value=mode;id("overdue-only").checked=false}
-    render();
+    refreshAllMultiFilters();render();
   });
 }
 
 id("reset").addEventListener("click",()=>{id("search").value="";id("status-filter").value="all";
-  id("supplier-filter").value="";id("date-from").value="";
-  id("date-to").value="";id("overdue-only").checked=false;render()});
+  id("supplier-filter").value="";id("po-week").value="";id("date-from").value="";
+  id("date-to").value="";id("overdue-only").checked=false;refreshAllMultiFilters();render()});
 document.querySelectorAll("th button[data-sort]").forEach(b=>b.addEventListener("click",()=>{
   const key=b.dataset.sort;state.direction=state.sort===key&&state.direction==="asc"?"desc":"asc";
   state.sort=key;render()}));
@@ -1591,20 +1682,6 @@ id("last").addEventListener("click",()=>{
   showWindow(Math.max(0,state.filtered.length-state.size),state.size);
   id("table-footer").scrollIntoView({block:"end"});
 });
-const poScroller=id("table-scroller");
-if(typeof IntersectionObserver==="function"){
-  const observer=new IntersectionObserver(entries=>{
-    if(!id("po-gr-panel").hidden&&entries.some(entry=>entry.isIntersecting))
-      loadNextBatch();
-  },{root:null,rootMargin:"0px 0px 220px 0px"});
-  observer.observe(id("load-sentinel"));
-}else{
-  window.addEventListener("scroll",()=>{
-    if(!id("po-gr-panel").hidden&&
-      id("load-sentinel").getBoundingClientRect().top<=window.innerHeight+220)
-      loadNextBatch();
-  },{passive:true});
-}
 id("reload-btn").addEventListener("click",loadAll);id("export-btn").addEventListener("click",exportXlsx);
 id("close-dialog").addEventListener("click",()=>id("details-dialog").close());
 id("file-po").addEventListener("change",e=>loadSelected(e.target.files[0],"po"));
@@ -1638,45 +1715,23 @@ function updateRequestSource(message,error=false){
     "("+fmt(requestState.rows.length)+")":"";
 }
 function requestFilters(){
-  return {query:requestId("search").value,status:requestId("status").value,
-    link:requestId("link").value,week:requestId("week").value,hall:requestId("hall").value,
+  return {query:requestId("search").value,status:selectedValues("request-status"),
+    link:selectedValues("request-link"),week:selectedValues("request-week"),hall:selectedValues("request-hall"),
     from:requestId("from").value,to:requestId("to").value};
 }
 function refreshRequestChoices(){
-  const weekSelect=requestId("week"),selectedWeek=weekSelect.value;
-  const weeks=new Map();
-  for(const row of requestState.rows){
-    const week=row.week||"__no_week__";
-    weeks.set(week,(weeks.get(week)||0)+1);
-  }
-  weekSelect.replaceChildren(new Option("Tất cả tuần",""));
-  for(const week of [...weeks.keys()].filter(v=>v!=="__no_week__")
-    .sort((a,b)=>Number(a.slice(2))-Number(b.slice(2)))){
-    weekSelect.add(new Option(week+" · "+fmt(weeks.get(week))+" yêu cầu",week));
-  }
-  if(weeks.has("__no_week__")){
-    weekSelect.add(new Option("Không có tuần · "+
-      fmt(weeks.get("__no_week__"))+" yêu cầu","__no_week__"));
-  }
-  weekSelect.value=[...weekSelect.options].some(o=>o.value===selectedWeek)?
-    selectedWeek:"";
-  const hallSelect=requestId("hall"),previous=hallSelect.value;
-  hallSelect.replaceChildren(new Option("Tất cả Hall",""));
-  for(const hall of [...new Set(requestState.rows.map(x=>x.hall))].filter(Boolean)
-    .sort((a,b)=>a.localeCompare(b,"vi",{numeric:true})))
-    hallSelect.add(new Option("Hall "+hall,hall));
-  hallSelect.value=[...hallSelect.options].some(x=>x.value===previous)?previous:"";
-  const select=requestId("status"),cur=select.value;
-  select.replaceChildren(new Option("Tất cả",""));
-  for(const value of [...new Set(requestState.rows.map(r=>r.status))].filter(Boolean)
-    .sort((a,b)=>a.localeCompare(b,"vi")))
-    select.add(new Option(value,value));
-  select.value=[...select.options].some(x=>x.value===cur)?cur:"";
+  const weeks=new Map();for(const row of requestState.rows){const key=row.week||"__no_week__";weeks.set(key,(weeks.get(key)||0)+1)}
+  updateSelect("request-week",[...weeks.keys()],"Tất cả tuần");
+  for(const option of Array.from(requestId("week").options))if(option.value)
+    option.textContent=(option.value==="__no_week__"?"Không có tuần":option.value)+" · "+fmt(weeks.get(option.value))+" yêu cầu";
+  refreshMultiFilter("request-week");
+  updateSelect("request-hall",requestState.rows.map(r=>r.hall),"Tất cả Hall");
+  updateSelect("request-status",requestState.rows.map(r=>r.status),"Tất cả trạng thái");
 }
 function rebuildRequests(){
   if(!requestState.data.length)return;
   try{
-    const poRows=state.rows,opts={poReady:state.po.length>0&&!state.reportError,
+    const poRows=state.allRows,opts={poReady:state.po.length>0&&!state.reportError,
       grReady:state.gr.length>0&&!state.reportError};
     requestState.rows=buildRequestReport(requestState.data,poRows,opts);
     requestState.byIndex=new Map(requestState.rows.map(r=>[r.index,r]));
@@ -1696,41 +1751,45 @@ function clearRequestReport(message){
 }
 async function loadRequestFile(){
   if(requestState.loading)return;
+  const version=++loadVersions.request;
   requestState.loading=true;requestId("reload").disabled=true;
   updateRequestSource("Đang tải Request.js...");
   try{
     const result=await readScript("Request.js",SOURCE_NAMES.request);
+    if(version!==loadVersions.request)return;
     requestState.data=result.data;
     requestState.updated=result.updated;
     requestState.error="";
     rebuildRequests();
   }catch(err){
-    clearRequestReport("Không tải được Request.js: "+err.message);
+    if(version===loadVersions.request)clearRequestReport("Không tải được Request.js: "+err.message);
   }finally{
     requestState.loading=false;requestId("reload").disabled=false;
   }
 }
 async function applyRequestUpload(file){
   if(!file)return;
+  const version=++loadVersions.request;
   try{
     const text=await file.text();
     const result=fromJSText(text,SOURCE_NAMES.request);
+    if(version!==loadVersions.request)return;
     requestState.data=result.data;
     requestState.updated=result.updated;
     requestState.error="";
     rebuildRequests();
-  }catch(err){clearRequestReport("File Request.js không hợp lệ: "+err.message)}
+  }catch(err){if(version===loadVersions.request)clearRequestReport("File Request.js không hợp lệ: "+err.message)}
 }
 function updateRequestStats(rows){
   requestId("stat-total").textContent=fmt(rows.length);
   requestId("stat-po").textContent=fmt(rows.filter(r=>r.po).length);
   requestId("stat-match").textContent=fmt(rows.filter(r=>r.matches.length>0).length);
   requestId("stat-wait").textContent=fmt(rows.filter(r=>
-    r.status.toLocaleLowerCase()==="waiting for ir").length);
+    r.status==="Waiting for GR").length);
 }
 function requestRowDOM(r){
   const tr=document.createElement("tr");
-  tr.tabIndex=0;tr.dataset.requestIndex=String(r.index);
+  tr.tabIndex=0;tr.dataset.requestIndex=String(r.index);tr.dataset.reportRow=String(r.index);
   tr.setAttribute("aria-label","Chi tiết yêu cầu "+r.sap+" "+r.po);
   td(tr,r.week||"—",r.week?"request-week":"empty",
     r.file?"File nguồn: "+r.file:"Không có File Name");
@@ -1783,21 +1842,10 @@ function showRequestWindow(start,count){
   requestId("empty").hidden=total!==0;
   requestVisibilityStatus();
 }
-function addRequestBatch(){
-  if(activeReportTab!=="request"||requestState.loading||
-    requestState.start!==0||requestState.start+requestState.visible>=requestState.filtered.length)
-    return false;
-  const from=requestState.visible;
-  const to=Math.min(requestState.filtered.length,from+requestState.size);
-  const fragment=document.createDocumentFragment();
-  for(const r of requestState.filtered.slice(from,to))
-    fragment.appendChild(requestRowDOM(r));
-  requestId("body").appendChild(fragment);
-  requestState.visible=to;requestVisibilityStatus();return true;
-}
+function addRequestBatch(){return moveReportWindow("request",1)}
 function renderRequests(){
   const filters=requestFilters();
-  requestState.filtered=sortRequestRows(filterRequestRows(requestState.rows,filters),
+  if(!validRange(filters.from,filters.to,id("request-filter-error"))){requestState.filtered=[]}else requestState.filtered=sortRequestRows(filterRequestRows(requestState.rows,filters),
     requestState.sort,requestState.direction);
   const rows=requestState.filtered;
   updateRequestStats(rows);
@@ -1832,7 +1880,7 @@ function showRequestDetails(row){
     ["Lô đặt hàng",fmt(row.lot)],["Giá (EUR)",fmt(row.price)],
     ["Giá trị (EUR)",fmt(row.amount)],["Loại đặt hàng",row.orderType],
     ["Nhóm mua hàng",row.group],["Phụ trách / Supplier",row.supplier],
-    ["Hall",row.hall],["Trạng thái Request",row.status],["Ghi chú",row.note],
+    ["Hall",row.hall],["Trạng thái yêu cầu",row.status],["Trạng thái trong file nguồn",row.sourceStatus],["Ghi chú",row.note],
     ["Số PO trong Request",row.po],["Kết quả đối chiếu",REQUEST_LINK_LABELS[row.link]||row.link]
   ];
   const fields=requestId("detail-fields");fields.replaceChildren();
@@ -1856,7 +1904,7 @@ function showRequestDetails(row){
     cell.colSpan=6;body.appendChild(tr);
   }
   requestId("detail-note").textContent=REQUEST_LINK_LABELS[row.link]||row.link;
-  requestId("jump-po").hidden=!row.po||!row.matches.length;
+  requestId("jump-po").hidden=!row.po.startsWith("48")||!row.matches.length;
   requestId("jump-po").dataset.po=row.po;
   id("request-dialog").showModal();
 }
@@ -1865,7 +1913,7 @@ function requestXlsx(rows){
     "Hall","Trạng thái Request","Số PO","Ngày đặt PO","SL PO","SL GR",
     "% nhập/PO","Kết quả đối chiếu","Phụ trách","Đơn giá EUR","Giá trị EUR",
     "Tồn tại lúc yêu cầu","Điểm đặt hàng","Lô đặt hàng","Loại đặt",
-    "Ghi chú","File nguồn","STT dòng","Nhóm mua hàng"];
+    "Ghi chú","File nguồn","STT dòng","Nhóm mua hàng","Trạng thái gốc trong nguồn"];
   const grid=[cols,...rows.map(r=>[r.week,displayDate(r.date),r.sap,r.description,r.qty,r.unit,
     r.hall,r.status,r.po,displayDate(r.orderedDate),
     Number.isFinite(r.poQty)?r.poQty:null,
@@ -1874,7 +1922,7 @@ function requestXlsx(rows){
     REQUEST_LINK_LABELS[r.link]||r.link,r.supplier,
     Number.isFinite(r.price)?r.price:null,Number.isFinite(r.amount)?r.amount:null,
     Number.isFinite(r.stock)?r.stock:null,Number.isFinite(r.reorder)?r.reorder:null,
-    Number.isFinite(r.lot)?r.lot:null,r.orderType,r.note,r.file,r.rowNo,r.group])];
+    Number.isFinite(r.lot)?r.lot:null,r.orderType,r.note,r.file,r.rowNo,r.group,r.sourceStatus])];
   const last=colName(cols.length-1);
   const sheet='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
     '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
@@ -1925,7 +1973,7 @@ for(const name of ["search","status","link","week","hall","from","to"]){
 requestId("clear").addEventListener("click",()=>{
   for(const name of ["search","status","link","week","hall","from","to"])
     requestId(name).value="";
-  renderRequests();
+  refreshAllMultiFilters();renderRequests();
 });
 document.querySelectorAll("[data-rsort]").forEach(button=>button.addEventListener("click",()=>{
   const key=button.dataset.rsort;
@@ -1946,19 +1994,6 @@ requestId("last").addEventListener("click",()=>{
     requestState.size);
   requestId("visible").scrollIntoView({block:"end"});
 });
-const requestScroller=requestId("scroller");
-if(typeof IntersectionObserver==="function"){
-  const observer=new IntersectionObserver(entries=>{
-    if(entries.some(entry=>entry.isIntersecting))addRequestBatch();
-  },{root:null,rootMargin:"0px 0px 220px 0px"});
-  observer.observe(requestId("sentinel"));
-}else{
-  window.addEventListener("scroll",()=>{
-    if(activeReportTab==="request"&&
-      requestId("sentinel").getBoundingClientRect().top<=window.innerHeight+220)
-      addRequestBatch();
-  },{passive:true});
-}
 function requestRowAction(event){
   if(event.type==="keydown"&&event.key!=="Enter")return;
   const element=event.target.closest("tr[data-request-index]");
@@ -1975,7 +2010,8 @@ requestId("jump-po").addEventListener("click",()=>{
   setReportTab("po");
   id("search").value=po;
   id("status-filter").value="all";
-  id("overdue-only").checked=false;
+  for(const name of ["supplier-filter","po-week","date-from","date-to"])id(name).value="";
+  id("overdue-only").checked=false;refreshAllMultiFilters();
   render();
 });
 requestId("export").addEventListener("click",exportRequests);
@@ -2093,7 +2129,58 @@ if(document.getElementById("report-table")?.tHead&&
   scheduleFixedHeaders();
 }
 
-window.POGR={number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
+const REPORT_WINDOW_LIMIT=200;
+function reportWindow(kind){
+  const request=kind==="request",data=request?requestState:state;
+  return {data,rows:data.filtered,start:data.start,count:request?data.visible:data.visibleCount,size:data.size,
+    body:id(request?"request-body":"report-body"),table:id(request?"request-table":"report-table"),
+    panel:id(request?"request-panel":"po-gr-panel"),sentinel:id(request?"request-sentinel":"load-sentinel"),
+    show:request?showRequestWindow:showWindow};
+}
+function moveReportWindow(kind,direction){
+  const w=reportWindow(kind);if(w.panel.hidden||w.data.loading)return false;
+  let start=w.start,count=w.count;
+  const step=direction>0?Math.min(w.size,w.rows.length-start-count):Math.min(w.size,start);
+  if(step<=0)return false;
+  const max=Math.max(REPORT_WINDOW_LIMIT,w.size);
+  if(direction>0){count+=step;if(count>max){start+=count-max;count=max}}
+  else{start-=step;count=Math.min(max,count+step)}
+  let anchor,top;
+  if(typeof window.scrollBy==="function"){
+    anchor=Array.from(w.body.children).find(row=>row.getBoundingClientRect().bottom>50);
+    if(anchor)top=anchor.getBoundingClientRect().top;
+  }
+  const key=anchor?.dataset.reportRow;
+  w.show(start,count);
+  if(key!==undefined){const next=Array.from(w.body.children).find(row=>row.dataset.reportRow===key);if(next)window.scrollBy(0,next.getBoundingClientRect().top-top)}
+  scheduleFixedHeaders();return true;
+}
+function installReportScrolling(){
+  let direction=0,inputAt=0,lockedUntil=0,touchY=null,previousY=window.scrollY||0;
+  function check(){
+    if(!direction||Date.now()-inputAt>900||Date.now()<lockedUntil)return;
+    const kind=activeReportTab==="request"?"request":"po",w=reportWindow(kind);
+    if(w.panel.hidden)return;
+    const atEdge=direction>0?w.sentinel.getBoundingClientRect().top<=window.innerHeight+24:
+      w.table.getBoundingClientRect().top>=-24;
+    if(!atEdge)return;
+    lockedUntil=Date.now()+750;
+    if(moveReportWindow(kind,direction))direction=0;
+  }
+  window.addEventListener("wheel",event=>{if(event.shiftKey)return;if(event.target?.closest?.("dialog[open],.multi-options"))return;if(Math.abs(event.deltaY)>Math.abs(event.deltaX||0)&&Math.abs(event.deltaY)>2){direction=Math.sign(event.deltaY);inputAt=Date.now();check()}},{passive:true});
+  window.addEventListener("touchstart",event=>{touchY=event.touches[0]?.clientY??null},{passive:true});
+  window.addEventListener("touchmove",event=>{if(event.target?.closest?.("dialog[open],.multi-options"))return;const y=event.touches[0]?.clientY;if(touchY!=null&&y!=null&&Math.abs(touchY-y)>8){direction=Math.sign(touchY-y);inputAt=Date.now();touchY=y;check()}},{passive:true});
+  window.addEventListener("keydown",event=>{
+    if(["INPUT","SELECT","TEXTAREA"].includes(event.target?.tagName)||event.target?.closest?.("dialog[open],.multi-filter"))return;
+    if(["PageDown","ArrowDown","PageUp","ArrowUp"].includes(event.key)){direction=event.key.endsWith("Down")?1:-1;inputAt=Date.now();check()}
+  });
+  window.addEventListener("scroll",()=>{if(window.scrollY!==previousY){previousY=window.scrollY;check()}},{passive:true});
+}
+
+setupMultiFilters();
+if(typeof window.scrollBy==="function")installReportScrolling();
+
+window.POGR={poWeek,weekText,moveReportWindow,number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
   loadNextBatch,buildRequestReport,filterRequestRows,sortRequestRows,requestXlsx,requestWeekFromFile,
   getRequestState:()=>requestState};
 loadAll();
@@ -2101,4 +2188,3 @@ loadAll();
 </script>
 </body>
 </html>
-

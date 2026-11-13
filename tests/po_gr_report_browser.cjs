@@ -129,7 +129,7 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.match(await page.locator('#report-body').innerText(),/70%/);
   await page.locator('#include-105').check();
   assert.match(await page.locator('#report-body').innerText(),/90%/);
-  await page.locator('#status-filter').selectOption('all');
+  await page.locator('#status-filter').selectOption('all',{force:true});
   await page.locator('#report-body tr').first().dblclick();
   assert.equal(await page.locator('#details-dialog').evaluate(el=>el.open),true);
   assert.ok((await page.locator('#detail-gr-body tr').count())>=1);
@@ -188,7 +188,7 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
     return overlay&&!overlay.hidden;
   });
   const sticky=page.locator('.fixed-report-head[data-source-table="report-table"]');
-  assert.equal(await sticky.locator('thead th').count(),12);
+  assert.equal(await sticky.locator('thead th').count(),13);
   await scroller.evaluate(el=>el.scrollLeft=130);
   await page.waitForFunction(()=>{
     const pinned=document.querySelector('.fixed-report-head[data-source-table="report-table"] .fixed-head-first');
@@ -204,9 +204,11 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   await sticky.locator('.fixed-head-first button').click();
   assert.equal(await page.locator('#report-body tr').count(),50);
   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await page.waitForTimeout(800);await page.mouse.wheel(0,600);
   await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length>=100);
   assert.equal(await page.locator('#report-body tr').count(),100);
   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await page.waitForTimeout(800);await page.mouse.wheel(0,600);
   await page.waitForFunction(()=>document.querySelectorAll('#report-body tr').length===121);
   assert.ok(await page.evaluate(()=>window.scrollY)>0);
   assert.equal(await page.locator('#page-indicator').innerText(),'121/121');
@@ -216,7 +218,7 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.equal(await page.locator('#report-body tr').count(),50);
   assert.equal(await page.locator('#page-indicator').innerText(),'121/121');
   await page.locator('#first').click();
-  await page.locator('#page-size').selectOption('100');
+  await page.locator('#page-size').selectOption('100',{force:true});
   assert.equal(await page.locator('#report-body tr').count(),100);
 
   // One fully received PO is still visible under the default All status.

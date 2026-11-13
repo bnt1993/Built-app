@@ -67,7 +67,7 @@ function routeFor(page,sources){
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='334');
   assert.equal(await page.locator('#request-stat-po').innerText(),'247');
   assert.equal(await page.locator('#request-stat-match').innerText(),'0');
-  assert.equal(await page.locator('#request-stat-wait').innerText(),'20');
+  assert.equal(await page.locator('#request-stat-wait').innerText(),'0');
   const actualAmount=await page.evaluate(()=>window.POGR.getRequestState().rows
     .find(r=>r.sap==='900064272'&&r.week==='WK41').amount);
   assert.equal(actualAmount,81.078,'SAP decimal comma must survive in the browser');
@@ -100,6 +100,7 @@ function routeFor(page,sources){
     return pinned&&!pinned.hidden;
   });
   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await page.waitForTimeout(800);await page.mouse.wheel(0,600);
   await page.waitForFunction(()=>document.querySelectorAll('#request-body tr').length>=100);
   assert.ok(await page.evaluate(()=>window.scrollY)>0,
     'Request should load additional rows by scrolling the whole page');
@@ -135,18 +136,18 @@ function routeFor(page,sources){
   assert.ok(choices.some(c=>c.value==='WK31'&&c.label.includes('18')));
   assert.ok(choices.some(c=>c.value==='WK45'));
   assert.equal(choices[0].value,'');
-  await page.locator('#request-week').selectOption('WK31');
+  await page.locator('#request-week').selectOption('WK31',{force:true});
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='18');
   assert.equal(await page.locator('#request-body tr').count(),18);
   assert.equal(await page.locator('#request-body tr td:first-child').evaluateAll(rows=>
     rows.every(cell=>cell.textContent==='WK31')),true);
-  await page.locator('#request-link').selectOption('missing');
+  await page.locator('#request-link').selectOption('missing',{force:true});
   const expectedCombined=await page.evaluate(()=>
     window.POGR.getRequestState().rows.filter(r=>r.week==='WK31'&&r.link==='missing').length);
   await page.waitForFunction(expected=>
     Number(document.getElementById('request-stat-total').textContent.replace(/[^0-9]/g,''))===expected,
     expectedCombined);
-  await page.locator('#request-link').selectOption('');
+  await page.locator('#request-link').selectOption('',{force:true});
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='18');
   const weekDownloadPromise=page.waitForEvent('download');
   await page.locator('#request-export').click();
@@ -157,9 +158,9 @@ function routeFor(page,sources){
   await page.locator('#request-clear').click();
   assert.equal(await page.locator('#request-week').inputValue(),'');
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='334');
-  await page.locator('#request-link').selectOption('missing');
+  await page.locator('#request-link').selectOption('missing',{force:true});
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='87');
-  await page.locator('#request-link').selectOption('unavailable');
+  await page.locator('#request-link').selectOption('unavailable',{force:true});
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='247');
   await page.locator('#request-clear').click();
   assert.equal(await page.locator('#request-stat-total').innerText(),'334');
@@ -200,7 +201,7 @@ function routeFor(page,sources){
   const computed=await p2.evaluate(()=>window.POGR.getRequestState().rows
     .map(r=>({sap:r.sap,po:r.po,link:r.link,week:r.week,poQty:r.poQty,grQty:r.grQty})));
   assert.deepEqual(computed.map(r=>r.week),['WK31','WK32','WK45','','']);
-  await p2.locator('#request-week').selectOption('WK32');
+  await p2.locator('#request-week').selectOption('WK32',{force:true});
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='1');
   assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK32');
   await p2.locator('#request-clear').click();
@@ -215,10 +216,10 @@ function routeFor(page,sources){
   assert.match(await p2.locator('#request-body tr td').first().getAttribute('title'),/Wk31.xlsx/);
   await p2.locator('#request-table [data-rsort="week"]').click();
   assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
-  await p2.locator('#request-hall').selectOption('2');
+  await p2.locator('#request-hall').selectOption('2',{force:true});
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='2');
   await p2.locator('#request-clear').click();
-  await p2.locator('#request-link').selectOption('partial');
+  await p2.locator('#request-link').selectOption('partial',{force:true});
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='1');
   const filteredPromise=p2.waitForEvent('download');
   await p2.locator('#request-export').click();

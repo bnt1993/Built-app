@@ -1,150 +1,59 @@
-## Cuộn toàn trang và cố định tiêu đề bảng
+# Báo cáo PO/GR và yêu cầu vật tư
 
-- Khôi phục **cuộn dọc toàn trang** cho hai tab Theo dõi PO/GR và Yêu cầu vật tư. Phần bảng không còn khu vực cuộn dọc có chiều cao cố định; khi xuống cuối bảng, các dòng tiếp theo tự tải theo lượt như trước.
-- Khi tiêu đề của bảng đã cuộn qua mép trên màn hình, hệ thống hiện một **dải tiêu đề cột cố định** ở đầu cửa sổ. Dải này chỉ hiện khi đang xem nội dung của bảng; ẩn khi chưa đến bảng, đã rời bảng hoặc chuyển tab.
-- Vẫn **cuộn ngang riêng trong bảng** khi số cột vượt chiều rộng màn hình. Tiêu đề cố định tự đồng bộ vị trí ngang, chiều rộng từng cột và giữ cột đầu bên trái.
-- Nhấp vào tiêu đề cố định vẫn sắp xếp như nhấp vào tiêu đề trong bảng; tìm kiếm, lọc, popup, phân nhóm dữ liệu PO/GR và xuất Excel được giữ nguyên.
-- Nút Đầu / Cuối sẽ dẫn về nhóm dòng đầu hoặc cuối của bảng trong trang theo cách cuộn toàn trang trước đây.
-- PO đã nhận đủ không hiện số Ngày chờ (tiếp tục quy tắc từ bản trước).
+## Chạy ứng dụng
 
+Đặt `PO_GR_Report.html`, `PO.js`, `GR.js`, `Request.js` cùng thư mục. Có thể mở HTML trực tiếp hoặc qua máy chủ nội bộ. Hai file `PO_GR_Report.html` và `PO_GR_Report` phải giống hệt và chỉ chứa một tài liệu HTML/một script khởi tạo.
 
-## Đồng bộ bố cục hai tab và cuộn riêng trong bảng
+PO hỗ trợ `window.duLieuPO` hoặc tên cũ `window.duLieuCongTy`; GR dùng `window.duLieuGR`, Request dùng `window.duLieuRequest`. Nhận mốc cập nhật riêng từng nguồn và tên cũ `window.thoiGianCapNhat`. Có tải lại hoặc chọn file thủ công; file thủ công được đọc bằng JSON parser, không thực thi nội dung tải lên. Khi các lượt đọc chồng nhau, chỉ lượt mới nhất của từng nguồn được phép cập nhật dữ liệu hoặc lỗi.
 
-- Khi dòng PO ở trạng thái **Đã đủ** (hoặc **Nhận vượt**), cột **Ngày chờ** trên bảng hiển thị `—`, không hiển thị số ngày. Trong popup chi tiết cũng hiển thị `—`, và khi xuất Excel ô Ngày chờ được để trống. Ngày PO và thông tin GR vẫn được giữ nguyên; các dòng thiếu/chưa nhận vẫn hiển thị Ngày chờ bình thường.
-- Bảng **Theo dõi PO/GR** và **Yêu cầu vật tư** có chiều cao cuộn cố định theo không gian còn lại, tiêu đề cột giữ nguyên ở đầu bảng. Khi cần xem thêm, **cuộn dọc hoặc ngang ngay bên trong bảng**; cuộn đến đáy vùng bảng sẽ tự nạp lượt tiếp theo (mặc định 50).
-- Hai nút **Đầu / Cuối** điều khiển vị trí và nhóm dòng ngay trong bảng, không làm cuộn toàn bộ trang.
-- Khung nguồn, thẻ KPI, khoảng cách và khung lọc hai tab dùng cùng hệ kích thước để tránh nhảy bố cục khi chuyển tab. Trên màn hình máy tính đủ cao, trang giữ cố định và chỉ bảng cuộn; trên màn hình nhỏ, phần điều khiển vẫn có thể cuộn trang để không che các bộ lọc, nhưng bảng luôn có vùng cuộn riêng.
-- Xuất XLSX vẫn lấy **toàn bộ dữ liệu sau lọc**, không phụ thuộc số dòng đã tải trong vùng bảng.
+## Đối chiếu PO và GR
 
+- Tab Theo dõi PO/GR chỉ hiển thị PO bắt đầu bằng `48`, kể cả các dòng đã nhận đủ. Nguồn PO đầy đủ vẫn được giữ để đối chiếu Request ngoài đầu 48.
+- Ghép GR theo PO + Item + mã SAP. Item có số 0 đầu được chuẩn hóa; mã SAP giữ dạng chuỗi. Mặc định 101 cộng, 102 trừ; tùy chọn thêm 105/106.
+- Chống trùng GR chỉ khi có đủ số chứng từ và số dòng chứng từ. Nếu thiếu số dòng chứng từ, giữ giao dịch và cảnh báo, không tự bỏ một dòng hợp lệ.
+- Khác/thiếu đơn vị, số lượng lỗi, PO không dương hoặc GR ròng âm được báo cần kiểm tra; không tự quy đổi đơn vị.
+- Số SAP có dấu phẩy thập phân được giữ chính xác, kể cả `81,078` = 81.078. Số Excel serial `46024` là ngày 02/01/2026. Số hiển thị có thể làm tròn nhưng dữ liệu Excel giữ giá trị số đầy đủ.
+- Số lượng còn thiếu = max(0, lượng PO − GR ròng); phần trăm nhận = GR ròng/PO × 100 khi dữ liệu hợp lệ.
+- Cột đầu bảng là **Tuần PO**, tính từ ngày chứng từ PO theo tuần ISO, có kèm năm tuần; ví dụ `WK01 · 2026`. Có lọc nhiều tuần và sắp xếp. Ngày PO không hợp lệ để tuần trống.
+- Ngày chờ tính từ ngày PO; đã đủ hoặc nhận vượt không hiển thị ngày chờ. Màu theo ngưỡng 30/60/80 ngày.
 
-## Tab Yêu cầu vật tư (Request.js)
+## Trạng thái yêu cầu
 
-Ứng dụng có hai tab độc lập: **Theo dõi PO / GR** và **Yêu cầu vật tư**. Đặt `Request.js` **cùng thư mục HTML** với `PO.js`, `GR.js`. Tab Request tải dữ liệu khi mở lần đầu, hỗ trợ làm mới và chọn file thủ công nếu quyền truy cập ổ mạng không cho phép tải script.
+Đối chiếu Request bằng số PO + mã SAP trên **toàn bộ PO.js**, rồi cộng các Item và GR cùng đơn vị. Không suy đoán PO khi Request thiếu số PO.
 
-### Cấu trúc thực tế Request.js
+| Điều kiện | Trạng thái hiển thị |
+| --- | --- |
+| Có PO khớp, nguồn hợp lệ, GR ròng = 0 | Waiting for GR |
+| GR ròng dương, nhận thiếu | Done |
+| Đã nhận đủ hoặc vượt | Done |
+| Thiếu nguồn, không khớp PO/SAP, lỗi số lượng/đơn vị, GR âm | Cần kiểm tra |
+| Request chưa có số PO | Giữ trạng thái gốc |
 
-Dữ liệu đặt trong `window.duLieuRequest = [[...], ...];` và thời gian trong `window.thoiGianCapNhatRequest`. Các cột chính: `File Name`, `No`, `Purchasing Group `, `SAP No`, `Requested date`, `Description`, `Stock`, `Reorder Point`, `Lot size of reorder`, `Qty need to order`, `Unit`, `Price(EUR)`, `Amount(EUR)`, `OrderType`, `Note`, `Supplier`, `Hall`, `Status`, `PO No.`, `Ordered date`. Ngày lưu theo số ngày Excel (serial); tiền EUR có thể chứa dấu phẩy thập phân.
+Trạng thái gốc được giữ trong popup và cột cuối Excel. Kết quả đối chiếu chi tiết vẫn phân biệt nhận một phần/đã đủ/chưa có PO/không khớp. Hoàn nhập hết về GR ròng 0 chuyển lại Waiting for GR. KPI chờ GR đếm trạng thái này.
 
-### Giao diện Request gọn và mã tuần từ File Name
+Lượng PO/GR có thể lặp ở nhiều Request cùng PO + SAP; không cộng các cột đó qua các Request để làm tổng kho hoặc tổng đã giao riêng từng yêu cầu.
 
-- Nút tab **Yêu cầu vật tư** và bốn thẻ thống kê được thu gọn để nhường không gian cho bảng.
-- Bảy bộ lọc Request (tìm kiếm, trạng thái, kết quả đối chiếu, tuần, Hall, từ ngày, đến ngày) được sắp trên **một hàng khi màn hình máy tính đủ rộng**; trên máy tính bảng/điện thoại chúng xuống hàng để không bị cắt chữ.
-- Cột **Tuần (File Name)** được đặt **đầu tiên** trong bảng Request, chỉ hiển thị phần tuần ở cuối tên file: `Order sparepart list of ME56_5244_WK31.xlsx` → `WK31`; `..._Wk32.xlsx` → `WK32`.
-- Mã tuần được chuẩn hóa thành `WK01`–`WK53`; tên không có tuần hợp lệ hiển thị `—`. Khi di chuột lên cột tuần, bảng hiển thị **tên file gốc**. Popup chi tiết vẫn giữ `File Name` đầy đủ.
-- Có thể **sắp xếp theo tuần** với các dòng không có tuần được đưa xuống cuối; **Excel xuất theo bộ lọc** có cột Tuần đầu tiên và vẫn giữ cột File nguồn gốc.
-- Cách đối chiếu Request ↔ PO ↔ GR, trạng thái Hall và nội dung `Request.js` gốc không thay đổi.
+Tuần Request lấy từ mã WK01–WK53 ở cuối File Name, không lấy từ ngày PO; popup và Excel vẫn giữ File Name đầy đủ.
 
-### Bộ lọc tuần từ File Name
+## Bộ lọc
 
-- Bộ lọc **Tuần (File Name)** nằm cùng hàng với các bộ lọc của tab Yêu cầu vật tư khi mở trên desktop; màn hình hẹp tự xuống 3/2/1 cột.
-- Danh sách tuần tự động lấy từ toàn bộ `Request.js`, dựa trên mã `WK01`–`WK53` nằm ở **cuối tên file**, không suy ra từ ngày yêu cầu.
-- Danh sách tuần sắp xếp theo số tăng dần, có số yêu cầu mỗi tuần: `WK31 · 18 yêu cầu`, `WK32 · 16 yêu cầu`. Khi file có hàng không có tuần hợp lệ, hiện thêm mục **Không có tuần**.
-- Lọc tuần có thể kết hợp **Hall, trạng thái Request, kết quả đối chiếu, khoảng ngày, ô tìm kiếm**. KPI, bảng, số dòng và **xuất XLSX theo bộ lọc** được cập nhật tương ứng.
-- Mục **Tất cả tuần** là mặc định. Bấm **Xóa bộ lọc** sẽ xóa cả lựa chọn tuần. Khi nạp lại Request.js, nếu tuần đang chọn vẫn tồn tại thì giữ lựa chọn; nếu tuần đã biến mất thì chọn lại Tất cả.
-- Danh sách luôn lấy số liệu từ nguồn Request.js gốc; không thay đổi nội dung nguồn hoặc quy tắc đối chiếu Request → PO → GR.
+- Các bộ lọc danh sách ở cả hai tab cho chọn nhiều mục bằng checkbox: trạng thái, nhà cung cấp, tuần PO; trạng thái yêu cầu, kết quả đối chiếu, tuần file và Hall.
+- Nhiều mục trong một bộ lọc lấy theo **hoặc**; giữa các bộ lọc lấy theo **và**. Không chọn mục nào nghĩa là tất cả. Có nút bỏ chọn tất cả và đóng menu khi bấm bên ngoài.
+- Khoảng ngày vẫn là từ–đến; nếu ngày đầu lớn hơn ngày cuối, báo lỗi và không đưa số liệu không hợp lệ vào bảng/xuất.
+- Tìm nhiều từ khóa ngăn bằng dấu phẩy/chấm phẩy/xuống dòng; hỗ trợ tìm không dấu tiếng Việt. Bộ lọc tự áp dụng, KPI và Excel cùng dùng tập kết quả lọc.
 
-### Quy tắc đối chiếu ba nguồn
+## Cuộn và hiệu năng
 
-1. Đọc **mọi dòng Request.js**, kể cả các yêu cầu chưa có PO và các yêu cầu ở nhiều Hall; Request không bị giới hạn PO 48* khi thống kê.
-2. Khi Request có số PO, tìm đúng số đó trong PO.js và **phải trùng mã SAP**. Số PO thiếu hoặc chưa xuất hiện trong nguồn được giữ nguyên và ghi rõ từng trạng thái. Không tự nhận một PO chỉ vì có chung mã SAP.
-3. Với PO khớp, cộng lượng đặt của các Item có cùng PO + SAP, rồi sử dụng phép tính GR 101 cộng / 102 trừ của tab PO/GR để thể hiện **số lượng GR và % GR so với PO**. Số lượng Request được hiển thị **riêng**, không coi GR/PO là lượng đã giao riêng cho từng Request.
-4. Nếu một số PO + SAP gắn với nhiều yêu cầu, cột số lượng PO/GR có thể lặp lại ở các dòng Request, **không nên cộng tổng số lượng PO/GR từ bảng Request** để làm tổng thực tế.
-5. Các trạng thái phân biệt: *Chưa ghi số PO*, *PO chưa có trong PO.js*, *PO khác mã SAP*, *Có PO/chưa nhập*, *Đã nhập một phần*, *Đã nhận đủ*; nếu không có dữ liệu PO/GR thì báo rõ là chưa xác minh.
-6. `Status` (ví dụ `Done`, `Waiting for IR`) **là trạng thái Request**, không tự suy ra đã có PO hoặc đã nhập hàng. Với dữ liệu mẫu 334 dòng trên GitHub, có 247 dòng ghi số PO nhưng PO.js mẫu chưa có mã tương ứng; vì vậy cần thay bằng dữ liệu PO.js/GR.js đầy đủ để xác minh.
-7. Các bộ lọc Request: tìm mã, trạng thái Request, trạng thái đối chiếu, Hall, khoảng ngày yêu cầu. Nhấp đúp một dòng mở thông tin, Item PO khớp, và có nút chuyển sang PO/GR khi đã đối chiếu. Có chức năng cuộn tự thêm dữ liệu và **xuất Request_PO_GR.xlsx theo toàn bộ bộ lọc hiện tại**.
+Hai bảng dùng cùng bộ điều khiển: cuộn dọc trang, cuộn ngang trong bảng, tiêu đề nổi đồng bộ vị trí và độ rộng cột. Cột đầu được giữ trên tiêu đề nổi; nút sắp xếp vẫn hoạt động.
 
-Đặt file như sau:
+Cuộn xuống đến cuối tải lượt kế tiếp, cuộn lên ở đầu cửa sổ hiện tại tải lại lượt trước. Số dòng đang dựng giới hạn 200, với mốc cuộn được giữ khi bỏ các dòng ngoài cửa sổ. Các nút Đầu/Cuối và cỡ lượt 25/50/100/200 vẫn hoạt động. Thay bộ lọc/sắp xếp quay về cửa sổ đầu; vẽ lại hoặc cuộn bằng code không tự nạp thêm. Cuộn trong menu bộ lọc/popup không làm bảng nền tải thêm; tab ẩn không được thay đổi cửa sổ.
 
-```text
-PO_GR_Report.html
-PO.js
-GR.js
-Request.js
-```
+Excel luôn xuất toàn bộ tập lọc theo thứ tự hiện tại, kể cả các dòng chưa dựng trong DOM; có hàng tiêu đề cố định và AutoFilter. Báo cáo PO thêm Tuần PO; báo cáo Request có cả trạng thái tính lại và trạng thái gốc.
 
-Không tải dữ liệu Request lên dịch vụ ngoài; tránh commit dữ liệu Request/PO/GR thật nếu repository GitHub có thể công khai.
+## Kiểm thử
 
+- `node tests/po_gr_integrity_logic.cjs`: cấu trúc HTML/ID, hai bản file, số thập phân, ngày/tuần ISO, nguồn lỗi/khôi phục, GR đảo bút toán, thiếu Item chứng từ, trạng thái mới, bộ lọc mảng và đọc file chồng nhau.
+- `node tests/po_gr_report_browser.cjs` và `node tests/request_report_browser.cjs`: luồng cũ, nguồn thật, popup, xuất Excel, header nổi, cuộn toàn trang và mobile.
+- `node tests/po_gr_upgrades_browser.cjs`: chọn nhiều checkbox, OR/AND, tuần, trạng thái GR ròng, đối chiếu PO ngoài 48, giới hạn DOM, cuộn tiến/lùi dùng chung và xuất toàn bộ kết quả.
 
-# PO / GR Report (offline HTML)
-
-## Mở báo cáo
-
-Dùng file **PO_GR_Report.html** trong cùng thư mục với **PO.js** và **GR.js**. Có thể mở HTML trực tiếp trên máy tính hoặc qua máy chủ nội bộ. **Không cần đổi tên biến trong PO.js**: cả `duLieuPO` và `duLieuCongTy` đều được nhận tự động. File `PO_GR_Report` (không có phần mở rộng) cũng chứa HTML giống hệt, nhưng trình duyệt dễ nhận diện `.html` hơn.
-
-```text
-Thư mục báo cáo/
-├─ PO_GR_Report.html
-├─ PO.js
-└─ GR.js
-```
-
-Không cần thư viện CDN, dịch vụ web ngoài hay gửi dữ liệu SAP lên máy chủ. Khi một trình duyệt hoặc hệ thống mạng không cho phép đọc file JS cạnh HTML, mở **Nguồn dữ liệu và tải file thủ công** và chọn hai file. Nút **Làm mới dữ liệu** đọc lại hai file cùng thư mục. Nếu nguồn JS có lỗi cú pháp, ứng dụng hiển thị cảnh báo; không sử dụng dữ liệu đoán.
-
-## Cấu trúc PO.js và GR.js
-
-PO.js phiên bản mới đặt danh sách hai chiều trong **`window.duLieuPO`**. Trang cũng tiếp tục chấp nhận **`window.duLieuCongTy`** của phiên bản cũ; khi một file khai báo cả hai, ứng dụng ưu tiên `duLieuPO`. Dòng đầu là các cột:
-
-`Pur. Doc.`, `Item`, `Created By`, `Doc. Date`, `Plnt`, `Supplier`, `Material`, `Short Text`, `PO Quantity`, `OUn`, `Net Price`, `Gross value`, `Crcy`.
-
-GR.js giữ danh sách hai chiều trong **`window.duLieuGR`**, có các cột `Purchase order`, `Item`, `Material`, `Movement Type`, `Posting Date`, `Qty in unit of entry`, `Unit of Entry`, `Material Document`, `Bill of Lading`.
-
-Tệp PO.js mới có `window.thoiGianCapNhatPO`, và GR.js mới có `window.thoiGianCapNhatGR`. Ứng dụng lấy **đúng mốc cập nhật riêng của từng file**; vẫn tương thích `window.thoiGianCapNhat` của bản cũ. Ngày cập nhật nguồn chỉ phục vụ kiểm tra, **không được sử dụng thay cho ngày PO/GR thực tế**.
-
-## Quy tắc đối chiếu và tính toán
-
-- Từng dòng PO được xác định theo **Purchase Order + Item**, đồng thời **Material** trên GR phải khớp PO. Item `10` và `00010` được xem là cùng Item; mã vật tư được giữ dạng chuỗi để không mất số 0 đầu.
-- Với chế độ mặc định: Movement Type `101` **cộng** số lượng nhận; `102` **trừ** số lượng hoàn nhập. Người dùng có thể tích thêm 105/106 nếu đó là nghiệp vụ muốn tính. Những Movement khác không bị tự ý cộng vào GR.
-- Trùng chứng từ theo **Material Document + Material Doc.Item + Posting Date** được loại ra khi tổng hợp. Tổng lượng nhận có thể âm khi dữ liệu đảo bút toán vượt lượng nhận; dòng đó được đánh dấu cần kiểm tra.
-- **SL còn thiếu** = `max(0, SL PO - SL GR)`. **% nhận** = `SL GR / SL PO × 100`, chỉ tính khi SL PO lớn hơn 0.
-- **Ngày chờ** = số ngày từ **Doc. Date** của PO đến ngày hiện tại, tối thiểu bằng 0; với PO chưa có ngày hợp lệ hiển thị dấu gạch.
-- Phân màu cột Ngày chờ: **đỏ ≥80 ngày**, **cam 60–79**, **vàng 30–59**, **xanh dưới 30**. PO đã nhận đủ hiển thị màu trung tính.
-- Ngày Excel serial như `46024` được đổi sang **02/01/2026**, dùng mốc Excel 1899-12-30.
-- `Net Price` và số lượng dùng định dạng số SAP có dấu phẩy thập phân. Không cộng gộp EUR và VND thành một tổng tiền.
-
-## Kiểm tra tính hợp lệ của số liệu và nguồn
-
-- Dấu phẩy trong số SAP là dấu thập phân, kể cả ba chữ số sau dấu phẩy: `81,078` là **81.078** ở dạng số JavaScript. Popup làm tròn để hiển thị, còn XLSX giữ giá trị số đầy đủ. Không tự diễn giải một dấu phẩy thành dấu phân cách hàng nghìn.
-- Chỉ tính lượng GR, tỷ lệ nhận và lượng còn thiếu khi đơn vị GR khớp đơn vị PO (không phân biệt hoa/thường). Nếu khác hoặc thiếu đơn vị, báo **Cần kiểm tra** và để trống các kết quả chưa xác định. Chưa có hệ số quy đổi trong nguồn nên không tự quy đổi BOX/PC hay các đơn vị khác. Popup giữ chứng từ và đơn vị gốc, kèm lý do lỗi.
-- GR lỗi số lượng được giữ trong lịch sử và làm dòng PO thành **Cần kiểm tra**, tránh hiểu thành chưa nhận hàng. Số lượng PO lỗi, bằng 0 hoặc âm cũng không được kết luận **Đã nhận đủ** trên tab Request. Các Item khác đơn vị không được cộng chung trên một dòng Request.
-- Bộ lọc **Kết quả đối chiếu** có thêm các mục thiếu nguồn PO/GR, khác đơn vị, lỗi số lượng, GR âm và thiếu mã SAP. XLSX để trống giá trị chưa xác định, không ghi chuỗi `NaN`.
-- Khi tải tự động hoặc chọn file thủ công thất bại/thiếu cột bắt buộc, nguồn đó bị loại khỏi phép đối chiếu và thanh trạng thái báo lỗi. Các nguồn còn hợp lệ vẫn được giữ. Thiếu PO thì Request báo chưa xác minh; thiếu GR thì lượng đã nhận để trống, không mặc định là 0. Nếu Request.js lỗi, xóa bảng, KPI và dữ liệu xuất cũ của tab Request. Có thể tải/chọn lại nguồn hợp lệ để khôi phục.
-- Hai file `PO_GR_Report` và `PO_GR_Report.html` phải giống hệt. Chạy `node tests/po_gr_integrity_logic.cjs` để kiểm tra số thập phân trên dữ liệu thật, XLSX, đơn vị, dữ liệu lỗi, tải nguồn thất bại và khôi phục. Workflow tiếp tục chạy cả hai bộ kiểm thử trình duyệt PO/GR và Request.
-
-## Quy tắc phạm vi và tải toàn bộ PO.js
-
-- Ứng dụng tải và đọc **toàn bộ dữ liệu** trong `window.duLieuPO` (hoặc `window.duLieuCongTy` cũ), không chỉ một phần dữ liệu hay 25/50 dòng đầu.
-- Chỉ đưa vào báo cáo các dòng có **Pur. Doc. bắt đầu bằng chuỗi `48`**. PO bắt đầu 47, 49 hoặc trống bị loại khỏi danh sách và khỏi các KPI.
-- **Mặc định là Tất cả trạng thái**: chưa nhận, nhận một phần, đã nhận đủ, nhận vượt và cần kiểm tra. Không tự ẩn các PO đã hoàn tất.
-- Phân trang mặc định 50 dòng để bảng tải nhẹ, nhưng có thể chuyển 25/50/100/200 và qua các trang; số dòng đọc từ PO.js, số dòng đầu 48 và số dòng qua bộ lọc được hiển thị riêng.
-- Bộ lọc nhanh Tất cả / Chưa hoàn tất / Chờ từ 60 ngày / Đã nhận đủ giúp chuyển báo cáo tức thời. Nút Xóa bộ lọc quay về Tất cả trạng thái.
-- **Xuất Excel luôn xuất toàn bộ các dòng của kết quả lọc** theo thứ tự đang sắp xếp, không giới hạn trang phân trang hiện tại.
-- Bộ lọc theo số PO bắt đầu 48 là quy tắc cố định, không thể tắt trong giao diện. File PO.js và GR.js gốc không bị thay đổi.
-
-## Giao diện phiên bản mới
-
-Dashboard sử dụng thanh điều hướng gọn, header thông tin nguồn riêng của PO/GR, bốn KPI, thanh xác nhận phạm vi PO 48*, bộ lọc trực quan và thanh trạng thái nhanh. Bảng có tiêu đề cố định khi cuộn dọc, cột PO cố định khi cuộn ngang, tối ưu tương phản và bố cục trên điện thoại. Không cần thư viện CSS hoặc font tải từ internet.
-
-## Giao diện một trang và tự tải khi cuộn (10/11/2026)
-
-- Loại phần header "Trung tâm theo dõi PO & GR" và banner "Phạm vi báo cáo"; thay bằng dải trạng thái nguồn nhỏ ngay dưới thanh công cụ.
-- Bỏ **bộ lọc Nhà máy**. Nhà máy vẫn được giữ trong dữ liệu PO, popup chi tiết và file Excel, không ảnh hưởng phép đối chiếu.
-- Ẩn cột **Khóa đối chiếu** trên bảng **và trong file Excel**. Ứng dụng vẫn dùng PO + Item + Material nội bộ để ghép PO/GR chính xác.
-- Dữ liệu được hiển thị **trong một trang liên tục**, tự nối thêm 25/50/100/200 dòng (mặc định 50) khi cuộn đến cuối trang; **không thay thế các dòng đã tải**. Hai nút **Đầu / Cuối** nhảy nhanh đến lượt đầu hoặc lượt cuối.
-- Trường "Tải mỗi lượt" chỉ quyết định số dòng thêm vào giao diện, không giới hạn dữ liệu đã đọc từ PO.js.
-- **Xuất Excel theo bộ lọc** nằm trong thanh công cụ của bảng. File XLSX xuất **tất cả kết quả hiện được lọc và sắp xếp**, kể cả các dòng chưa cuộn tới. Không cần tải thêm từ mạng.
-- Vẫn chỉ nhận PO bắt đầu bằng `48`, mặc định hiện mọi trạng thái và hỗ trợ dữ liệu PO/GR mới cùng định dạng cũ.
-
-## Giao diện và xuất kết quả
-
-Tìm theo PO, Item, Material, mô tả, nhà cung cấp, người tạo; lọc trạng thái, nhà cung cấp, nhà máy, khoảng ngày; lọc các dòng chờ từ 60 ngày. Có sắp xếp trên cột, phân trang 25/50/100/200, nhấp đúp hoặc Enter để xem chứng từ GR chi tiết.
-
-Xuất **Excel .xlsx** theo toàn bộ kết quả lọc và thứ tự sắp xếp hiện tại (không chỉ trang đang xem). File xuất chứa các cột PO/GR trên giao diện và các thông tin Item, nhà cung cấp, nhà máy, người tạo, đơn giá và tiền tệ.
-
-## Trạng thái dữ liệu mẫu trong GitHub
-
-Ở thời điểm tạo trang, PO.js có **5 dòng PO**, GR.js có **2 dòng GR** nhưng số PO trên hai nguồn **chưa trùng nhau**. Vì vậy lượng nhận bằng 0 ở các dòng PO mẫu là kết quả đúng với dữ liệu hiện có, không có nghĩa hàm ghép PO/GR bị lỗi.
-
-Hai nguồn mẫu trước đó thiếu `];` kết thúc bảng. PR chỉ bổ sung dấu đóng mảng để chúng chạy được, giữ nguyên các hàng đã có. Khi cập nhật bằng PO.js/GR.js đầy đủ cùng cấu trúc, bảng tự đối chiếu theo dữ liệu mới.
-
-**Bảo mật:** Repository có thể công khai. Tránh tải dữ liệu mua hàng/nhà cung cấp thực tế lên GitHub công khai nếu đó là dữ liệu nội bộ.
-
+Các bài trình duyệt cần Playwright và Chromium; GitHub Actions cài chúng và chạy kiểm tra khi sửa các file liên quan.
