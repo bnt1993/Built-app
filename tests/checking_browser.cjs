@@ -1,7 +1,7 @@
 const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),assert=require('assert');
 const root=path.resolve(__dirname,'..');
-const stock=[["SAP","Description","Part No","Stock","Price","Group","Reorder Point"],
-["00123","Motor","P1",10,1000,"Mechanical",5],["00456","Valve","P2",2,1500,"Hydraulic",3],["00789","Seal","P3",0,100,"Mechanical",2]];
+const stock=[["SAP","Description","Part No","Stock","Price","Group","Reorder Point","SAP Code"],
+["00123","Motor","P1",10,1000,"Mechanical",5,"10409348, 10460006, 10518778"],["00456","Valve","P2",2,1500,"Hydraulic",3,"10460006"],["00789","Seal","P3",0,100,"Mechanical",2,""]];
 const history=[["Posting Date","Movement Type","Material","Qty in unit of entry","Unit of Entry"],
 ["01/11/2026","OUTPUT","00123",-4,"PC"],["02/11/2026","SCRAP","00123",2,"PC"],
 ["02/11/2026","202","00123",1,"PC"],["03/11/2026","OUTPUT","00123",-1.5,"M"],
@@ -25,6 +25,9 @@ const manifest={version:2,complete:true,materials:{"00123":[{original:"00123.jpg
  });
  await page.goto('http://checking.test/');
  await page.locator('#than-bang tr[data-row-index="1"]').click();
+ assert.equal(await page.locator('#luoi-chi-tiet .detail-item[data-col-index="0"] label').textContent(),'Mã SAP');
+ assert.equal(await page.locator('#luoi-chi-tiet .detail-item[data-col-index="7"] label').textContent(),'Mã BM');
+ assert.equal(await page.locator('#luoi-chi-tiet .detail-item[data-col-index="7"] span').innerText(),'10409348, 10460006, 10518778');
  assert.equal(await page.locator('#detail-issued').count(),0);
  await page.waitForFunction(()=>historyLoaded);
  assert.equal(requests.filter(x=>x.path==='/History.js'&&x.method==='GET').length,1);
@@ -44,6 +47,15 @@ const manifest={version:2,complete:true,materials:{"00123":[{original:"00123.jpg
  await page.waitForFunction(()=>document.querySelector('#material-history-count').textContent.includes('1'));
  assert.match(await page.locator('#material-history-sap').innerText(),/00456/);
  await page.keyboard.press('Escape');
+ await page.locator('#lang-en').click();
+ assert.equal(await page.locator('#luoi-chi-tiet .detail-item[data-col-index="0"] label').textContent(),'SAP code');
+ assert.equal(await page.locator('#luoi-chi-tiet .detail-item[data-col-index="7"] label').textContent(),'BM No');
+ for(const header of ['Material Number',' Material ','Material Code','Mã SAP','SAP']){
+   await page.evaluate(header=>{tieuDeCot[7]=header;hienThiChiTiet(tatCaDuLieu[dongDangChonIndex]);},header);
+   assert.equal(await page.locator('#luoi-chi-tiet .detail-item[data-col-index="7"] label').textContent(),'BM No',header);
+ }
+ await page.locator('#lang-vi').click();
+ assert.equal(await page.locator('#luoi-chi-tiet .detail-item[data-col-index="7"] label').textContent(),'Mã BM');
  await page.locator('#lang-en').click();
  await page.locator('#than-bang tr[data-row-index="3"]').focus();
  await page.keyboard.press('Shift+Enter');
