@@ -1,1 +1,1537 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sơ Đồ Kho 3D Offline - Tích Hợp SAP LX02</title>
+
+  <!-- TỰ ĐỘNG NẠP DỮ LIỆU TỪ FILE data.txt CÙNG THƯ MỤC KHI MỞ LẠI -->
+  <script src="./data.txt"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --panel-bg: #111827;
+      --panel-border: #1f2937;
+      --surface: #1e293b;
+      --surface-hover: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-dark);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* HEADER & THANH TRẠNG THÁI SAO LƯU */
+    header {
+      height: 54px;
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+    }
+
+    .brand span.tag {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-local { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); }
+    .badge-warn { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .badge-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      transition: 0.15s;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid #334155;
+    }
+    button:hover { background: var(--surface-hover); }
+    button.btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    button.btn-primary:hover { background: var(--primary-hover); }
+    button.btn-success { background: #059669; border-color: #10b981; color: #fff; }
+    button.btn-danger { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
+    button.btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+    button.active-pill { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* BỐ CỤC CHÍNH */
+    .workspace {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* SIDEBAR TRÁI: ĐIỀU KHIỂN & CẤU HÌNH */
+    aside.left-panel {
+      width: 300px;
+      background: var(--panel-bg);
+      border-right: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 15;
+    }
+
+    .panel-section {
+      padding: 14px;
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #283548;
+    }
+    .kpi-val { font-size: 18px; font-weight: 700; color: #fff; }
+    .kpi-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      user-select: text;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .form-group { margin-bottom: 8px; }
+    .form-group label { display: block; font-size: 11.5px; color: var(--muted); margin-bottom: 4px; }
+
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .pill-group button {
+      padding: 5px 9px;
+      font-size: 11.5px;
+      flex: 1;
+      text-align: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    .color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* KHU VỰC SÂN KHẤU 3D */
+    .viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 45%, #162238 0%, #090d16 100%);
+      cursor: grab;
+      perspective: 1500px;
+    }
+    .viewport:active { cursor: grabbing; }
+
+    /* Thanh công cụ nổi trên góc 3D */
+    .hud-top {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+      z-index: 10;
+      gap: 10px;
+    }
+
+    .hud-box {
+      background: rgba(17, 24, 39, 0.88);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 12px;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hud-bottom {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      background: rgba(17, 24, 39, 0.82);
+      border: 1px solid #1f2937;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    /* THẾ GIỚI 3D (CSS 3D TRANSFORMS) */
+    .scene-pivot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .warehouse-floor {
+      position: absolute;
+      transform-style: preserve-3d;
+      background-color: rgba(15, 23, 42, 0.92);
+      background-image:
+        linear-gradient(to right, rgba(51, 65, 85, 0.28) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(51, 65, 85, 0.28) 1px, transparent 1px);
+      background-size: 40px 40px;
+      border: 2px solid #334155;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.85);
+    }
+
+    .dock-zone {
+      position: absolute;
+      bottom: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px dashed #f59e0b;
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 24px;
+      letter-spacing: 1.5px;
+      white-space: nowrap;
+    }
+
+    .aisle-label {
+      position: absolute;
+      font-size: 13px;
+      font-weight: 800;
+      color: #38bdf8;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid #0284c7;
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      transform: translateZ(4px);
+    }
+
+    .bay-label {
+      position: absolute;
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 600;
+      text-align: center;
+      transform: translateZ(2px);
+    }
+
+    /* KHỐI VỊ TRÍ KỆ (BIN) TRONG KHÔNG GIAN 3D */
+    .bin-3d {
+      position: absolute;
+      transform-style: preserve-3d;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .bin-3d.dimmed {
+      opacity: 0.12 !important;
+      pointer-events: none;
+    }
+
+    .bin-3d .face {
+      position: absolute;
+      top: 0;
+      left: 0;
+      backface-visibility: visible;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    /* Ô kệ trống: chỉ hiện khung lưới mờ để nhìn xuyên qua các tầng */
+    .bin-3d.empty .face {
+      background: rgba(148, 163, 184, 0.03);
+      border: 1px dashed rgba(148, 163, 184, 0.18);
+    }
+    .bin-3d.empty:hover .face {
+      background: rgba(59, 130, 246, 0.25);
+      border: 1px solid #60a5fa;
+    }
+
+    /* Ô kệ có hàng (Pallet) */
+    .bin-3d.occupied:hover .face {
+      filter: brightness(1.25);
+      border-color: #ffffff;
+    }
+
+    /* Ô đang được chọn */
+    .bin-3d.selected .face {
+      border: 2px solid #ffffff !important;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Ô khớp tìm kiếm Spotlight */
+    .bin-3d.highlight .face {
+      background: #f59e0b !important;
+      border: 2px solid #fef08a !important;
+      box-shadow: 0 0 18px #f59e0b;
+    }
+
+    /* CỘT CHI TIẾT BÊN PHẢI KHI BẤM VÀO 1 BIN */
+    aside.right-panel {
+      width: 340px;
+      background: var(--panel-bg);
+      border-left: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      z-index: 15;
+    }
+
+    .inspector-header {
+      padding: 14px 16px;
+      background: #172033;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .inspector-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+    }
+
+    .stock-card {
+      background: var(--surface);
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      user-select: text;
+    }
+
+    .stock-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .mat-code { font-weight: 700; color: #60a5fa; font-size: 13.5px; }
+    .mat-qty { font-weight: 700; color: #34d399; font-size: 14px; white-space: nowrap; }
+    .mat-desc { font-size: 12.5px; color: #e2e8f0; margin-bottom: 6px; }
+    .mat-meta { font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .expiry-pill {
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .exp-red { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .exp-warn { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .exp-ok { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+
+    /* MODAL DÁN DỮ LIỆU SAP LX02 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-box {
+      background: var(--panel-bg);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 760px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sap-tip {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #cbd5e1;
+      user-select: text;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- THANH CÔNG CỤ TRÊN CÙNG -->
+  <header>
+    <div class="brand">
+      <span>🧊 KHO 3D TRỰC QUAN</span>
+      <span class="tag">SAP WM / LX02 Offline</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-primary" onclick="openSapModal()">📋 Dán dữ liệu SAP (LX02)</button>
+      <span id="localStatus" class="badge badge-local">💾 Trình duyệt: Sẵn sàng</span>
+      <span id="fileStatus" class="badge badge-warn">⚠️ data.txt: Chưa liên kết</span>
+      <button id="btnLinkFile" onclick="linkBackupFile()">🔗 Liên kết data.txt (Tự động lưu)</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- SIDEBAR TRÁI -->
+    <aside class="left-panel">
+      <!-- Tổng quan KPI -->
+      <div class="panel-section">
+        <div class="section-title">Tổng quan sức chứa</div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-val" id="kpiOccupancy">0%</div>
+            <div class="kpi-lbl" id="kpiBinsCount">0 / 0 vị trí có hàng</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val" id="kpiTotalQty">0</div>
+            <div class="kpi-lbl" id="kpiSkuCount">0 mã hàng (SKU)</div>
+          </div>
+        </div>
+        <div id="unmappedAlert" style="display:none; margin-top:8px; font-size:11.5px; color:#fbbf24; background:rgba(245,158,11,0.12); padding:6px 8px; border-radius:5px; border:1px solid rgba(245,158,11,0.3);"></div>
+      </div>
+
+      <!-- Chế độ hiển thị màu Heatmap -->
+      <div class="panel-section">
+        <div class="section-title">Chế độ màu sắc 3D</div>
+        <div class="pill-group" style="margin-bottom: 10px;">
+          <button id="modeOccupancy" class="active-pill" onclick="setColorMode('occupancy')">Tồn kho</button>
+          <button id="modeFefo" onclick="setColorMode('fefo')">Cận Date (FEFO)</button>
+          <button id="modeLevel" onclick="setColorMode('level')">Theo Tầng</button>
+        </div>
+        <div id="legendBox"></div>
+      </div>
+
+      <!-- Lọc theo tầng kệ -->
+      <div class="panel-section">
+        <div class="section-title">Cắt lớp theo tầng (Z-Level)</div>
+        <div class="pill-group" id="levelFilterGroup"></div>
+      </div>
+
+      <!-- Cấu hình kích thước kho 3D -->
+      <div class="panel-section">
+        <div class="section-title">
+          <span>Cấu trúc kệ kho</span>
+          <button style="padding:3px 8px; font-size:11px;" onclick="applyLayoutConfig()">Cập nhật 3D</button>
+        </div>
+        <div class="form-group">
+          <label>Danh sách Dãy kệ (cách nhau dấu phẩy)</label>
+          <input type="text" id="cfgAisles" value="A01, A02, A03, A04" placeholder="VD: A01, A02, A03, A04" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Số Khoang / Dãy (Cột)</label>
+            <input type="number" id="cfgBays" min="1" max="30" value="8" />
+          </div>
+          <div class="form-group">
+            <label>Số Tầng / Khoang</label>
+            <input type="number" id="cfgLevels" min="1" max="10" value="4" />
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Định dạng mã Bin SAP</label>
+          <select id="cfgFormat">
+            <option value="DASH_2">Dãy-Khoang-Tầng (VD: A01-02-03)</option>
+            <option value="NODASH_2">Liền nhau (VD: A010203)</option>
+          </select>
+        </div>
+      </div>
+    </aside>
+
+    <!-- SÂN KHẤU 3D CHÍNH -->
+    <main class="viewport" id="viewport">
+      <div class="hud-top">
+        <!-- Tìm kiếm phát sáng Spotlight -->
+        <div class="hud-box" style="min-width: 280px;">
+          <span>🔍</span>
+          <input type="text" id="searchInput" style="width: 220px; border:none; background:transparent; padding:2px;"
+                 placeholder="Tìm Bin, Mã hàng, Batch..." oninput="handleSearch()" />
+          <button id="btnClearSearch" style="display:none; padding:2px 6px; font-size:11px;" onclick="clearSearch()">✕</button>
+        </div>
+
+        <!-- Nút góc nhìn Camera -->
+        <div class="hud-box">
+          <button onclick="setCameraPreset('iso')">🧊 Góc 3D chuẩn</button>
+          <button onclick="setCameraPreset('top')">🗺️ Nhìn từ trên xuống</button>
+          <button onclick="setCameraPreset('front')">🏢 Nhìn chính diện</button>
+          <button onclick="resetCamera()">⟲ Đặt lại</button>
+        </div>
+      </div>
+
+      <!-- Trục tọa độ 3D -->
+      <div class="scene-pivot" id="scenePivot">
+        <div class="warehouse-floor" id="warehouseFloor">
+          <div class="dock-zone">▲ CỬA XUẤT / NHẬP HÀNG (LOADING DOCK) ▲</div>
+        </div>
+      </div>
+
+      <div class="hud-bottom">
+        🖱️ <b>Chuột trái + Kéo:</b> Xoay 3D &nbsp;|&nbsp; <b>Chuột phải (hoặc Shift + Kéo):</b> Di chuyển &nbsp;|&nbsp; <b>Con lăn:</b> Phóng to/thu nhỏ &nbsp;|&nbsp; <b>Click vào ô kệ:</b> Xem & sửa chi tiết
+      </div>
+    </main>
+
+    <!-- SIDEBAR PHẢI: CHI TIẾT VỊ TRÍ BIN ĐANG CHỌN -->
+    <aside class="right-panel">
+      <div class="inspector-header">
+        <div>
+          <div style="font-size:11px; color:var(--muted);">VỊ TRÍ KỆ (STORAGE BIN)</div>
+          <div id="inspBinTitle" style="font-size:17px; font-weight:800; color:#38bdf8;">Chưa chọn ô kệ</div>
+        </div>
+        <button id="btnClearBin" class="btn-danger" style="display:none; padding:5px 9px; font-size:11.5px;" onclick="clearSelectedBin()">Làm trống ô</button>
+      </div>
+
+      <div class="inspector-body" id="inspectorBody">
+        <div style="color:var(--muted); font-size:13px; text-align:center; margin-top:40px; line-height:1.6;">
+          Click vào bất kỳ ô kệ nào trên mô hình 3D để xem chi tiết mã hàng, số lô (Batch), hạn sử dụng hoặc nhập thủ công.
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- MODAL DÁN DỮ LIỆU TỪ SAP LX02 -->
+  <div class="modal-backdrop" id="sapModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>📋 Nhập Dữ Liệu Tồn Kho Từ SAP (LX02 / MB52)</span>
+        <button onclick="closeSapModal()" style="padding:4px 9px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="sap-tip">
+          <b>Cách lấy nhanh từ SAP GUI:</b> Mở giao dịch <b>LX02</b> (hoặc <b>LS24 / MB52</b>) → Nhấn tổ hợp <b>Ctrl + Y</b> → Bôi đen vùng bảng dữ liệu → Nhấn <b>Ctrl + C</b> → Dán (<b>Ctrl + V</b>) vào ô bên dưới.<br/>
+          <i>Hệ thống tự nhận diện cột Vị trí (Storage Bin), Mã hàng (Material), Tên hàng, Số lô (Batch), Số lượng và Hạn sử dụng (SLED/BBD).</i>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label style="font-size:12.5px; font-weight:600;">Dán dữ liệu bảng (Tab-separated) vào đây:</label>
+          <button onclick="fillSampleSapData()" style="font-size:11.5px; padding:4px 10px;">✨ Nạp dữ liệu mẫu SAP để chạy thử</button>
+        </div>
+
+        <textarea id="sapPasteArea" rows="10" placeholder="Ví dụ:
+A01-01-01	1004582	Thùng Carton 5 lớp loại A	BATCH2601	450	PC	15.12.2026
+A01-02-02	1008910	Màng PE quấn Pallet 50cm	BATCH2511	120	ROL	28.11.2026"></textarea>
+
+        <div style="display:flex; align-items:center; gap:12px; font-size:12.5px;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="radio" name="importMode" value="replace" checked style="width:auto;" />
+            Thay thế toàn bộ tồn kho hiện tại
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="radio" name="importMode" value="merge" style="width:auto;" />
+            Gộp thêm vào dữ liệu đang có
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span id="parsePreviewText" style="font-size:12px; color:var(--muted);">Sẵn sàng phân tích dữ liệu</span>
+        <div style="display:flex; gap:8px;">
+          <button onclick="closeSapModal()">Hủy</button>
+          <button class="btn-primary" onclick="processSapPaste()">🚀 Cập nhật lên Kho 3D</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'warehouse_3d_sap_offline_v1';
+
+    // DỮ LIỆU GỐC CỦA ỨNG DỤNG
+    let appState = {
+      updatedAt: 0,
+      config: {
+        aisles: ['A01', 'A02', 'A03', 'A04'],
+        bays: 8,
+        levels: 4,
+        format: 'DASH_2'
+      },
+      // inventory: { "A01-01-01": [ { material, desc, batch, qty, uom, sled } ] }
+      inventory: {}
+    };
+
+    // TRẠNG THÁI GIAO DIỆN & CAMERA 3D
+    let colorMode = 'occupancy'; // 'occupancy' | 'fefo' | 'level'
+    let levelFilter = 'ALL';     // 'ALL' hoặc số tầng 1..N
+    let selectedBinId = null;
+    let searchQuery = '';
+
+    let cam = {
+      rotX: 56,
+      rotZ: -34,
+      zoom: 0.95,
+      panX: 0,
+      panY: 20
+    };
+
+    // BIẾN TỰ ĐỘNG SAO LƯU FILE data.txt
+    let fileHandle = null;
+    let isDirtyForFile = false;
+    let autoSaveTimer = null;
+    let isWritingFile = false;
+
+    // 1. KHỞI TẠO & ĐỒNG BỘ DỮ LIỆU KHI MỞ TRANG
+    function initApp() {
+      let localData = null;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) localData = JSON.parse(raw);
+      } catch (e) { console.error(e); }
+
+      const fileData = (typeof window.WAREHOUSE_3D_DATA === 'object' && window.WAREHOUSE_3D_DATA !== null)
+        ? window.WAREHOUSE_3D_DATA
+        : null;
+
+      if (localData && fileData) {
+        if (localData.updatedAt > fileData.updatedAt) {
+          appState = localData;
+          isDirtyForFile = true;
+          updateFileBadge('warn', '⚠️ Trình duyệt mới hơn data.txt (Chưa đồng bộ)');
+        } else {
+          appState = fileData;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        }
+      } else if (fileData) {
+        appState = fileData;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } else if (localData) {
+        appState = localData;
+        isDirtyForFile = true;
+      } else {
+        // Nạp sẵn vài pallet mẫu lần đầu để người dùng thấy ngay mô hình 3D sinh động
+        seedInitialDemoData();
+        saveState(true);
+      }
+
+      // Đồng bộ ô cấu hình
+      document.getElementById('cfgAisles').value = appState.config.aisles.join(', ');
+      document.getElementById('cfgBays').value = appState.config.bays;
+      document.getElementById('cfgLevels').value = appState.config.levels;
+      document.getElementById('cfgFormat').value = appState.config.format;
+
+      setupCameraControls();
+      renderLevelFilterButtons();
+      renderLegend();
+      render3DWarehouse();
+      updateCameraTransform();
+
+      // Chu kỳ dự phòng 30 giây tự ghi ra file data.txt nếu đã liên kết
+      setInterval(() => {
+        if (fileHandle && isDirtyForFile) writeToDiskFile();
+      }, 30000);
+    }
+
+    function seedInitialDemoData() {
+      const today = new Date();
+      const addDays = (d) => {
+        const dt = new Date(today.getTime() + d * 86400000);
+        return dt.toISOString().slice(0, 10);
+      };
+
+      appState.inventory = {
+        'A01-01-01': [{ material: '1002451', desc: 'Hạt nhựa nguyên sinh PP', batch: 'B2609A', qty: 1200, uom: 'KG', sled: addDays(180) }],
+        'A01-01-02': [{ material: '1002451', desc: 'Hạt nhựa nguyên sinh PP', batch: 'B2609A', qty: 1000, uom: 'KG', sled: addDays(180) }],
+        'A01-03-01': [{ material: '2005110', desc: 'Phụ gia chống tĩnh điện', batch: 'B2601C', qty: 250, uom: 'KG', sled: addDays(18) }],
+        'A02-02-01': [{ material: '3008812', desc: 'Cuộn màng co nhiệt POF', batch: 'B2605X', qty: 80, uom: 'ROL', sled: addDays(65) }],
+        'A02-05-03': [{ material: '4001120', desc: 'Thùng Carton 5 lớp xuất khẩu', batch: 'B2610M', qty: 600, uom: 'PC', sled: '' }],
+        'A03-04-02': [
+          { material: '5009123', desc: 'Tem nhãn mã vạch nhiệt', batch: 'B2608K', qty: 40, uom: 'BOX', sled: addDays(240) },
+          { material: '5009124', desc: 'Mực in Ribbon Wax-Resin', batch: 'B2608K', qty: 25, uom: 'ROL', sled: addDays(240) }
+        ],
+        'A04-07-04': [{ material: '2005119', desc: 'Dung môi vệ sinh công nghiệp', batch: 'B2512Z', qty: 12, uom: 'CAN', sled: addDays(12) }]
+      };
+    }
+
+    // 2. CƠ CHẾ LƯU TỰ ĐỘNG 2 LỚP (LOCALSTORAGE + DATA.TXT)
+    function saveState(skipFileWrite = false) {
+      appState.updatedAt = Date.now();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+
+      const timeStr = new Date().toLocaleTimeString('vi-VN');
+      document.getElementById('localStatus').textContent = `💾 Trình duyệt: Đã lưu (${timeStr})`;
+
+      isDirtyForFile = true;
+      if (skipFileWrite) return;
+
+      if (fileHandle) {
+        updateFileBadge('ok', '⏳ Đang đồng bộ ra data.txt...');
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => writeToDiskFile(), 2000);
+      } else {
+        updateFileBadge('warn', '⚠️ Có thay đổi chưa lưu ra data.txt');
+      }
+    }
+
+    async function linkBackupFile() {
+      if (!window.showSaveFilePicker) {
+        alert('Trình duyệt không hỗ trợ ghi file trực tiếp. Vui lòng mở bằng Chrome hoặc Edge.');
+        return;
+      }
+      try {
+        fileHandle = await window.showSaveFilePicker({
+          suggestedName: 'data.txt',
+          types: [{ description: 'Dữ liệu Kho 3D (JS/TXT)', accept: { 'text/plain': ['.txt'] } }]
+        });
+        const btn = document.getElementById('btnLinkFile');
+        btn.textContent = '✅ Đang tự động lưu data.txt';
+        btn.className = 'btn-success';
+        await writeToDiskFile();
+      } catch (err) {
+        if (err.name !== 'AbortError') alert('Lỗi liên kết file: ' + err.message);
+      }
+    }
+
+    async function writeToDiskFile() {
+      if (!fileHandle || isWritingFile) return;
+      isWritingFile = true;
+      try {
+        const content =
+          `// Dữ liệu Sơ đồ Kho 3D SAP - Tự động sao lưu lúc: ${new Date().toLocaleString('vi-VN')}\n` +
+          `window.WAREHOUSE_3D_DATA = ${JSON.stringify(appState, null, 2)};\n`;
+
+        const writable = await fileHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+
+        isDirtyForFile = false;
+        const timeStr = new Date().toLocaleTimeString('vi-VN');
+        updateFileBadge('ok', `✅ data.txt: Đã sao lưu (${timeStr})`);
+      } catch (err) {
+        console.error(err);
+        fileHandle = null;
+        isDirtyForFile = true;
+        updateFileBadge('warn', '❌ Mất kết nối file! Bấm liên kết lại');
+        const btn = document.getElementById('btnLinkFile');
+        btn.textContent = '🔗 Liên kết lại data.txt';
+        btn.className = '';
+      } finally {
+        isWritingFile = false;
+      }
+    }
+
+    function updateFileBadge(type, text) {
+      const el = document.getElementById('fileStatus');
+      el.textContent = text;
+      el.className = type === 'ok' ? 'badge badge-ok' : 'badge badge-warn';
+    }
+
+    window.addEventListener('beforeunload', (e) => {
+      if (isDirtyForFile) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    // 3. DỰNG MÔ HÌNH KHO 3D BẰNG THUẦN CSS 3D
+    function formatBinId(aisle, bayIdx, levelIdx) {
+      const b = String(bayIdx).padStart(2, '0');
+      const l = String(levelIdx).padStart(2, '0');
+      if (appState.config.format === 'NODASH_2') return `${aisle}${b}${l}`;
+      return `${aisle}-${b}-${l}`;
+    }
+
+    function render3DWarehouse() {
+      const floor = document.getElementById('warehouseFloor');
+      // Giữ lại dock-zone, xóa các phần tử 3D cũ
+      floor.innerHTML = '<div class="dock-zone">▲ CỬA XUẤT / NHẬP HÀNG (LOADING DOCK) ▲</div>';
+
+      const { aisles, bays, levels } = appState.config;
+
+      // Kích thước chuẩn của 1 ô pallet (px trong không gian 3D)
+      const binW = 46;     // Chiều rộng dọc theo dãy (X)
+      const binD = 42;     // Chiều sâu của kệ (Y)
+      const binH = 26;     // Chiều cao mỗi tầng (Z)
+      const gapX = 6;      // Khe hở giữa các khoang
+      const levelPitch = 34; // Bước cao giữa các tầng
+      const pad = 44;      // Lề sàn kho
+
+      const totalWidth = pad * 2 + bays * (binW + gapX) - gapX;
+
+      // Tính tọa độ Y cho từng dãy kệ (xếp cặp đôi lưng đấu lưng + lối đi xe nâng ở giữa)
+      let curY = pad;
+      const aisleYPositions = [];
+      aisles.forEach((_, idx) => {
+        aisleYPositions.push(curY);
+        // Nếu là dãy lẻ (idx 0, 2, 4...) cách dãy kế 10px (lưng đối lưng), dãy chẵn cách 54px (lối đi xe nâng)
+        curY += binD + (idx % 2 === 0 ? 12 : 56);
+      });
+      const totalDepth = curY - (aisles.length % 2 === 1 ? 12 : 56) + pad;
+
+      floor.style.width = totalWidth + 'px';
+      floor.style.height = totalDepth + 'px';
+      floor.style.left = (-totalWidth / 2) + 'px';
+      floor.style.top = (-totalDepth / 2) + 'px';
+
+      const validBinSet = new Set();
+
+      // Vẽ nhãn số Khoang (Bay 01..N) ở phía trước sàn
+      for (let b = 1; b <= bays; b++) {
+        const bx = pad + (b - 1) * (binW + gapX);
+        const lbl = document.createElement('div');
+        lbl.className = 'bay-label';
+        lbl.style.left = bx + 'px';
+        lbl.style.top = (totalDepth - 24) + 'px';
+        lbl.style.width = binW + 'px';
+        lbl.textContent = 'C' + String(b).padStart(2, '0');
+        floor.appendChild(lbl);
+      }
+
+      // Vẽ từng Dãy -> Khoang -> Tầng
+      aisles.forEach((aisle, aIdx) => {
+        const ay = aisleYPositions[aIdx];
+
+        // Nhãn tên dãy ở đầu kệ
+        const aLbl = document.createElement('div');
+        aLbl.className = 'aisle-label';
+        aLbl.style.left = '6px';
+        aLbl.style.top = (ay + binD / 2 - 11) + 'px';
+        aLbl.textContent = aisle;
+        floor.appendChild(aLbl);
+
+        for (let b = 1; b <= bays; b++) {
+          const bx = pad + (b - 1) * (binW + gapX);
+
+          for (let l = 1; l <= levels; l++) {
+            // Lọc cắt lớp theo tầng
+            if (levelFilter !== 'ALL' && Number(levelFilter) !== l) continue;
+
+            const binId = formatBinId(aisle, b, l);
+            validBinSet.add(binId);
+
+            const items = appState.inventory[binId] || [];
+            const isOccupied = items.length > 0;
+            const bz = (l - 1) * levelPitch + 2;
+
+            const binEl = document.createElement('div');
+            binEl.className = 'bin-3d ' + (isOccupied ? 'occupied' : 'empty');
+            if (binId === selectedBinId) binEl.classList.add('selected');
+
+            // Kiểm tra tìm kiếm Spotlight
+            if (searchQuery) {
+              const matched = checkBinMatchesSearch(binId, items, searchQuery);
+              binEl.classList.add(matched ? 'highlight' : 'dimmed');
+            }
+
+            binEl.style.width = binW + 'px';
+            binEl.style.height = binD + 'px';
+            binEl.style.transform = `translate3d(${bx}px, ${ay}px, ${bz}px)`;
+            binEl.title = `${binId}${isOccupied ? ` (${items.length} dòng hàng)` : ' (Trống)'}`;
+
+            // Tính màu sắc khối 3D
+            const colors = getBinColors(isOccupied, items, l);
+
+            // Tạo 5 mặt của khối hộp 3D (Nóc, Trước, Sau, Trái, Phải)
+            binEl.innerHTML = `
+              <div class="face" style="width:${binW}px; height:${binD}px; transform: translateZ(${binH}px); background:${colors.top};"></div>
+              <div class="face" style="width:${binW}px; height:${binH}px; transform-origin:50% 0%; transform: translateY(${binD}px) rotateX(90deg); background:${colors.front};"></div>
+              <div class="face" style="width:${binW}px; height:${binH}px; transform-origin:50% 0%; transform: rotateX(90deg); background:${colors.side};"></div>
+              <div class="face" style="width:${binH}px; height:${binD}px; transform-origin:0% 50%; transform: rotateY(-90deg); background:${colors.side};"></div>
+              <div class="face" style="width:${binH}px; height:${binD}px; transform-origin:0% 50%; transform: translateX(${binW}px) rotateY(-90deg); background:${colors.side};"></div>
+            `;
+
+            binEl.addEventListener('mouseup', (e) => {
+              if (e.button === 0 && dragDist < 6) {
+                e.stopPropagation();
+                selectBin(binId);
+              }
+            });
+
+            floor.appendChild(binEl);
+          }
+        }
+      });
+
+      updateKPIs(validBinSet);
+    }
+
+    // TÍNH MÀU SẮC THEO CHẾ ĐỘ HEATMAP
+    function getBinColors(isOccupied, items, level) {
+      if (!isOccupied) {
+        return { top: 'transparent', front: 'transparent', side: 'transparent' };
+      }
+
+      if (colorMode === 'fefo') {
+        const minDays = getMinExpiryDays(items);
+        if (minDays === null) {
+          return { top: '#64748b', front: '#475569', side: '#334155' }; // Không có date
+        }
+        if (minDays <= 30) {
+          return { top: '#f87171', front: '#dc2626', side: '#991b1b' }; // Đỏ: Cận date <= 30 ngày
+        }
+        if (minDays <= 90) {
+          return { top: '#fbbf24', front: '#d97706', side: '#92400e' }; // Vàng: 31 - 90 ngày
+        }
+        return { top: '#34d399', front: '#059669', side: '#065f46' };   // Xanh: An toàn > 90 ngày
+      }
+
+      if (colorMode === 'level') {
+        const palette = [
+          { top: '#38bdf8', front: '#0284c7', side: '#0369a1' }, // Tầng 1
+          { top: '#818cf8', front: '#4f46e5', side: '#3730a3' }, // Tầng 2
+          { top: '#c084fc', front: '#9333ea', side: '#6b21a8' }, // Tầng 3
+          { top: '#f472b6', front: '#db2777', side: '#9d174d' }  // Tầng 4+
+        ];
+        return palette[Math.min(level - 1, palette.length - 1)];
+      }
+
+      // Chế độ mặc định: Tồn kho (Occupancy)
+      if (items.length > 1) {
+        return { top: '#a78bfa', front: '#7c3aed', side: '#5b21b6' }; // Nhiều SKU trong 1 Bin
+      }
+      return { top: '#60a5fa', front: '#2563eb', side: '#1d4ed8' };   // 1 SKU chuẩn
+    }
+
+    function getMinExpiryDays(items) {
+      let min = null;
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      items.forEach(it => {
+        if (!it.sled) return;
+        const dt = new Date(it.sled);
+        if (isNaN(dt.getTime())) return;
+        const days = Math.ceil((dt - now) / 86400000);
+        if (min === null || days < min) min = days;
+      });
+      return min;
+    }
+
+    function checkBinMatchesSearch(binId, items, q) {
+      if (binId.toLowerCase().includes(q)) return true;
+      return items.some(it =>
+        (it.material && it.material.toLowerCase().includes(q)) ||
+        (it.desc && it.desc.toLowerCase().includes(q)) ||
+        (it.batch && it.batch.toLowerCase().includes(q))
+      );
+    }
+
+    // 4. CẬP NHẬT CHỈ SỐ KPI & CHÚ THÍCH
+    function updateKPIs() {
+      const { aisles, bays, levels } = appState.config;
+      const totalBins = aisles.length * bays * levels;
+
+      const allConfiguredBins = new Set();
+      aisles.forEach(a => {
+        for (let b = 1; b <= bays; b++) {
+          for (let l = 1; l <= levels; l++) {
+            allConfiguredBins.add(formatBinId(a, b, l));
+          }
+        }
+      });
+
+      let occupiedCount = 0;
+      let totalQty = 0;
+      const skuSet = new Set();
+      const unmappedBins = [];
+
+      Object.entries(appState.inventory).forEach(([binId, items]) => {
+        if (!items || items.length === 0) return;
+        if (allConfiguredBins.has(binId)) {
+          occupiedCount++;
+        } else {
+          unmappedBins.push(binId);
+        }
+        items.forEach(it => {
+          totalQty += Number(it.qty) || 0;
+          if (it.material) skuSet.add(it.material);
+        });
+      });
+
+      const pct = totalBins > 0 ? Math.round((occupiedCount / totalBins) * 100) : 0;
+      document.getElementById('kpiOccupancy').textContent = `${pct}%`;
+      document.getElementById('kpiBinsCount').textContent = `${occupiedCount} / ${totalBins} vị trí có hàng`;
+      document.getElementById('kpiTotalQty').textContent = totalQty.toLocaleString('vi-VN');
+      document.getElementById('kpiSkuCount').textContent = `${skuSet.size} mã hàng (SKU)`;
+
+      const unmappedEl = document.getElementById('unmappedAlert');
+      if (unmappedBins.length > 0) {
+        unmappedEl.style.display = 'block';
+        unmappedEl.innerHTML = `⚠️ Có <b>${unmappedBins.length}</b> vị trí SAP nằm ngoài cấu hình kệ hiện tại (VD: ${unmappedBins.slice(0, 3).join(', ')}). Hãy thêm dãy/tầng kệ để hiển thị đủ.`;
+      } else {
+        unmappedEl.style.display = 'none';
+      }
+    }
+
+    function renderLegend() {
+      const box = document.getElementById('legendBox');
+      if (colorMode === 'fefo') {
+        box.innerHTML = `
+          <div class="legend-item"><span class="color-dot" style="background:#ef4444;"></span>Cận Date / Hết hạn (≤ 30 ngày)</div>
+          <div class="legend-item"><span class="color-dot" style="background:#f59e0b;"></span>Cần ưu tiên xuất (31 – 90 ngày)</div>
+          <div class="legend-item"><span class="color-dot" style="background:#10b981;"></span>An toàn (> 90 ngày)</div>
+          <div class="legend-item"><span class="color-dot" style="background:#64748b;"></span>Không quản lý hạn dùng</div>
+        `;
+      } else if (colorMode === 'level') {
+        box.innerHTML = `
+          <div class="legend-item"><span class="color-dot" style="background:#0284c7;"></span>Tầng 1 (Tầng trệt - Xuất nhanh)</div>
+          <div class="legend-item"><span class="color-dot" style="background:#4f46e5;"></span>Tầng 2</div>
+          <div class="legend-item"><span class="color-dot" style="background:#9333ea;"></span>Tầng 3</div>
+          <div class="legend-item"><span class="color-dot" style="background:#db2777;"></span>Tầng 4+ (Kệ cao)</div>
+        `;
+      } else {
+        box.innerHTML = `
+          <div class="legend-item"><span class="color-dot" style="background:#2563eb;"></span>Có hàng (1 mã SKU)</div>
+          <div class="legend-item"><span class="color-dot" style="background:#7c3aed;"></span>Chứa ghép nhiều mã / Batch</div>
+          <div class="legend-item"><span class="color-dot" style="border:1px dashed #64748b;"></span>Vị trí trống</div>
+        `;
+      }
+    }
+
+    function renderLevelFilterButtons() {
+      const container = document.getElementById('levelFilterGroup');
+      const levels = appState.config.levels;
+      let html = `<button class="${levelFilter === 'ALL' ? 'active-pill' : ''}" onclick="setLevelFilter('ALL')">Tất cả</button>`;
+      for (let l = 1; l <= levels; l++) {
+        html += `<button class="${String(levelFilter) === String(l) ? 'active-pill' : ''}" onclick="setLevelFilter('${l}')">Tầng ${l}</button>`;
+      }
+      container.innerHTML = html;
+    }
+
+    // 5. TƯƠNG TÁC CHỌN BIN & CẬP NHẬT TỒN KHO THỦ CÔNG
+    function selectBin(binId) {
+      selectedBinId = binId;
+      render3DWarehouse();
+      renderInspector();
+    }
+
+    function renderInspector() {
+      const titleEl = document.getElementById('inspBinTitle');
+      const bodyEl = document.getElementById('inspectorBody');
+      const clearBtn = document.getElementById('btnClearBin');
+
+      if (!selectedBinId) {
+        titleEl.textContent = 'Chưa chọn ô kệ';
+        clearBtn.style.display = 'none';
+        return;
+      }
+
+      titleEl.textContent = selectedBinId;
+      const items = appState.inventory[selectedBinId] || [];
+      clearBtn.style.display = items.length > 0 ? 'inline-block' : 'none';
+
+      let html = '';
+
+      if (items.length === 0) {
+        html += `<div style="background:rgba(148,163,184,0.08); padding:10px; border-radius:6px; font-size:12.5px; color:var(--muted); margin-bottom:14px;">Vị trí này hiện đang trống. Bạn có thể nhập nhanh hàng vào ô bên dưới.</div>`;
+      } else {
+        items.forEach((it, idx) => {
+          let expHtml = '';
+          if (it.sled) {
+            const days = Math.ceil((new Date(it.sled) - new Date().setHours(0,0,0,0)) / 86400000);
+            const cls = days <= 30 ? 'exp-red' : (days <= 90 ? 'exp-warn' : 'exp-ok');
+            expHtml = `<span class="expiry-pill ${cls}">HSD: ${it.sled} (${days} ngày)</span>`;
+          }
+
+          html += `
+            <div class="stock-card">
+              <div class="stock-card-top">
+                <span class="mat-code">${escapeHtml(it.material)}</span>
+                <span class="mat-qty">${Number(it.qty).toLocaleString('vi-VN')} ${escapeHtml(it.uom || '')}</span>
+              </div>
+              <div class="mat-desc">${escapeHtml(it.desc || 'Không có mô tả')}</div>
+              <div class="mat-meta">
+                <span>Batch: <b>${escapeHtml(it.batch || '-')}</b></span>
+                ${expHtml}
+              </div>
+              <div style="margin-top:8px; text-align:right;">
+                <button class="btn-danger" style="padding:3px 8px; font-size:11px;" onclick="removeStockItem(${idx})">Xóa dòng này</button>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // Form thêm nhanh hàng vào Bin đang chọn
+      html += `
+        <div style="border-top:1px solid var(--panel-border); padding-top:12px; margin-top:8px;">
+          <div class="section-title">Thêm hàng vào ${selectedBinId}</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mã hàng (Material)</label>
+              <input type="text" id="addMat" placeholder="VD: 1004582" />
+            </div>
+            <div class="form-group">
+              <label>Số lô (Batch)</label>
+              <input type="text" id="addBatch" placeholder="VD: B2611A" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tên vật tư / hàng hóa</label>
+            <input type="text" id="addDesc" placeholder="Nhập mô tả ngắn..." />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Số lượng</label>
+              <input type="number" id="addQty" value="100" />
+            </div>
+            <div class="form-group">
+              <label>ĐVT (UoM)</label>
+              <input type="text" id="addUom" value="PC" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Hạn sử dụng (SLED - Không bắt buộc)</label>
+            <input type="date" id="addSled" />
+          </div>
+          <button class="btn-primary" style="width:100%;" onclick="addStockToSelectedBin()">+ Lưu vào vị trí ${selectedBinId}</button>
+        </div>
+      `;
+
+      bodyEl.innerHTML = html;
+    }
+
+    function addStockToSelectedBin() {
+      if (!selectedBinId) return;
+      const material = document.getElementById('addMat').value.trim();
+      if (!material) { alert('Vui lòng nhập Mã hàng (Material).'); return; }
+
+      const newItem = {
+        material,
+        batch: document.getElementById('addBatch').value.trim(),
+        desc: document.getElementById('addDesc').value.trim(),
+        qty: Number(document.getElementById('addQty').value) || 0,
+        uom: document.getElementById('addUom').value.trim() || 'PC',
+        sled: document.getElementById('addSled').value
+      };
+
+      if (!appState.inventory[selectedBinId]) appState.inventory[selectedBinId] = [];
+      appState.inventory[selectedBinId].push(newItem);
+
+      saveState();
+      render3DWarehouse();
+      renderInspector();
+    }
+
+    function removeStockItem(idx) {
+      if (!selectedBinId || !appState.inventory[selectedBinId]) return;
+      appState.inventory[selectedBinId].splice(idx, 1);
+      if (appState.inventory[selectedBinId].length === 0) {
+        delete appState.inventory[selectedBinId];
+      }
+      saveState();
+      render3DWarehouse();
+      renderInspector();
+    }
+
+    function clearSelectedBin() {
+      if (!selectedBinId) return;
+      delete appState.inventory[selectedBinId];
+      saveState();
+      render3DWarehouse();
+      renderInspector();
+    }
+
+    // 6. BỘ PHÂN TÍCH DỮ LIỆU DÁN TỪ SAP (LX02 / MB52)
+    function openSapModal() {
+      document.getElementById('sapModal').classList.add('open');
+      document.getElementById('sapPasteArea').focus();
+    }
+
+    function closeSapModal() {
+      document.getElementById('sapModal').classList.remove('open');
+    }
+
+    function fillSampleSapData() {
+      const today = new Date();
+      const fmtSapDate = (days) => {
+        const d = new Date(today.getTime() + days * 86400000);
+        return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+      };
+
+      document.getElementById('sapPasteArea').value = [
+        `Storage Bin\tMaterial\tMaterial Description\tBatch\tAvailable stock\tBUn\tSLED/BBD`,
+        `A01-01-01\t1009911\tNguyên liệu bột mì loại 1\tL2601A\t850\tKG\t${fmtSapDate(20)}`,
+        `A01-01-02\t1009911\tNguyên liệu bột mì loại 1\tL2602B\t1200\tKG\t${fmtSapDate(140)}`,
+        `A01-04-03\t2003344\tHương liệu Vani thực phẩm\tL2511C\t45\tKG\t${fmtSapDate(15)}`,
+        `A02-03-01\t3007721\tMàng bọc thực phẩm 45cm\tL2604D\t300\tROL\t${fmtSapDate(300)}`,
+        `A02-06-02\t3007725\tBăng keo trong 5F\tL2605E\t500\tROL\t`,
+        `A03-02-01\t4005510\tChai nhựa PET 500ml\tL2607F\t2400\tPC\t${fmtSapDate(75)}`,
+        `A03-02-01\t4005512\tNắp chai nhựa xanh\tL2607F\t2400\tPC\t${fmtSapDate(75)}`,
+        `A04-08-04\t5001100\tHóa chất tẩy rửa CIP\tL2601Z\t18\tCAN\t${fmtSapDate(25)}`
+      ].join('\n');
+    }
+
+    function processSapPaste() {
+      const raw = document.getElementById('sapPasteArea').value.trim();
+      if (!raw) {
+        alert('Vui lòng dán dữ liệu từ SAP vào khung trống.');
+        return;
+      }
+
+      const mode = document.querySelector('input[name="importMode"]:checked').value;
+      const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+      const parsedMap = mode === 'merge' ? JSON.parse(JSON.stringify(appState.inventory)) : {};
+
+      // Tập hợp mã Bin hợp lệ của kho hiện tại để nhận diện thông minh cột Bin
+      const knownBins = new Set();
+      appState.config.aisles.forEach(a => {
+        for (let b = 1; b <= appState.config.bays; b++) {
+          for (let l = 1; l <= appState.config.levels; l++) {
+            knownBins.add(formatBinId(a, b, l).toUpperCase());
+          }
+        }
+      });
+
+      let importedRows = 0;
+
+      lines.forEach((line, rowIdx) => {
+        const cols = line.split('\t').map(c => c.trim());
+        if (cols.length < 2) return;
+
+        // Bỏ qua dòng tiêu đề SAP
+        const joinedLower = line.toLowerCase();
+        if (rowIdx === 0 && (joinedLower.includes('storage bin') || joinedLower.includes('material') || joinedLower.includes('vị trí'))) {
+          return;
+        }
+
+        // Tìm cột chứa mã Bin (ưu tiên cột khớp với danh sách Bin của kho, hoặc khớp định dạng A01-01-01)
+        let binIdx = cols.findIndex(c => knownBins.has(c.toUpperCase()));
+        if (binIdx === -1) {
+          binIdx = cols.findIndex(c => /^[A-Z0-9]{2,4}[-_][0-9]{2}[-_][0-9]{2}$/i.test(c));
+        }
+        if (binIdx === -1) binIdx = 0; // Mặc định cột đầu tiên
+
+        const binId = cols[binIdx].toUpperCase();
+        if (!binId) return;
+
+        // Các cột còn lại sau khi loại trừ cột Bin
+        const rest = cols.filter((_, i) => i !== binIdx);
+
+        // Tự động nhận diện ngày SLED (DD.MM.YYYY, DD/MM/YYYY, YYYY-MM-DD)
+        let sled = '';
+        let dateColIdx = -1;
+        rest.forEach((val, idx) => {
+          const isoDate = normalizeSapDate(val);
+          if (isoDate && !sled) {
+            sled = isoDate;
+            dateColIdx = idx;
+          }
+        });
+
+        // Tự động nhận diện cột Số lượng (số thực/nguyên, bỏ qua mã vật tư quá dài > 9 chữ số nếu có cột số khác)
+        let qty = 0;
+        let qtyColIdx = -1;
+        for (let i = rest.length - 1; i >= 0; i--) {
+          if (i === dateColIdx) continue;
+          const num = parseSapNumber(rest[i]);
+          if (num !== null && i > 0) {
+            qty = num;
+            qtyColIdx = i;
+            break;
+          }
+        }
+
+        const material = rest[0] || 'UNKNOWN';
+        const desc = (rest[1] && qtyColIdx !== 1 && dateColIdx !== 1) ? rest[1] : '';
+        const batch = (rest[2] && qtyColIdx !== 2 && dateColIdx !== 2) ? rest[2] : '';
+        const uom = (qtyColIdx !== -1 && rest[qtyColIdx + 1] && (qtyColIdx + 1) !== dateColIdx)
+          ? rest[qtyColIdx + 1]
+          : 'PC';
+
+        if (!parsedMap[binId]) parsedMap[binId] = [];
+        parsedMap[binId].push({ material, desc, batch, qty, uom, sled });
+        importedRows++;
+      });
+
+      if (importedRows === 0) {
+        alert('Không đọc được dòng dữ liệu hợp lệ nào. Hãy đảm bảo bạn copy dạng bảng (có dấu Tab phân cách cột) từ SAP.');
+        return;
+      }
+
+      appState.inventory = parsedMap;
+      saveState();
+      render3DWarehouse();
+      if (selectedBinId) renderInspector();
+      closeSapModal();
+    }
+
+    function normalizeSapDate(str) {
+      if (!str) return '';
+      // DD.MM.YYYY hoặc DD/MM/YYYY
+      let m = str.match(/^(\d{2})[./](\d{2})[./](\d{4})$/);
+      if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+      // YYYY-MM-DD
+      m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) return str;
+      return '';
+    }
+
+    function parseSapNumber(str) {
+      if (!str) return null;
+      const cleaned = str.replace(/\s/g, '');
+      if (!/^-?[\d.,]+$/.test(cleaned)) return null;
+      // Xử lý định dạng kiểu Châu Âu (1.250,50) hoặc Mỹ (1,250.50)
+      if (cleaned.includes(',') && cleaned.includes('.')) {
+        if (cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')) {
+          return parseFloat(cleaned.replace(/\./g, '').replace(',', '.'));
+        }
+        return parseFloat(cleaned.replace(/,/g, ''));
+      }
+      if (cleaned.includes(',')) {
+        const parts = cleaned.split(',');
+        if (parts[1].length === 3) return parseFloat(cleaned.replace(/,/g, ''));
+        return parseFloat(cleaned.replace(',', '.'));
+      }
+      const n = parseFloat(cleaned);
+      return isNaN(n) ? null : n;
+    }
+
+    // 7. ĐIỀU KHIỂN GÓC NHÌN CAMERA 3D (XOAY, ZOOM, KÉO)
+    let isDragging = false;
+    let dragMode = 'rotate';
+    let lastMouse = { x: 0, y: 0 };
+    let dragDist = 0;
+
+    function setupCameraControls() {
+      const vp = document.getElementById('viewport');
+
+      vp.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        dragDist = 0;
+        lastMouse = { x: e.clientX, y: e.clientY };
+        dragMode = (e.button === 2 || e.button === 1 || e.shiftKey) ? 'pan' : 'rotate';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - lastMouse.x;
+        const dy = e.clientY - lastMouse.y;
+        dragDist += Math.hypot(dx, dy);
+        lastMouse = { x: e.clientX, y: e.clientY };
+
+        if (dragMode === 'rotate') {
+          cam.rotZ -= dx * 0.45;
+          cam.rotX = Math.max(10, Math.min(85, cam.rotX - dy * 0.45));
+        } else {
+          cam.panX += dx;
+          cam.panY += dy;
+        }
+        updateCameraTransform();
+      });
+
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      vp.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      vp.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.1 : 0.9;
+        cam.zoom = Math.max(0.35, Math.min(2.6, cam.zoom * factor));
+        updateCameraTransform();
+      }, { passive: false });
+    }
+
+    function updateCameraTransform() {
+      const pivot = document.getElementById('scenePivot');
+      pivot.style.transform =
+        `translate3d(${cam.panX}px, ${cam.panY}px, 0px) scale(${cam.zoom}) rotateX(${cam.rotX}deg) rotateZ(${cam.rotZ}deg)`;
+    }
+
+    function setCameraPreset(preset) {
+      if (preset === 'iso') {
+        cam = { rotX: 56, rotZ: -34, zoom: 0.95, panX: 0, panY: 20 };
+      } else if (preset === 'top') {
+        cam = { rotX: 10, rotZ: 0, zoom: 0.95, panX: 0, panY: 0 };
+      } else if (preset === 'front') {
+        cam = { rotX: 80, rotZ: 0, zoom: 1.0, panX: 0, panY: 60 };
+      }
+      updateCameraTransform();
+    }
+
+    function resetCamera() {
+      setCameraPreset('iso');
+    }
+
+    // 8. CÁC HÀM ĐIỀU KHIỂN GIAO DIỆN KHÁC
+    function setColorMode(mode) {
+      colorMode = mode;
+      document.getElementById('modeOccupancy').className = mode === 'occupancy' ? 'active-pill' : '';
+      document.getElementById('modeFefo').className = mode === 'fefo' ? 'active-pill' : '';
+      document.getElementById('modeLevel').className = mode === 'level' ? 'active-pill' : '';
+      renderLegend();
+      render3DWarehouse();
+    }
+
+    function setLevelFilter(lvl) {
+      levelFilter = lvl;
+      renderLevelFilterButtons();
+      render3DWarehouse();
+    }
+
+    function applyLayoutConfig() {
+      const rawAisles = document.getElementById('cfgAisles').value;
+      const aisles = rawAisles.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      const bays = Math.max(1, Math.min(30, Number(document.getElementById('cfgBays').value) || 8));
+      const levels = Math.max(1, Math.min(10, Number(document.getElementById('cfgLevels').value) || 4));
+      const format = document.getElementById('cfgFormat').value;
+
+      if (aisles.length === 0) {
+        alert('Vui lòng nhập ít nhất 1 mã dãy kệ (VD: A01).');
+        return;
+      }
+
+      appState.config = { aisles, bays, levels, format };
+      levelFilter = 'ALL';
+      saveState();
+      renderLevelFilterButtons();
+      render3DWarehouse();
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      document.getElementById('btnClearSearch').style.display = searchQuery ? 'inline-block' : 'none';
+      render3DWarehouse();
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      searchQuery = '';
+      document.getElementById('btnClearSearch').style.display = 'none';
+      render3DWarehouse();
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[m]);
+    }
+
+    // KHỞI CHẠY ỨNG DỤNG
+    initApp();
+  </script>
+</body>
+</html>
 
