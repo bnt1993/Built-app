@@ -7,9 +7,13 @@ async function headerMetrics(page,request){
   return page.evaluate(request=>{
     const panel=document.getElementById(request?'request-panel':'po-gr-panel');
     const source=panel.querySelector(request?'.request-source-bar':'.source-strip'),heading=panel.querySelector('.report-heading');
-    const kpis=panel.querySelector('.kpis'),table=panel.querySelector('.table-scroller');
+    const kpis=panel.querySelector('.kpis'),table=panel.querySelector('.table-scroller'),filters=panel.querySelector('.filters,.request-filters');
     return {sourceHeight:source.getBoundingClientRect().height,sourcePadding:getComputedStyle(source).padding,
-      kpiHeight:kpis.getBoundingClientRect().height,headingHeight:heading.getBoundingClientRect().height,
+      kpiHeight:kpis.getBoundingClientRect().height,filterHeight:filters.getBoundingClientRect().height,
+      filterHeadingHeight:filters.querySelector('.filter-heading').getBoundingClientRect().height,
+      fieldHeight:filters.querySelector('.field').getBoundingClientRect().height,
+      fieldLabelSize:getComputedStyle(filters.querySelector('.field label')).fontSize,
+      filterFooterHeight:filters.querySelector('.filter-bottom').getBoundingClientRect().height,headingHeight:heading.getBoundingClientRect().height,
       headingPadding:getComputedStyle(heading).padding,titleSize:getComputedStyle(heading.querySelector('h2')).fontSize,
       tableTop:table.getBoundingClientRect().top+scrollY};
   },request);

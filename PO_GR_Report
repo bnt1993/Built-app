@@ -677,15 +677,17 @@
     #po-gr-panel .kpi,#request-panel .kpi{height:88px;min-height:88px;padding:9px 12px}
     #po-gr-panel .kpi strong,#request-panel .kpi strong{font-size:23px}
     #po-gr-panel .filters,#request-panel .request-filters{padding:9px 12px;margin-bottom:8px;gap:8px;align-items:end}
-    #po-gr-panel .filter-heading,#request-panel .filter-heading{min-height:24px;height:24px;margin:0;align-items:center}
-    #po-gr-panel .filter-heading h2,#request-panel .filter-heading h2{font-size:13px;margin:0}
-    #po-gr-panel .field,#request-panel .field{gap:3px}
-    #po-gr-panel .field label,#request-panel .field label{font-size:9px;line-height:13px}
-    #po-gr-panel .field input,#request-panel .field input{height:32px;font-size:11px}
+    #po-gr-panel .filters .filter-heading,#request-panel .request-filters .filter-heading{min-height:28px;height:28px;margin:0;align-items:center;flex-direction:row}
+    .filter-heading .section-eyebrow{font-size:8px;line-height:10px}
+    .filter-heading .ghost-link{min-height:26px;padding:4px 8px;font-size:10px}
+    #po-gr-panel .filters .filter-heading h2,#request-panel .request-filters .filter-heading h2{font-size:13px;line-height:16px;margin:0}
+    #po-gr-panel .filters .field,#request-panel .request-filters .field{gap:3px}
+    #po-gr-panel .filters .field label,#request-panel .request-filters .field label{font-size:9px;line-height:13px}
+    #po-gr-panel .filters .field input,#request-panel .request-filters .field input{height:32px;font-size:11px}
     .multi-filter summary{height:32px;padding:7px 23px 6px 9px}
     .multi-filter summary:after{top:7px}
     .filter-bottom{min-height:32px;padding-top:5px;margin-top:0;gap:8px;align-items:center}
-    .filter-bottom .quick-tabs{width:auto;gap:3px}
+    .filter-bottom .quick-tabs{width:auto;gap:3px;padding:0;border:0;border-radius:8px}
     .filter-bottom .quick-tab{min-height:25px;padding:4px 7px;font-size:9px}
     .filter-bottom .check,.request-status-legend{font-size:10px}
     #po-gr-panel .report-heading,#request-panel .report-heading{min-height:64px;padding:8px 12px;gap:10px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between}
@@ -705,11 +707,11 @@
       #po-gr-panel .report-heading,#request-panel .report-heading{height:64px}
       #po-gr-panel .filters{grid-template-columns:minmax(200px,1.7fr) repeat(5,minmax(95px,1fr))}
       #request-panel .request-filters{grid-template-columns:minmax(195px,1.7fr) repeat(6,minmax(95px,1fr))}
-      #po-gr-panel .field.search,#request-panel .field.search{grid-column:auto}
+      #po-gr-panel .filters .field.search,#request-panel .request-filters .field.search{grid-column:auto}
     }
     @media(max-width:1100px){
       #po-gr-panel .filters,#request-panel .request-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
-      #po-gr-panel .field.search,#request-panel .field.search{grid-column:1/-1}
+      #po-gr-panel .filters .field.search,#request-panel .request-filters .field.search{grid-column:1/-1}
     }
     @media(max-width:750px){
       #po-gr-panel .filters,#request-panel .request-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -2269,7 +2271,7 @@ function installReportScrolling(){
     lockedUntil=Date.now()+750;
     if(moveReportWindow(kind,direction))direction=0;
   }
-  window.addEventListener("wheel",event=>{if(event.shiftKey)return;if(event.target?.closest?.("dialog[open],.multi-options"))return;if(Math.abs(event.deltaY)>Math.abs(event.deltaX||0)&&Math.abs(event.deltaY)>2){direction=Math.sign(event.deltaY);inputAt=Date.now();check()}},{passive:true});
+  window.addEventListener("wheel",event=>{if(event.ctrlKey||event.metaKey||event.shiftKey)return;if(event.target?.closest?.("dialog[open],.multi-options"))return;if(Math.abs(event.deltaY)>Math.abs(event.deltaX||0)&&Math.abs(event.deltaY)>2){direction=Math.sign(event.deltaY);inputAt=Date.now();check()}},{passive:true});
   window.addEventListener("touchstart",event=>{touchY=event.touches[0]?.clientY??null;touchX=event.touches[0]?.clientX??null},{passive:true});
   window.addEventListener("touchmove",event=>{if(event.target?.closest?.("dialog[open],.multi-options"))return;const y=event.touches[0]?.clientY,x=event.touches[0]?.clientX;if(touchY!=null&&y!=null&&Math.abs(touchY-y)>8&&Math.abs(touchY-y)>Math.abs((touchX??x)-x)){direction=Math.sign(touchY-y);inputAt=Date.now();touchY=y;touchX=x;check()}},{passive:true});
   window.addEventListener("keydown",event=>{
