@@ -164,7 +164,7 @@ const js=(name,data,stamp='thoiGianCapNhat')=>'window.'+stamp+'="10/11/2026 16:4
   assert.equal(await page.locator('.hero,.scope-banner').count(),0);
   assert.equal(await page.locator('#export-btn').count(),1);
   assert.equal(await page.locator('#report-body tr').evaluateAll(rows=>
-    rows.every(row=>row.querySelector('td').textContent.startsWith('48'))),true);
+    rows.every(row=>row.querySelector('td:nth-child(2)').textContent.startsWith('48'))),true);
   // At 1100px the PO table is wider than the viewport, so both horizontal
   // alignment and page scrolling can be checked on the same dataset.
   await page.setViewportSize({width:1100,height:950});
