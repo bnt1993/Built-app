@@ -172,7 +172,8 @@ function routeFor(page,sources){
   const xlsx=fs.readFileSync(await download.path()).toString('utf8');
   assert.equal((xlsx.match(/<row r="/g)||[]).length,335);
   assert.ok(xlsx.includes('Request_PO_GR'));
-  assert.ok(xlsx.includes('Tuần (File Name)'));
+  assert.match(xlsx,/<t(?:\s[^>]*)?>Tuần<\/t>/);
+  assert.equal(xlsx.includes('Tuần (File Name)'),false);
   assert.ok(xlsx.includes('WK30')||xlsx.includes('WK31'));
   await page.locator('#tab-po-gr').click();
   assert.equal(await page.locator('#report-body tr').count(),5);
