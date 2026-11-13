@@ -33,7 +33,9 @@ Trạng thái gốc được giữ trong popup và cột cuối Excel. Kết qu�
 
 Lượng PO/GR có thể lặp ở nhiều Request cùng PO + SAP; không cộng các cột đó qua các Request để làm tổng kho hoặc tổng đã giao riêng từng yêu cầu.
 
-Tuần Request lấy từ mã WK01–WK53 ở cuối File Name, không lấy từ ngày PO; popup và Excel vẫn giữ File Name đầy đủ.
+Cột **Tuần** của Request lấy mã WK01–WK53 ở cuối tên file. Năm ưu tiên mã năm 19xx/20xx tách riêng trong tên file; nếu không có thì lấy từ ngày yêu cầu, có xử lý năm tuần ISO tại ranh giới đầu/cuối năm khi mã tuần trùng ngày. Nếu không xác định được năm thì ghi rõ chưa rõ năm. Hiển thị `WK31 · 2026` và lọc theo khóa năm–tuần, tránh gộp cùng tuần ở hai năm. Popup và Excel vẫn giữ tên file đầy đủ.
+
+`Waiting for GR` dùng màu tím, `Waiting for IR` màu vàng hổ phách, `Done` màu xanh. Cột Hall không hiển thị trên bảng Request; bộ lọc Hall, chi tiết và Excel vẫn giữ thông tin khu vực.
 
 ## Bộ lọc
 
@@ -44,9 +46,11 @@ Tuần Request lấy từ mã WK01–WK53 ở cuối File Name, không lấy t�
 
 ## Cuộn và hiệu năng
 
+Header nguồn hai tab cùng cao 52px trên desktop, header bảng 64px, các card và bộ lọc cùng kích thước gọn; màn hình nhỏ tự xuống dòng.
+
 Hai bảng dùng cùng bộ điều khiển: cuộn dọc trang, cuộn ngang trong bảng, tiêu đề nổi đồng bộ vị trí và độ rộng cột. Cột đầu được giữ trên tiêu đề nổi; nút sắp xếp vẫn hoạt động.
 
-Cuộn xuống đến cuối tải lượt kế tiếp, cuộn lên ở đầu cửa sổ hiện tại tải lại lượt trước. Số dòng đang dựng giới hạn 200, với mốc cuộn được giữ khi bỏ các dòng ngoài cửa sổ. Các nút Đầu/Cuối và cỡ lượt 25/50/100/200 vẫn hoạt động. Thay bộ lọc/sắp xếp quay về cửa sổ đầu; vẽ lại hoặc cuộn bằng code không tự nạp thêm. Cuộn trong menu bộ lọc/popup không làm bảng nền tải thêm; tab ẩn không được thay đổi cửa sổ.
+Cuộn xuống đến cuối tải lượt kế tiếp, cuộn lên ở đầu cửa sổ hiện tại tải lại lượt trước. Số dòng đang dựng giới hạn 200, với mốc cuộn được giữ khi bỏ các dòng ngoài cửa sổ. Các nút Đầu/Cuối và cỡ lượt 25/50/100/200 vẫn hoạt động. Thay bộ lọc/sắp xếp quay về cửa sổ đầu; vẽ lại hoặc cuộn bằng code không tự nạp thêm. Đặt con trỏ giữa bảng vẫn cuộn dọc trang được; cuộn ngang vẫn thuộc bảng. Bỏ chặn cuộn dọc tiếp từ bảng ra trang và định tuyến con lăn dọc qua bộ điều khiển dùng chung; Ctrl/Shift hoặc cuộn ngang không bị chiếm. Cuộn trong menu bộ lọc/popup không làm bảng nền tải thêm; tab ẩn không được thay đổi cửa sổ.
 
 Excel luôn xuất toàn bộ tập lọc theo thứ tự hiện tại, kể cả các dòng chưa dựng trong DOM; có hàng tiêu đề xanh đậm, độ rộng cột, hàng tiêu đề cố định và AutoFilter. Ngày là ô ngày thực, tiền/số có định dạng riêng, phần trăm lưu dạng tỷ lệ và hiển thị đúng định dạng %. Báo cáo PO thêm Tuần PO; báo cáo Request có cả trạng thái tính lại và trạng thái gốc.
 

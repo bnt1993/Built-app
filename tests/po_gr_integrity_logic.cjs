@@ -127,6 +127,17 @@ const linked=rows=>api.buildRequestReport([rh,request],rows,{poReady:true,grRead
   assert.equal(api.getRequestState().rows.length,1);
   sources.set('Request.js',null);await node('request-reload').fire('click');
   assert.equal(api.getRequestState().rows.length,0);assert.equal(api.getRequestState().loaded,false);
+  assert.equal(api.requestWeekYear('Source_WK01.xlsx','2024-12-30','WK01'),'2025');
+  assert.equal(api.requestWeekYear('Source_WK53.xlsx','2021-01-01','WK53'),'2020');
+  assert.equal(api.requestWeekYear('Source_2023_WK31.xlsx','2026-07-22','WK31'),'2023');
+  assert.equal(api.requestWeekYear('Source_WK31.xlsx','','WK31'),'');
+  assert.notEqual(api.requestStatusClass('Waiting for GR'),api.requestStatusClass('Waiting for IR'));
+  const years=api.buildRequestReport([rh,
+    change(rh,request,{'File Name':'Source_WK31.xlsx','Requested date':'2025-07-28'}),
+    change(rh,request,{'File Name':'Source_WK31.xlsx','Requested date':'2026-07-27'})],[],{poReady:false,grReady:false});
+  assert.deepEqual(Array.from(years,r=>r.weekKey),['2025-W31','2026-W31']);
+  assert.equal(api.filterRequestRows(years,{week:['2025-W31']}).length,1);
+  assert.equal(api.filterRequestRows(years,{week:['2025-W31','2026-W31']}).length,2);
   assert.equal(api.poWeek('2021-01-01'),'2020-W53');
   assert.equal(api.poWeek('2024-12-30'),'2025-W01');
   const retained=report([po('2'),po('3','PC','20')],[
