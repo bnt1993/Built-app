@@ -3,6 +3,35 @@ const html=fs.readFileSync(path.join(__dirname,'../PO_GR_Report.html'),'utf8');
 const po=[['Pur. Doc.','Item','Material','PO Quantity','OUn','Doc. Date','Supplier','Short Text']];
 const gr=[['Purchase order','Item','Material','Movement Type','Qty in unit of entry','Unit of Entry','Material Document','Material Doc.Item','Posting Date']];
 const req=[['File Name','SAP No','Requested date','Qty need to order','Status','PO No.','Hall','Description','Unit']];
+async function headerMetrics(page,request){
+  return page.evaluate(request=>{
+    const panel=document.getElementById(request?'request-panel':'po-gr-panel');
+    const source=panel.querySelector(request?'.request-source-bar':'.source-strip'),heading=panel.querySelector('.report-heading');
+    const kpis=panel.querySelector('.kpis'),table=panel.querySelector('.table-scroller'),filters=panel.querySelector('.filters,.request-filters');
+    return {sourceHeight:source.getBoundingClientRect().height,sourcePadding:getComputedStyle(source).padding,
+      kpiHeight:kpis.getBoundingClientRect().height,filterHeight:filters.getBoundingClientRect().height,
+      filterHeadingHeight:filters.querySelector('.filter-heading').getBoundingClientRect().height,
+      fieldHeight:filters.querySelector('.field').getBoundingClientRect().height,
+      fieldLabelSize:getComputedStyle(filters.querySelector('.field label')).fontSize,
+      filterFooterHeight:filters.querySelector('.filter-bottom').getBoundingClientRect().height,headingHeight:heading.getBoundingClientRect().height,
+      headingPadding:getComputedStyle(heading).padding,titleSize:getComputedStyle(heading.querySelector('h2')).fontSize,
+      tableTop:table.getBoundingClientRect().top+scrollY};
+  },request);
+}
+async function wheelFromTableCenter(page,request){
+  const selector=request?'#request-scroller':'#table-scroller';
+  await page.evaluate(()=>window.scrollTo(0,0));
+  const row=await page.locator(selector+' tbody tr').nth(4).boundingBox();
+  await page.mouse.move(Math.min(row.x+350,1300),row.y+row.height/2);
+  const before=await page.evaluate(()=>scrollY);await page.mouse.wheel(0,220);
+  await page.waitForFunction(y=>scrollY>y,before);
+  const vertical=await page.evaluate(()=>scrollY);
+  await page.mouse.wheel(220,0);await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(()=>scrollY),vertical,'horizontal wheel keeps page position');
+  assert((await page.locator(selector).evaluate(el=>el.scrollLeft))>0,'native horizontal scroll');
+  await page.locator(selector).evaluate(el=>el.scrollLeft=0);
+  await page.evaluate(()=>window.scrollTo(0,0));
+}
 for(let i=0;i<601;i++){
   const code=i===600?'4710000000':String(4810000000+i),sap='SAP'+i,date=i%2?'2026-07-01':'2026-01-02';
   po.push([code,'10',sap,2,'PC',date,i%2?'Supplier B':'Supplier A','Động cơ '+i]);
@@ -23,6 +52,7 @@ for(let i=0;i<601;i++){
   await page.goto('http://po-upgrades.test/');await page.waitForFunction(()=>document.getElementById('stat-total').textContent==='600');
   assert.equal(loads.filter(x=>x==='/PO.js').length,1,'load once');
   assert.equal(await page.locator('#report-table thead th').first().innerText().then(t=>t.includes('Tuần PO')),true);
+  const poHeaders=await headerMetrics(page,false);await wheelFromTableCenter(page,false);
   const statusField=page.locator('#status-filter').locator('..');
   await statusField.locator('summary').click();
   await statusField.getByRole('checkbox',{name:'Chưa nhận',exact:true}).check();
@@ -51,13 +81,24 @@ for(let i=0;i<601;i++){
   await page.evaluate(()=>window.scrollTo(0,0));await page.mouse.wheel(0,-300);
   await page.waitForFunction(before=>document.getElementById('page-summary').textContent!==before,wheelBefore);
   await page.locator('#tab-request').click();await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='601');
+  const requestHeaders=await headerMetrics(page,true);
+  assert.deepEqual(requestHeaders,poHeaders,'both source/table headers and table positions match');
+  assert.equal(requestHeaders.sourceHeight,52);assert.equal(requestHeaders.headingHeight,64);
+  assert.equal(await page.locator('#request-table th').count(),12);
+  assert.equal(await page.locator('#request-table [data-rsort="hall"]').count(),0);
+  assert(!(await page.locator('#request-table th').first().innerText()).includes('File Name'));
+  assert.match(await page.locator('#request-body td').first().innerText(),/^WK\d{2} · 2026$/);
+  const grColor=await page.locator('#request-body .tag.waiting-gr').first().evaluate(el=>getComputedStyle(el).backgroundColor);
+  const irColor=await page.locator('.request-status-legend .tag.waiting-ir').evaluate(el=>getComputedStyle(el).backgroundColor);
+  assert.notEqual(grColor,irColor,'Waiting for GR and IR have distinct colors');
+  await wheelFromTableCenter(page,true);
   const rows=await page.evaluate(()=>window.POGR.getRequestState().rows.map(r=>({status:r.status,source:r.sourceStatus,link:r.link,po:r.po})));
   assert.equal(rows.filter(r=>r.status==='Waiting for GR').length,201);
   assert.equal(rows.filter(r=>r.status==='Done').length,400);
   assert.equal(rows.find(r=>r.po==='4710000000').link,'no-gr','Request uses all PO numbers');
   assert(rows.every(r=>r.source==='Waiting for IR'));
   await page.locator('#request-status').selectOption(['Waiting for GR','Done'],{force:true});
-  await page.locator('#request-week').selectOption(['WK01','WK02'],{force:true});
+  await page.locator('#request-week').selectOption(['2026-W01','2026-W02'],{force:true});
   await page.locator('#request-hall').selectOption(['1','2'],{force:true});
   await page.waitForTimeout(100);assert.equal(await page.locator('#request-stat-total').innerText(),'601');
   const pending=page.waitForEvent('download');await page.locator('#request-export').click();

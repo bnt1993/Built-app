@@ -93,7 +93,7 @@ function routeFor(page,sources){
     return h&&!h.hidden;
   });
   const sticky=page.locator('.fixed-report-head[data-source-table="request-table"]');
-  assert.equal(await sticky.locator('thead th').count(),13);
+  assert.equal(await sticky.locator('thead th').count(),12);
   await requestScroller.evaluate(el=>el.scrollLeft=150);
   await page.waitForFunction(()=>{
     const pinned=document.querySelector('.fixed-report-head[data-source-table="request-table"] .fixed-head-first');
@@ -122,8 +122,8 @@ function routeFor(page,sources){
   assert.equal(await page.locator('.fixed-report-head[data-source-table="request-table"]').evaluate(e=>e.hidden),
     true,'old tab sticky header should disappear when switching tabs');
   await page.locator('#tab-request').click();
-  assert.equal(await page.locator('#request-table thead th').first().innerText().then(t=>t.includes('Tuần (File Name)')),true);
-  assert.match(await page.locator('#request-body tr td:first-child').first().innerText(),/^WK\d{2}$/);
+  assert.equal(await page.locator('#request-table thead th').first().innerText().then(t=>t.trim().startsWith('Tuần')&&!t.includes('File Name')),true);
+  assert.match(await page.locator('#request-body tr td:first-child').first().innerText(),/^WK\d{2} · \d{4}$/);
   const tops=await page.locator('#request-panel .request-filters .field').evaluateAll(nodes=>
     nodes.map(node=>Math.round(node.getBoundingClientRect().top)));
   assert.equal(tops.length,7,'seven Request filters must remain visible');
@@ -132,15 +132,15 @@ function routeFor(page,sources){
   assert.ok(tabHeight<=45,'compact tab height');
   const choices=await page.locator('#request-week option').evaluateAll(nodes=>
     nodes.map(n=>({value:n.value,label:n.textContent})));
-  assert.ok(choices.some(c=>c.value==='WK30'&&c.label.includes('22')));
-  assert.ok(choices.some(c=>c.value==='WK31'&&c.label.includes('18')));
-  assert.ok(choices.some(c=>c.value==='WK45'));
+  assert.ok(choices.some(c=>c.value==='2026-W30'&&c.label.includes('22')));
+  assert.ok(choices.some(c=>c.value==='2026-W31'&&c.label.includes('18')));
+  assert.ok(choices.some(c=>c.value==='2026-W45'));
   assert.equal(choices[0].value,'');
-  await page.locator('#request-week').selectOption('WK31',{force:true});
+  await page.locator('#request-week').selectOption('2026-W31',{force:true});
   await page.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='18');
   assert.equal(await page.locator('#request-body tr').count(),18);
   assert.equal(await page.locator('#request-body tr td:first-child').evaluateAll(rows=>
-    rows.every(cell=>cell.textContent==='WK31')),true);
+    rows.every(cell=>cell.textContent==='WK31 · 2026')),true);
   await page.locator('#request-link').selectOption('missing',{force:true});
   const expectedCombined=await page.evaluate(()=>
     window.POGR.getRequestState().rows.filter(r=>r.week==='WK31'&&r.link==='missing').length);
@@ -172,7 +172,8 @@ function routeFor(page,sources){
   const xlsx=fs.readFileSync(await download.path()).toString('utf8');
   assert.equal((xlsx.match(/<row r="/g)||[]).length,335);
   assert.ok(xlsx.includes('Request_PO_GR'));
-  assert.ok(xlsx.includes('Tuần (File Name)'));
+  assert.match(xlsx,/<t(?:\s[^>]*)?>Tuần<\/t>/);
+  assert.equal(xlsx.includes('Tuần (File Name)'),false);
   assert.ok(xlsx.includes('WK30')||xlsx.includes('WK31'));
   await page.locator('#tab-po-gr').click();
   assert.equal(await page.locator('#report-body tr').count(),5);
@@ -201,9 +202,9 @@ function routeFor(page,sources){
   const computed=await p2.evaluate(()=>window.POGR.getRequestState().rows
     .map(r=>({sap:r.sap,po:r.po,link:r.link,week:r.week,poQty:r.poQty,grQty:r.grQty})));
   assert.deepEqual(computed.map(r=>r.week),['WK31','WK32','WK45','','']);
-  await p2.locator('#request-week').selectOption('WK32',{force:true});
+  await p2.locator('#request-week').selectOption('2026-W32',{force:true});
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='1');
-  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK32');
+  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK32 · 2026');
   await p2.locator('#request-clear').click();
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='5');
   assert.ok((await p2.locator('#request-week option').allTextContents()).some(text=>text.includes('Không có tuần')));
@@ -212,10 +213,10 @@ function routeFor(page,sources){
   assert.deepEqual(computed.map(r=>r.link),
     ['partial','complete','missing','unavailable','mismatch']);
   assert.equal(computed[0].grQty,2);assert.equal(computed[0].poQty,5);
-  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
+  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31 · 2026');
   assert.match(await p2.locator('#request-body tr td').first().getAttribute('title'),/Wk31.xlsx/);
   await p2.locator('#request-table [data-rsort="week"]').click();
-  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31');
+  assert.equal(await p2.locator('#request-body tr td').first().innerText(),'WK31 · 2026');
   await p2.locator('#request-hall').selectOption('2',{force:true});
   await p2.waitForFunction(()=>document.getElementById('request-stat-total').textContent==='2');
   await p2.locator('#request-clear').click();
