@@ -720,6 +720,58 @@
       .header-controls{width:100%;justify-content:space-between}
     }
     @media(max-width:480px){#po-gr-panel .filters,#request-panel .request-filters{grid-template-columns:1fr}}
+    /* Request analytics uses the same source and reconciliation model as the detail report. */
+    #request-dashboard-panel{min-width:0}
+    .report-tabs{flex-wrap:wrap}
+    .dash-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;background:linear-gradient(110deg,#152f53,#244f7e);color:#fff;border:0}
+    .dash-hero .section-eyebrow{color:#a9c9ef;font-size:9px}
+    .dash-hero h1{font-size:23px;margin:6px 0;letter-spacing:-.03em}
+    .dash-hero p{font-size:12px;color:#ceddf0;margin:0;line-height:1.6}
+    .dash-hero-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:440px}
+    #dash-source{width:100%;font-size:10px;color:#c8daef;text-align:right;line-height:1.5}
+    .dash-hero-actions .button{min-height:33px;padding:7px 10px;font-size:10px}
+    .dash-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:13px 15px;overflow:visible}
+    .dash-filters .field{gap:4px}.dash-filters .field label{font-size:10px;line-height:14px}
+    .dash-filters .field input{height:32px;font-size:11px}
+    .dash-filter-footer{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #edf1f6;padding-top:8px;font-size:11px;color:#64758b}
+    .dash-notice{padding:10px 13px;margin-bottom:12px;border:1px solid #dbe8f6;background:#edf5ff;border-radius:10px;color:#395c82;font-size:11px;line-height:1.65;overflow-wrap:anywhere}
+    .dash-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+    .dash-metric{padding:13px 15px;background:#fff;border:1px solid #e2eaf3;border-radius:12px;box-shadow:0 5px 18px #254a7010;border-top:3px solid var(--metric-color,#387be3);min-width:0}
+    .dash-metric span{display:block;font-size:10px;font-weight:750;color:#64758b;line-height:1.4}
+    .dash-metric strong{display:block;margin:9px 0 6px;font-size:25px;line-height:1.1;font-weight:850;color:#213e62;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+    .dash-metric small{display:block;font-size:10px;line-height:1.5;color:#7c8da3}
+    .dash-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}
+    .dash-chart{padding:15px;margin:0;min-width:0;overflow:hidden}
+    .dash-trend{grid-column:1/-1}
+    .dash-chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .dash-chart-head h2{font-size:14px;line-height:1.5;margin:0;color:#274666}
+    .dash-chart-head p{font-size:10px;line-height:1.5;color:#8493a6;margin:3px 0 0}
+    .dash-chart-controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-size:10px;color:#667d97}
+    .dash-chart-controls select{height:30px;border:1px solid #dce6f2;border-radius:7px;background:#fff;font-size:10px;color:#294969;padding:3px 7px;max-width:100%}
+    .dash-empty{text-align:center;padding:28px 12px;font-size:12px;color:#8a99ad}
+    .dash-trend-scroll{overflow-x:auto;overscroll-behavior-x:contain}
+    .dash-trend-scroll svg{display:block;min-width:100%;height:250px}
+    .dash-chart-data{margin-top:10px;font-size:10px;color:#657c96}
+    .dash-chart-data summary{cursor:pointer;font-weight:700;padding:5px 0}
+    .dash-chart-data table{min-width:0;font-size:10px}.dash-chart-data th{position:static;padding:6px}.dash-chart-data td{padding:6px;white-space:normal}
+    .dash-status-layout{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+    .dash-donut{width:152px;height:152px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+    .dash-donut-center{width:112px;height:112px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .dash-donut-center strong{font-size:27px;color:#29496d}.dash-donut-center small{font-size:10px;color:#8a98aa}
+    .dash-status-legend{flex:1;min-width:150px;display:grid;gap:8px}
+    .dash-status-button{display:flex;justify-content:space-between;gap:10px;align-items:center;background:none;border:0;border-bottom:1px solid #edf1f6;padding:7px 0;text-align:left;color:#48617d;font-size:10px;width:100%}
+    .dash-status-button:hover{color:#245dd6}.dash-status-button i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px}
+    .dash-status-button small{display:block;color:#8a99ac;font-size:9px;margin-top:3px}
+    .dash-bars{display:grid;gap:10px}.dash-bar-label{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#47617c;margin-bottom:5px}
+    .dash-bar-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}.dash-bar-label strong{white-space:nowrap;color:#274d76}
+    .dash-bar-track{height:8px;border-radius:5px;background:#edf3fa;overflow:hidden}.dash-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#317be3,#73a8f1)}
+    .dash-detail-panel{padding:15px 0 0;overflow:hidden}.dash-detail-panel>.dash-chart-head{padding:0 15px}
+    .dash-detail-scroll{max-height:480px;overflow:auto;overscroll-behavior-x:contain;overscroll-behavior-y:auto}
+    .dash-detail-table{min-width:1040px}.dash-detail-table th{padding:11px 12px;top:0;z-index:4}
+    .dash-detail-table tbody td:first-child{position:static}
+    @media(max-width:1100px){.dash-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.dash-hero{align-items:flex-start}.dash-hero-actions{max-width:350px}}
+    @media(max-width:750px){.dash-hero{flex-direction:column;padding:15px}.dash-hero h1{font-size:20px}.dash-hero-actions{justify-content:flex-start;max-width:100%}#dash-source{text-align:left}.dash-grid{grid-template-columns:1fr}.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-metric{padding:10px}.dash-metric strong{font-size:21px}.dash-status-layout{gap:15px}.dash-filter-footer{align-items:flex-start}}
+    @media(max-width:420px){.dash-filters{grid-template-columns:1fr}.dash-chart-controls{width:100%}.dash-metric strong{font-size:19px}.dash-hero-actions .button{font-size:9px}.report-tab{padding:8px 7px;font-size:10px}}
   </style>
 </head>
 <body>
@@ -741,6 +793,9 @@
     <button type="button" class="report-tab" role="tab" id="tab-request"
       aria-controls="request-panel" aria-selected="false" tabindex="-1">
       <span aria-hidden="true">▤</span> Yêu cầu vật tư <span class="tab-count" id="request-tab-count"></span>
+    </button>
+    <button type="button" class="report-tab" role="tab" id="tab-request-dashboard" aria-controls="request-dashboard-panel" aria-selected="false" tabindex="-1">
+      <span aria-hidden="true">◈</span> Dashboard yêu cầu
     </button>
   </nav>
   <section id="po-gr-panel" role="tabpanel" aria-labelledby="tab-po-gr">
@@ -949,6 +1004,48 @@
       </div>
     </section>
     <p class="footnote">Request.js được ghép với PO.js bằng <b>số PO + mã SAP</b>, sau đó đối chiếu GR theo PO + Item + mã SAP. Dòng chưa ghi số PO không được tự gán theo mã vật tư vì có thể trùng nhiều đơn.</p>
+  </section>
+  <section id="request-dashboard-panel" role="tabpanel" aria-labelledby="tab-request-dashboard" hidden>
+    <div class="dash-hero panel">
+      <div><div class="section-eyebrow">TỔNG QUAN YÊU CẦU · EUR</div><h1>Dashboard yêu cầu vật tư</h1>
+        <p>Ngân sách yêu cầu, tiến độ mua hàng và các điểm cần xử lý.</p></div>
+      <div class="dash-hero-actions"><span id="dash-source" role="status">Chưa đọc Request.js</span>
+        <button type="button" class="button" id="dash-reload">↻ Làm mới dữ liệu</button>
+        <button type="button" class="button primary" id="dash-export">↓ Xuất Excel theo bộ lọc</button></div>
+    </div>
+    <section class="panel dash-filters" aria-label="Bộ lọc dashboard yêu cầu">
+      <div class="field"><label for="dash-search">Mã SAP, PO, tên vật tư, ghi chú</label><input type="search" id="dash-search" placeholder="Tìm một hoặc nhiều mã…"></div>
+      <div class="field"><label for="dash-year">Năm yêu cầu</label><select id="dash-year"><option value="">Tất cả năm</option></select></div>
+      <div class="field"><label for="dash-week">Tuần yêu cầu</label><select id="dash-week"><option value="">Tất cả tuần</option></select></div>
+      <div class="field"><label for="dash-status">Trạng thái yêu cầu</label><select id="dash-status"><option value="">Tất cả</option></select></div>
+      <div class="field"><label for="dash-supplier">Phụ trách / Supplier</label><select id="dash-supplier"><option value="">Tất cả</option></select></div>
+      <div class="field"><label for="dash-hall">Khu vực</label><select id="dash-hall"><option value="">Tất cả</option></select></div>
+      <div class="field"><label for="dash-order-type">Loại đặt hàng</label><select id="dash-order-type"><option value="">Tất cả</option></select></div>
+      <div class="field"><label for="dash-link">Kết quả đối chiếu PO/GR</label><select id="dash-link"><option value="">Tất cả</option></select></div>
+      <div class="field"><label for="dash-from">Ngày yêu cầu từ</label><input type="date" id="dash-from"></div>
+      <div class="field"><label for="dash-to">Đến ngày</label><input type="date" id="dash-to"></div>
+      <div class="dash-filter-footer"><span id="dash-filter-summary" aria-live="polite"></span><button type="button" class="ghost-link" id="dash-reset">Xóa bộ lọc</button></div>
+    </section>
+    <p id="dash-filter-error" class="filter-error" role="status" hidden></p>
+    <div class="dash-notice" id="dash-quality" role="status"></div>
+    <section class="dash-kpis" id="dash-kpis" aria-label="Tổng quan yêu cầu theo bộ lọc"></section>
+    <div class="dash-grid">
+      <section class="panel dash-chart dash-trend"><div class="dash-chart-head"><div><h2>Xu hướng yêu cầu</h2><p>Giá trị EUR và số dòng trong từng kỳ</p></div>
+        <div class="dash-chart-controls"><label for="dash-period">Gộp theo</label><select id="dash-period"><option value="week">Tuần</option><option value="month">Tháng</option><option value="year">Năm</option></select><label for="dash-measure">Chỉ số</label><select id="dash-measure"><option value="value">Giá trị EUR</option><option value="count">Số yêu cầu</option></select></div></div><div id="dash-trend-chart" class="dash-trend-scroll"></div></section>
+      <section class="panel dash-chart"><div class="dash-chart-head"><div><h2>Phân bổ trạng thái</h2><p>Số dòng yêu cầu · bấm trạng thái để lọc</p></div></div><div id="dash-status-chart"></div></section>
+      <section class="panel dash-chart"><div class="dash-chart-head"><div><h2>Top 10 vật tư theo giá trị</h2><p>Giá trị yêu cầu EUR, cộng theo mã SAP</p></div></div><div id="dash-material-chart"></div></section>
+      <section class="panel dash-chart"><div class="dash-chart-head"><div><h2>Phụ trách / Supplier</h2><p>Top 10 theo giá trị yêu cầu EUR</p></div></div><div id="dash-supplier-chart"></div></section>
+      <section class="panel dash-chart"><div class="dash-chart-head"><div><h2>Tiến độ đối chiếu PO / GR</h2><p>Phân biệt chưa nhập, nhập thiếu và đã đủ</p></div></div><div id="dash-link-chart"></div></section>
+      <section class="panel dash-chart"><div class="dash-chart-head"><div><h2>Thời gian chờ xử lý</h2><p>Waiting for IR / GR · từ ngày yêu cầu</p></div></div><div id="dash-aging-chart"></div></section>
+      <section class="panel dash-chart"><div class="dash-chart-head"><div><h2>Giá trị theo loại đặt hàng</h2><p>Giá trị yêu cầu EUR theo loại đặt hàng</p></div></div><div id="dash-type-chart"></div></section>
+    </div>
+    <section class="panel dash-detail-panel">
+      <div class="dash-chart-head"><div><h2>Chi tiết theo bộ lọc</h2><p id="dash-detail-summary">Nhấp đúp hoặc nhấn Enter để xem đối chiếu.</p></div><div class="dash-chart-controls"><label for="dash-sort">Sắp xếp</label><select id="dash-sort"><option value="amount">Giá trị cao nhất</option><option value="date">Ngày mới nhất</option><option value="week">Tuần mới nhất</option><option value="sap">Mã SAP</option></select></div></div>
+      <div class="dash-detail-scroll" id="dash-detail-scroll" tabindex="0" role="region" aria-label="Chi tiết yêu cầu dashboard có thể cuộn">
+        <table class="dash-detail-table"><thead><tr><th>Tuần</th><th>Mã SAP</th><th>Tên vật tư</th><th>Trạng thái</th><th>Giá trị EUR</th><th>Số PO</th><th>Kết quả đối chiếu</th></tr></thead><tbody id="dash-detail-body"></tbody></table>
+      </div><div class="table-footer"><span id="dash-page-info"></span><div class="pager"><button type="button" id="dash-prev">‹ Trước</button><button type="button" id="dash-next">Sau ›</button></div></div>
+    </section>
+    <p class="footnote">Giá trị EUR là giá trị yêu cầu trong Request.js, không phải giá trị GR hoặc chi phí thực tế. Không cộng lặp số lượng PO/GR qua nhiều yêu cầu cùng PO + SAP. Done có thể chỉ mới nhập một phần; xem biểu đồ đối chiếu để biết đã nhận đủ.</p>
   </section>
 </div>
 <dialog id="request-dialog" aria-labelledby="request-dialog-title">
@@ -1209,7 +1306,7 @@ function refreshMultiFilter(name){
 function refreshAllMultiFilters(){for(const name of multiFilters.keys())refreshMultiFilter(name)}
 function setupMultiFilters(){
   if(typeof document.createElement("div").querySelectorAll!=="function")return;
-  for(const name of ["status-filter","supplier-filter","po-week","request-status","request-link","request-week","request-hall"]){
+  for(const name of ["status-filter","supplier-filter","po-week","request-status","request-link","request-week","request-hall","dash-year","dash-week","dash-status","dash-supplier","dash-hall","dash-order-type","dash-link"]){
     const select=id(name);if(!select?.parentElement)continue;
     const current=select.value;select.multiple=true;select.hidden=true;select.setAttribute("aria-hidden","true");
     for(const option of Array.from(select.options))option.selected=Boolean(current&&current!=="all"&&option.value===current);
@@ -1527,6 +1624,62 @@ function sortRequestRows(rows,key,order){
     return String(x??"").localeCompare(String(y??""),"vi",{numeric:true})*d||a.index-b.index;
   });
 }
+// Request budget measures stay separate from receipt quantities: repeated PO/SAP
+// links must never multiply a shared PO or GR into an apparent stock total.
+function requestValue(row){
+  if(Number.isFinite(row.amount)&&row.amount>=0)return {value:row.amount,derived:false};
+  if(Number.isFinite(row.price)&&row.price>=0&&Number.isFinite(row.qty)&&row.qty>=0&&Number.isFinite(row.price*row.qty))
+    return {value:row.price*row.qty,derived:true};
+  return {value:null,derived:false};
+}
+function requestYear(row){return row.weekYear||(row.date||"").slice(0,4)||"__unknown__"}
+function filterDashboardRows(rows,filters){
+  return filterRequestRows(rows,{...filters,status:[],hall:[]}).filter(row=>matchesFilter(filters.status,row.status||"__unknown__")&&matchesFilter(filters.hall,row.hall||"__unknown__")&&matchesFilter(filters.year,requestYear(row))&&
+    matchesFilter(filters.supplier,row.supplier||"__unknown__")&&matchesFilter(filters.orderType,row.orderType||"__unknown__"));
+}
+function buildRequestDashboard(rows,{period="week",today=todayISO()}={}){
+  const groups={status:new Map(),link:new Map(),material:new Map(),supplier:new Map(),orderType:new Map(),trend:new Map(),aging:new Map()};
+  const metrics={count:rows.length,value:0,valued:0,derived:0,missingValue:0,materials:new Set(),pos:new Set(),matched:0,waitingIR:0,waitingGR:0,partial:0,complete:0,checks:0,missingPO:0,unplacedValue:0,waitingGRValue:0,partialValue:0,completeValue:0,unplaced:0,undated:0,future:0};
+  function add(map,key,label,row,value){
+    if(!map.has(key))map.set(key,{key,label,count:0,value:0,missing:0});
+    const group=map.get(key);group.count++;if(value===null)group.missing++;else group.value+=value;
+  }
+  for(const row of rows){
+    const money=requestValue(row),value=money.value;
+    if(value===null)metrics.missingValue++;else{metrics.value+=value;metrics.valued++;if(money.derived)metrics.derived++}
+    if(row.sap)metrics.materials.add(row.sap);if(row.po)metrics.pos.add(row.po);
+    if(row.matches.length)metrics.matched++;
+    if(!row.po)metrics.missingPO++;
+    if(row.status==="Waiting for IR")metrics.waitingIR++;
+    if(row.status==="Waiting for GR"){metrics.waitingGR++;metrics.waitingGRValue+=value??0}
+    if(row.link==="partial"){metrics.partial++;metrics.partialValue+=value??0}
+    if(row.link==="complete"){metrics.complete++;metrics.completeValue+=value??0}
+    if(row.link==="missing"){metrics.unplaced++;metrics.unplacedValue+=value??0}
+    if(row.status==="Cần kiểm tra"||!["missing","no-gr","partial","complete"].includes(row.link))metrics.checks++;
+    add(groups.status,row.status||"__unknown__",row.status||"Chưa có trạng thái",row,value);
+    add(groups.link,row.link,REQUEST_LINK_LABELS[row.link]||row.link,row,value);
+    add(groups.material,row.sap||"__unknown__",row.sap?row.sap+" · "+row.description:"Thiếu mã SAP",row,value);
+    add(groups.supplier,row.supplier||"__unknown__",row.supplier||"Chưa có phụ trách",row,value);
+    add(groups.orderType,row.orderType||"__unknown__",row.orderType||"Chưa có loại đặt",row,value);
+    const key=period==="year"?requestYear(row):period==="month"?(row.date||"").slice(0,7):row.weekKey;
+    const label=period==="week"?(key?requestWeekLabel(key):"Không có tuần"):key&&key!=="__unknown__"?key:"Chưa rõ kỳ";
+    add(groups.trend,key||"__unknown__",label,row,value);
+    if(["Waiting for IR","Waiting for GR"].includes(row.status)){
+      const days=row.date?Math.floor((Date.parse(today+"T00:00:00Z")-Date.parse(row.date+"T00:00:00Z"))/86400000):NaN;
+      if(!Number.isFinite(days))metrics.undated++;
+      else if(days<0)metrics.future++;
+      else{const bucket=days<=7?"0–7 ngày":days<=30?"8–30 ngày":days<=60?"31–60 ngày":"Trên 60 ngày";add(groups.aging,bucket,bucket,row,value)}
+    }
+  }
+  metrics.materials=metrics.materials.size;metrics.pos=metrics.pos.size;
+  metrics.coverage=metrics.count?metrics.matched/metrics.count*100:0;
+  const result={metrics};
+  for(const [name,map] of Object.entries(groups))result[name]=Array.from(map.values());
+  result.trend.sort((a,b)=>a.key==="__unknown__"?1:b.key==="__unknown__"?-1:a.key.localeCompare(b.key));
+  for(const name of ["material","supplier","orderType"])result[name].sort((a,b)=>b.value-a.value||b.count-a.count||a.label.localeCompare(b.label,"vi"));
+  result.aging.sort((a,b)=>["0–7 ngày","8–30 ngày","31–60 ngày","Trên 60 ngày"].indexOf(a.key)-["0–7 ngày","8–30 ngày","31–60 ngày","Trên 60 ngày"].indexOf(b.key));
+  return result;
+}
 function isTable(value){return Array.isArray(value)&&value.length>0&&Array.isArray(value[0])}
 // PO.js uses window.duLieuPO in the new export; older exports use
 // window.duLieuCongTy. Prioritize the new name, never evaluate uploaded text.
@@ -1642,8 +1795,8 @@ async function loadAll(){
       if(version.gr===loadVersions.gr)acceptSource("gr",gr);
     }catch(e){if(version.gr===loadVersions.gr)rejectSource("gr",e)}
     reportFresh();
-    if(activeReportTab==="request")await loadRequestFile();
-  }finally{state.loading=false;id("reload-btn").disabled=false;updateSourceStatus()}
+    if(["request","dashboard"].includes(activeReportTab))await loadRequestFile();
+  }finally{state.loading=false;id("reload-btn").disabled=false;updateSourceStatus();renderRequestDashboard()}
 }
 async function loadSelected(file,kind){
   if(!file)return;
@@ -1662,7 +1815,7 @@ function cellsXML(values,rowNum,formats={}){
   return values.map((v,i)=>{
     const addr=colName(i)+rowNum;
     const style=rowNum===1?1:(formats.dates||[]).includes(i)?4:(formats.percent||[]).includes(i)?5:
-      (formats.money||[]).includes(i)?3:typeof v==="number"?2:0;
+      (formats.money||[]).includes(i)?3:typeof v==="number"?(Number.isInteger(v)?6:2):0;
     if(typeof v==="number"&&Number.isFinite(v))return '<c r="'+addr+'" s="'+style+'"><v>'+v+'</v></c>';
     if(typeof v==="number")v=null;
     return '<c r="'+addr+'" s="'+style+'" t="inlineStr"><is><t>'+xml(v??"")+'</t></is></c>';
@@ -1670,22 +1823,22 @@ function cellsXML(values,rowNum,formats={}){
 }
 function workbookColumns(headers){
   return '<cols>'+headers.map((label,i)=>{
-    const width=/Tên vật tư|Mô tả|File nguồn|Ghi chú|Trạng thái gốc/.test(label)?42:/Trạng thái|Kết quả|Nhà cung cấp|Phụ trách/.test(label)?24:/Số PO|Mã vật tư|Mã SAP|Tuần/.test(label)?18:15;
+    const width=/Tên vật tư|Mô tả|File nguồn|Ghi chú|Trạng thái gốc|Cách tính/.test(label)?42:/Trạng thái|Kết quả|Nhà cung cấp|Phụ trách/.test(label)?24:/Số PO|Mã vật tư|Mã SAP|Tuần/.test(label)?18:15;
     return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+width+'" customWidth="1"/>';
   }).join("")+'</cols>';
 }
 function reportWorkbook(entries){
   const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
-  const styles='<styleSheet xmlns="'+ns+'"><numFmts count="4">'+
-    '<numFmt numFmtId="164" formatCode="#,##0.####"/><numFmt numFmtId="165" formatCode="#,##0.00####"/>'+
-    '<numFmt numFmtId="166" formatCode="dd/mm/yyyy"/><numFmt numFmtId="167" formatCode="0.0%"/></numFmts>'+
+  const styles='<styleSheet xmlns="'+ns+'"><numFmts count="5">'+
+    '<numFmt numFmtId="164" formatCode="#,##0.0#############"/><numFmt numFmtId="165" formatCode="#,##0.00####"/>'+
+    '<numFmt numFmtId="166" formatCode="dd/mm/yyyy"/><numFmt numFmtId="167" formatCode="0.0%"/><numFmt numFmtId="168" formatCode="#,##0"/></numFmts>'+
     '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/></font></fonts>'+
     '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF245DD6"/><bgColor indexed="64"/></patternFill></fill></fills>'+
     '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'+
     '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
-    '<cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+    '<cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
     '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>'+
-    [164,165,166,167].map(id=>'<xf numFmtId="'+id+'" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>').join("")+
+    [164,165,166,167,168].map(id=>'<xf numFmtId="'+id+'" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>').join("")+
     '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
   const files=entries.map(([name,text])=>[name,name==='[Content_Types].xml'?text.replace('</Types>','<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'):
     name==='xl/_rels/workbook.xml.rels'?text.replace('</Relationships>','<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'):text]);
@@ -1791,15 +1944,16 @@ const requestId=name=>id("request-"+name);
 function setReportTab(next){
   activeReportTab=next;
   for(const [name,tab,panel] of [["po","tab-po-gr","po-gr-panel"],
-    ["request","tab-request","request-panel"]]){
+    ["request","tab-request","request-panel"],["dashboard","tab-request-dashboard","request-dashboard-panel"]]){
     const selected=name===next,button=id(tab);
     button.classList.toggle("active",selected);
     button.setAttribute("aria-selected",String(selected));
     button.tabIndex=selected?0:-1;
     id(panel).hidden=!selected;
   }
-  if(next==="request"&&!requestState.loaded&&!requestState.loading)
+  if(["request","dashboard"].includes(next)&&!requestState.loaded&&!requestState.loading)
     loadRequestFile();
+  if(next==="dashboard")renderRequestDashboard();
   // Hide the prior tab's floating header immediately on tab changes.
   scheduleFixedHeaders();
 }
@@ -1809,6 +1963,7 @@ function updateRequestSource(message,error=false){
   id("request-source-update").textContent="Request.js: "+(requestState.updated||"chưa rõ ngày cập nhật");
   id("request-tab-count").textContent=requestState.loaded?
     "("+fmt(requestState.rows.length)+")":"";
+  renderRequestDashboard();
 }
 function requestFilters(){
   return {query:requestId("search").value,status:selectedValues("request-status"),
@@ -1823,6 +1978,7 @@ function refreshRequestChoices(){
   refreshMultiFilter("request-week");
   updateSelect("request-hall",requestState.rows.map(r=>r.hall),"Tất cả Hall");
   updateSelect("request-status",requestState.rows.map(r=>r.status),"Tất cả trạng thái");
+  refreshDashboardChoices();
 }
 function rebuildRequests(){
   if(!requestState.data.length)return;
@@ -1860,7 +2016,7 @@ async function loadRequestFile(){
   }catch(err){
     if(version===loadVersions.request)clearRequestReport("Không tải được Request.js: "+err.message);
   }finally{
-    requestState.loading=false;requestId("reload").disabled=false;
+    requestState.loading=false;requestId("reload").disabled=false;renderRequestDashboard();
   }
 }
 async function applyRequestUpload(file){
@@ -2003,21 +2159,23 @@ function showRequestDetails(row){
   requestId("jump-po").dataset.po=row.po;
   id("request-dialog").showModal();
 }
-function requestXlsx(rows){
+function requestXlsx(rows,{deriveValues=false}={}){
   const cols=["Tuần","Ngày yêu cầu","Mã SAP","Mô tả","SL yêu cầu","Đơn vị",
     "Hall","Trạng thái Request","Số PO","Ngày đặt PO","SL PO","SL GR",
     "% nhập/PO","Kết quả đối chiếu","Phụ trách","Đơn giá EUR","Giá trị EUR",
     "Tồn tại lúc yêu cầu","Điểm đặt hàng","Lô đặt hàng","Loại đặt",
     "Ghi chú","File nguồn","STT dòng","Nhóm mua hàng","Trạng thái gốc trong nguồn"];
+  if(deriveValues)cols.push("Cách tính giá trị EUR");
   const grid=[cols,...rows.map(r=>[r.weekLabel||"—",xlsxDate(r.date),r.sap,r.description,r.qty,r.unit,
     r.hall,r.status,r.po,xlsxDate(r.orderedDate),
     Number.isFinite(r.poQty)?r.poQty:null,
     Number.isFinite(r.grQty)?r.grQty:null,
     Number.isFinite(r.percent)?r.percent/100:null,
     REQUEST_LINK_LABELS[r.link]||r.link,r.supplier,
-    Number.isFinite(r.price)?r.price:null,Number.isFinite(r.amount)?r.amount:null,
+    Number.isFinite(r.price)?r.price:null,deriveValues?requestValue(r).value:Number.isFinite(r.amount)?r.amount:null,
     Number.isFinite(r.stock)?r.stock:null,Number.isFinite(r.reorder)?r.reorder:null,
-    Number.isFinite(r.lot)?r.lot:null,r.orderType,r.note,r.file,r.rowNo,r.group,r.sourceStatus])];
+    Number.isFinite(r.lot)?r.lot:null,r.orderType,r.note,r.file,r.rowNo,r.group,r.sourceStatus,
+    ...(deriveValues?[requestValue(r).value===null?"Chưa xác định":requestValue(r).derived?"Đơn giá × SL yêu cầu":"Request.js / Amount(EUR)"]:[])])];
   const last=colName(cols.length-1);
   const sheet='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
     '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
@@ -2046,14 +2204,166 @@ function exportRequests(){
 }
 
 
-for(const [name,selector] of [["po","tab-po-gr"],["request","tab-request"]]){
+const dashboardState={rows:[],page:0,size:50,summary:null};
+const dashId=name=>id("dash-"+name);
+const euro=new Intl.NumberFormat("vi-VN",{style:"currency",currency:"EUR",maximumFractionDigits:2});
+const moneyText=value=>Number.isFinite(value)?euro.format(value):"—";
+const groupMoney=group=>group.count===group.missing?"—":moneyText(group.value);
+function dashNode(tag,className,text){const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node}
+function dashboardFilters(){return {query:dashId("search").value,year:selectedValues("dash-year"),week:selectedValues("dash-week"),
+  status:selectedValues("dash-status"),supplier:selectedValues("dash-supplier"),hall:selectedValues("dash-hall"),
+  orderType:selectedValues("dash-order-type"),link:selectedValues("dash-link"),from:dashId("from").value,to:dashId("to").value}}
+function refreshDashboardWeeks(){
+  const years=selectedValues("dash-year"),rows=requestState.rows.filter(r=>matchesFilter(years,requestYear(r)));
+  updateSelect("dash-week",rows.map(r=>r.weekKey||"__no_week__"),"Tất cả tuần");
+  for(const option of Array.from(dashId("week").options))if(option.value)option.textContent=requestWeekLabel(option.value);
+  refreshMultiFilter("dash-week");
+}
+function refreshDashboardChoices(){
+  updateSelect("dash-year",requestState.rows.map(requestYear),"Tất cả năm");
+  for(const option of Array.from(dashId("year").options))if(option.value==="__unknown__")option.textContent="Chưa rõ năm";
+  refreshMultiFilter("dash-year");refreshDashboardWeeks();
+  for(const [name,key] of [["status","status"],["supplier","supplier"],["hall","hall"],["order-type","orderType"],["link","link"]]){
+    updateSelect("dash-"+name,requestState.rows.map(r=>r[key]||"__unknown__"),"Tất cả");
+    for(const option of Array.from(dashId(name).options))if(option.value){
+      if(name==="link")option.textContent=REQUEST_LINK_LABELS[option.value]||option.value;
+      else if(option.value==="__unknown__")option.textContent="Chưa có thông tin";
+    }
+    refreshMultiFilter("dash-"+name);
+  }
+}
+function chooseDashboardFilter(name,value){
+  const select=dashId(name);for(const option of Array.from(select.options))option.selected=option.value===value;
+  refreshMultiFilter("dash-"+name);renderRequestDashboard();
+}
+function dashboardEmpty(target,message="Không có dữ liệu theo bộ lọc."){target.replaceChildren(dashNode("div","dash-empty",message))}
+function dashboardBars(name,groups,measure="value",limit=10,onSelect=null){
+  const target=dashId(name);if(!groups.length){dashboardEmpty(target);return}
+  const wrap=dashNode("div","dash-bars"),max=Math.max(...groups.map(g=>g[measure]),0);
+  for(const group of groups.slice(0,limit)){
+    const item=dashNode("div"),label=dashNode(onSelect?"button":"div","dash-bar-label");
+    if(onSelect){label.type="button";label.style.cssText="width:100%;border:0;background:none;padding:0;text-align:left";label.addEventListener("click",()=>onSelect(group.key))}
+    const labelText=dashNode("span","",group.label);labelText.title=group.label;
+    label.append(labelText,dashNode("strong","",measure==="value"?groupMoney(group):fmt(group.count)+" dòng"));
+    const track=dashNode("div","dash-bar-track"),bar=dashNode("div","dash-bar-fill");
+    bar.style.width=(max?Math.max(0,group[measure])/max*100:0)+"%";track.appendChild(bar);
+    item.append(label,track);item.title=group.label+" · "+fmt(group.count)+" yêu cầu · "+groupMoney(group)+(group.missing?" · "+group.missing+" dòng thiếu giá trị":"");wrap.appendChild(item);
+  }
+  target.replaceChildren(wrap);
+}
+function dashboardTrend(groups){
+  const target=dashId("trend-chart");if(!groups.length){dashboardEmpty(target);return}
+  const measure=dashId("measure").value||"value",isMoney=measure==="value";
+  const width=Math.max(target.clientWidth||760,760,groups.length*76+90),height=250,left=66,bottom=202,plotHeight=150,barWidth=Math.min(44,(width-left-15)/groups.length*.6),gap=(width-left-15)/groups.length;
+  const max=Math.max(...groups.map(g=>g[measure]),1),ns="http://www.w3.org/2000/svg";
+  const svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 "+width+" "+height);svg.style.width=width+"px";svg.setAttribute("role","img");svg.setAttribute("aria-label",isMoney?"Giá trị yêu cầu EUR theo kỳ":"Số dòng yêu cầu theo kỳ");
+  const draw=(tag,attrs,text,parent=svg)=>{const n=document.createElementNS(ns,tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;parent.appendChild(n);return n};
+  for(let i=0;i<=4;i++){
+    const y=bottom-i/4*plotHeight,value=max*i/4;
+    draw("line",{x1:left,y1:y,x2:width-8,y2:y,stroke:"#e7eef7"});
+    draw("text",{x:left-8,y:y+3,"text-anchor":"end",fill:"#8b9db1","font-size":10},new Intl.NumberFormat("vi-VN",{notation:"compact",maximumFractionDigits:1}).format(value));
+  }
+  groups.forEach((group,i)=>{
+    const h=group[measure]/max*plotHeight,x=left+i*gap+(gap-barWidth)/2;
+    const rect=draw("rect",{x,y:bottom-h,width:barWidth,height:h,rx:4,fill:"#3c82e5"});
+    draw("title",{},group.label+": "+groupMoney(group)+" · "+fmt(group.count)+" yêu cầu"+(group.missing?" · "+group.missing+" thiếu giá trị":""),rect);
+    draw("text",{x:x+barWidth/2,y:bottom+20,"text-anchor":"middle",fill:"#647e9d","font-size":9},group.label);
+    draw("text",{x:x+barWidth/2,y:Math.max(16,bottom-h-7),"text-anchor":"middle",fill:"#325d92","font-size":9},new Intl.NumberFormat("vi-VN",{notation:"compact",maximumFractionDigits:1}).format(group[measure]));
+  });
+  const details=dashNode("details","dash-chart-data"),table=dashNode("table"),head=dashNode("tr"),tbody=dashNode("tbody");
+  for(const t of ["Kỳ","Số yêu cầu","Giá trị EUR","Thiếu giá trị"])head.appendChild(dashNode("th","",t));
+  const thead=dashNode("thead");thead.appendChild(head);table.append(thead,tbody);
+  for(const g of groups){const tr=dashNode("tr");for(const value of [g.label,fmt(g.count),groupMoney(g),fmt(g.missing)])tr.appendChild(dashNode("td","",value));tbody.appendChild(tr)}
+  details.append(dashNode("summary","","Xem dữ liệu biểu đồ"),table);target.replaceChildren(svg,details);
+}
+function dashboardStatuses(groups,total){
+  const target=dashId("status-chart");if(!total){dashboardEmpty(target);return}
+  const colors={"Done":"#20a78b","Waiting for GR":"#8c64dc","Waiting for IR":"#e7ae3d","Cần kiểm tra":"#e16a85"},layout=dashNode("div","dash-status-layout"),donut=dashNode("div","dash-donut"),legend=dashNode("div","dash-status-legend");
+  let start=0;const stops=[];
+  for(const group of groups){
+    const end=start+group.count/total*100,color=colors[group.key]||"#7089a9";stops.push(color+" "+start+"% "+end+"%");start=end;
+    const button=dashNode("button","dash-status-button"),label=dashNode("span"),dot=dashNode("i"),values=dashNode("span");
+    dot.style.background=color;label.append(dot,document.createTextNode(group.label));values.append(dashNode("strong","",fmt(group.count)+" · "+pct(group.count/total*100)),dashNode("small","",groupMoney(group)));
+    button.type="button";button.append(label,values);button.addEventListener("click",()=>chooseDashboardFilter("status",group.key));legend.appendChild(button);
+  }
+  donut.style.background="conic-gradient("+stops.join(",")+")";donut.setAttribute("role","img");donut.setAttribute("aria-label","Phân bổ "+total+" yêu cầu theo trạng thái");
+  const center=dashNode("div","dash-donut-center");center.append(dashNode("strong","",fmt(total)),dashNode("small","","yêu cầu"));donut.appendChild(center);layout.append(donut,legend);target.replaceChildren(layout);
+}
+function dashboardSortedRows(){
+  const rows=dashboardState.rows,key=dashId("sort").value||"amount";
+  return key==="amount"?rows.slice().sort((a,b)=>(requestValue(b).value??-Infinity)-(requestValue(a).value??-Infinity)||a.index-b.index):sortRequestRows(rows,key,key==="sap"?"asc":"desc");
+}
+function dashboardDetails(){
+  const rows=dashboardState.rows,sorted=dashboardSortedRows();
+  dashboardState.page=Math.max(0,Math.min(dashboardState.page,Math.max(0,Math.ceil(rows.length/dashboardState.size)-1)));
+  const start=dashboardState.page*dashboardState.size,body=dashId("detail-body"),fragment=document.createDocumentFragment();
+  for(const row of sorted.slice(start,start+dashboardState.size)){
+    const tr=dashNode("tr");tr.tabIndex=0;tr.dataset.requestIndex=String(row.index);tr.setAttribute("aria-label","Chi tiết yêu cầu "+row.sap);
+    td(tr,row.weekLabel||"—");td(tr,row.sap||"—","sap");td(tr,row.description||"—","desc",row.description);
+    const cell=td(tr,"");cell.appendChild(dashNode("span","tag "+requestStatusClass(row.status),row.status||"—"));
+    td(tr,moneyText(requestValue(row).value),"number");td(tr,row.po||"—");td(tr,REQUEST_LINK_LABELS[row.link]||row.link);fragment.appendChild(tr);
+  }
+  if(!rows.length){const tr=dashNode("tr"),cell=td(tr,"Không có yêu cầu phù hợp.");cell.colSpan=7;fragment.appendChild(tr)}
+  body.replaceChildren(fragment);dashId("page-info").textContent=rows.length?fmt(start+1)+"–"+fmt(Math.min(start+dashboardState.size,rows.length))+" / "+fmt(rows.length)+" yêu cầu":"0 yêu cầu";
+  dashId("prev").disabled=dashboardState.page===0;dashId("next").disabled=start+dashboardState.size>=rows.length;
+}
+function renderRequestDashboard(){
+  if(activeReportTab!=="dashboard")return;
+  const filters=dashboardFilters(),valid=validRange(filters.from,filters.to,dashId("filter-error"));
+  const rows=valid?filterDashboardRows(requestState.rows,filters):[],summary=buildRequestDashboard(rows,{period:dashId("period").value||"week"});
+  dashboardState.rows=rows;dashboardState.summary=summary;dashboardState.page=0;
+  const m=summary.metrics;
+  dashId("source").textContent=requestState.loading?"Đang tải Request.js…":requestState.error||"Request.js: "+(requestState.updated||"chưa rõ ngày cập nhật")+" · PO/GR: "+(state.loaded?"đã kết nối":"cần kiểm tra nguồn");
+  dashId("filter-summary").textContent=fmt(m.count)+" / "+fmt(requestState.rows.length)+" yêu cầu · "+fmt(m.materials)+" mã SAP · "+fmt(m.pos)+" số PO";
+  dashId("quality").textContent="Giá trị yêu cầu EUR: "+fmt(m.valued)+"/"+fmt(m.count)+" dòng có giá trị hợp lệ · "+fmt(m.derived)+" dòng tính từ đơn giá × số lượng · "+fmt(m.missingValue)+" dòng chưa có giá trị, không cộng vào tổng. "+(m.undated||m.future?"Thời gian chờ loại "+fmt(m.undated)+" dòng thiếu ngày và "+fmt(m.future)+" dòng có ngày tương lai. ":"")+"Done bao gồm nhập thiếu; tiến độ đã nhận đủ được thống kê riêng.";
+  const subsetValue=test=>{const subset=rows.filter(test),values=subset.map(requestValue).filter(v=>v.value!==null);return subset.length&&!values.length?"—":moneyText(values.reduce((n,v)=>n+v.value,0))};
+  const cards=[
+    ["Tổng yêu cầu",fmt(m.count),fmt(m.materials)+" mã SAP trong kỳ","#347de3","total"],
+    ["Giá trị yêu cầu EUR",m.valued?moneyText(m.value):"—",fmt(m.valued)+" dòng có giá trị hợp lệ","#347de3","value"],
+    ["Waiting for IR",fmt(m.waitingIR),"Theo trạng thái yêu cầu hiện tại","#e7ae3d","waiting-ir"],
+    ["Waiting for GR",fmt(m.waitingGR),subsetValue(r=>r.status==="Waiting for GR")+" giá trị yêu cầu","#8c64dc","waiting-gr"],
+    ["Đã nhập một phần",fmt(m.partial),subsetValue(r=>r.link==="partial")+" giá trị yêu cầu","#ed9a43","partial"],
+    ["Đã nhận đủ / vượt",fmt(m.complete),subsetValue(r=>r.link==="complete")+" giá trị yêu cầu","#20a78b","complete"],
+    ["Yêu cầu khớp PO + SAP",pct(m.coverage),fmt(m.matched)+" / "+fmt(m.count)+" dòng · "+fmt(m.pos)+" số PO đã ghi","#4b80b8","coverage"],
+    ["Cần kiểm tra đối chiếu",fmt(m.checks),fmt(m.missingPO)+" yêu cầu chưa ghi số PO","#e16a85","checks"]];
+  const fragment=document.createDocumentFragment();
+  for(const [label,value,note,color,key]of cards){const card=dashNode("article","dash-metric");card.style.setProperty("--metric-color",color);card.dataset.metric=key;card.append(dashNode("span","",label),dashNode("strong","",value),dashNode("small","",note));fragment.appendChild(card)}
+  dashId("kpis").replaceChildren(fragment);dashboardTrend(summary.trend);dashboardStatuses(summary.status,m.count);
+  dashboardBars("material-chart",summary.material,"value",10,key=>{dashId("search").value=key==="__unknown__"?"":key;renderRequestDashboard()});
+  dashboardBars("supplier-chart",summary.supplier,"value",10,key=>chooseDashboardFilter("supplier",key));
+  dashboardBars("type-chart",summary.orderType,"value",10,key=>chooseDashboardFilter("order-type",key));
+  dashboardBars("link-chart",summary.link.slice().sort((a,b)=>b.count-a.count),"count",20,key=>chooseDashboardFilter("link",key));
+  dashboardBars("aging-chart",summary.aging,"count",4);dashboardDetails();dashId("export").disabled=!rows.length;
+}
+let dashDebounce;
+for(const name of ["search","year","week","status","supplier","hall","order-type","link","from","to"]){
+  dashId(name).addEventListener(name==="search"?"input":"change",()=>{
+    clearTimeout(dashDebounce);if(name==="year")refreshDashboardWeeks();
+    dashDebounce=setTimeout(renderRequestDashboard,name==="search"?150:0);
+  });
+}
+dashId("reset").addEventListener("click",()=>{
+  for(const name of ["search","year","week","status","supplier","hall","order-type","link","from","to"]){const input=dashId(name);input.value="";if(input.multiple)for(const option of Array.from(input.options))option.selected=false}
+  refreshDashboardWeeks();refreshAllMultiFilters();renderRequestDashboard();
+});
+for(const name of ["period","measure"])dashId(name).addEventListener("change",renderRequestDashboard);
+dashId("sort").addEventListener("change",()=>{dashboardState.page=0;dashboardDetails()});
+for(const [name,step]of [["prev",-1],["next",1]])dashId(name).addEventListener("click",()=>{dashboardState.page+=step;dashboardDetails()});
+dashId("detail-body").addEventListener("dblclick",requestRowAction);dashId("detail-body").addEventListener("keydown",requestRowAction);
+dashId("reload").addEventListener("click",async()=>{dashId("reload").disabled=true;try{await loadAll();if(!requestState.loaded&&!requestState.loading)await loadRequestFile()}finally{dashId("reload").disabled=false;renderRequestDashboard()}});
+dashId("export").addEventListener("click",()=>{
+  if(!dashboardState.rows.length)return;
+  const url=URL.createObjectURL(requestXlsx(dashboardSortedRows(),{deriveValues:true})),a=document.createElement("a");a.href=url;a.download="Dashboard_Yeu_cau_"+todayISO()+".xlsx";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+});
+
+for(const [name,selector] of [["po","tab-po-gr"],["request","tab-request"],["dashboard","tab-request-dashboard"]]){
   id(selector).addEventListener("click",()=>setReportTab(name));
 }
 document.querySelector(".report-tabs").addEventListener("keydown",event=>{
   if(event.key!=="ArrowLeft"&&event.key!=="ArrowRight")return;
-  const next=activeReportTab==="po"?"request":"po";
-  setReportTab(next);
-  id(next==="po"?"tab-po-gr":"tab-request").focus();
+  const tabs=[["po","tab-po-gr"],["request","tab-request"],["dashboard","tab-request-dashboard"]];
+  const step=event.key==="ArrowRight"?1:-1,next=tabs[(tabs.findIndex(t=>t[0]===activeReportTab)+step+tabs.length)%tabs.length];
+  setReportTab(next[0]);id(next[1]).focus();
   event.preventDefault();
 });
 requestId("reload").addEventListener("click",loadRequestFile);
@@ -2284,9 +2594,9 @@ function installReportScrolling(){
 setupMultiFilters();
 if(typeof window.scrollBy==="function")installReportScrolling();
 
-window.POGR={requestWeekYear,requestStatusClass,poWeek,weekText,moveReportWindow,number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
+window.POGR={requestValue,requestYear,filterDashboardRows,buildRequestDashboard,requestWeekYear,requestStatusClass,poWeek,weekText,moveReportWindow,number,excelDate,buildReport,filteredRows,sortRows,makeXlsx,fromJSText,
   loadNextBatch,buildRequestReport,filterRequestRows,sortRequestRows,requestXlsx,requestWeekFromFile,
-  getRequestState:()=>requestState};
+  getRequestState:()=>requestState,getDashboardState:()=>dashboardState};
 loadAll();
 })();
 </script>

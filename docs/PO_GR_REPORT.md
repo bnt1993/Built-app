@@ -54,10 +54,27 @@ Cuộn xuống đến cuối tải lượt kế tiếp, cuộn lên ở đầu c
 
 Excel luôn xuất toàn bộ tập lọc theo thứ tự hiện tại, kể cả các dòng chưa dựng trong DOM; có hàng tiêu đề xanh đậm, độ rộng cột, hàng tiêu đề cố định và AutoFilter. Ngày là ô ngày thực, tiền/số có định dạng riêng, phần trăm lưu dạng tỷ lệ và hiển thị đúng định dạng %. Báo cáo PO thêm Tuần PO; báo cáo Request có cả trạng thái tính lại và trạng thái gốc.
 
+## Dashboard yêu cầu vật tư
+
+Tab **Dashboard yêu cầu** dùng chung Request.js, PO.js và GR.js với tab chi tiết, chỉ nạp Request khi cần. Bộ lọc dashboard độc lập với bộ lọc danh sách: tìm mã/tên/ghi chú, nhiều năm, nhiều tuần, trạng thái, phụ trách/Supplier, Hall, loại đặt, kết quả đối chiếu và khoảng ngày. Chọn năm cập nhật danh sách tuần theo năm đó; nhiều mục cùng bộ lọc lấy OR, giữa bộ lọc lấy AND. Dòng không rõ năm hoặc thiếu thông tin có nhóm riêng.
+
+- Tám KPI: số yêu cầu, giá trị EUR, Waiting for IR, Waiting for GR, nhập một phần, nhận đủ/vượt, tỷ lệ khớp PO + SAP và số dòng cần kiểm tra.
+- Bảy biểu đồ: xu hướng theo tuần/tháng/năm (đổi giữa EUR/số dòng), cơ cấu trạng thái, top 10 vật tư, top 10 phụ trách, tiến độ đối chiếu, thời gian chờ và loại đặt hàng. Bấm trạng thái/phụ trách/loại đặt/kết quả đối chiếu để lọc; bấm vật tư để tìm mã. Có bảng dữ liệu cho biểu đồ xu hướng và nhãn số liệu cho các biểu đồ khác.
+- Bảng chi tiết tối đa 50 dòng mỗi trang, sắp xếp giá trị/ngày/tuần/SAP; nhấp đúp hoặc Enter mở popup đối chiếu dùng chung. Excel xuất toàn bộ kết quả theo thứ tự sắp xếp, kể cả các trang chưa hiển thị.
+- Giá trị EUR ưu tiên Amount(EUR) hợp lệ không âm; thiếu/lỗi thì tính Price(EUR) × Qty khi cả hai hợp lệ không âm. Số 0 là giá trị hợp lệ. Thiếu cả hai cách được báo rõ và không cộng vào tổng; Excel Dashboard có cột **Cách tính giá trị EUR**. Các số chính xác trong nguồn, ví dụ `81,078` = 81.078, được giữ trong ô số Excel.
+- Giá trị theo trạng thái là **giá trị yêu cầu**, không phải chi phí GR hoặc giá trị nhập kho. Không cộng tổng lượng PO/GR lặp ở nhiều yêu cầu cùng PO/SAP, không cộng số lượng khác đơn vị. Số PO và số mã SAP được đếm duy nhất.
+- Done có thể mới nhập một phần. KPI và biểu đồ đối chiếu tách riêng nhập thiếu/đã đủ. Nhóm ngày chờ chỉ áp dụng Waiting for IR/GR, loại ngày thiếu/tương lai và báo số dòng bị loại.
+- Khi nguồn lỗi, dashboard bỏ kết quả cũ; sau tải lại thành công, biểu đồ và bộ lọc cập nhật theo dữ liệu mới. Không cần thư viện biểu đồ hoặc CDN; SVG và DOM được dựng trực tiếp, nhãn dữ liệu luôn là text.
+
+## Định dạng số Excel
+
+Cả hai báo cáo và Dashboard dùng chung bộ xuất XLSX. Số lượng/ngày chờ là số nguyên dùng `#,##0`, không còn dấu thập phân rỗng (dấu phẩy trên máy dùng locale VI). Số lẻ dùng định dạng có ít nhất một chữ số thập phân; tiền giữ ít nhất hai chữ số, ngày và phần trăm dùng định dạng riêng. Không xóa dấu phẩy trong dữ liệu gốc vì đó có thể là dấu thập phân hợp lệ hoặc nội dung mô tả.
+
 ## Kiểm thử
 
 - `node tests/po_gr_integrity_logic.cjs`: cấu trúc HTML/ID, hai bản file, số thập phân, ngày/tuần ISO, nguồn lỗi/khôi phục, GR đảo bút toán, thiếu Item chứng từ, trạng thái mới, bộ lọc mảng và đọc file chồng nhau.
 - `node tests/po_gr_report_browser.cjs` và `node tests/request_report_browser.cjs`: luồng cũ, nguồn thật, popup, xuất Excel, header nổi, cuộn toàn trang và mobile.
+- `node tests/request_dashboard_browser.cjs`: KPI và giá trị thiếu/ước tính, lọc nhiều năm/tuần, chọn checkbox, drill-down, phân trang, popup, xuất đầy đủ, khôi phục nguồn và màn hình nhỏ.
 - `node tests/po_gr_upgrades_browser.cjs`: chọn nhiều checkbox, OR/AND, tuần, trạng thái GR ròng, đối chiếu PO ngoài 48, giới hạn DOM, cuộn tiến/lùi dùng chung và xuất toàn bộ kết quả.
 
 Các bài trình duyệt cần Playwright và Chromium; GitHub Actions cài chúng và chạy kiểm tra khi sửa các file liên quan.

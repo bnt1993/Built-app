@@ -68,6 +68,48 @@ const linked=rows=>api.buildRequestReport([rh,request],rows,{poReady:true,grRead
   const exported=Buffer.from(await api.requestXlsx([priceCase]).arrayBuffer()).toString('utf8');
   assert.ok(exported.includes('<v>81.078</v>'));assert.ok(!exported.includes('<v>81078</v>'));
 
+  // Excel integer cells use a format with no decimal mark; fractional values
+  // retain at least one decimal digit rather than an orphan separator.
+  const integerRow={...priceCase,qty:2,stock:0,reorder:1,lot:3,poQty:4,grQty:0};
+  const integerExport=Buffer.from(await api.requestXlsx([integerRow]).arrayBuffer()).toString('utf8');
+  assert.ok(integerExport.includes('<c r="E2" s="6"><v>2</v>'));
+  assert.ok(integerExport.includes('<c r="K2" s="6"><v>4</v>'));
+  assert.ok(integerExport.includes('<c r="L2" s="6"><v>0</v>'));
+  assert.ok(integerExport.includes('numFmtId="168" formatCode="#,##0"'));
+  assert.ok(integerExport.includes('formatCode="#,##0.0#############"'));
+  assert.ok(!integerExport.includes('formatCode="#,##0.####"'));
+  const fractionalExport=Buffer.from(await api.requestXlsx([{...priceCase,qty:.125}]).arrayBuffer()).toString('utf8');
+  assert.ok(fractionalExport.includes('<c r="E2" s="2"><v>0.125</v>'));
+  // Money remains typed numeric, including SAP decimal commas (81,078).
+  assert.ok(integerExport.includes('<c r="Q2" s="3"><v>81.078</v>'));
+
+  const base={...priceCase,matches:[],status:'Waiting for IR',sourceStatus:'Waiting for IR',link:'missing',po:'',week:'WK31',weekKey:'2026-W31',weekYear:'2026',date:'2026-07-31',amount:10,qty:2,price:5};
+  const dashRows=[base,{...base,index:1001,po:'4811',status:'Waiting for GR',link:'no-gr',matches:[{}],amount:20},
+    {...base,index:1002,po:'4811',status:'Done',link:'partial',matches:[{}],amount:30},
+    {...base,index:1003,po:'4811',status:'Done',link:'complete',matches:[{}],amount:0},
+    {...base,index:1004,weekKey:'2025-W31',weekYear:'2025',date:'2025-08-01',amount:NaN,price:NaN},
+    {...base,index:1005,amount:NaN,price:3,qty:2},
+    {...base,index:1006,amount:NaN,price:NaN,date:'',weekYear:'',weekKey:'',hall:'',supplier:'',orderType:''},
+    {...base,index:1007,amount:7,date:'2027-01-01'}];
+  const dash=api.buildRequestDashboard(dashRows,{today:'2026-11-13'});
+  assert.equal(dash.metrics.value,73);assert.equal(dash.metrics.missingValue,2);assert.equal(dash.metrics.derived,1);
+  assert.equal(dash.metrics.valued,6);assert.equal(dash.metrics.pos,1,'shared PO is counted once');
+  assert.equal(dash.metrics.waitingGR,1);assert.equal(dash.metrics.partial,1);assert.equal(dash.metrics.complete,1);
+  assert.equal(dash.metrics.undated,1);assert.equal(dash.metrics.future,1);
+  assert.equal(dash.status.reduce((n,g)=>n+g.count,0),dashRows.length);
+  assert.equal(dash.trend.reduce((n,g)=>n+g.value,0),73);
+  assert.equal(api.filterDashboardRows(dashRows,{year:['2025']}).length,1);
+  assert.equal(api.filterDashboardRows(dashRows,{year:['2025','2026'],status:['Waiting for IR','Waiting for GR']}).length,5);
+  assert.equal(api.filterDashboardRows(dashRows,{year:['2026'],week:['2025-W31']}).length,0);
+  assert.equal(api.filterDashboardRows(dashRows,{year:['__unknown__'],hall:['__unknown__'],supplier:['__unknown__']}).length,1);
+  assert.equal(api.buildRequestDashboard([]).metrics.value,0);
+  assert.equal(api.requestValue({...base,amount:-5,price:NaN}).value,null);
+  assert.equal(api.buildRequestDashboard(dashRows,{period:'month'}).trend.find(g=>g.key==='2025-08').count,1);
+
+  const derivedXlsx=Buffer.from(await api.requestXlsx([{...priceCase,amount:NaN,price:3,qty:2}],{deriveValues:true}).arrayBuffer()).toString('utf8');
+  assert.ok(derivedXlsx.includes('<c r="Q2" s="3"><v>6</v>'));
+  assert.ok(derivedXlsx.includes('Đơn giá × SL yêu cầu'));
+
   const decimal=report([po('1,250')],[gr('1,25')]).rows[0];
   assert.equal(decimal.status,'done');assert.equal(decimal.percent,100);
   const receipt=gr('8');

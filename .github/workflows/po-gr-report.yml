@@ -12,6 +12,7 @@ on:
       - tests/request_report_browser.cjs
       - tests/po_gr_integrity_logic.cjs
       - tests/po_gr_upgrades_browser.cjs
+      - tests/request_dashboard_browser.cjs
       - .github/workflows/po-gr-report.yml
   push:
     branches: [main]
@@ -25,6 +26,7 @@ on:
       - tests/request_report_browser.cjs
       - tests/po_gr_integrity_logic.cjs
       - tests/po_gr_upgrades_browser.cjs
+      - tests/request_dashboard_browser.cjs
       - .github/workflows/po-gr-report.yml
 
 permissions:
@@ -48,7 +50,7 @@ jobs:
       - name: Validate PO/GR, Request and upgraded filter/scroll interactions
         run: |
           report_browser_status=0
-          for report_browser_test in tests/po_gr_upgrades_browser.cjs tests/po_gr_report_browser.cjs tests/request_report_browser.cjs; do
+          for report_browser_test in tests/po_gr_upgrades_browser.cjs tests/po_gr_report_browser.cjs tests/request_report_browser.cjs tests/request_dashboard_browser.cjs; do
             if ! node "$report_browser_test"; then report_browser_status=1; fi
           done
           exit "$report_browser_status"
