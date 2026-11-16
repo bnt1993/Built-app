@@ -53,11 +53,11 @@ async function importBackup(page,value){
     await page.locator('#grid-view').click();
 
     // Real file:// links preserve Unicode, spaces and child state between tabs.
-    await card(page,'checking').locator('[data-action="open"]').click();
+    await card(page,'checking').locator('.open-btn').click();
     const checking=page.frameLocator('#frame-area iframe:not([hidden])');
     await checking.getByRole('heading').waitFor();await checking.getByRole('button').click();
     await page.locator('#back-library').click();
-    await card(page,'layout').locator('[data-action="open"]').click();
+    await card(page,'layout').locator('.open-btn').click();
     await page.frameLocator('#frame-area iframe:not([hidden])').getByRole('heading').waitFor();
     assert.equal(await page.locator('.tab').count(),2);
     await page.locator('[data-tab-id="checking"] .tab-label').click();
@@ -75,7 +75,7 @@ async function importBackup(page,value){
     }
     await page.locator('#app-name').fill('Báo cáo riêng');await page.locator('#app-path').fill('tools/Báo cáo.html');await page.locator('#save-app').click();await page.waitForFunction(()=>!document.getElementById('app-dialog').open);await appCount(page,5);
     const custom=page.locator('.app-card').filter({has:page.getByRole('button',{name:'Báo cáo riêng',exact:true})});
-    await custom.locator('[data-action="open"]').click();await page.frameLocator('#frame-area iframe:not([hidden])').getByRole('heading').waitFor();
+    await custom.locator('.open-btn').click();await page.frameLocator('#frame-area iframe:not([hidden])').getByRole('heading').waitFor();
     assert.match(await page.locator('#frame-area iframe:not([hidden])').getAttribute('src'),/B%C3%A1o%20c%C3%A1o\.html/);
     await page.locator('#reload-frame').click();await page.locator('#confirm-cancel').click();
     assert.equal(await page.locator('#frame-area iframe').count(),3);
@@ -89,14 +89,14 @@ async function importBackup(page,value){
     await page.locator('#app-category').fill('HTML tự chứa');await page.locator('#save-app').click();await page.waitForFunction(()=>!document.getElementById('app-dialog').open);await appCount(page,6);
     let importedCard=page.locator('.app-card').filter({has:page.getByRole('button',{name:'Trang_con',exact:true})});
     const importedId=await importedCard.getAttribute('data-app-id');
-    await importedCard.locator('[data-action="open"]').click();
+    await importedCard.locator('.open-btn').click();
     await page.frameLocator('#frame-area iframe:not([hidden])').getByRole('heading',{name:'HTML đã nhập'}).waitFor();
     assert.equal(await page.locator('body').getAttribute('data-compromised'),null);
     assert.equal(await page.frameLocator('#frame-area iframe:not([hidden])').locator('body').getAttribute('data-isolated'),'yes');
     assert(!String(await page.locator('#frame-area iframe:not([hidden])').getAttribute('sandbox')).includes('allow-same-origin'));
     const htmlDownload=page.waitForEvent('download');await page.locator('#open-original').click();assert.equal((await htmlDownload).suggestedFilename(),'Trang_con.html');
     await page.locator('#back-library').click();await waitSaved(page);await page.reload();await waitSaved(page);await appCount(page,6);
-    importedCard=card(page,importedId);await importedCard.locator('[data-action="open"]').click();
+    importedCard=card(page,importedId);await importedCard.locator('.open-btn').click();
     await page.frameLocator('#frame-area iframe:not([hidden])').getByRole('heading',{name:'HTML đã nhập'}).waitFor();await page.locator('#back-library').click();
     // Edit imported metadata without replacing the stored HTML.
     await importedCard.locator('[data-action="edit"]').click();await page.locator('#app-name').fill('Đã sửa tên');await page.locator('#save-app').click();await page.waitForFunction(()=>!document.getElementById('app-dialog').open);
