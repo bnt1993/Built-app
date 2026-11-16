@@ -2041,11 +2041,11 @@
     }
     /* Dedicated chart overview and table workspace share the same filter bar. */
     .warehouse-kpi-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0 8px}
-    .warehouse-kpi-group {min-width:0}
+    .warehouse-kpi-group {min-width:0;display:flex;flex-direction:column}
     .warehouse-group-heading {display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
     .warehouse-group-heading h2 {font-size:13px;margin:0}
     .warehouse-group-heading > span {font-size:10px;color:var(--muted)}
-    .warehouse-kpi-cards {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+    .warehouse-kpi-cards {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;flex:1}
     .warehouse-kpi {position:relative;min-width:0;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;padding:10px;background:var(--app-panel)}
     .warehouse-kpi[data-tone="in"] {border-top-color:var(--green)}
     .warehouse-kpi[data-tone="out"] {border-top-color:var(--red)}
@@ -5410,7 +5410,8 @@
         }else{
           svg+='<text class="warehouse-gap" x="'+fixed(x(i))+'" y="'+fixed(y(0)-7)+'" text-anchor="middle"><title>'+escape(period.title+' · '+tuDien("dashValueTrendGap"))+'</title>—</text>';
         }
-        if(i%labelStep===0||i===periods.length-1)svg+='<text class="warehouse-axis-label" x="'+fixed(x(i))+'" y="'+(height-17)+'" text-anchor="middle">'+escape(period.label)+'</text>';
+        if(i===periods.length-1||i%labelStep===0&&periods.length-1-i>=labelStep)
+          svg+='<text class="warehouse-axis-label" x="'+fixed(x(i))+'" y="'+(height-17)+'" text-anchor="middle">'+escape(period.label)+'</text>';
       }
       const node=document.getElementById(id);
       node.innerHTML=svg+'</svg>';
@@ -6209,7 +6210,8 @@
               '<div class="trend-chart-bar-wrap"><div class="trend-chart-bar movement-'+type+'" style="height:'+
               (max?100*value[type]/max:0).toFixed(2)+'%"></div></div></div>';
           }).join("")+'</div><span class="trend-period">'+
-            (index%labelStep===0||index===buckets.length-1?thoatHTML(p.label):"")+'</span></div>';
+            (index===buckets.length-1||index%labelStep===0&&buckets.length-1-index>=labelStep?
+              thoatHTML(p.label):"")+'</span></div>';
         }).join("")+'</div>';
       const plot=chart.querySelector(".trend-list");plot.scrollLeft=plot.scrollWidth;
       summary.textContent=(stats.count?tuDien("dashUsageSummary",{
