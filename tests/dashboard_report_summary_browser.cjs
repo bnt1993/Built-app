@@ -54,11 +54,11 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     const out=page.locator('#dashboard-out-matches'),dormant=page.locator('#dashboard-dormant-matches');
     assert.equal(await out.innerText(),'Tìm thấy 3 mã vật tư');
     assert.equal(await dormant.innerText(),'Tìm thấy 2 mã vật tư');
-    const topAll=await page.locator('#insight-top').innerText();
-    const distAll=await page.locator('#insight-stock-distribution').innerText();
+    const topAll=await page.locator('#insight-top').textContent();
+    const distAll=await page.locator('#insight-stock-distribution').textContent();
     await page.locator('#dashboard-hall').selectOption('hall1');
-    assert.equal(await page.locator('#insight-top').innerText(),topAll);
-    assert.equal(await page.locator('#insight-stock-distribution').innerText(),distAll);
+    assert.equal(await page.locator('#insight-top').textContent(),topAll);
+    assert.equal(await page.locator('#insight-stock-distribution').textContent(),distAll);
     assert.equal(await out.innerText(),'Tìm thấy 3 mã vật tư');
     assert.equal(await dormant.innerText(),'Tìm thấy 2 mã vật tư');
     // Counts refer to distinct SAPs over the entire filtered report, across pages.
@@ -109,11 +109,11 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.locator('#lang-en').click();
     assert.equal(await out.innerText(),'Matching material codes: 1');
     assert.equal(await dormant.innerText(),'Matching material codes: —');
-    assert.match(await page.locator('#insight-top').innerText(),/No inventory information.*Hall 2/);
+    assert.match(await page.locator('#insight-top').textContent(),/No inventory information.*Hall 2/);
     await page.locator('#lang-vi').click();
     await page.locator('#dashboard-hall').selectOption('all');
-    assert.equal(await page.locator('#insight-top').innerText(),topAll);
-    assert.equal(await page.locator('#insight-stock-distribution').innerText(),distAll);
+    assert.equal(await page.locator('#insight-top').textContent(),topAll);
+    assert.equal(await page.locator('#insight-stock-distribution').textContent(),distAll);
     assert.match(await page.locator('#metric-inventory-value').innerText(),/^3\.000/);
     await page.locator('#tab-analytics').click();
     await page.locator('#dashboard-dormant-days').selectOption('90');

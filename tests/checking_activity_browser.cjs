@@ -134,11 +134,11 @@ async function deletionScenarios(page,view,prefix){
     assert.equal(await page.locator('#o-tim-kiem').inputValue(),'Động cơ 0');
     assert.equal(await page.locator('input[name="truongTim"]:checked').inputValue(),'sap');
 
-    // Identical header, brand and navigation geometry across all five panes.
+    // Identical header, brand and navigation geometry across all six panes.
     for(const language of ['vi','en']){
       await page.locator('#lang-'+language).click();
       await page.locator('#tab-stock').click();const reference=await geometry(page);
-      for(const view of ['dashboard','catalog','search-history','requests']){
+      for(const view of ['analytics','dashboard','catalog','search-history','requests']){
         await page.locator('#tab-'+view).click();assert.deepEqual(await geometry(page),reference,view+' header '+language);
       }
     }

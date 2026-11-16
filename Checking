@@ -1428,7 +1428,7 @@
     :is(#view-dashboard,#view-analytics) .movement-legend-out::before { background:#ef4444; }
     #insight-usage { display:flex; flex-direction:column; overflow:hidden; }
     #insight-usage .trend-list { flex:1; height:auto; min-height:0; overflow-x:auto; }
-    #insight-usage .trend-column { flex-basis:64px; min-width:64px; }
+    #insight-usage .trend-column { flex-basis:52px; min-width:52px; }
     :is(#view-dashboard,#view-analytics) .trend-chart-bar.missing { background:none; border:1px dashed var(--line); border-bottom:0; opacity:.7; }
     :is(#view-dashboard,#view-analytics) .trend-period { font-size:10px; color:var(--muted); line-height:1.2; min-height:24px; overflow-wrap:anywhere; }
     :is(#view-dashboard,#view-analytics) .dashboard-top-table { width:100%; border-collapse:collapse; font-size:11px; }
@@ -2062,6 +2062,11 @@
     #insight-usage-detail .trend-column {flex-basis:52px;min-width:52px}
     #view-dashboard .warehouse-charts .trend-list {background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),var(--line) 25%);border-radius:5px}
     #view-dashboard .warehouse-charts .trend-amount {font-size:9px}
+    #view-dashboard .warehouse-charts .warehouse-dense .trend-list {gap:3px}
+    #view-dashboard .warehouse-charts .warehouse-dense .trend-column {flex:1 0 10px;min-width:10px}
+    #view-dashboard .warehouse-charts .warehouse-dense .trend-amount {display:none}
+    #view-dashboard .warehouse-charts .warehouse-dense .movement-pair {gap:2px}
+    #view-dashboard .warehouse-charts .warehouse-dense .trend-period {white-space:nowrap;overflow-wrap:normal;font-size:9px}
     .warehouse-line-chart {display:block;width:100%;height:100%;min-height:185px;overflow:visible}
     .warehouse-grid-line {stroke:var(--line);stroke-width:1}
     .warehouse-axis-label,.warehouse-gap {fill:var(--muted);font-size:10px;font-family:inherit}
@@ -2069,6 +2074,8 @@
     .warehouse-value-point {fill:var(--app-panel);stroke:var(--blue);stroke-width:2}
     .warehouse-value-point:focus {outline:none;stroke:var(--ink);stroke-width:4}
     .warehouse-stock-summary {margin-top:18px}
+    .warehouse-reminder {margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--app-panel)}
+    .warehouse-reminder h3 {margin:0;font-size:13px}
     .warehouse-support-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     #view-dashboard .warehouse-support-grid .dashboard-chart {height:270px}
     #view-dashboard .warehouse-support-grid .dashboard-alert-panel {margin:0}
@@ -2477,6 +2484,15 @@
           <p class="insight-note" data-i18n="dashSourcePrivacy">Bộ nhớ đệm lịch sử trên thiết bị này có thể chứa dữ liệu SAP nội bộ. Xóa bộ nhớ đệm nếu dùng máy chung.</p>
           <button type="button" class="btn btn-soft" onclick="xoaCacheHistory()" data-i18n="dashSourceClear">Xóa bộ nhớ đệm lịch sử</button>
         </section></div>
+  <section class="warehouse-reminder insight-box"><h3 data-i18n="scheduleTitle"></h3>
+    <div class="advanced-controls dashboard-export-controls">
+      <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" data-i18n-aria="scheduleTitle">
+        <option value="off" data-i18n="scheduleOff">Tắt</option>
+        <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
+        <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
+      </select>
+    </div><div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
+  </section>
   <p class="insight-note" data-i18n="insightNote"></p>
 </section>
 
@@ -2587,13 +2603,8 @@
             </div>
             <p id="dashboard-dormant-note" class="insight-note" role="status"></p>
           </div></section>
-  <section class="analytics-export"><div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
+  <section class="analytics-export"><div class="insight-box"><h3 data-i18n="dashboardExportAction">Xuất báo cáo Excel</h3>
             <div class="advanced-controls dashboard-export-controls" style="padding-top:0">
-              <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
-                <option value="off" data-i18n="scheduleOff">Tắt</option>
-                <option value="daily" data-i18n="scheduleDaily">Mỗi ngày sau 9:00</option>
-                <option value="weekly" data-i18n="scheduleWeekly">Thứ Hai sau 9:00</option>
-              </select>
               <div class="dashboard-export-row">
                 <label id="dashboard-export-label" for="dashboard-export-kind" data-i18n="dashboardExportSelect">Chọn báo cáo xuất</label>
                 <select id="dashboard-export-kind" data-i18n-aria="dashboardExportSelect" aria-label="Chọn báo cáo xuất">
@@ -2611,7 +2622,6 @@
                 onclick="xuatBaoCaoThongKe()" data-i18n="dashboardExportAction">Xuất báo cáo Excel</button>
               </div>
             </div>
-            <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
           </div></section>
 </section>
 
@@ -2850,6 +2860,7 @@
         warehouseLineNote:"Lấy giá trị ghi nhận cuối mỗi kỳ; giữ khoảng trống nếu chưa có dữ liệu.",
         warehouseCurrentStock:"Tổng quan tồn kho hiện tại",
         warehouseTables:"Các bảng thống kê vật tư",
+        warehouseHallStockNote:"Tồn kho hiện tại và giá trị tồn: Tất cả và Hall 1 dùng chung nguồn dữ liệu.",
         dashboardHallUnknownStock:"Storage Location của dữ liệu tồn kho chưa có giá trị Hall 1/Hall 2 nhận diện được.",
         dashboardHallUnknownHistory:"Giá trị Storage Location chưa nhận diện được Hall 1/Hall 2. Cần đối chiếu mã kho thực tế trong History.js.",
         dashboardHallPartialHistory:"Có {count} giao dịch thiếu hoặc chưa nhận diện khu vực kho; không được tính vào Hall đã chọn.",
@@ -3196,6 +3207,7 @@
         warehouseLineNote:"Last recorded value per period; missing periods remain gaps.",
         warehouseCurrentStock:"Current inventory overview",
         warehouseTables:"Material statistics tables",
+        warehouseHallStockNote:"Current stock and inventory valuations share the same source for All areas and Hall 1.",
         dashboardHallUnknownStock:"Stock Storage Location has no recognized Hall 1/Hall 2 values.",
         dashboardHallUnknownHistory:"Storage Location codes do not match Hall 1/Hall 2; confirm the source mapping.",
         dashboardHallPartialHistory:"{count} transactions have a missing or unrecognized storage location and are excluded from the selected Hall.",
@@ -5366,7 +5378,7 @@
     }
 
     function veDuongGiaTriKho(id,periods,values){
-      const width=Math.max(620,periods.length*52),height=225;
+      const width=Math.max(620,periods.length*14),height=225;
       const left=65,right=22,top=20,bottom=42;
       const plotWidth=width-left-right,plotHeight=height-top-bottom;
       const maximum=Math.max(1,...values.values())*1.12;
@@ -5400,7 +5412,9 @@
         }
         if(i%labelStep===0||i===periods.length-1)svg+='<text class="warehouse-axis-label" x="'+fixed(x(i))+'" y="'+(height-17)+'" text-anchor="middle">'+escape(period.label)+'</text>';
       }
-      document.getElementById(id).innerHTML=svg+'</svg>';
+      const node=document.getElementById(id);
+      node.innerHTML=svg+'</svg>';
+      node.scrollLeft=0;
     }
 
     function tinhGiaTriNhapXuat(rows,headers,mode,buckets) {
@@ -5589,9 +5603,7 @@
       if(hall==="all"){note.textContent="";return;}
       const alerts=[];
       if(analyticsReady){
-        if(tonKhoTheoHall()===null)alerts.push(tuDien(loiCotHall("stock")));
-        else if(stockHallCache&&stockHallCache.unknownCount)alerts.push(tuDien(
-          "dashboardHallPartialStock",{count:dinhDangLuongHistory(stockHallCache.unknownCount)}));
+        alerts.push(tuDien(hall==="hall2"?"dashboardHall2NoStockReport":"warehouseHallStockNote"));
       }
       if(historyLoaded){
         if(lichSuTheoHall()===null)alerts.push(tuDien(loiCotHall("history")));
@@ -6181,9 +6193,11 @@
       if(stats.missing){chart.textContent=tuDien("dashUsageNoQty");summary.textContent="";return;}
       const max=Math.max(0,...[...stats.values.values()].flatMap(v=>[v.in,v.out]));
       const label=type=>tuDien(type==="in"?"historyInShort":"historyOutShort");
+      const dense=buckets.length>20,labelStep=dense?Math.ceil(buckets.length/12):1;
+      chart.classList.toggle("warehouse-dense",dense);
       chart.innerHTML='<div class="movement-legend">'+["in","out"].map(type=>
         '<span class="movement-legend-'+type+'">'+thoatHTML(label(type))+'</span>').join("")+
-        '</div><div class="trend-list">'+buckets.map(p=>{
+        '</div><div class="trend-list">'+buckets.map((p,index)=>{
           const value=stats.values.get(p.key);
           return '<div class="trend-column" role="button" tabindex="0" data-period-key="'+
           thoatHTML(p.key)+'" data-period-mode="'+mode+'" aria-label="'+
@@ -6194,7 +6208,8 @@
               '<span class="trend-amount">'+thoatHTML(dinhDangRutGonKho(value[type]))+'</span>'+
               '<div class="trend-chart-bar-wrap"><div class="trend-chart-bar movement-'+type+'" style="height:'+
               (max?100*value[type]/max:0).toFixed(2)+'%"></div></div></div>';
-          }).join("")+'</div><span class="trend-period">'+thoatHTML(p.label)+'</span></div>';
+          }).join("")+'</div><span class="trend-period">'+
+            (index%labelStep===0||index===buckets.length-1?thoatHTML(p.label):"")+'</span></div>';
         }).join("")+'</div>';
       const plot=chart.querySelector(".trend-list");plot.scrollLeft=plot.scrollWidth;
       summary.textContent=(stats.count?tuDien("dashUsageSummary",{

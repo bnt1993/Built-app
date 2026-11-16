@@ -18,6 +18,12 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     history.push(['Hall 1','16/11/2026','INPUT','SAP0',2,'PC',400000],
       ['Hall 1','16/11/2026','OUTPUT','SAP1',-1,'PC',-100000],
       ['Hall 2','16/11/2026','OUTPUT','SAP2',-3,'PC',-300000]);
+    for(let time=Date.UTC(2026,0,5),index=0;time<=Date.UTC(2026,10,9);time+=7*86400000,index++){
+      const day=new Date(time),month=day.getUTCMonth()+1;
+      if(month===2)continue;
+      const date=String(day.getUTCDate()).padStart(2,'0')+'/'+String(month).padStart(2,'0')+'/2026';
+      amounts.push([date,100000000+index*250000]);
+    }
     amounts.push(['09/11/2026',112000000]);
     await page.route('http://warehouse-split.test/**',route=>{
       const u=new URL(route.request().url());let body='',contentType='text/javascript';
@@ -85,6 +91,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.locator('#lang-en').click();
     assert.equal(await page.locator('#view-dashboard h1').innerText(),'Warehouse dashboard');
     await page.locator('#lang-vi').click();
+    await page.evaluate(()=>document.getElementById('view-dashboard').scrollTop=0);
     await page.screenshot({path:'/tmp/warehouse-dashboard-desktop.png',fullPage:true});
     // Selecting an invalid interval clears all financial values, including comparisons.
     await page.locator('#dashboard-range-mode').selectOption('custom');
@@ -99,6 +106,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.locator('#dashboard-export-kind').selectOption('value');
     await page.locator('#dashboard-export-button').click();
     assert.match((await download).suggestedFilename(),/\.xlsx$/);
+    await page.evaluate(()=>document.getElementById('view-analytics').scrollTop=0);
     await page.screenshot({path:'/tmp/warehouse-analytics-desktop.png',fullPage:true});
     for(const tab of ['dashboard','analytics']){
       await page.locator('#tab-'+tab).click();
