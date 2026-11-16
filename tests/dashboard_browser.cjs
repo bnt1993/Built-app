@@ -22,7 +22,9 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
   const bar=await page.locator('#insight-usage .movement-in').last().boundingBox();assert(bar.height>0,'positive amount must render visible bar');
  }
  for(const mode of ['day','week','month','year']){await page.locator('#dashboard-value-period').selectOption(mode);if(mode==='week')assert.match(await page.locator('#insight-value-trend .trend-period').last().innerText(),/^Tuần \d+$/);assert.equal(await page.locator('#insight-value-trend .trend-column').count(),mode==='day'?11:mode==='week'?3:1);}
+ await page.locator('#tab-analytics').click();
  await page.locator('#dashboard-limit').selectOption('20');assert.equal(await page.locator('#insight-top tbody tr').count(),20);
+ await page.locator('#tab-dashboard').click();
  await page.locator('#lang-en').click();assert.equal(await page.locator('[data-i18n="dashUsageTitle"]').innerText(),'Inbound / outbound value');
  await page.locator('#dashboard-usage-period').selectOption('month');await page.locator('#dashboard-value-period').selectOption('week');
  await page.screenshot({path:'/tmp/inventory-dashboard-desktop.png',fullPage:true});

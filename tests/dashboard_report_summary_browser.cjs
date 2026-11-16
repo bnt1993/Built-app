@@ -36,7 +36,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
       else if(u.pathname==='/Material/manifest.js')body='window.MaterialImageManifest={version:2,complete:true,materials:{}};';
       return r.fulfill({contentType,body});
     });
-    await page.goto('http://report-summary.test/');await page.locator('#tab-dashboard').click();
+    await page.goto('http://report-summary.test/');await page.locator('#tab-analytics').click();
     await page.waitForFunction(()=>historyLoaded&&analyticsReady);
     // All three export controls must share a baseline on desktop.
     const exportParts=await Promise.all(['#dashboard-export-label',
@@ -54,11 +54,11 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     const out=page.locator('#dashboard-out-matches'),dormant=page.locator('#dashboard-dormant-matches');
     assert.equal(await out.innerText(),'Tìm thấy 3 mã vật tư');
     assert.equal(await dormant.innerText(),'Tìm thấy 2 mã vật tư');
-    const topAll=await page.locator('#insight-top').innerText();
-    const distAll=await page.locator('#insight-stock-distribution').innerText();
+    const topAll=await page.locator('#insight-top').textContent();
+    const distAll=await page.locator('#insight-stock-distribution').textContent();
     await page.locator('#dashboard-hall').selectOption('hall1');
-    assert.equal(await page.locator('#insight-top').innerText(),topAll);
-    assert.equal(await page.locator('#insight-stock-distribution').innerText(),distAll);
+    assert.equal(await page.locator('#insight-top').textContent(),topAll);
+    assert.equal(await page.locator('#insight-stock-distribution').textContent(),distAll);
     assert.equal(await out.innerText(),'Tìm thấy 3 mã vật tư');
     assert.equal(await dormant.innerText(),'Tìm thấy 2 mã vật tư');
     // Counts refer to distinct SAPs over the entire filtered report, across pages.
@@ -83,6 +83,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     assert.match(await page.locator('#metric-inventory-value').innerText(),/^3\.000/);
     assert.match(await page.locator('#metric-value-note').innerText(),/2026-11-05/);
     assert(!/Tổng \(Số lượng|10\.500/.test(await page.locator('#metric-value-note').innerText()));
+    await page.locator('#tab-dashboard').click();
     for(const mode of ['day','week','month','year']){
       await page.locator('#dashboard-value-period').selectOption(mode);
       const allValues=await page.locator('#insight-value-trend').innerText();
@@ -108,12 +109,13 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.locator('#lang-en').click();
     assert.equal(await out.innerText(),'Matching material codes: 1');
     assert.equal(await dormant.innerText(),'Matching material codes: —');
-    assert.match(await page.locator('#insight-top').innerText(),/No inventory information.*Hall 2/);
+    assert.match(await page.locator('#insight-top').textContent(),/No inventory information.*Hall 2/);
     await page.locator('#lang-vi').click();
     await page.locator('#dashboard-hall').selectOption('all');
-    assert.equal(await page.locator('#insight-top').innerText(),topAll);
-    assert.equal(await page.locator('#insight-stock-distribution').innerText(),distAll);
+    assert.equal(await page.locator('#insight-top').textContent(),topAll);
+    assert.equal(await page.locator('#insight-stock-distribution').textContent(),distAll);
     assert.match(await page.locator('#metric-inventory-value').innerText(),/^3\.000/);
+    await page.locator('#tab-analytics').click();
     await page.locator('#dashboard-dormant-days').selectOption('90');
     await page.locator('#dashboard-out-size').selectOption('25');
     await page.locator('#dashboard-dormant-size').selectOption('25');
