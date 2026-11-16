@@ -571,18 +571,18 @@
     .pane-heading h1 { color:var(--ink); font-size:clamp(21px,2.2vw,29px); letter-spacing:-.03em; margin:0 0 4px; font-weight:850; }
     .pane-heading p { margin:0; color:var(--muted); font-size:12px; }
     #view-stock .intro { margin-top:3px; }
-    #view-dashboard .metric-grid { margin-bottom:13px; }
-    #view-dashboard .insights-panel { display:block; padding:14px; }
+    :is(#view-dashboard,#view-analytics) .metric-grid { margin-bottom:13px; }
+    :is(#view-dashboard,#view-analytics) .insights-panel { display:block; padding:14px; }
     .value-row { padding:10px 0; border-bottom:1px solid var(--line); }
     .value-row:last-child { border-bottom:0; }
     .value-row-heading { display:flex; justify-content:space-between; gap:12px; font-size:12px; margin-bottom:8px; }
     .value-row-heading span { overflow-wrap:anywhere; min-width:0; }
     .value-row-heading strong { text-align:right; flex-shrink:0; font-size:11px; }
     .value-row-meta { color:var(--muted); font-size:10px; margin-top:4px; }
-    #view-dashboard .metric-card:nth-child(3) .metric-icon { background:var(--app-stock-out);color:var(--app-stock-out-ink); }
-    #view-dashboard .insight-box { padding:18px; }
+    :is(#view-dashboard,#view-analytics) .metric-card:nth-child(3) .metric-icon { background:var(--app-stock-out);color:var(--app-stock-out-ink); }
+    :is(#view-dashboard,#view-analytics) .insight-box { padding:18px; }
     .dashboard-charts-title { font-size:15px; font-weight:850; margin:0 0 4px; }
-    #view-dashboard .insight-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    :is(#view-dashboard,#view-analytics) .insight-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
     .stock-distribution { display:flex; align-items:center; flex-wrap:wrap; gap:14px; }
     .stock-donut { flex:0 0 124px; width:124px; height:124px; border-radius:50%; display:grid; place-items:center; }
     .stock-donut-inner { width:83px; height:83px; border-radius:50%; background:var(--app-panel); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
@@ -598,9 +598,9 @@
     .history-kind.unknown { color:var(--muted); background:var(--app-chip); }
     html[data-theme="dark"] .history-kind.in { color:#9cf7cf; background:#164b3b; }
     html[data-theme="dark"] .history-kind.out { color:#fecdd3; background:#553039; }
-    @media(max-width:900px){#view-dashboard .insight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:900px){:is(#view-dashboard,#view-analytics) .insight-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:620px){.view-tabs{width:100%;gap:2px}.view-tab{flex:1 1 0;justify-content:center;padding:9px 5px;font-size:11px;gap:4px}
-      #view-dashboard .insight-grid{grid-template-columns:1fr}.pane-heading{flex-wrap:wrap}}
+      :is(#view-dashboard,#view-analytics) .insight-grid{grid-template-columns:1fr}.pane-heading{flex-wrap:wrap}}
 
 
     #luoi-chi-tiet { grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:1fr; gap:10px; }
@@ -687,21 +687,21 @@
       #material-history-status { padding:0 10px 6px; }
     }
 
-    #view-dashboard .dashboard-filters { display:flex; flex-wrap:wrap; gap:14px; align-items:end; padding:16px; margin-bottom:16px; background:var(--app-panel); border:1px solid var(--line); border-radius:16px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-filters { display:flex; flex-wrap:wrap; gap:14px; align-items:end; padding:16px; margin-bottom:16px; background:var(--app-panel); border:1px solid var(--line); border-radius:16px; }
     .dashboard-filters label { display:flex; flex-direction:column; gap:6px; font-size:11px; color:var(--muted); font-weight:650; min-width:140px; }
     .dashboard-filters .dashboard-search { flex:1; min-width:220px; }
     .dashboard-filters input,.dashboard-filters select { min-height:42px; width:100%; border:1px solid var(--line); border-radius:10px; background:var(--app-field); color:var(--ink); padding:9px 12px; font:inherit; font-size:12px; }
-    #view-dashboard .metric-grid { grid-template-columns:repeat(4,minmax(0,1fr)); align-items:stretch; gap:14px; }
-    #view-dashboard .metric-card { min-height:138px; padding:18px; }
-    #view-dashboard .metric-text { min-width:0; }
-    #view-dashboard .metric-value { overflow-wrap:anywhere; }
-    #view-dashboard .metric-money { font-size:clamp(18px,1.8vw,28px); white-space:normal; }
-    #view-dashboard .insight-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:stretch; }
-    #view-dashboard .dashboard-chart { height:390px; display:flex; flex-direction:column; padding:20px; grid-column:auto; background:var(--app-panel); border-radius:16px; }
-    #view-dashboard .dashboard-chart h3 { font-size:14px; margin:0 0 8px; }
-    #view-dashboard .dashboard-chart > .insight-note { margin:0 0 12px; }
-    #view-dashboard .dashboard-chart-body { flex:1; min-height:0; overflow:auto; scrollbar-width:thin; scrollbar-color:var(--muted) var(--line); }
-    #view-dashboard .stock-distribution { align-content:center; }
+    :is(#view-dashboard,#view-analytics) .metric-grid { grid-template-columns:repeat(4,minmax(0,1fr)); align-items:stretch; gap:14px; }
+    :is(#view-dashboard,#view-analytics) .metric-card { min-height:138px; padding:18px; }
+    :is(#view-dashboard,#view-analytics) .metric-text { min-width:0; }
+    :is(#view-dashboard,#view-analytics) .metric-value { overflow-wrap:anywhere; }
+    :is(#view-dashboard,#view-analytics) .metric-money { font-size:clamp(18px,1.8vw,28px); white-space:normal; }
+    :is(#view-dashboard,#view-analytics) .insight-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:stretch; }
+    :is(#view-dashboard,#view-analytics) .dashboard-chart { height:390px; display:flex; flex-direction:column; padding:20px; grid-column:auto; background:var(--app-panel); border-radius:16px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-chart h3 { font-size:14px; margin:0 0 8px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-chart > .insight-note { margin:0 0 12px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-chart-body { flex:1; min-height:0; overflow:auto; scrollbar-width:thin; scrollbar-color:var(--muted) var(--line); }
+    :is(#view-dashboard,#view-analytics) .stock-distribution { align-content:center; }
     .coverage-row { padding:7px 0; }
     .dashboard-utilities { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px; }
     .dashboard-utilities .insight-box { height:210px; overflow:auto; }
@@ -743,13 +743,13 @@
     @media(max-width:950px){.dashboard-source-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:560px){.dashboard-source-grid{grid-template-columns:1fr}}
 
-    @media(max-width:1100px) { #view-dashboard .metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:1100px) { :is(#view-dashboard,#view-analytics) .metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media(max-width:700px) {
-      #view-dashboard .insight-grid,.dashboard-utilities { grid-template-columns:1fr; }
-      #view-dashboard .dashboard-chart { height:370px; padding:16px; }
+      :is(#view-dashboard,#view-analytics) .insight-grid,.dashboard-utilities { grid-template-columns:1fr; }
+      :is(#view-dashboard,#view-analytics) .dashboard-chart { height:370px; padding:16px; }
       .dashboard-filters label,.dashboard-filters .dashboard-search { flex:1 1 100%; min-width:0; }
-      #view-dashboard .metric-card { min-height:125px; padding:13px; }
-      #view-dashboard .metric-icon { display:none; }
+      :is(#view-dashboard,#view-analytics) .metric-card { min-height:125px; padding:13px; }
+      :is(#view-dashboard,#view-analytics) .metric-icon { display:none; }
     }
 
     /*
@@ -925,30 +925,30 @@
     #view-stock .quick-stock-select select { font-size:var(--checking-control-font); }
     #view-stock .quick-filters .checkbox-group label { font-size:12px; }
     #view-stock .image-viewer-box { height:clamp(245px,30vh,350px); }
-    #view-dashboard .pane-heading { margin:5px 0 12px; }
-    #view-dashboard .pane-heading h1 { font-size:clamp(21px,2vw,26px); }
-    #view-dashboard .dashboard-filters {
+    :is(#view-dashboard,#view-analytics) .pane-heading { margin:5px 0 12px; }
+    :is(#view-dashboard,#view-analytics) .pane-heading h1 { font-size:clamp(21px,2vw,26px); }
+    :is(#view-dashboard,#view-analytics) .dashboard-filters {
       gap:9px 12px; padding:12px 14px; margin-bottom:12px; border-radius:12px;
     }
-    #view-dashboard .dashboard-filters label {
+    :is(#view-dashboard,#view-analytics) .dashboard-filters label {
       gap:4px; font-size:12px; font-weight:750; min-width:135px;
     }
-    #view-dashboard .dashboard-filters input,
-    #view-dashboard .dashboard-filters select {
+    :is(#view-dashboard,#view-analytics) .dashboard-filters input,
+    :is(#view-dashboard,#view-analytics) .dashboard-filters select {
       min-height:var(--checking-control-height); padding:7px 10px;
       font-size:var(--checking-filter-font); border-radius:8px;
     }
-    #view-dashboard .metric-grid { gap:10px; margin-bottom:11px; }
-    #view-dashboard .metric-card { min-height:114px; padding:13px 15px; border-radius:12px; }
-    #view-dashboard .metric-label { font-size:12px; }
-    #view-dashboard .metric-value { font-size:clamp(21px,2vw,28px); }
-    #view-dashboard .metric-note { font-size:10px; }
-    #view-dashboard .metric-money { font-size:clamp(18px,1.7vw,26px); }
-    #view-dashboard .insights-panel { padding:12px; border-radius:12px; }
-    #view-dashboard .insight-grid, #view-dashboard .dashboard-utilities { gap:12px; }
-    #view-dashboard .dashboard-chart { height:365px; padding:15px; border-radius:12px; }
-    #view-dashboard .dashboard-chart h3 { font-size:13px; margin-bottom:5px; }
-    #view-dashboard .dashboard-chart > .insight-note { margin:0 0 8px; }
+    :is(#view-dashboard,#view-analytics) .metric-grid { gap:10px; margin-bottom:11px; }
+    :is(#view-dashboard,#view-analytics) .metric-card { min-height:114px; padding:13px 15px; border-radius:12px; }
+    :is(#view-dashboard,#view-analytics) .metric-label { font-size:12px; }
+    :is(#view-dashboard,#view-analytics) .metric-value { font-size:clamp(21px,2vw,28px); }
+    :is(#view-dashboard,#view-analytics) .metric-note { font-size:10px; }
+    :is(#view-dashboard,#view-analytics) .metric-money { font-size:clamp(18px,1.7vw,26px); }
+    :is(#view-dashboard,#view-analytics) .insights-panel { padding:12px; border-radius:12px; }
+    :is(#view-dashboard,#view-analytics) .insight-grid, :is(#view-dashboard,#view-analytics) .dashboard-utilities { gap:12px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-chart { height:365px; padding:15px; border-radius:12px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-chart h3 { font-size:13px; margin-bottom:5px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-chart > .insight-note { margin:0 0 8px; }
 
     @media(min-width:1100px) and (min-height:620px) {
       /* Same fixed shell in both tabs; Dashboard scrolls within its own panel. */
@@ -972,7 +972,7 @@
       body.dashboard-one-screen .view-tab {
         min-height:35px; padding:6px 13px; font-size:12px; border-radius:7px;
       }
-      body.dashboard-one-screen #view-dashboard {
+      body.dashboard-one-screen :is(#view-dashboard,#view-analytics) {
         flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden;
         overscroll-behavior:contain; padding-right:4px; padding-bottom:8px;
       }
@@ -1057,9 +1057,9 @@
       #view-stock .toolbar-filters .radio-group span { font-size:12px; padding:5px 8px; }
       #view-stock .quick-stock-select { font-size:11px; }
       #view-stock .image-viewer-box { height:260px; }
-      #view-dashboard .dashboard-filters { padding:10px; }
-      #view-dashboard .metric-card { min-height:112px; padding:12px; }
-      #view-dashboard .dashboard-chart { height:350px; padding:13px; }
+      :is(#view-dashboard,#view-analytics) .dashboard-filters { padding:10px; }
+      :is(#view-dashboard,#view-analytics) .metric-card { min-height:112px; padding:12px; }
+      :is(#view-dashboard,#view-analytics) .dashboard-chart { height:350px; padding:13px; }
     }
 
     /* Readable Stock pagination with compact, keyboard-friendly direct inputs. */
@@ -1391,248 +1391,248 @@
     }
 
     /* Dashboard controls belong to each chart, not to a global search/filter toolbar. */
-    #view-dashboard .dashboard-chart-heading {
+    :is(#view-dashboard,#view-analytics) .dashboard-chart-heading {
       display:flex; align-items:center; justify-content:space-between;
       flex-wrap:wrap; gap:8px; margin-bottom:6px;
     }
-    #view-dashboard .dashboard-chart-heading h3 { margin:0; }
-    #view-dashboard .dashboard-chart-heading > label,
-    #view-dashboard .dashboard-chart-filters label {
+    :is(#view-dashboard,#view-analytics) .dashboard-chart-heading h3 { margin:0; }
+    :is(#view-dashboard,#view-analytics) .dashboard-chart-heading > label,
+    :is(#view-dashboard,#view-analytics) .dashboard-chart-filters label {
       display:flex; align-items:center; gap:6px; color:var(--muted);
       font-size:11px; font-weight:700; white-space:nowrap;
     }
-    #view-dashboard .dashboard-chart-filters {
+    :is(#view-dashboard,#view-analytics) .dashboard-chart-filters {
       display:flex; align-items:center; flex-wrap:wrap; gap:6px 8px;
     }
-    #view-dashboard .dashboard-chart-heading select {
+    :is(#view-dashboard,#view-analytics) .dashboard-chart-heading select {
       min-height:30px; max-width:148px; padding:4px 8px;
       border:1px solid var(--line); border-radius:8px; background:var(--app-field);
       color:var(--ink); font:inherit; font-size:12px; font-weight:650;
     }
-    #view-dashboard .dashboard-chart-filters button {
+    :is(#view-dashboard,#view-analytics) .dashboard-chart-filters button {
       min-height:30px; padding:4px 10px;
     }
-    #view-dashboard .dashboard-time-chart .dashboard-chart-body { overflow-x:auto; }
-    #view-dashboard .trend-list { display:flex; gap:8px; align-items:stretch; height:100%; min-height:160px; padding:5px 3px 8px; }
-    #view-dashboard .trend-column { flex:1 0 38px; min-width:38px; display:flex; flex-direction:column; text-align:center; justify-content:flex-end; gap:4px; }
-    #view-dashboard .trend-amount { font-size:10px; font-weight:750; color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap; }
-    #view-dashboard .trend-chart-bar-wrap { flex:1; min-height:60px; display:flex; align-items:flex-end; justify-content:center; border-bottom:1px solid var(--line); }
-    #view-dashboard .trend-chart-bar { width:72%; border-radius:5px 5px 0 0; min-height:0; background:var(--blue); }
-    #view-dashboard .movement-pair { display:flex; gap:5px; flex:1; min-height:0; }
-    #view-dashboard .movement-series { display:flex; flex-direction:column; flex:1; min-width:0; }
-    #view-dashboard .movement-in { background:#16a34a; }
-    #view-dashboard .movement-out { background:#ef4444; }
-    #view-dashboard .movement-legend { display:flex; gap:18px; margin-bottom:8px; font-size:12px; font-weight:600; }
-    #view-dashboard .movement-legend span::before { content:""; display:inline-block; width:10px; height:10px; margin-right:6px; border-radius:2px; }
-    #view-dashboard .movement-legend-in::before { background:#16a34a; }
-    #view-dashboard .movement-legend-out::before { background:#ef4444; }
+    :is(#view-dashboard,#view-analytics) .dashboard-time-chart .dashboard-chart-body { overflow-x:auto; }
+    :is(#view-dashboard,#view-analytics) .trend-list { display:flex; gap:8px; align-items:stretch; height:100%; min-height:160px; padding:5px 3px 8px; }
+    :is(#view-dashboard,#view-analytics) .trend-column { flex:1 0 38px; min-width:38px; display:flex; flex-direction:column; text-align:center; justify-content:flex-end; gap:4px; }
+    :is(#view-dashboard,#view-analytics) .trend-amount { font-size:10px; font-weight:750; color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap; }
+    :is(#view-dashboard,#view-analytics) .trend-chart-bar-wrap { flex:1; min-height:60px; display:flex; align-items:flex-end; justify-content:center; border-bottom:1px solid var(--line); }
+    :is(#view-dashboard,#view-analytics) .trend-chart-bar { width:72%; border-radius:5px 5px 0 0; min-height:0; background:var(--blue); }
+    :is(#view-dashboard,#view-analytics) .movement-pair { display:flex; gap:5px; flex:1; min-height:0; }
+    :is(#view-dashboard,#view-analytics) .movement-series { display:flex; flex-direction:column; flex:1; min-width:0; }
+    :is(#view-dashboard,#view-analytics) .movement-in { background:#16a34a; }
+    :is(#view-dashboard,#view-analytics) .movement-out { background:#ef4444; }
+    :is(#view-dashboard,#view-analytics) .movement-legend { display:flex; gap:18px; margin-bottom:8px; font-size:12px; font-weight:600; }
+    :is(#view-dashboard,#view-analytics) .movement-legend span::before { content:""; display:inline-block; width:10px; height:10px; margin-right:6px; border-radius:2px; }
+    :is(#view-dashboard,#view-analytics) .movement-legend-in::before { background:#16a34a; }
+    :is(#view-dashboard,#view-analytics) .movement-legend-out::before { background:#ef4444; }
     #insight-usage { display:flex; flex-direction:column; overflow:hidden; }
     #insight-usage .trend-list { flex:1; height:auto; min-height:0; overflow-x:auto; }
     #insight-usage .trend-column { flex-basis:64px; min-width:64px; }
-    #view-dashboard .trend-chart-bar.missing { background:none; border:1px dashed var(--line); border-bottom:0; opacity:.7; }
-    #view-dashboard .trend-period { font-size:10px; color:var(--muted); line-height:1.2; min-height:24px; overflow-wrap:anywhere; }
-    #view-dashboard .dashboard-top-table { width:100%; border-collapse:collapse; font-size:11px; }
-    #view-dashboard .dashboard-top-table th {
+    :is(#view-dashboard,#view-analytics) .trend-chart-bar.missing { background:none; border:1px dashed var(--line); border-bottom:0; opacity:.7; }
+    :is(#view-dashboard,#view-analytics) .trend-period { font-size:10px; color:var(--muted); line-height:1.2; min-height:24px; overflow-wrap:anywhere; }
+    :is(#view-dashboard,#view-analytics) .dashboard-top-table { width:100%; border-collapse:collapse; font-size:11px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-top-table th {
       position:sticky; top:0; z-index:1; background:var(--app-panel); color:var(--muted);
       font-size:10px; font-weight:750; text-align:left; white-space:nowrap;
       padding:8px 6px; border-bottom:1px solid var(--line);
     }
-    #view-dashboard .dashboard-top-table td { padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
-    #view-dashboard .dashboard-top-table td:not(:first-child), #view-dashboard .dashboard-top-table th:not(:first-child) { text-align:right; font-variant-numeric:tabular-nums; }
-    #view-dashboard .dashboard-top-table .top-name { display:block; color:var(--muted); font-size:10px; line-height:1.4; overflow-wrap:anywhere; }
-    #view-dashboard .dashboard-top-table .top-sap { font-weight:800; color:var(--ink); }
-    #view-dashboard .dashboard-top-table tr:hover td { background:var(--app-hover); }
-    #view-dashboard .dashboard-replenishment-card { grid-column:span 2; height:290px; }
-    #view-dashboard #dashboard-usage-summary, #view-dashboard #dashboard-value-trend-summary { margin:6px 0 0; min-height:28px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-top-table td { padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+    :is(#view-dashboard,#view-analytics) .dashboard-top-table td:not(:first-child), :is(#view-dashboard,#view-analytics) .dashboard-top-table th:not(:first-child) { text-align:right; font-variant-numeric:tabular-nums; }
+    :is(#view-dashboard,#view-analytics) .dashboard-top-table .top-name { display:block; color:var(--muted); font-size:10px; line-height:1.4; overflow-wrap:anywhere; }
+    :is(#view-dashboard,#view-analytics) .dashboard-top-table .top-sap { font-weight:800; color:var(--ink); }
+    :is(#view-dashboard,#view-analytics) .dashboard-top-table tr:hover td { background:var(--app-hover); }
+    :is(#view-dashboard,#view-analytics) .dashboard-replenishment-card { grid-column:span 2; height:290px; }
+    :is(#view-dashboard,#view-analytics) #dashboard-usage-summary, :is(#view-dashboard,#view-analytics) #dashboard-value-trend-summary { margin:6px 0 0; min-height:28px; }
     @media(max-width:700px){
-      #view-dashboard .dashboard-replenishment-card { grid-column:auto; height:350px; }
-      #view-dashboard .dashboard-chart-heading { align-items:flex-start; }
-      #view-dashboard .dashboard-chart-filters { width:100%; }
-      #view-dashboard .dashboard-top-table { font-size:10px; }
+      :is(#view-dashboard,#view-analytics) .dashboard-replenishment-card { grid-column:auto; height:350px; }
+      :is(#view-dashboard,#view-analytics) .dashboard-chart-heading { align-items:flex-start; }
+      :is(#view-dashboard,#view-analytics) .dashboard-chart-filters { width:100%; }
+      :is(#view-dashboard,#view-analytics) .dashboard-top-table { font-size:10px; }
     }
 
-    #view-dashboard .dashboard-period-strip {
+    :is(#view-dashboard,#view-analytics) .dashboard-period-strip {
       display:flex; flex-wrap:wrap; gap:8px 12px; align-items:flex-end;
       background:var(--app-panel); border:1px solid var(--line);
       padding:11px 14px; border-radius:12px; margin:0 0 12px;
     }
-    #view-dashboard .dashboard-period-intro {
+    :is(#view-dashboard,#view-analytics) .dashboard-period-intro {
       flex:1 1 180px; display:flex; flex-direction:column; gap:4px;
       font-size:12px;
     }
-    #view-dashboard .dashboard-period-strip > label,
-    #view-dashboard .dashboard-table-chart .dashboard-chart-heading label {
+    :is(#view-dashboard,#view-analytics) .dashboard-period-strip > label,
+    :is(#view-dashboard,#view-analytics) .dashboard-table-chart .dashboard-chart-heading label {
       display:flex; flex-direction:column; gap:3px; font-size:11px;
       color:var(--muted); font-weight:750;
     }
-    #view-dashboard .dashboard-period-strip input,
-    #view-dashboard .dashboard-period-strip select,
-    #view-dashboard .dashboard-table-chart .dashboard-chart-heading select {
+    :is(#view-dashboard,#view-analytics) .dashboard-period-strip input,
+    :is(#view-dashboard,#view-analytics) .dashboard-period-strip select,
+    :is(#view-dashboard,#view-analytics) .dashboard-table-chart .dashboard-chart-heading select {
       color:var(--ink); background:var(--app-field); border:1px solid var(--line);
       border-radius:8px; padding:5px 9px; min-height:32px; max-width:200px;
       font:inherit; font-size:12px;
     }
-    #view-dashboard .dashboard-period-strip [hidden] { display:none !important; }
-    #view-dashboard .dashboard-compare-section {
+    :is(#view-dashboard,#view-analytics) .dashboard-period-strip [hidden] { display:none !important; }
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-section {
       background:var(--app-panel); border:1px solid var(--line);
       border-radius:12px; padding:12px 14px; margin-bottom:12px;
     }
-    #view-dashboard .dashboard-compare-section h2 { font-size:14px; margin:0; }
-    #view-dashboard .dashboard-compare-grid {
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-section h2 { font-size:14px; margin:0; }
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-grid {
       display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:8px;
     }
-    #view-dashboard .dashboard-compare-card {
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-card {
       border:1px solid var(--line); border-radius:10px; background:var(--app-field);
       padding:10px 12px; display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px;
     }
-    #view-dashboard .dashboard-compare-card h3 { margin:0; color:var(--muted); font-size:12px; flex:1 1 100%; }
-    #view-dashboard .dashboard-compare-card strong { font-size:19px; font-variant-numeric:tabular-nums; }
-    #view-dashboard .dashboard-compare-card small { color:var(--muted); font-size:11px; flex:1 1 100%; }
-    #view-dashboard .dashboard-compare-delta {
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-card h3 { margin:0; color:var(--muted); font-size:12px; flex:1 1 100%; }
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-card strong { font-size:19px; font-variant-numeric:tabular-nums; }
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-card small { color:var(--muted); font-size:11px; flex:1 1 100%; }
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-delta {
       font-size:12px; font-weight:800; border-radius:7px; padding:3px 6px;
       background:var(--app-panel); font-variant-numeric:tabular-nums;
     }
-    #view-dashboard .dashboard-compare-delta[data-change="up"] { color:#c44b28; }
-    #view-dashboard .dashboard-compare-delta[data-change="down"] { color:#16875a; }
-    #view-dashboard .dashboard-table-chart { height:375px; }
-    #view-dashboard .dashboard-table-chart .dashboard-chart-body { overflow:auto; }
-    #view-dashboard .dashboard-detail-table { width:100%; border-collapse:collapse; font-size:11px; }
-    #view-dashboard .dashboard-detail-table th {
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-delta[data-change="up"] { color:#c44b28; }
+    :is(#view-dashboard,#view-analytics) .dashboard-compare-delta[data-change="down"] { color:#16875a; }
+    :is(#view-dashboard,#view-analytics) .dashboard-table-chart { height:375px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-table-chart .dashboard-chart-body { overflow:auto; }
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table { width:100%; border-collapse:collapse; font-size:11px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table th {
       position:sticky; top:0; background:var(--app-panel); border-bottom:1px solid var(--line);
       color:var(--muted); font-size:10px; font-weight:750; padding:8px 6px;
       text-align:left; white-space:nowrap;
     }
-    #view-dashboard .dashboard-detail-table td {
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table td {
       padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top;
     }
-    #view-dashboard .dashboard-detail-table td:last-child,
-    #view-dashboard .dashboard-detail-table th:last-child { text-align:right; }
-    #view-dashboard .dashboard-detail-table tr[data-material-index] { cursor:pointer; }
-    #view-dashboard .dashboard-detail-table tr[data-material-index]:hover td { background:var(--app-hover); }
-    #view-dashboard .dashboard-detail-table tr[data-material-index]:focus-visible td {
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table td:last-child,
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table th:last-child { text-align:right; }
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table tr[data-material-index] { cursor:pointer; }
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table tr[data-material-index]:hover td { background:var(--app-hover); }
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table tr[data-material-index]:focus-visible td {
       outline:1px solid var(--blue);
     }
-    #view-dashboard .dashboard-detail-table .material-name {
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table .material-name {
       display:block; color:var(--muted); font-size:10px; overflow-wrap:anywhere;
     }
-    #view-dashboard .dashboard-detail-table .material-sap { font-weight:800; }
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table .material-sap { font-weight:800; }
     @media(max-width:700px) {
-      #view-dashboard .dashboard-period-intro { flex:1 1 100%; }
-      #view-dashboard .dashboard-compare-grid { grid-template-columns:1fr; }
-      #view-dashboard .dashboard-table-chart { height:360px; }
+      :is(#view-dashboard,#view-analytics) .dashboard-period-intro { flex:1 1 100%; }
+      :is(#view-dashboard,#view-analytics) .dashboard-compare-grid { grid-template-columns:1fr; }
+      :is(#view-dashboard,#view-analytics) .dashboard-table-chart { height:360px; }
     }
 
-    #view-dashboard #dashboard-range-year-field input,
-    #view-dashboard #dashboard-range-year-end-field input {
+    :is(#view-dashboard,#view-analytics) #dashboard-range-year-field input,
+    :is(#view-dashboard,#view-analytics) #dashboard-range-year-end-field input {
       width:96px; min-width:88px; max-width:96px;
       font-variant-numeric:tabular-nums;
     }
     @media(max-width:620px){
-      #view-dashboard #dashboard-range-year-field,
-      #view-dashboard #dashboard-range-year-end-field { flex:0 1 calc(50% - 6px); }
-      #view-dashboard #dashboard-range-year-field input,
-      #view-dashboard #dashboard-range-year-end-field input {
+      :is(#view-dashboard,#view-analytics) #dashboard-range-year-field,
+      :is(#view-dashboard,#view-analytics) #dashboard-range-year-end-field { flex:0 1 calc(50% - 6px); }
+      :is(#view-dashboard,#view-analytics) #dashboard-range-year-field input,
+      :is(#view-dashboard,#view-analytics) #dashboard-range-year-end-field input {
         width:100%; max-width:130px;
       }
     }
 
     /* Compact independent pagination on the two material analytics tables. */
-    #view-dashboard .dashboard-table-chart {
+    :is(#view-dashboard,#view-analytics) .dashboard-table-chart {
       height:430px; min-height:0; display:flex; flex-direction:column;
     }
-    #view-dashboard .dashboard-table-chart .dashboard-chart-body {
+    :is(#view-dashboard,#view-analytics) .dashboard-table-chart .dashboard-chart-body {
       flex:1 1 0; min-height:0; overflow:auto; overscroll-behavior:contain;
     }
-    #view-dashboard .dashboard-mini-pager {
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-pager {
       display:flex; flex:0 0 auto; flex-wrap:wrap; gap:6px 9px;
       justify-content:space-between; align-items:center;
       padding:8px 0 4px; border-top:1px solid var(--line);
     }
-    #view-dashboard .dashboard-mini-pager[hidden] { display:none !important; }
-    #view-dashboard .dashboard-report-count {
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-pager[hidden] { display:none !important; }
+    :is(#view-dashboard,#view-analytics) .dashboard-report-count {
       align-self:flex-start; margin:4px 0 8px; padding:5px 9px;
       border:1px solid var(--line); border-radius:8px; background:var(--app-field);
       color:var(--ink); font-size:12px; font-weight:750;
     }
     @media(max-width:700px) {
-      #view-dashboard .dashboard-table-chart { height:auto; min-height:430px; }
-      #view-dashboard .dashboard-table-chart .dashboard-chart-body {
+      :is(#view-dashboard,#view-analytics) .dashboard-table-chart { height:auto; min-height:430px; }
+      :is(#view-dashboard,#view-analytics) .dashboard-table-chart .dashboard-chart-body {
         flex:0 0 auto; min-height:140px; max-height:260px;
       }
     }
-    #view-dashboard .dashboard-mini-size,
-    #view-dashboard .dashboard-mini-page {
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-size,
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-page {
       display:flex; align-items:center; gap:4px 6px; flex-wrap:wrap;
       font-size:10px; color:var(--muted); font-weight:650;
     }
-    #view-dashboard .dashboard-mini-pager input,
-    #view-dashboard .dashboard-mini-pager select {
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-pager input,
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-pager select {
       background:var(--app-field); color:var(--ink); border:1px solid var(--line);
       border-radius:6px; min-height:28px; padding:3px 5px;
       font:inherit; font-size:11px; font-variant-numeric:tabular-nums;
     }
-    #view-dashboard .dashboard-mini-size select { width:61px; }
-    #view-dashboard .dashboard-mini-size input { width:52px; }
-    #view-dashboard .dashboard-mini-page input { width:46px; text-align:center; }
-    #view-dashboard .dashboard-mini-page button {
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-size select { width:61px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-size input { width:52px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-page input { width:46px; text-align:center; }
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-page button {
       min-width:27px; min-height:28px; border:1px solid var(--line);
       border-radius:6px; background:var(--app-field); color:var(--ink);
       font:inherit; font-size:13px; cursor:pointer;
     }
-    #view-dashboard .dashboard-mini-page button:hover:not(:disabled) {
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-page button:hover:not(:disabled) {
       background:var(--app-hover); border-color:var(--blue);
     }
-    #view-dashboard .dashboard-mini-page button:disabled { opacity:.35; cursor:default; }
-    #view-dashboard .dashboard-out-range {
+    :is(#view-dashboard,#view-analytics) .dashboard-mini-page button:disabled { opacity:.35; cursor:default; }
+    :is(#view-dashboard,#view-analytics) .dashboard-out-range {
       display:flex; flex:0 0 auto; flex-wrap:wrap; align-items:center;
       gap:5px 9px; margin:5px 0 8px; font-size:11px; color:var(--muted);
       font-weight:700;
     }
-    #view-dashboard .dashboard-out-range input[type="range"] {
+    :is(#view-dashboard,#view-analytics) .dashboard-out-range input[type="range"] {
       flex:1 1 115px; width:100px; min-width:72px;
       accent-color:var(--blue); cursor:pointer;
     }
-    #view-dashboard .dashboard-out-range input[type="range"]:disabled { opacity:.4; }
-    #view-dashboard .dashboard-out-range output {
+    :is(#view-dashboard,#view-analytics) .dashboard-out-range input[type="range"]:disabled { opacity:.4; }
+    :is(#view-dashboard,#view-analytics) .dashboard-out-range output {
       color:var(--ink); min-width:75px; text-align:right;
       font-variant-numeric:tabular-nums;
     }
-    #view-dashboard .dashboard-detail-table td:nth-child(2),
-    #view-dashboard .dashboard-detail-table td:nth-child(3),
-    #view-dashboard .dashboard-detail-table th:nth-child(2),
-    #view-dashboard .dashboard-detail-table th:nth-child(3) {
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table td:nth-child(2),
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table td:nth-child(3),
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table th:nth-child(2),
+    :is(#view-dashboard,#view-analytics) .dashboard-detail-table th:nth-child(3) {
       text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;
     }
-    #view-dashboard .dashboard-table-chart > p.insight-note:last-child {
+    :is(#view-dashboard,#view-analytics) .dashboard-table-chart > p.insight-note:last-child {
       flex:0 0 auto; margin:5px 0 0; min-height:17px;
       font-size:10px; overflow:hidden; text-overflow:ellipsis;
     }
     @media(max-width:700px) {
-      #view-dashboard .dashboard-table-chart { height:430px; }
-      #view-dashboard .dashboard-mini-size { flex:1 1 100%; }
+      :is(#view-dashboard,#view-analytics) .dashboard-table-chart { height:430px; }
+      :is(#view-dashboard,#view-analytics) .dashboard-mini-size { flex:1 1 100%; }
     }
 
-    #view-dashboard .dashboard-hall-control select {
+    :is(#view-dashboard,#view-analytics) .dashboard-hall-control select {
       min-width:132px; max-width:170px; border-color:var(--blue);
     }
-    #view-dashboard .dashboard-hall-status {
+    :is(#view-dashboard,#view-analytics) .dashboard-hall-status {
       width:100%; margin:0; font-size:11px; line-height:1.35;
     }
-    #view-dashboard .dashboard-hall-status:empty { display:none; }
-    #view-dashboard .dashboard-sort-button {
+    :is(#view-dashboard,#view-analytics) .dashboard-hall-status:empty { display:none; }
+    :is(#view-dashboard,#view-analytics) .dashboard-sort-button {
       display:inline-flex; align-items:center; gap:4px; justify-content:inherit;
       font:inherit; font-size:inherit; color:inherit; font-weight:750;
       text-align:inherit; background:transparent; border:none;
       padding:0; cursor:pointer; white-space:nowrap;
     }
-    #view-dashboard .dashboard-sort-button:hover,
-    #view-dashboard .dashboard-sort-button[aria-sort="ascending"],
-    #view-dashboard .dashboard-sort-button[aria-sort="descending"] { color:var(--blue); }
-    #view-dashboard .dashboard-sort-button:focus-visible {
+    :is(#view-dashboard,#view-analytics) .dashboard-sort-button:hover,
+    :is(#view-dashboard,#view-analytics) .dashboard-sort-button[aria-sort="ascending"],
+    :is(#view-dashboard,#view-analytics) .dashboard-sort-button[aria-sort="descending"] { color:var(--blue); }
+    :is(#view-dashboard,#view-analytics) .dashboard-sort-button:focus-visible {
       outline:2px solid var(--blue); outline-offset:3px; border-radius:3px;
     }
-    #view-dashboard .dashboard-sort-icon { display:inline-block; opacity:.6; min-width:9px; }
-    #view-dashboard .dashboard-sort-button[data-active="true"] .dashboard-sort-icon { opacity:1; }
+    :is(#view-dashboard,#view-analytics) .dashboard-sort-icon { display:inline-block; opacity:.6; min-width:9px; }
+    :is(#view-dashboard,#view-analytics) .dashboard-sort-button[data-active="true"] .dashboard-sort-icon { opacity:1; }
 
     /* SAP material master: modern searchable catalog, separate from stock analytics. */
     .catalog-pane{min-width:0;padding-bottom:18px}
@@ -2039,6 +2039,60 @@
       .activity-pagination label {margin-right:0}
       .activity-heading .record-count {white-space:normal}
     }
+    /* Dedicated chart overview and table workspace share the same filter bar. */
+    .warehouse-kpi-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0 8px}
+    .warehouse-kpi-group {min-width:0}
+    .warehouse-group-heading {display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+    .warehouse-group-heading h2 {font-size:13px;margin:0}
+    .warehouse-group-heading > span {font-size:10px;color:var(--muted)}
+    .warehouse-kpi-cards {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+    .warehouse-kpi {position:relative;min-width:0;border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;padding:10px;background:var(--app-panel)}
+    .warehouse-kpi[data-tone="in"] {border-top-color:var(--green)}
+    .warehouse-kpi[data-tone="out"] {border-top-color:var(--red)}
+    .warehouse-kpi[data-tone="net"] {border-top-color:#a36cdb}
+    .warehouse-kpi h3 {font-size:11px;line-height:1.4;color:var(--muted);margin:0 0 7px;font-weight:750}
+    .warehouse-kpi > strong {display:block;font-size:clamp(15px,1.3vw,22px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:var(--ink)}
+    .warehouse-kpi > small {display:block;color:var(--muted);font-size:10px;line-height:1.4;margin-top:6px}
+    .warehouse-kpi .dashboard-compare-delta {display:inline-block;margin-top:4px}
+    #view-dashboard .warehouse-charts .dashboard-chart {height:335px}
+    #view-dashboard .warehouse-charts {gap:12px}
+    #view-dashboard .warehouse-charts .dashboard-chart-body {min-width:0}
+    #insight-usage-detail {display:flex;flex-direction:column;overflow:hidden}
+    #insight-usage-detail .trend-list {flex:1;height:auto;min-height:0;overflow-x:auto}
+    #insight-usage-detail .trend-column {flex-basis:52px;min-width:52px}
+    #view-dashboard .warehouse-charts .trend-list {background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),var(--line) 25%);border-radius:5px}
+    #view-dashboard .warehouse-charts .trend-amount {font-size:9px}
+    .warehouse-line-chart {display:block;width:100%;height:100%;min-height:185px;overflow:visible}
+    .warehouse-grid-line {stroke:var(--line);stroke-width:1}
+    .warehouse-axis-label,.warehouse-gap {fill:var(--muted);font-size:10px;font-family:inherit}
+    .warehouse-value-line {fill:none;stroke:var(--blue);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+    .warehouse-value-point {fill:var(--app-panel);stroke:var(--blue);stroke-width:2}
+    .warehouse-value-point:focus {outline:none;stroke:var(--ink);stroke-width:4}
+    .warehouse-stock-summary {margin-top:18px}
+    .warehouse-support-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    #view-dashboard .warehouse-support-grid .dashboard-chart {height:270px}
+    #view-dashboard .warehouse-support-grid .dashboard-alert-panel {margin:0}
+    #view-dashboard .dashboard-utilities {align-items:start}
+    #view-dashboard .dashboard-utilities .insight-box {height:auto;min-height:210px}
+    #view-dashboard .dashboard-utilities .dashboard-source-panel {margin:0}
+    #view-dashboard .dashboard-utilities .dashboard-source-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+    #view-analytics .analytics-tables {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    #view-analytics .dashboard-top-card {grid-column:1/-1;height:360px}
+    #view-analytics .dashboard-table-chart {height:520px}
+    #view-analytics .analytics-export {margin-top:12px}
+    #view-analytics .analytics-export > .insight-box {padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--app-panel)}
+    #view-analytics .analytics-export h3 {margin:0 0 10px;font-size:13px}
+    :is(#view-dashboard,#view-analytics) .pane-heading h1 {font-size:clamp(21px,2vw,26px)}
+    @media(max-width:1250px){.warehouse-kpi-grid{grid-template-columns:1fr}}
+    @media(max-width:900px){#view-analytics .analytics-tables{grid-template-columns:1fr}#view-analytics .dashboard-top-card{grid-column:auto}}
+    @media(max-width:700px){
+      .warehouse-support-grid{grid-template-columns:1fr}
+      .warehouse-kpi-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .warehouse-kpi > strong{font-size:20px}
+      .warehouse-group-heading{align-items:flex-start;flex-direction:column;gap:3px}
+      #view-analytics .dashboard-table-chart{height:520px}
+      #view-analytics .dashboard-table-chart .dashboard-chart-body{flex:1 1 0;max-height:none}
+    }
 </style>
 </head>
 <body>
@@ -2060,7 +2114,8 @@
       <div class="breadcrumbs"><span data-i18n="workspaceName">Không gian làm việc</span><span>/</span><span class="active" data-i18n="breadcrumb">Tổng quan vật tư</span></div>
       <nav class="view-tabs" aria-label="Các màn hình quản lý kho" data-i18n-aria="tabsAria" role="tablist">
         <button type="button" id="tab-stock" class="view-tab active" role="tab" aria-selected="true" aria-controls="view-stock" tabindex="0" onclick="chuyenTab('stock')"><span aria-hidden="true">▤</span><span data-i18n="tabStock">Tra cứu tồn kho</span></button>
-        <button type="button" id="tab-dashboard" class="view-tab" role="tab" aria-selected="false" aria-controls="view-dashboard" tabindex="-1" onclick="chuyenTab('dashboard')"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Phân tích kho</span></button>
+        <button type="button" id="tab-analytics" class="view-tab" role="tab" aria-selected="false" aria-controls="view-analytics" tabindex="-1" onclick="chuyenTab('analytics')"><span aria-hidden="true">◫</span><span data-i18n="tabAnalytics">Phân tích kho</span></button>
+        <button type="button" id="tab-dashboard" class="view-tab" role="tab" aria-selected="false" aria-controls="view-dashboard" tabindex="-1" onclick="chuyenTab('dashboard')"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Dashboard</span></button>
         <button type="button" id="tab-catalog" class="view-tab" role="tab" aria-selected="false" aria-controls="view-catalog" tabindex="-1" onclick="chuyenTab('catalog')"><span aria-hidden="true">▦</span><span data-i18n="catalogTab">Danh mục vật tư</span></button>
         <button type="button" id="tab-search-history" class="view-tab" role="tab" aria-selected="false" aria-controls="view-search-history" tabindex="-1" onclick="chuyenTab('search-history')"><span aria-hidden="true">◷</span><span data-i18n="searchHistoryTab">Lịch sử tìm kiếm</span></button>
         <button type="button" id="tab-requests" class="view-tab" role="tab" aria-selected="false" aria-controls="view-requests" tabindex="-1" onclick="chuyenTab('requests')"><span aria-hidden="true">＋</span><span data-i18n="requestTab">Yêu cầu</span></button>
@@ -2276,8 +2331,8 @@
       </section>
 
       <section id="view-dashboard" class="view-pane" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
-        <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Phân tích kho</h1><p data-i18n="dashboardDesc">Theo dõi nhập xuất, vật tư tồn lâu và biến động giá trị kho.</p></div></div>
-      <section class="dashboard-period-strip" aria-label="Khoảng thời gian phân tích" data-i18n-aria="dashboardTimeTitle">
+  <div class="pane-heading"><div><h1 data-i18n="warehouseDashboardHeading">Dashboard kho</h1><p data-i18n="warehouseDashboardDesc"></p></div></div>
+<section id="warehouse-filters" class="dashboard-period-strip" aria-label="Khoảng thời gian phân tích" data-i18n-aria="dashboardTimeTitle">
         <div class="dashboard-period-intro"><strong data-i18n="dashboardTimeTitle">Khoảng thời gian phân tích</strong>
           <span id="dashboard-range-summary" class="insight-note"></span></div>
         <label class="dashboard-hall-control"><span data-i18n="dashboardHallFilter">Khu vực kho</span>
@@ -2306,7 +2361,81 @@
           <input id="dashboard-range-to" type="date" onchange="doiKyPhanTichKho()"></label>
         <p id="dashboard-hall-status" class="dashboard-hall-status insight-note" role="status" aria-live="polite"></p>
       </section>
-      <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
+<section class="warehouse-kpi-grid" data-i18n-aria="warehouseOverview">
+  <div class="warehouse-kpi-group"><div class="warehouse-group-heading"><h2 data-i18n="warehouseSelectedPeriod"></h2><span id="warehouse-period-label"></span></div><div class="warehouse-kpi-cards"><article class="warehouse-kpi" data-tone="inventory"><h3 data-i18n="warehouseClosing"></h3>
+      <strong id="warehouse-period-inventory">—</strong><small id="warehouse-period-inventory-date"></small></article><article class="warehouse-kpi" data-tone="in"><h3 data-i18n="dashboardCompareIn"></h3>
+      <strong id="dashboard-compare-in-current">—</strong>
+      <span class="dashboard-compare-delta" id="dashboard-compare-in-change">—</span>
+      <small id="dashboard-compare-in-prior"></small></article><article class="warehouse-kpi" data-tone="out"><h3 data-i18n="dashboardCompareOut"></h3>
+      <strong id="dashboard-compare-out-current">—</strong>
+      <span class="dashboard-compare-delta" id="dashboard-compare-out-change">—</span>
+      <small id="dashboard-compare-out-prior"></small></article><article class="warehouse-kpi" data-tone="net"><h3 data-i18n="warehouseNet"></h3>
+      <strong id="warehouse-period-net">—</strong><small data-i18n="warehouseCurrency"></small></article></div></div><div class="warehouse-kpi-group"><div class="warehouse-group-heading"><h2 data-i18n="warehouseLastWeek"></h2><span id="warehouse-week-label"></span></div><div class="warehouse-kpi-cards"><article class="warehouse-kpi" data-tone="inventory"><h3 data-i18n="warehouseClosing"></h3>
+      <strong id="warehouse-week-inventory">—</strong><small id="warehouse-week-inventory-date"></small></article><article class="warehouse-kpi" data-tone="in"><h3 data-i18n="dashboardCompareIn"></h3>
+      <strong id="warehouse-week-in">—</strong><small data-i18n="warehouseCurrency"></small></article><article class="warehouse-kpi" data-tone="out"><h3 data-i18n="dashboardCompareOut"></h3>
+      <strong id="warehouse-week-out">—</strong><small data-i18n="warehouseCurrency"></small></article><article class="warehouse-kpi" data-tone="net"><h3 data-i18n="warehouseNet"></h3>
+      <strong id="warehouse-week-net">—</strong><small data-i18n="warehouseCurrency"></small></article></div></div></section><p id="warehouse-summary-note" class="insight-note" role="status"></p>
+  <p id="dashboard-compare-periods" class="insight-note"></p><p id="dashboard-compare-note" class="insight-note" role="status"></p>
+  <section class="insights-panel" id="insights-panel" aria-labelledby="dashboard-charts-heading">
+    <h2 class="dashboard-charts-title" id="dashboard-charts-heading" data-i18n="inventoryInsights"></h2>
+    <p class="insight-note" data-i18n="allInventoryNote"></p><div class="insight-grid warehouse-charts">
+<div class="insight-box dashboard-chart dashboard-time-chart">
+            <div class="dashboard-chart-heading">
+              <h3 data-i18n="dashValueTrendTitle">Tổng giá trị kho theo thời gian</h3>
+              <label><span data-i18n="dashValueTrendPeriod">Xem theo</span>
+                <select id="dashboard-value-period" onchange="veBieuDoGiaTriKho()">
+                  <option value="day" data-i18n="dashDay">Ngày</option>
+                  <option value="week" data-i18n="dashWeek">Hằng tuần</option>
+                  <option value="month" data-i18n="dashMonth" selected>Tháng</option>
+                  <option value="year" data-i18n="dashYear">Năm</option>
+                </select>
+              </label>
+              <button type="button" class="btn btn-soft" onclick="taiLaiAmount()" data-i18n="dashAmountRefresh">Làm mới Amount</button>
+            </div>
+            <p class="insight-note" data-i18n="dashValueTrendNote">Giá trị từ Amount.js trong cùng thư mục, lấy bản ghi cuối mỗi kỳ; không cộng dồn.</p>
+            <div id="insight-value-trend" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashValueTrendTitle"></div>
+            <p id="dashboard-value-trend-summary" class="insight-note" role="status"></p>
+            <p id="dashboard-amount-status" class="insight-note" role="status" aria-live="polite"></p>
+          </div>
+<div class="insight-box dashboard-chart dashboard-time-chart">
+      <div class="dashboard-chart-heading"><h3 data-i18n="warehouseInventoryDetail"></h3>
+        <label><span data-i18n="dashValueTrendPeriod"></span><select id="dashboard-value-detail-period" onchange="veBieuDoGiaTriKho()">
+          <option value="week" data-i18n="dashWeek" selected>Hằng tuần</option>
+          <option value="month" data-i18n="dashMonth">Hằng tháng</option>
+          <option value="year" data-i18n="dashYear">Hằng năm</option>
+        </select></label></div>
+      <p class="insight-note" data-i18n="warehouseLineNote"></p>
+      <div id="insight-value-detail" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="warehouseInventoryDetail"></div>
+      <p id="dashboard-value-detail-summary" class="insight-note" role="status"></p></div>
+<div class="insight-box dashboard-chart dashboard-time-chart">
+            <div class="dashboard-chart-heading">
+              <h3 data-i18n="dashUsageTitle">Giá trị nhập / xuất kho</h3>
+              <div class="dashboard-chart-filters">
+                <label><span data-i18n="dashUsagePeriod">Chu kỳ</span><select id="dashboard-usage-period" onchange="veBieuDoSuDungKho()">
+                  <option value="week" data-i18n="dashWeek">Hằng tuần</option>
+                  <option value="month" data-i18n="dashMonth" selected>Hằng tháng</option>
+                  <option value="year" data-i18n="dashYear">Hằng năm</option>
+                </select></label>
+                <button class="btn btn-soft" type="button" onclick="taiHistory(true)" data-i18n-title="historyRefresh" title="Tải lại lịch sử" aria-label="Tải lại lịch sử">↻</button>
+              </div>
+            </div>
+            <p class="insight-note" data-i18n="dashUsageNote">Giá trị nhập và xuất theo ngày hạch toán, đơn vị VND.</p>
+            <div id="insight-usage" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashUsageTitle"></div>
+            <p id="dashboard-usage-summary" class="insight-note" role="status"></p>
+          </div>
+<div class="insight-box dashboard-chart dashboard-time-chart">
+      <div class="dashboard-chart-heading"><h3 data-i18n="warehouseMovementDetail"></h3>
+        <label><span data-i18n="dashValueTrendPeriod"></span><select id="dashboard-usage-detail-period" onchange="veBieuDoSuDungKho()">
+          <option value="week" data-i18n="dashWeek" selected>Hằng tuần</option>
+          <option value="month" data-i18n="dashMonth">Hằng tháng</option>
+          <option value="year" data-i18n="dashYear">Hằng năm</option>
+        </select></label></div>
+      <p class="insight-note" data-i18n="dashUsageNote"></p>
+      <div id="insight-usage-detail" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="warehouseMovementDetail"></div>
+      <p id="dashboard-usage-detail-summary" class="insight-note" role="status"></p></div>
+    </div></section>
+  <section class="warehouse-stock-summary"><h2 class="dashboard-charts-title" data-i18n="warehouseCurrentStock"></h2>
+<section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
         <div class="metric-card">
           <div class="metric-text"><div class="metric-label" data-i18n="dashTotalRows">Tổng dòng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="dashKpiNote">Toàn bộ dữ liệu kho</span></div>
           <div class="metric-icon" aria-hidden="true">▦</div>
@@ -2328,59 +2457,33 @@
           </div>
           <div class="metric-icon" aria-hidden="true">₫</div>
         </div>
-      </section>
-      <section class="dashboard-alert-panel" aria-label="Cảnh báo kho" data-i18n-aria="dashAlertHeading">
+      </section><div class="warehouse-support-grid"><div class="insight-box dashboard-chart">
+            <h3 data-i18n="stockDistribution">Phân bố trạng thái tồn kho</h3>
+            <div id="insight-stock-distribution" class="stock-distribution dashboard-chart-body"></div>
+          </div><section class="dashboard-alert-panel" aria-label="Cảnh báo kho" data-i18n-aria="dashAlertHeading">
         <div class="dashboard-alert-header"><h2 data-i18n="dashAlertHeading">Cảnh báo kho</h2>
           <small data-i18n="dashAlertRule">Giá trị ±10% · giá trị xuất tăng trên 100% · tồn bằng/dưới điểm đặt hàng</small></div>
         <div id="dashboard-alert-list" class="dashboard-alert-list" role="status" aria-live="polite"></div>
-      </section>
-      <section class="dashboard-compare-section" aria-label="So sánh nhập xuất" data-i18n-aria="dashboardCompareTitle">
-        <div class="dashboard-chart-heading">
-          <h2 data-i18n="dashboardCompareTitle">So sánh nhập / xuất với kỳ trước</h2>
-          <p class="insight-note" id="dashboard-compare-periods"></p>
-        </div>
-        <div class="dashboard-compare-grid">
-          <article class="dashboard-compare-card">
-            <h3 data-i18n="dashboardCompareIn">Giá trị nhập</h3>
-            <strong id="dashboard-compare-in-current">—</strong>
-            <span class="dashboard-compare-delta" id="dashboard-compare-in-change">—</span>
-            <small id="dashboard-compare-in-prior"></small>
-          </article>
-          <article class="dashboard-compare-card">
-            <h3 data-i18n="dashboardCompareOut">Giá trị xuất</h3>
-            <strong id="dashboard-compare-out-current">—</strong>
-            <span class="dashboard-compare-delta" id="dashboard-compare-out-change">—</span>
-            <small id="dashboard-compare-out-prior"></small>
-          </article>
-        </div>
-        <p id="dashboard-compare-note" class="insight-note" role="status"></p>
-      </section>
+      </section></div></section>
+  <div class="dashboard-utilities"><div class="insight-box"><h3 data-i18n="inventoryHistory">Lịch sử giá trị kho</h3><p class="insight-note" data-i18n="dashSnapshotNote">Nguồn Amount.js (cùng thư mục với HTML); Tất cả và Hall 1 dùng chung dữ liệu.</p><div id="insight-history" class="history-grid"></div></div><section class="dashboard-source-panel" aria-label="Trạng thái nguồn dữ liệu" data-i18n-aria="dashSourceHeading">
+          <div class="dashboard-source-heading"><h3 data-i18n="dashSourceHeading">Trạng thái nguồn dữ liệu</h3>
+          <button type="button" class="btn btn-soft" onclick="lamMoiToanBoNguon()" data-i18n="dashSourceRefresh">Kiểm tra cập nhật</button></div>
+          <div class="dashboard-source-grid">
+            <div class="dashboard-source-item" id="dashboard-source-stock">data.js</div>
+            <div class="dashboard-source-item" id="dashboard-source-history">History.js</div>
+            <div class="dashboard-source-item" id="dashboard-source-amount">Amount.js</div>
+            <div class="dashboard-source-item" id="dashboard-source-images">Material</div>
+          </div>
+          <p class="insight-note" data-i18n="dashSourcePrivacy">Bộ nhớ đệm lịch sử trên thiết bị này có thể chứa dữ liệu SAP nội bộ. Xóa bộ nhớ đệm nếu dùng máy chung.</p>
+          <button type="button" class="btn btn-soft" onclick="xoaCacheHistory()" data-i18n="dashSourceClear">Xóa bộ nhớ đệm lịch sử</button>
+        </section></div>
+  <p class="insight-note" data-i18n="insightNote"></p>
+</section>
 
-      <section class="insights-panel" id="insights-panel" aria-labelledby="dashboard-charts-heading">
-        <h2 class="dashboard-charts-title" id="dashboard-charts-heading" data-i18n="inventoryInsights">Phân tích giá trị kho và nhập / xuất</h2>
-        <p class="insight-note" data-i18n="allInventoryNote">Thống kê tồn kho sử dụng toàn bộ dữ liệu. Biểu đồ sử dụng lấy từ lịch sử xuất, giá trị theo thời gian lấy từ các lần đồng bộ trên thiết bị.</p>
-        <div class="insight-grid">
-          <div class="insight-box dashboard-chart">
-            <h3 data-i18n="stockDistribution">Phân bố trạng thái tồn kho</h3>
-            <div id="insight-stock-distribution" class="stock-distribution dashboard-chart-body"></div>
-          </div>
-          <div class="insight-box dashboard-chart dashboard-time-chart">
-            <div class="dashboard-chart-heading">
-              <h3 data-i18n="dashUsageTitle">Giá trị nhập / xuất kho</h3>
-              <div class="dashboard-chart-filters">
-                <label><span data-i18n="dashUsagePeriod">Chu kỳ</span><select id="dashboard-usage-period" onchange="veBieuDoSuDungKho()">
-                  <option value="week" data-i18n="dashWeek">Hằng tuần</option>
-                  <option value="month" data-i18n="dashMonth" selected>Hằng tháng</option>
-                  <option value="year" data-i18n="dashYear">Hằng năm</option>
-                </select></label>
-                <button class="btn btn-soft" type="button" onclick="taiHistory(true)" data-i18n-title="historyRefresh" title="Tải lại lịch sử" aria-label="Tải lại lịch sử">↻</button>
-              </div>
-            </div>
-            <p class="insight-note" data-i18n="dashUsageNote">Giá trị nhập và xuất theo ngày hạch toán, đơn vị VND.</p>
-            <div id="insight-usage" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashUsageTitle"></div>
-            <p id="dashboard-usage-summary" class="insight-note" role="status"></p>
-          </div>
-          <div class="insight-box dashboard-chart dashboard-top-card">
+      <section id="view-analytics" class="view-pane" role="tabpanel" aria-labelledby="tab-analytics" hidden>
+  <div class="pane-heading"><div><h1 data-i18n="dashboardHeading">Phân tích kho</h1><p data-i18n="warehouseAnalyticsDesc"></p></div></div>
+  <section class="analytics-tables" data-i18n-aria="warehouseTables">
+<div class="insight-box dashboard-chart dashboard-top-card">
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashTopValue">Vật tư có giá trị tồn cao nhất</h3>
               <label class="dashboard-top-filter"><span data-i18n="dashRankLimit">Số vật tư</span>
@@ -2394,25 +2497,7 @@
             <p class="insight-note" data-i18n="dashValueNote">Giá trị tồn = số lượng × đơn giá, gộp theo mã SAP.</p>
             <div id="insight-top" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashTopValue"></div>
           </div>
-          <div class="insight-box dashboard-chart dashboard-time-chart">
-            <div class="dashboard-chart-heading">
-              <h3 data-i18n="dashValueTrendTitle">Tổng giá trị kho theo thời gian</h3>
-              <label><span data-i18n="dashValueTrendPeriod">Xem theo</span>
-                <select id="dashboard-value-period" onchange="veBieuDoGiaTriKho()">
-                  <option value="day" data-i18n="dashDay">Ngày</option>
-                  <option value="week" data-i18n="dashWeek">Hằng tuần</option>
-                  <option value="month" data-i18n="dashMonth" selected>Tháng</option>
-                  <option value="year" data-i18n="dashYear">Năm</option>
-                </select>
-              </label>
-              <button type="button" class="btn btn-soft" onclick="taiLaiAmount()" data-i18n="dashAmountRefresh">Làm mới Amount</button>
-            </div>
-            <p class="insight-note" data-i18n="dashValueTrendNote">Giá trị từ Amount.js trong cùng thư mục, lấy bản ghi cuối mỗi kỳ; không cộng dồn.</p>
-            <div id="insight-value-trend" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashValueTrendTitle"></div>
-            <p id="dashboard-value-trend-summary" class="insight-note" role="status"></p>
-            <p id="dashboard-amount-status" class="insight-note" role="status" aria-live="polite"></p>
-          </div>
-          <div class="insight-box dashboard-chart dashboard-table-chart">
+<div class="insight-box dashboard-chart dashboard-table-chart">
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashboardTopOutTitle">Vật tư xuất nhiều nhất theo giá trị</h3>
               <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
@@ -2460,7 +2545,7 @@
             </div>
             <p id="dashboard-top-out-note" class="insight-note" role="status"></p>
           </div>
-          <div class="insight-box dashboard-chart dashboard-table-chart">
+<div class="insight-box dashboard-chart dashboard-table-chart">
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashboardDormantTitle">Vật tư tồn lâu chưa xuất</h3>
               <label><span data-i18n="dashboardDormantDays">Không xuất trong</span>
@@ -2501,11 +2586,8 @@
               </div>
             </div>
             <p id="dashboard-dormant-note" class="insight-note" role="status"></p>
-          </div>
-        </div>
-        <div class="dashboard-utilities">
-          <div class="insight-box"><h3 data-i18n="inventoryHistory">Lịch sử giá trị kho</h3><p class="insight-note" data-i18n="dashSnapshotNote">Nguồn Amount.js (cùng thư mục với HTML); Tất cả và Hall 1 dùng chung dữ liệu.</p><div id="insight-history" class="history-grid"></div></div>
-          <div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
+          </div></section>
+  <section class="analytics-export"><div class="insight-box"><h3 data-i18n="scheduleTitle">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
             <div class="advanced-controls dashboard-export-controls" style="padding-top:0">
               <select id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()" aria-label="Report reminder">
                 <option value="off" data-i18n="scheduleOff">Tắt</option>
@@ -2530,23 +2612,8 @@
               </div>
             </div>
             <div id="bao-cao-nhac-tin" class="insight-note" role="status"></div>
-          </div>
-        </div>
-        <section class="dashboard-source-panel" aria-label="Trạng thái nguồn dữ liệu" data-i18n-aria="dashSourceHeading">
-          <div class="dashboard-source-heading"><h3 data-i18n="dashSourceHeading">Trạng thái nguồn dữ liệu</h3>
-          <button type="button" class="btn btn-soft" onclick="lamMoiToanBoNguon()" data-i18n="dashSourceRefresh">Kiểm tra cập nhật</button></div>
-          <div class="dashboard-source-grid">
-            <div class="dashboard-source-item" id="dashboard-source-stock">data.js</div>
-            <div class="dashboard-source-item" id="dashboard-source-history">History.js</div>
-            <div class="dashboard-source-item" id="dashboard-source-amount">Amount.js</div>
-            <div class="dashboard-source-item" id="dashboard-source-images">Material</div>
-          </div>
-          <p class="insight-note" data-i18n="dashSourcePrivacy">Bộ nhớ đệm lịch sử trên thiết bị này có thể chứa dữ liệu SAP nội bộ. Xóa bộ nhớ đệm nếu dùng máy chung.</p>
-          <button type="button" class="btn btn-soft" onclick="xoaCacheHistory()" data-i18n="dashSourceClear">Xóa bộ nhớ đệm lịch sử</button>
-        </section>
-        <div class="insight-note" data-i18n="insightNote">Lịch sử giao dịch lấy từ History.js; giá trị kho lấy từ Amount.js.</div>
-      </section>
-      </section>
+          </div></section>
+</section>
 
 
       <section id="view-catalog" class="view-pane catalog-pane" role="tabpanel" aria-labelledby="tab-catalog" hidden>
@@ -2766,6 +2833,23 @@
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
+        warehouseDashboardHeading:"Dashboard kho",
+        warehouseDashboardDesc:"Theo dõi giá trị xuất, nhập, tồn theo tuần, tháng và năm.",
+        warehouseAnalyticsDesc:"Tra cứu các bảng vật tư giá trị cao, xuất nhiều và tồn lâu. Dùng chung bộ lọc Hall và thời gian với Dashboard.",
+        warehouseOverview:"Tổng quan giá trị xuất nhập tồn",
+        warehouseSelectedPeriod:"Tổng giá trị trong kỳ đã chọn",
+        warehouseLastWeek:"Tuần cuối trong kỳ đã chọn",
+        warehouseClosing:"Giá trị tồn ghi nhận",
+        warehouseNet:"Biến động nhập − xuất",
+        warehouseNetNote:"Biến động = giá trị nhập − giá trị xuất. Tuần cuối chỉ tính các ngày nằm trong khoảng đã chọn.",
+        warehouseCurrency:"Đơn vị: VNĐ",
+        warehouseSnapshotDate:"Bản ghi ngày {date}",
+        warehouseNoSnapshot:"Chưa có bản ghi tồn trong kỳ.",
+        warehouseInventoryDetail:"Xu hướng giá trị tồn kho",
+        warehouseMovementDetail:"Chi tiết giá trị nhập / xuất",
+        warehouseLineNote:"Lấy giá trị ghi nhận cuối mỗi kỳ; giữ khoảng trống nếu chưa có dữ liệu.",
+        warehouseCurrentStock:"Tổng quan tồn kho hiện tại",
+        warehouseTables:"Các bảng thống kê vật tư",
         dashboardHallUnknownStock:"Storage Location của dữ liệu tồn kho chưa có giá trị Hall 1/Hall 2 nhận diện được.",
         dashboardHallUnknownHistory:"Giá trị Storage Location chưa nhận diện được Hall 1/Hall 2. Cần đối chiếu mã kho thực tế trong History.js.",
         dashboardHallPartialHistory:"Có {count} giao dịch thiếu hoặc chưa nhận diện khu vực kho; không được tính vào Hall đã chọn.",
@@ -3016,7 +3100,7 @@
         rankTop5:"5 mã",
         rankTop10:"10 vật tư",
         rankTop20:"20 vật tư",
-        tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu tồn kho",tabDashboard:"Phân tích kho",tabHistory:"Lịch sử nhập/xuất",
+        tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu tồn kho",tabAnalytics:"Phân tích kho",tabDashboard:"Dashboard",tabHistory:"Lịch sử nhập/xuất",
         materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Thu gọn",materialHistoryNext:"Tải thêm",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số lượng nhập",materialHistoryOutCount:"Số lượng xuất",materialHistoryOtherCount:"Số lượng khác",materialHistoryStock:"Tồn kho hiện tại",materialHistoryFrom:"Ngày hạch toán từ",materialHistoryTo:"Ngày hạch toán đến",materialHistoryCostCenter:"Trung tâm chi phí",materialHistoryMissingCost:"Không có trung tâm chi phí",materialHistoryLoadedRows:"Đã xem {shown}/{total} dòng",materialHistoryQuantityMissing:"Không có cột số lượng",materialHistoryQuantityInvalid:"Có số lượng không hợp lệ",materialHistoryQuantityMixed:"Nhiều đơn vị tính, không thể cộng",materialHistoryQuantityUnit:"Chưa rõ đơn vị tính",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Thời gian sử dụng ước tính",
         consumptionAll:"Tất cả giao dịch xuất · {unit}",consumptionRecent:"12 tháng trọn vẹn · {period}",consumptionStock:"Tồn kho: {amount} {unit}",consumptionMonths:"{count} tháng",consumptionNoHistory:"Chưa có dữ liệu lịch sử.",consumptionMissingQty:"Không có cột số lượng trong dữ liệu lịch sử.",consumptionMixedUnits:"Nhiều đơn vị tính, không thể cộng chung.",consumptionUnitUnknown:"Chưa xác định đơn vị tính.",consumptionPartial:"{count} dòng xuất bị loại do thiếu hoặc sai đơn vị/số lượng.",consumptionNoDates:"Thiếu ngày hợp lệ để tính trung bình tháng.",consumptionNoAverage:"Không có lượng xuất trong 12 tháng trọn vẹn gần nhất.",consumptionNoStock:"Tồn kho không hợp lệ hoặc chưa được tải.",consumptionUnitMismatch:"Đơn vị tồn kho không khớp đơn vị giao dịch; không thể ước tính.",consumptionIncomplete:"Dữ liệu xuất không hợp lệ hoặc có nhiều đơn vị; chưa thể ước tính.",
         materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng điểm đặt hàng lại",allInventoryNote:"Số liệu tồn kho theo nguồn SAP; nhập / xuất từ History.js và tổng giá trị tồn theo thời gian từ Amount.js.",rowsLabel:"dòng",dashFilters:"Bộ lọc phân tích kho",dashSearch:"Tìm vật tư",dashSearchPlaceholder:"Mã SAP, mô tả, mã phụ tùng...",dashRankLimit:"Số vật tư",dashTotalRows:"Tổng dòng vật tư",dashKpiNote:"Toàn bộ dữ liệu kho",dashFilteredValue:"Tổng giá trị tồn kho",dashCoverage:"Mức tồn so với điểm đặt hàng lại",dashCoverageNote:"Tỷ lệ tồn kho / điểm đặt hàng lại; chỉ tính điểm đặt hàng lại dương và tồn kho không âm.",dashTopValue:"Vật tư có giá trị tồn cao nhất",dashValueNote:"Giá trị tồn = số lượng × đơn giá, gộp theo mã SAP.",dashSnapshotNote:"Giá trị từ Amount.js, dùng chung Tất cả/Hall 1; Hall 2 không có dữ liệu.",dashStockExport:"Xuất kết quả tra cứu tồn kho",dashMatch:"{count} / {total} dòng",dashCoverageUnknown:"Không đủ dữ liệu tính tỷ lệ",dashCoverageZero:"Hết hàng (0%)",dashCoverageLow:"Trên 0% đến dưới 50%",dashCoverageMid:"Từ 50% đến dưới 100%",dashCoverageAt:"Đúng 100%",dashCoverageHigh:"Trên 100%",dashNoValue:"Không có giá trị dương trong phạm vi lọc.",dashboardHeading:"Phân tích kho",dashboardDesc:"Phân tích giá trị nhập / xuất, giá trị tồn kho và các vật tư có giá trị cao.",
@@ -3095,6 +3179,23 @@
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        warehouseDashboardHeading:"Warehouse dashboard",
+        warehouseDashboardDesc:"Track inbound, outbound and inventory value by week, month and year.",
+        warehouseAnalyticsDesc:"High-value, top outbound and slow-moving material tables. Hall and date filters are shared with Dashboard.",
+        warehouseOverview:"Inventory and movement value overview",
+        warehouseSelectedPeriod:"Selected period totals",
+        warehouseLastWeek:"Last week within selected period",
+        warehouseClosing:"Recorded inventory value",
+        warehouseNet:"Net inbound − outbound",
+        warehouseNetNote:"Net movement = inbound − outbound value. The last week includes only dates inside the selected range.",
+        warehouseCurrency:"Currency: VND",
+        warehouseSnapshotDate:"Recorded on {date}",
+        warehouseNoSnapshot:"No inventory record in this period.",
+        warehouseInventoryDetail:"Inventory value trend",
+        warehouseMovementDetail:"Inbound / outbound detail",
+        warehouseLineNote:"Last recorded value per period; missing periods remain gaps.",
+        warehouseCurrentStock:"Current inventory overview",
+        warehouseTables:"Material statistics tables",
         dashboardHallUnknownStock:"Stock Storage Location has no recognized Hall 1/Hall 2 values.",
         dashboardHallUnknownHistory:"Storage Location codes do not match Hall 1/Hall 2; confirm the source mapping.",
         dashboardHallPartialHistory:"{count} transactions have a missing or unrecognized storage location and are excluded from the selected Hall.",
@@ -3345,7 +3446,7 @@
         rankTop5:"Top 5",
         rankTop10:"Top 10",
         rankTop20:"Top 20",
-        tabsAria:"Inventory workspaces",tabStock:"Stock lookup",tabDashboard:"Inventory dashboard",tabHistory:"In / Out history",
+        tabsAria:"Inventory workspaces",tabStock:"Stock lookup",tabAnalytics:"Inventory analytics",tabDashboard:"Dashboard",tabHistory:"In / Out history",
         materialHistoryTitle:"Material usage history",materialHistoryClose:"Close",materialHistoryPrev:"Show less",materialHistoryNext:"Load more",materialHistoryCount:"{count} transactions",materialHistoryInCount:"Inbound quantity",materialHistoryOutCount:"Outbound quantity",materialHistoryOtherCount:"Other quantity",materialHistoryStock:"Current stock",materialHistoryFrom:"Posting Date from",materialHistoryTo:"Posting Date to",materialHistoryCostCenter:"Cost Center",materialHistoryMissingCost:"No Cost Center",materialHistoryLoadedRows:"Showing {shown}/{total} rows",materialHistoryQuantityMissing:"Quantity column missing",materialHistoryQuantityInvalid:"Invalid quantity",materialHistoryQuantityMixed:"Mixed units cannot be summed",materialHistoryQuantityUnit:"Unit unknown",materialHistoryMonthly:"Average use per month",materialHistoryCoverage:"Estimated Stock coverage",
         consumptionAll:"All OUTPUT records · {unit}",consumptionRecent:"12 complete months · {period}",consumptionStock:"Stock: {amount} {unit}",consumptionMonths:"{count} months",consumptionNoHistory:"No history data loaded.",consumptionMissingQty:"History.js has no quantity column.",consumptionMixedUnits:"Mixed units cannot be summed.",consumptionUnitUnknown:"Quantity unit is unknown.",consumptionPartial:"{count} OUTPUT rows excluded due to invalid quantity or unit.",consumptionNoDates:"Valid dates are missing; monthly average unavailable.",consumptionNoAverage:"No outbound quantity in the latest 12 full months.",consumptionNoStock:"Stock is invalid or not available.",consumptionUnitMismatch:"Stock and History units differ; cannot estimate coverage.",consumptionIncomplete:"OUTPUT data is incomplete or mixes units; estimate unavailable.",
         materialHistoryMissing:"No SAP material column in history data.",materialHistoryStale:"Showing previously loaded data.",historyExactSap:"History for exact SAP: {code}",issuedTitle:"Issued quantity",issuedScope:"All history · selected SAP · gross issues, before returns",issuedMissing:"Missing material / quantity columns",issuedPartial:"Some movements have invalid quantities",issuedUnitUnknown:"Unknown unit",issuedStale:"Previous data; refresh failed",attentionTitle:"Materials needing attention",attentionNote:"Zero stock, below or at Reorder Point",allInventoryNote:"Current stock from SAP; movements from History.js and historical inventory valuations from Amount.js.",rowsLabel:"rows",dashFilters:"Inventory dashboard filters",dashSearch:"Find materials",dashSearchPlaceholder:"SAP, description, part number...",dashRankLimit:"Materials",dashTotalRows:"Material rows",dashKpiNote:"Full inventory",dashFilteredValue:"Total inventory value",dashCoverage:"Stock coverage against Reorder Point",dashCoverageNote:"Stock / ROP; requires ROP above zero and non-negative stock.",dashTopValue:"Highest inventory value materials",dashValueNote:"Inventory value = quantity × unit price, grouped by SAP.",dashSnapshotNote:"Values from Amount.js; shared by All/Hall 1, unavailable for Hall 2.",dashStockExport:"Export Stock search results",dashMatch:"{count} / {total} rows",dashCoverageUnknown:"Insufficient data for ratio",dashCoverageZero:"Out of stock (0%)",dashCoverageLow:"Above 0%, below 50%",dashCoverageMid:"50% to below 100%",dashCoverageAt:"Exactly 100%",dashCoverageHigh:"Above 100%",dashNoValue:"No positive inventory value in this scope.",dashboardHeading:"Inventory analytics dashboard",dashboardDesc:"Analyze inbound / outbound value, inventory value and highest-value materials.",
@@ -3653,13 +3754,13 @@
 
     // Tabs switch views without reloading or losing stock search/gallery state.
     let tabHienTai="stock";
-    const CAC_TAB=["stock","dashboard","catalog","search-history","requests"];
+    const CAC_TAB=["stock","analytics","dashboard","catalog","search-history","requests"];
     function chuyenTab(tab, opts={}) {
       if(!CAC_TAB.includes(tab))return;
       tabHienTai=tab;
-      // Enable viewport-fitting layout only for Stock; Dashboard retains normal scrolling.
+      // Charts and analytics tables share a scrollable workspace shell.
       document.body.classList.toggle("stock-one-screen",tab==="stock");
-      document.body.classList.toggle("dashboard-one-screen",tab==="dashboard");
+      document.body.classList.toggle("dashboard-one-screen",tab==="dashboard"||tab==="analytics");
       document.body.classList.toggle("catalog-one-screen",tab==="catalog");
       document.body.classList.toggle("activity-one-screen",tab==="search-history"||tab==="requests");
       if(document.getElementById("stock-row-menu"))dongMenuVatTu();
@@ -3673,12 +3774,15 @@
         button.classList.toggle("active",selected);
       }
       document.querySelector(".breadcrumbs .active").textContent=tuDien(
-        tab==="stock"?"tabStock":tab==="dashboard"?"tabDashboard":tab==="catalog"?"catalogTab":tab==="search-history"?"searchHistoryTab":"requestTab");
+        tab==="stock"?"tabStock":tab==="analytics"?"tabAnalytics":tab==="dashboard"?"tabDashboard":tab==="catalog"?"catalogTab":tab==="search-history"?"searchHistoryTab":"requestTab");
       if(opts.persist!==false)ghiTuyChon("checking-active-tab",tab);
       if(tab==="catalog"&&!danhMucTrangThai.loaded&&!danhMucTrangThai.loading)taiDanhMuc();
       if(tab==="search-history")veLichSuTimKiem();
       if(tab==="requests")veYeuCauVatTu();
-      if(tab==="dashboard"){
+      if(tab==="dashboard"||tab==="analytics"){
+        // One filter bar keeps Hall/date scope identical in both workspaces.
+        document.querySelector("#view-"+tab+" .pane-heading").after(
+          document.getElementById("warehouse-filters"));
         if(analyticsReady)capNhatThongKeNangCao();
         if(!historyLoaded&&!historyLoading&&!daThuTaiHistoryChoCard){
           daThuTaiHistoryChoCard=true;
@@ -5261,6 +5365,44 @@
       const plot=document.getElementById(id);plot.scrollLeft=plot.scrollWidth;
     }
 
+    function veDuongGiaTriKho(id,periods,values){
+      const width=Math.max(620,periods.length*52),height=225;
+      const left=65,right=22,top=20,bottom=42;
+      const plotWidth=width-left-right,plotHeight=height-top-bottom;
+      const maximum=Math.max(1,...values.values())*1.12;
+      const x=i=>left+(periods.length===1?plotWidth/2:i*plotWidth/(periods.length-1));
+      const y=value=>top+plotHeight*(1-value/maximum);
+      const fixed=n=>n.toFixed(2),escape=thoatHTML;
+      let svg='<svg class="warehouse-line-chart" viewBox="0 0 '+width+' '+height+
+        '" style="min-width:'+width+'px" role="img" aria-label="'+escape(tuDien("warehouseInventoryDetail"))+'">';
+      for(let i=0;i<=4;i++){
+        const value=maximum*i/4,py=fixed(y(value));
+        svg+='<line class="warehouse-grid-line" x1="'+left+'" x2="'+(width-right)+'" y1="'+py+'" y2="'+py+'"/>'+
+          '<text class="warehouse-axis-label" x="'+(left-8)+'" y="'+fixed(y(value)+4)+'" text-anchor="end">'+escape(dinhDangRutGonKho(value))+'</text>';
+      }
+      // Split paths at missing buckets; a gap must not imply an observed balance.
+      const segments=[];let segment=[];
+      for(let i=0;i<periods.length;i++){
+        const value=values.get(periods[i].key);
+        if(Number.isFinite(value))segment.push(fixed(x(i))+','+fixed(y(value)));
+        else if(segment.length){segments.push(segment);segment=[];}
+      }
+      if(segment.length)segments.push(segment);
+      for(const points of segments)svg+='<polyline class="warehouse-value-line" points="'+points.join(' ')+'"/>';
+      const labelStep=Math.max(1,Math.ceil(periods.length/12));
+      for(let i=0;i<periods.length;i++){
+        const period=periods[i],value=values.get(period.key);
+        if(Number.isFinite(value)){
+          svg+='<circle class="warehouse-value-point" cx="'+fixed(x(i))+'" cy="'+fixed(y(value))+'" r="4" tabindex="0">'+
+            '<title>'+escape(period.title+' · '+dinhDangGiaTriKho(value))+'</title></circle>';
+        }else{
+          svg+='<text class="warehouse-gap" x="'+fixed(x(i))+'" y="'+fixed(y(0)-7)+'" text-anchor="middle"><title>'+escape(period.title+' · '+tuDien("dashValueTrendGap"))+'</title>—</text>';
+        }
+        if(i%labelStep===0||i===periods.length-1)svg+='<text class="warehouse-axis-label" x="'+fixed(x(i))+'" y="'+(height-17)+'" text-anchor="middle">'+escape(period.label)+'</text>';
+      }
+      document.getElementById(id).innerHTML=svg+'</svg>';
+    }
+
     function tinhGiaTriNhapXuat(rows,headers,mode,buckets) {
       const amountCol=cotHistoryTheoTen(headers,["Amt.In","Amt.in loc.cur.",
         "Amt in local currency","Amount in local currency","Amount LC","Amount"]);
@@ -5504,6 +5646,55 @@
       }
       return sum;
     }
+    // Inventory is the last recorded valuation INSIDE the selected interval.
+    // No balances are extrapolated from movements or borrowed across periods.
+    function thongKeTongQuanKho(range){
+      if(!range)return null;
+      const amountCol=cotGiaTriLichSuKho();
+      const totals=historyLoaded&&amountCol>=0&&lichSuTheoHall()!==null?
+        tongNhapXuatTrongKhoang(range,amountCol):null;
+      const inventory=hallDangLoc()==="hall2"?null:layGiaTriKhoTuAmount()
+        .filter(rec=>rec.date>=range.from&&rec.date<=range.to).slice(-1)[0]||null;
+      return {inventory,incoming:totals?.in??null,outgoing:totals?.out??null,
+        net:totals?totals.in-totals.out:null,invalid:totals?.invalid||0};
+    }
+
+    function khoangTuanCuoiDashboard(range){
+      if(!range)return null;
+      const weekStart=khoaNhomKho(range.to,"week");
+      return {from:weekStart>range.from?weekStart:range.from,to:range.to};
+    }
+
+    function veTongQuanDashboard(){
+      const range=layKyPhanTichKho();
+      const week=khoangTuanCuoiDashboard(range);
+      const periodStats=thongKeTongQuanKho(range),weekStats=thongKeTongQuanKho(week);
+      const label=r=>r?r.from+" – "+r.to:tuDien("dashboardTimeInvalid");
+      document.getElementById("warehouse-period-label").textContent=label(range);
+      document.getElementById("warehouse-week-label").textContent=label(week);
+      for(const [prefix,stats] of [["warehouse-period",periodStats],["warehouse-week",weekStats]]){
+        const values={inventory:stats?.inventory?.value??null,net:stats?.net??null};
+        if(prefix==="warehouse-week")Object.assign(values,{in:stats?.incoming??null,out:stats?.outgoing??null});
+        for(const [key,value] of Object.entries(values)){
+          const node=document.getElementById(prefix+"-"+key);
+          node.textContent=Number.isFinite(value)?dinhDangRutGonKho(value)+" ₫":"—";
+          node.title=Number.isFinite(value)?dinhDangGiaTriKho(value):"";
+        }
+        document.getElementById(prefix+"-inventory-date").textContent=stats?.inventory?
+          tuDien("warehouseSnapshotDate",{date:dinhDangNgayXuat(stats.inventory.date)}):
+          tuDien(hallDangLoc()==="hall2"?"dashboardHall2NoSnapshots":"warehouseNoSnapshot");
+      }
+      let note=tuDien("warehouseNetNote");
+      if(!range)note=tuDien("dashboardTimeInvalid");
+      else if(!historyLoaded)note+=" · "+tuDien(historyLoading?"dashboardHistoryLoading":"dashboardCompareNoHistory");
+      else if(lichSuTheoHall()===null)note+=" · "+tuDien(loiCotHall("history"));
+      else if(cotGiaTriLichSuKho()<0)note+=" · "+tuDien("dashUsageNoQty");
+      else if(periodStats?.invalid)note+=" · "+tuDien("dashboardCompareInvalid",{count:periodStats.invalid});
+      if(historyLoaded&&["historyInvalid","historyNoSource"].includes(historyStatusKey))
+        note+=" · "+tuDien("materialHistoryStale");
+      document.getElementById("warehouse-summary-note").textContent=note;
+    }
+
     function hienThiThayDoiKho(type,current,previous){
       const amount=document.getElementById("dashboard-compare-"+type+"-current");
       const change=document.getElementById("dashboard-compare-"+type+"-change");
@@ -5524,6 +5715,14 @@
       }
     }
     function veSoSanhNhapXuatKho(){
+      veTongQuanDashboard();
+      // Clear figures when a source or date scope becomes unavailable.
+      for(const type of ["in","out"]){
+        document.getElementById("dashboard-compare-"+type+"-current").textContent="—";
+        document.getElementById("dashboard-compare-"+type+"-prior").textContent="";
+        const change=document.getElementById("dashboard-compare-"+type+"-change");
+        change.textContent="—";change.dataset.change="none";change.title="";
+      }
       const root=document.getElementById("dashboard-compare-note");
       const header=document.getElementById("dashboard-compare-periods");
       const range=layKyPhanTichKho();
@@ -5953,13 +6152,19 @@
     }
 
     function veBieuDoSuDungKho(){
-      const chart=document.getElementById("insight-usage");
-      const summary=document.getElementById("dashboard-usage-summary");
+      veNhapXuatTheoChuKy("insight-usage","dashboard-usage-summary",
+        document.getElementById("dashboard-usage-period").value);
+      veNhapXuatTheoChuKy("insight-usage-detail","dashboard-usage-detail-summary",
+        document.getElementById("dashboard-usage-detail-period").value);
+    }
+
+    function veNhapXuatTheoChuKy(id,summaryId,mode){
+      const chart=document.getElementById(id);
+      const summary=document.getElementById(summaryId);
       if(!historyLoaded){
         chart.textContent=tuDien(historyLoading?"dashUsageLoading":"dashUsageUnavailable");
         summary.textContent="";return;
       }
-      const mode=document.getElementById("dashboard-usage-period").value;
       const range=layKyPhanTichKho();
       if(!range) {
         chart.textContent=tuDien("dashboardTimeInvalid");
@@ -6080,16 +6285,22 @@
 
     function veBieuDoGiaTriKho(){
       hienThiTongGiaTriKho();
+      veTongQuanDashboard();
+      veTonKhoTheoChuKy("insight-value-trend","dashboard-value-trend-summary",
+        document.getElementById("dashboard-value-period").value,false);
+      veTonKhoTheoChuKy("insight-value-detail","dashboard-value-detail-summary",
+        document.getElementById("dashboard-value-detail-period").value,true);
+    }
+
+    function veTonKhoTheoChuKy(id,summaryId,mode,line){
+      const chart=document.getElementById(id);
+      const summary=document.getElementById(summaryId);
       if(hallDangLoc()==="hall2"){
-        document.getElementById("insight-value-trend").textContent=
-          tuDien("dashboardHall2NoSnapshots");
-        document.getElementById("dashboard-value-trend-summary").textContent="";
+        chart.textContent=tuDien("dashboardHall2NoSnapshots");
+        summary.textContent="";
         return;
       }
-      const mode=document.getElementById("dashboard-value-period").value;
       const range=layKyPhanTichKho();
-      const chart=document.getElementById("insight-value-trend");
-      const summary=document.getElementById("dashboard-value-trend-summary");
       if(!range){
         chart.textContent=tuDien("dashboardTimeInvalid");
         summary.textContent="";return;
@@ -6109,8 +6320,9 @@
         chart.textContent=tuDien("dashValueTrendNoPeriod");
         summary.textContent=tuDien("dashValueTrendNote");return;
       }
-      veCotTheoThoiGianKho("insight-value-trend",buckets,
-        new Map([...latest].map(([key,rec])=>[key,rec.value])),"money");
+      const values=new Map([...latest].map(([key,rec])=>[key,rec.value]));
+      if(line)veDuongGiaTriKho(id,buckets,values);
+      else veCotTheoThoiGianKho(id,buckets,values,"money");
       summary.textContent=tuDien("dashValueTrendSummary",{
         count:dinhDangSoLuong.format(latest.size),
         period:tuDien({day:"dashDay",week:"dashWeek",month:"dashMonth",year:"dashYear"}[mode])
@@ -9352,16 +9564,18 @@
       node.addEventListener("dblclick",moLichSuBangDashboard);
       node.addEventListener("keydown",bamPhimLichSuBangDashboard);
     }
-    const giaoDichChart=document.getElementById("insight-usage");
+    const giaoDichCharts=["insight-usage","insight-usage-detail"].map(id=>document.getElementById(id));
     function chonKyTrenBieuDo(event){
       const target=event.target.closest(".trend-column[data-period-key]");
-      if(!target||!giaoDichChart.contains(target))return;
+      if(!target||!event.currentTarget.contains(target))return;
       if(event.type==="keydown"&&event.key!=="Enter"&&event.key!==" ")return;
       event.preventDefault();
       moChiTietKyKho(target.dataset.periodKey,target.dataset.periodMode);
     }
-    giaoDichChart.addEventListener("click",chonKyTrenBieuDo);
-    giaoDichChart.addEventListener("keydown",chonKyTrenBieuDo);
+    for(const chart of giaoDichCharts){
+      chart.addEventListener("click",chonKyTrenBieuDo);
+      chart.addEventListener("keydown",chonKyTrenBieuDo);
+    }
     doiKyPhanTichKho();
     trangThaiAmount=!Array.isArray(window.amountData)?"dashAmountLoadError":
       window.amountData.length&&!layGiaTriKhoTuAmount().length?"dashAmountInvalid":null;

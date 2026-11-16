@@ -50,6 +50,7 @@ jobs:
           node tests/history_logic.cjs
           node tests/dashboard_logic.cjs
           node tests/dashboard_scope_period_logic.cjs
+          node tests/warehouse_dashboard_logic.cjs
           node tests/checking_performance_logic.cjs
           node tests/checking_image_loading_logic.cjs
       - name: Validate catalog exports and responsive image generation
@@ -73,6 +74,15 @@ jobs:
         run: node tests/checking_activity_browser.cjs
       - name: Check dashboard interactions
         run: node tests/dashboard_sources_browser.cjs
+      - name: Verify separate analytics tables and warehouse dashboard
+        run: node tests/warehouse_dashboard_browser.cjs
+      - name: Save warehouse dashboard previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: warehouse-dashboard-previews
+          path: /tmp/warehouse-*.png
+          if-no-files-found: ignore
       - name: Verify independent Database material catalog
         run: node tests/checking_catalog_browser.cjs
       - name: Verify Stock, History and performance updates in Chromium

@@ -7,8 +7,11 @@ const nodes={
   'metric-value-change':{textContent:'',dataset:{}},
   'dashboard-amount-status':{textContent:''},
   'dashboard-value-period':{value:'day'},
+  'dashboard-value-detail-period':{value:'week'},
   'insight-value-trend':{textContent:''},
-  'dashboard-value-trend-summary':{textContent:''}
+  'dashboard-value-trend-summary':{textContent:''},
+  'insight-value-detail':{textContent:''},
+  'dashboard-value-detail-summary':{textContent:''}
 };
 let hall='all',chart=null,scriptAction=()=>{};
 const document={hidden:false,getElementById:id=>nodes[id],
@@ -22,6 +25,7 @@ const ctx={console,window:{},document,setTimeout,clearTimeout,Array,Date,Map,Set
     return [...Array(30)].map((_,i)=>{const d='2026-11-'+String(i+1).padStart(2,'0');return {key:d,label:d}});
   },
   veCotTheoThoiGianKho:(id,buckets,values)=>{chart={id,buckets,values}},
+  veDuongGiaTriKho:()=>{},veTongQuanDashboard:()=>{},
   dinhDangGiaTriKho:n=>new Intl.NumberFormat('vi-VN').format(n)+' ₫',
   dinhDangSoLuong:{format:n=>String(n)},tuDien:(key,params)=>key==='dashValueDelta'?`${params.percent}% ${params.date}`:key,
   veLichSuKho:()=>{},ghiNhanNguon:()=>{},capNhatCanhBaoKho:()=>{}};
@@ -29,7 +33,7 @@ vm.createContext(ctx);
 for(const name of ['ngayHistoryHopLe','khoaNhomKho','layGiaTriKhoTuAmount',
   'phanTramBienDongKho','tinhBienDongAmount','chuoiPhanTramKho',
   'anhChupGiaTriMoiNhat','hienThiTongGiaTriKho','capNhatTrangThaiAmount',
-  'veBieuDoGiaTriKho','taiLaiAmount']){
+  'veBieuDoGiaTriKho','veTonKhoTheoChuKy','taiLaiAmount']){
   const m=html.match(new RegExp('^    function '+name+'\\([^]*?^    }','m'));
   assert(m,'missing '+name);vm.runInContext(m[0],ctx);
 }

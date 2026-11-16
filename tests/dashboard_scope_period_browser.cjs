@@ -43,7 +43,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
       return r.fulfill({contentType,body});
     });
     await page.goto('http://scope-period.test/');
-    await page.locator('#tab-dashboard').click();await page.waitForFunction(()=>historyLoaded&&analyticsReady);
+    await page.locator('#tab-analytics').click();await page.waitForFunction(()=>historyLoaded&&analyticsReady);
     const dormant=page.locator('#dashboard-dormant');
     assert.equal(await dormant.locator('tbody tr').count(),1);
     assert.match(await dormant.innerText(),/Motor Hall 1/);
@@ -83,6 +83,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     assert.match(await page.locator('#dashboard-compare-out-current').innerText(),/600/);
     assert.match(await page.locator('#dashboard-compare-periods').innerText(),/2026-09-01 – 2026-09-30/);
     assert.equal(await page.locator('#dashboard-top-out tbody tr').count(),1);
+    await page.locator('#tab-dashboard').click();
     for(const mode of ['week','month','year']){
       await page.locator('#dashboard-usage-period').selectOption(mode);
       const figures=await page.evaluate(()=>{
@@ -115,7 +116,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     assert.equal(await page.locator('#dashboard-range-year-field').isVisible(),true);
     // Reproduce the user's Stock file: Hall 1 inventory without a Hall column.
     standaloneStock=true;await page.reload();
-    await page.locator('#tab-dashboard').click();
+    await page.locator('#tab-analytics').click();
     await page.waitForFunction(()=>historyLoaded&&analyticsReady);
     for(const hall of ['all','hall1']){
       await page.locator('#dashboard-hall').selectOption(hall);
