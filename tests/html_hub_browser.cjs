@@ -11,7 +11,10 @@ fs.copyFileSync(path.join(root,'HTML_Hub.html'),path.join(fixture,'HTML_Hub.html
 const child='<!doctype html><html lang="vi"><title>Ứng dụng con</title><body><h1>Trang con hoạt động</h1><button onclick="this.textContent=Number(this.textContent)+1">0</button></body></html>';
 for(const name of ['Checking.html','PO_GR_Report.html','Layout WH.html','VLOOKUP_Nâng_Cao_Offline.html','tools/Báo cáo.html'])fs.writeFileSync(path.join(fixture,name),child);
 const options={headless:true,args:['--no-sandbox'],...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{})};
-const appCount=async(page,count)=>assert.equal(await page.locator('.app-card').count(),count);
+const appCount=async(page,count)=>{
+  await page.waitForFunction(expected=>document.querySelectorAll('.app-card').length===expected,count);
+  assert.equal(await page.locator('.app-card').count(),count);
+};
 const waitSaved=page=>page.waitForFunction(()=>document.getElementById('save-status').textContent==='Đã lưu trên thiết bị này');
 const card=(page,id)=>page.locator('[data-app-id="'+id+'"]');
 async function addLink(page,name,relativePath){
