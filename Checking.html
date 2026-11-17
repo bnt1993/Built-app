@@ -2704,7 +2704,9 @@ html[data-theme="dark"] #view-dashboard .executive-stat{background:#172132}html[
 #view-dashboard .executive-stat-grid{min-height:300px!important;align-content:stretch}
 #view-dashboard .executive-stat{display:flex;flex-direction:column;min-height:138px;padding:12px 13px 10px!important;overflow:visible!important}
 #view-dashboard .executive-stat svg{height:36px!important;margin-top:5px!important}
-#view-dashboard .executive-help{display:block!important;margin:5px 0 0;color:#667085;font-size:9px;line-height:1.25;min-height:25px}
+#view-dashboard .executive-help{display:block!important;margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.4;min-height:0}
+#view-dashboard .executive-help summary{cursor:pointer;font-weight:600}
+#view-dashboard .executive-help[open]{padding-top:3px}
 #view-dashboard .executive-compare{display:block;margin-top:2px;color:#8a94a6;font-size:8.5px}
 #view-dashboard .warehouse-kpi[data-tone="ratio"]{border-left-color:#0ea5e9;background:linear-gradient(145deg,#fff,#f0f9ff)}
 #view-dashboard .warehouse-kpi[data-tone="ratio"]>strong{color:#0369a1}
@@ -3318,7 +3320,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 </div>
 <section aria-label="Chỉ số phân tích kho" class="analytics-kpi-strip">
 <article class="analytics-kpi-card" data-accent="amber">
-<span data-i18n="analyticsKpiDormantTitle">Vốn đọng tồn lâu (Dead-stock)</span>
+<span data-i18n="analyticsKpiDormantTitle">Giá trị vật tư tồn lâu</span>
 <strong id="analytics-kpi-dormant-value">—</strong>
 <small id="analytics-kpi-dormant-note">Theo ngưỡng ngày đang chọn</small>
 </article>
@@ -3453,7 +3455,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <option data-i18n="consHorizon3Y" value="36">3 năm (36 tháng)</option>
 </select>
 </label>
-<label><span data-i18n="consStatusLabel">Mức Cover</span>
+<label><span data-i18n="consStatusLabel">Thời gian sử dụng</span>
 <select id="analytics-cons-status" onchange="doiLocConsumption()">
 <option data-i18n="consStatusAll" selected="" value="all">Tất cả mức</option>
 <option data-i18n="consStatusCritical" value="critical">Nguy cấp (&lt; 30 ngày)</option>
@@ -3466,7 +3468,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <button class="btn btn-soft card-export-btn" onclick="xuatExcelConsumption()" type="button">↓ Excel</button>
 </div>
 </div>
-<p class="insight-note" data-i18n="consCardNote">TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày Cover = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.</p>
+<p class="insight-note" data-i18n="consCardNote">Chỉ Hall 1 · 12/24/36 tháng gần nhất tính đến hôm nay, độc lập với bộ chọn kỳ chung. TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày sử dụng dự kiến = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.</p>
 <div aria-live="polite" class="cons-summary-strip" id="analytics-cons-summary" role="status"></div>
 <div class="dashboard-chart-body" data-i18n-aria="consCardTitle" id="analytics-cons-body" role="region" tabindex="0"></div>
 <div class="dashboard-mini-pager" id="analytics-cons-pager">
@@ -5621,12 +5623,18 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 
     // Re-read the sibling Amount.js file without reloading Stock/History or
     // the entire page. Script loading also works with local file:// pages.
+    function kiemTraPhienBanAmount(){
+      if(dangTaiAmount)return;
+      if(location.protocol==="file:"&&phienBanFile.available!==false){kiemTraPhienBanCucBo();return;}
+      return kiemTraPhienBanNguon("amount","Amount.js",taiLaiAmount);
+    }
     function taiLaiAmount(){
       if(dangTaiAmount||document.hidden)return;
       dangTaiAmount=true;
       const batDauTai=Date.now();
       ghiNhanNguon("amount","loading");
       const previous=window.amountData;
+      const signature=phienBanChoNap.amount;
       const script=document.createElement("script");
       let finished=false;
       const timer=setTimeout(()=>finish(false,"dashAmountLoadError"),12000);
@@ -5637,6 +5645,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         script.remove();
         dangTaiAmount=false;
         if(ok){
+          if(signature){phienBanNguon.amount=signature;phienBanChoNap.amount="";}
           trangThaiAmount=null;
         }else{
           window.amountData=previous;
@@ -6310,23 +6319,36 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       node.scrollLeft=0;
     }
 
-    function tinhGiaTriNhapXuat(rows,headers,mode,buckets) {
+    function tongHopGiaoDichTheoNgay(rows, headers) {
       const amountCol=cotHistoryTheoTen(headers,["Amt.In","Amt.in loc.cur.",
         "Amt in local currency","Amount in local currency","Amount LC","Amount"]);
+      const cache=tongHopGiaoDichTheoNgay.cache||(tongHopGiaoDichTheoNgay.cache=new WeakMap());
+      const saved=cache.get(rows);
+      if(saved&&saved.amountCol===amountCol)return saved;
+      const days=new Map();
+      if(amountCol>=0)for(const row of rows){
+        if((row.type!=="in"&&row.type!=="out")||!ngayHistoryHopLe(row.date))continue;
+        let day=days.get(row.date);
+        if(!day){day={in:0,out:0,inCount:0,outCount:0,invalid:0};days.set(row.date,day);}
+        const value=chuyenThanhSo(row.cells[amountCol]);
+        if(!Number.isFinite(value)){day.invalid++;continue;}
+        day[row.type]+=Math.abs(value);day[row.type+"Count"]++;
+      }
+      const result={amountCol,days};cache.set(rows,result);return result;
+    }
+
+    function tinhGiaTriNhapXuat(rows,headers,mode,buckets,range=null) {
+      const daily=tongHopGiaoDichTheoNgay(rows,headers);
       const values=new Map(buckets.map(p=>[p.key,{in:0,out:0}]));
       let count=0,invalid=0,incoming=0,outgoing=0;
-      if(amountCol<0)return {missing:true,values,count,invalid,incoming,outgoing};
-      for(const row of rows){
-        if(row.type!=="in"&&row.type!=="out")continue;
-        if(!ngayHistoryHopLe(row.date)){invalid++;continue;}
-        const key=khoaNhomKho(row.date,mode);
-        if(!values.has(key))continue;
-        const amount=chuyenThanhSo(row.cells[amountCol]);
-        if(!Number.isFinite(amount)){invalid++;continue;}
-        const value=Math.abs(amount);
-        values.get(key)[row.type]+=value;
-        if(row.type==="in")incoming+=value;else outgoing+=value;
-        count++;
+      if(daily.amountCol<0)return {missing:true,values,count,invalid,incoming,outgoing};
+      for(const [date,day] of daily.days){
+        if(range&&(date<range.from||date>range.to))continue;
+        const bucket=values.get(khoaNhomKho(date,mode));
+        if(!bucket)continue;
+        bucket.in+=day.in;bucket.out+=day.out;
+        incoming+=day.in;outgoing+=day.out;
+        count+=day.inCount+day.outCount;invalid+=day.invalid;
       }
       return {missing:false,values,count,invalid,incoming,outgoing};
     }
@@ -6541,13 +6563,11 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     }
     function tongNhapXuatTrongKhoang(range,amountCol){
       const sum={in:0,out:0,inCount:0,outCount:0,invalid:0};
-      if(!range||amountCol<0)return sum;
-      for(const rec of locGiaoDichKho(range)){
-        const raw=String(rec.cells[amountCol]??"").trim();
-        const value=raw?chuyenThanhSo(raw):NaN;
-        if(!Number.isFinite(value)){sum.invalid++;continue;}
-        sum[rec.type]+=Math.abs(value);
-        sum[rec.type+"Count"]++;
+      const rows=historyLoaded?lichSuTheoHall():null;
+      if(!range||amountCol<0||!rows)return sum;
+      for(const [date,day] of tongHopGiaoDichTheoNgay(rows,historyColumns).days){
+        if(date<range.from||date>range.to)continue;
+        for(const key of Object.keys(sum))sum[key]+=day[key];
       }
       return sum;
     }
@@ -7697,8 +7717,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         capNhatHistory=source.updated||"";
         const ok=await apDungNguonHistory(source.indexed||source.data,"file",source.updated,sequence);
         if(ok&&signature)luuCacheHistory(signature,source.updated);
-        if(ok && phienBanChoNap.history){
-          phienBanNguon.history=phienBanChoNap.history;
+        if(ok && signature){
+          phienBanNguon.history=signature;
           phienBanChoNap.history="";
         }
         if(!ok && historyStatusKey==="historyLoading")
@@ -8367,7 +8387,10 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       else { cotSapXep = chiSoCot; huongSapXep = 1; }
       trangHienTai = 1;
       veTieuDe();
-      locDuLieu();
+      if(dangLocDuLieu){locDuLieu();return;}
+      sapXepKetQua();
+      hienThiTrangHienTai();
+      document.querySelector("#view-stock .table-wrapper").scrollTop=0;
     }
 
     function capNhatTomTatDanhSachSap(codes){
@@ -8640,7 +8663,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
           exists=await new Promise(resolve=>{
             const image=new Image();let done=false;
             image.decoding="async";image.fetchPriority=trucTiep?"high":"low";
-            const timer=setTimeout(()=>{choLuu=false;finish(false);image.src="";},1200);
+            const timer=setTimeout(()=>{choLuu=false;finish(false);image.src="";},5000);
             function finish(ok){if(done)return;done=true;clearTimeout(timer);
               signal?.removeEventListener("abort",abort);image.onload=null;image.onerror=null;resolve(ok);}
             function abort(){finish(false);image.src="";}
@@ -8805,7 +8828,9 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         const hangDoi=[...new Set(danhSachTen)];let viTri=0;
         async function congNhan(){
           while(viTri<hangDoi.length&&conHieuLuc()&&!boDo.signal.aborted){
-            const chiSo=viTri++,url=THU_MUC_HINH+encodeURIComponent(hangDoi[chiSo]);
+            const chiSo=viTri++;
+            if(chiSo>=4){await choManifest;if(!conHieuLuc()||daDungManifest)return;}
+            const url=THU_MUC_HINH+encodeURIComponent(hangDoi[chiSo]);
             const tonTai=await kiemTraAnh(url,boDo.signal,chiSo<4);
             if(tonTai&&conHieuLuc()&&!boDo.signal.aborted&&!danhSachAnhDangXem.includes(url)){
               const anhDangChon=danhSachAnhDangXem[viTriAnhDangXem];
@@ -10515,12 +10540,12 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     taiManifestAnh();
     setInterval(kiemTraPhienBanStock, 30000);
     setInterval(kiemTraPhienBanHistory, 60000);
-    setInterval(taiLaiAmount, 60000);
+    setInterval(kiemTraPhienBanAmount, 60000);
     setInterval(kiemTraNhacBaoCao, 60000);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         kiemTraPhienBanStock();kiemTraPhienBanHistory();
-        taiLaiAmount();kiemTraNhacBaoCao();
+        kiemTraPhienBanAmount();kiemTraNhacBaoCao();
       }
     });
   </script>
@@ -10528,7 +10553,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     // ================= NÂNG CẤP DASHBOARD, PHÂN TÍCH ABC & CONSUMPTION 1-2-3 NĂM =================
     Object.assign(NGON_NGU.vi, {
       analyticsKpiAbcTitle: "Nhóm A (80% giá trị tồn)",
-      analyticsKpiDormantTitle: "Vốn đọng tồn lâu (Dead-stock)",
+      analyticsKpiDormantTitle: "Giá trị vật tư tồn lâu",
       analyticsKpiOutTitle: "Tổng giá trị xuất trong kỳ",
       analyticsKpiSlowRateTitle: "Tỷ lệ mã chậm luân chuyển",
       analyticsSearchPlaceholder: "Lọc nhanh mã SAP hoặc mô tả vật tư trong tất cả bảng...",
@@ -10538,25 +10563,25 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       dashCumPercent: "Tích lũy",
       dashNetFlow: "Thuần (Nhập − Xuất)",
       dashHoverHint: "Di chuột hoặc chọn cột/điểm để xem số liệu chi tiết",
-      consCardTitle: "Thống kê tiêu thụ (Consumption) 1–2–3 năm & Số ngày Cover tồn kho",
-      consHorizonLabel: "Mốc tính TB & Cover",
+      consCardTitle: "Tiêu thụ 1–2–3 năm và thời gian sử dụng dự kiến",
+      consHorizonLabel: "Mốc tính trung bình",
       consHorizon1Y: "1 năm (12 tháng)",
       consHorizon2Y: "2 năm (24 tháng)",
       consHorizon3Y: "3 năm (36 tháng)",
-      consStatusLabel: "Mức Cover",
+      consStatusLabel: "Thời gian sử dụng",
       consStatusAll: "Tất cả mức",
       consStatusCritical: "Nguy cấp (< 30 ngày)",
       consStatusWarn: "Cảnh báo (30–90 ngày)",
       consStatusSafe: "An toàn (> 90 ngày)",
       consStatusZero: "Hết hàng (= 0 ngày)",
       consStatusIdle: "Không phát sinh xuất (∞)",
-      consCardNote: "TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày Cover = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.",
+      consCardNote: "Chỉ Hall 1 · 12/24/36 tháng gần nhất tính đến hôm nay, độc lập với bộ chọn kỳ chung. TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày sử dụng dự kiến = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.",
       consColStock: "Tồn hiện tại",
       consCol1Y: "Tiêu thụ 1 năm",
       consCol2Y: "Tiêu thụ 2 năm",
       consCol3Y: "Tiêu thụ 3 năm",
       consColAvgMonth: "TB / tháng",
-      consColCoverDays: "Cover (ngày)",
+      consColCoverDays: "Sử dụng dự kiến (ngày)",
       consDaysUnit: "{days} ngày",
       consNoUsage: "∞ (Không xuất)",
       consUnitMismatch: "Sai lệch ĐVT",
@@ -10564,7 +10589,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       consSummaryTotal: "Phù hợp: <b>{count}</b> mã SAP",
       consSummaryCritical: "Nguy cấp (<30 ngày): <b>{count}</b> mã",
       consSummaryWarn: "Cảnh báo (30–90 ngày): <b>{count}</b> mã",
-      consSummaryAvgCover: "Cover trung vị: <b>{days}</b> ngày"
+      consSummaryAvgCover: "Số ngày sử dụng trung vị: <b>{days}</b> ngày"
     });
 
     Object.assign(NGON_NGU.en, {
@@ -10591,7 +10616,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       consStatusSafe: "Healthy (> 90 days)",
       consStatusZero: "Out of stock (0 days)",
       consStatusIdle: "No outbound (∞)",
-      consCardNote: "Monthly Avg = Period Consumption ÷ Months (12/24/36). Coverage Days = (Current Stock ÷ Monthly Avg) × 30. Double-click a row for history.",
+      consCardNote: "Hall 1 only · rolling 12/24/36 months through today, independent of the shared date range. Monthly Avg = Period Consumption ÷ Months (12/24/36). Coverage Days = (Current Stock ÷ Monthly Avg) × 30. Double-click a row for history.",
       consColStock: "Current Stock",
       consCol1Y: "1Y Consumption",
       consCol2Y: "2Y Consumption",
@@ -10659,6 +10684,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     }
 
     veBangTopGiaTriVatTu = function(values, limit) {
+      if(tabHienTai!=="analytics")return;
       const root = document.getElementById("insight-top");
       if (!values.length) { root.textContent = tuDien("dashNoValue"); return; }
 
@@ -10750,6 +10776,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     };
 
     veBieuDoGiaTriKho = function() {
+      if(tabHienTai!=="dashboard")return;
       hienThiTongGiaTriKho();
       veTongQuanDashboard();
       const container = document.getElementById("insight-value-trend");
@@ -10849,12 +10876,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       }
     };
 
-    veBieuDoSuDungKho = function() {
-      veMotBieuDoNhapXuat("insight-usage", "dashboard-usage-period", "dashboard-usage-summary");
-      veMotBieuDoNhapXuat("insight-usage-detail", "dashboard-usage-detail-period", "dashboard-usage-detail-summary");
-    };
-
     function veMotBieuDoNhapXuat(containerId, selectId, summaryId) {
+      if(tabHienTai!=="dashboard")return;
       const container = document.getElementById(containerId);
       const summary = document.getElementById(summaryId);
       if (!container) return;
@@ -10880,7 +10903,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         return;
       }
 
-      const stats = tinhGiaTriNhapXuat(rows, historyColumns, mode, buckets);
+      const stats = tinhGiaTriNhapXuat(rows, historyColumns, mode, buckets, range);
       if (stats.missing) {
         container.textContent = tuDien("dashUsageNoQty");
         if (summary) summary.textContent = "";
@@ -10952,6 +10975,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     }
 
     veTopVatTuXuatKho = function() {
+      if(tabHienTai!=="analytics")return;
       const root = document.getElementById("dashboard-top-out");
       const note = document.getElementById("dashboard-top-out-note");
       const slider = document.getElementById("dashboard-out-min");
@@ -11061,6 +11085,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     };
 
     veVatTuTonLau = function() {
+      if(tabHienTai!=="analytics")return;
       const root = document.getElementById("dashboard-dormant");
       const note = document.getElementById("dashboard-dormant-note");
       const unavailable = hallDangLoc() === "hall2";
@@ -11186,6 +11211,10 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     function tinhDuLieuConsumption123(hall = "hall1") {
       hall = "hall1"; // Consumption 1-2-3 years and stock coverage are Hall 1 only.
       const todayIso = ngayDiaPhuongISO(new Date());
+      const cached=tinhDuLieuConsumption123.cache;
+      if(cached&&cached.stock===duLieuTimKiem&&cached.history===historyAll&&
+        cached.stockHeaders===tieuDeCot&&cached.historyHeaders===historyColumns&&
+        cached.loaded===historyLoaded&&cached.day===todayIso)return cached.rows;
       const cut1Y = congNamKho(todayIso, -1);
       const cut2Y = congNamKho(todayIso, -2);
       const cut3Y = congNamKho(todayIso, -3);
@@ -11297,6 +11326,9 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
           m36: calcHorizon(rec, 36)
         });
       }
+      tinhDuLieuConsumption123.cache={stock:duLieuTimKiem,history:historyAll,
+        stockHeaders:tieuDeCot,historyHeaders:historyColumns,loaded:historyLoaded,
+        day:todayIso,rows:results,bySap:new Map(results.map(r=>[r.sap.toLowerCase(),r]))};
       return results;
     }
 
@@ -11356,17 +11388,20 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     }
 
     function veBangConsumption123() {
+      if(tabHienTai!=="analytics")return;
       const root = document.getElementById("analytics-cons-body");
       const summaryEl = document.getElementById("analytics-cons-summary");
       const noteEl = document.getElementById("analytics-cons-note");
       if (!root) return;
 
       if (hallDangLoc() === "hall2") {
+        consTableState.filteredRows=[];
         root.textContent = tuDien("dashboardHall2NoStockReport");
         if (summaryEl) summaryEl.innerHTML = "";
         return;
       }
       if (!analyticsReady || !historyLoaded) {
+        consTableState.filteredRows=[];
         root.textContent = tuDien(historyLoading ? "dashboardHistoryLoading" : "dashboardDormantNoHistory");
         if (summaryEl) summaryEl.innerHTML = "";
         return;
@@ -11495,8 +11530,9 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         return;
       }
       const hall = typeof materialHistoryHall === "string" ? materialHistoryHall : "all";
-      const all = tinhDuLieuConsumption123("hall1");
-      const found = all.find(x => x.sap.toLowerCase() === String(sapCode).trim().toLowerCase());
+      if(hall==="hall2"){strip.innerHTML="";return;}
+      tinhDuLieuConsumption123("hall1");
+      const found = tinhDuLieuConsumption123.cache.bySap.get(String(sapCode).trim().toLowerCase());
       if (!found) {
         strip.innerHTML = "";
         return;
@@ -11656,75 +11692,9 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     apDungNhanPhanTichMoi();
   
 
-    function veTongQuanDieuHanh() {
-      const root=document.getElementById("insight-usage-detail"),note=document.getElementById("dashboard-usage-detail-summary");
-      if(!root)return;
-      if(!historyLoaded){root.textContent=tuDien(historyLoading?"dashUsageLoading":"dashUsageUnavailable");return;}
-      const rows=lichSuTheoHall(),amountCol=cotGiaTriLichSuKho();
-      if(!rows||amountCol<0){root.textContent=tuDien("dashUsageUnavailable");return;}
-      const months=Math.max(12,Number(document.getElementById("dashboard-usage-detail-period")?.value)||12), map=new Map();
-      for(const rec of rows){if(!/^\d{4}-\d{2}/.test(rec.date||""))continue;const v=chuyenThanhSo(rec.cells?.[amountCol]);if(!Number.isFinite(v))continue;const k=rec.date.slice(0,7);if(!map.has(k))map.set(k,{in:0,out:0});map.get(k)[rec.type==="out"?"out":"in"]+=Math.abs(v)}
-      const all=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0])).slice(-months),cur=all.slice(-12),prev=all.slice(-24,-12);
-      const sum=(a,k)=>a.reduce((t,x)=>t+x[1][k],0),avg=(a,k)=>a.length?sum(a,k)/a.length:0,pct=(a,b)=>b?((a-b)/Math.abs(b))*100:null;
-      const current=all.at(-1)?.[1]||{in:0,out:0},prior=all.at(-2)?.[1]||{in:0,out:0};let stock=null;
-      if(typeof layGiaTriKhoTuAmount==="function"&&hallDangLoc()!=="hall2"){const x=layGiaTriKhoTuAmount()?.at(-1);if(Number.isFinite(x?.value))stock=x.value}
-      const avgOut=avg(cur,"out"),cover=Number.isFinite(stock)&&avgOut>0?stock/avgOut*30.4375:null,net=all.map(x=>x[1].in-x[1].out),outs=all.map(x=>x[1].out);
-      const delta=v=>{const c=v===null||Math.abs(v)<.05?"flat":v>0?"up":"down";return `<span class="executive-delta ${c}">${c==="up"?"▲":c==="down"?"▼":"•"} ${v===null?"—":Math.abs(v).toFixed(1)+"%"}</span>`};
-      const spark=a=>{a=a.slice(-12);if(!a.length)return"";const W=180,H=42,min=Math.min(...a),span=Math.max(...a)-min||1,pts=a.map((v,i)=>`${a.length===1?90:i*W/(a.length-1)},${H-3-(v-min)/span*(H-9)}`),last=pts.at(-1).split(',');return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="executiveFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38bdf8" stop-opacity=".28"/><stop offset="1" stop-color="#38bdf8" stop-opacity="0"/></linearGradient></defs><polygon class="executive-area" points="0,${H} ${pts.join(' ')} ${W},${H}"/><polyline class="executive-line" points="${pts.join(' ')}"/><circle cx="${last[0]}" cy="${last[1]}" r="2.7" fill="#087ea4"/></svg>`};
-      const cards=[
-        ["Tỷ lệ xuất / nhập trong kỳ",current.in>0?(current.out/current.in*100).toFixed(1)+"%":(current.out>0?"∞":"0.0%"),pct(current.out/current.in,prior.in>0?prior.out/prior.in:null),visible.map(x=>x[1].in>0?x[1].out/x[1].in*100:0)],
-        ["Consumption TB / tháng",dinhDangRutGonKho(avgOut)+" ₫",pct(sum(cur,"out"),sum(prev,"out")),outs],
-        ["Cover tồn kho",cover===null?"—":dinhDangSoLuong.format(Math.round(cover))+" ngày",pct(cover,30),outs.map(v=>Number.isFinite(stock)&&v>0?stock/v*30.4375:0)],
-        ["Biến động ròng tháng",dinhDangRutGonKho(current.in-current.out)+" ₫",pct(current.in-current.out,prior.in-prior.out),net]
-      ];
-      root.innerHTML=cards.map(c=>`<article class="executive-stat"><small>${c[0]}</small><div class="executive-stat-head"><strong>${c[1]}</strong>${delta(c[2])}</div>${spark(c[3])}</article>`).join("");
-      if(note)note.textContent=`Xu hướng 12 tháng · phạm vi dữ liệu ${months} tháng · kỳ gần nhất ${all.at(-1)?.[0]||"—"}`;
-    }
-    veBieuDoSuDungKho=function(){veMotBieuDoNhapXuat("insight-usage","dashboard-usage-period","dashboard-usage-summary");veTongQuanDieuHanh()};
-    setTimeout(veTongQuanDieuHanh,0);
-
-
-    // Correct period filter: aggregate and compare by week, month or year.
-    function veTongQuanDieuHanhTheoKy() {
-      const root=document.getElementById("insight-usage-detail"),note=document.getElementById("dashboard-usage-detail-summary");
-      if(!root)return;
-      if(!historyLoaded){root.textContent=tuDien(historyLoading?"dashUsageLoading":"dashUsageUnavailable");if(note)note.textContent="";return;}
-      const rows=lichSuTheoHall(),amountCol=cotGiaTriLichSuKho();
-      if(!rows||amountCol<0){root.textContent=tuDien("dashUsageUnavailable");if(note)note.textContent="";return;}
-      const period=document.getElementById("dashboard-usage-detail-period")?.value||"month";
-      const isoWeekKey=iso=>{const d=new Date(iso+"T00:00:00Z");if(Number.isNaN(d.valueOf()))return"";const day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-day);const y=d.getUTCFullYear(),first=new Date(Date.UTC(y,0,1));const w=Math.ceil((((d-first)/86400000)+1)/7);return `${y}-W${String(w).padStart(2,"0")}`};
-      const keyOf=iso=>period==="year"?iso.slice(0,4):period==="week"?isoWeekKey(iso):iso.slice(0,7);
-      const map=new Map();
-      for(const rec of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(rec.date||""))continue;const v=chuyenThanhSo(rec.cells?.[amountCol]);if(!Number.isFinite(v))continue;const k=keyOf(rec.date);if(!k)continue;if(!map.has(k))map.set(k,{in:0,out:0});map.get(k)[rec.type==="out"?"out":"in"]+=Math.abs(v)}
-      const all=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
-      const current=all.at(-1)?.[1]||{in:0,out:0},prior=all.at(-2)?.[1]||{in:0,out:0};
-      const visible=all.slice(-12), previousWindow=all.slice(-24,-12);
-      const sum=(a,k)=>a.reduce((t,x)=>t+x[1][k],0),avg=(a,k)=>a.length?sum(a,k)/a.length:0,pct=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b!==0?((a-b)/Math.abs(b))*100:null;
-      let stock=null;if(typeof layGiaTriKhoTuAmount==="function"&&hallDangLoc()!=="hall2"){const x=layGiaTriKhoTuAmount()?.at(-1);if(Number.isFinite(x?.value))stock=x.value}
-      const periodAvgOut=avg(visible,"out");
-      const monthlyFactor=period==="week"?4.345:period==="year"?1/12:1;
-      const avgOutMonth=periodAvgOut*monthlyFactor;
-      const cover=Number.isFinite(stock)&&avgOutMonth>0?stock/avgOutMonth*30.4375:null;
-      const net=visible.map(x=>x[1].in-x[1].out),outs=visible.map(x=>x[1].out);
-      const delta=v=>{const c=v===null||Math.abs(v)<.05?"flat":v>0?"up":"down";return `<span class="executive-delta ${c}">${c==="up"?"▲":c==="down"?"▼":"•"} ${v===null?"—":Math.abs(v).toFixed(1)+"%"}</span>`};
-      const spark=a=>{if(!a.length)return"";const W=180,H=42,min=Math.min(...a),span=Math.max(...a)-min||1,pts=a.map((v,i)=>`${a.length===1?90:i*W/(a.length-1)},${H-3-(v-min)/span*(H-9)}`),last=pts.at(-1).split(',');return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="executiveFill2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38bdf8" stop-opacity=".28"/><stop offset="1" stop-color="#38bdf8" stop-opacity="0"/></linearGradient></defs><polygon style="fill:url(#executiveFill2)" points="0,${H} ${pts.join(' ')} ${W},${H}"/><polyline class="executive-line" points="${pts.join(' ')}"/><circle cx="${last[0]}" cy="${last[1]}" r="2.7" fill="#087ea4"/></svg>`};
-      const currentNet=current.in-current.out,priorNet=prior.in-prior.out;
-      const cards=[
-        ["Tỷ lệ xuất / nhập kỳ gần nhất",current.in>0?(current.out/current.in*100).toFixed(1)+"%":(current.out>0?"∞":"0.0%"),pct(current.in>0?current.out/current.in:null,prior.in>0?prior.out/prior.in:null),visible.map(x=>x[1].in>0?x[1].out/x[1].in*100:0)],
-        ["Consumption TB / tháng",dinhDangRutGonKho(avgOutMonth)+" ₫",pct(sum(visible,"out"),sum(previousWindow,"out")),outs],
-        ["Cover tồn kho",cover===null?"—":dinhDangSoLuong.format(Math.round(cover))+" ngày",pct(cover,30),outs.map(v=>{const monthly=v*monthlyFactor;return Number.isFinite(stock)&&monthly>0?stock/monthly*30.4375:0})],
-        ["Biến động ròng kỳ gần nhất",dinhDangRutGonKho(currentNet)+" ₫",pct(currentNet,priorNet),net]
-      ];
-      root.innerHTML=cards.map(c=>`<article class="executive-stat"><small>${c[0]}</small><div class="executive-stat-head"><strong>${c[1]}</strong>${delta(c[2])}</div>${spark(c[3])}</article>`).join("");
-      const labels={week:"tuần",month:"tháng",year:"năm"};
-      if(note)note.textContent=`Hiển thị ${Math.min(12,all.length)} ${labels[period]} gần nhất · kỳ hiện tại ${all.at(-1)?.[0]||"—"} · % so với kỳ trước`;
-    }
-    veBieuDoSuDungKho=function(){veMotBieuDoNhapXuat("insight-usage","dashboard-usage-period","dashboard-usage-summary");veTongQuanDieuHanhTheoKy()};
-    setTimeout(veTongQuanDieuHanhTheoKy,0);
-
-
     function vePhanBoTrangThaiNangCap(rows=duLieuTimKiem){
       const target=document.getElementById("insight-stock-distribution");if(!target)return;
+      if(hallDangLoc()==="hall2"){target.textContent=tuDien("dashboardHall2NoStockReport");return;}
       if(!analyticsReady||!rows.length){target.textContent=tuDien("noAnalytics");return;}
       const count={healthy:0,at:0,below:0,zero:0,unknown:0};for(const r of rows)count[r.trangThaiTon]=(count[r.trangThaiTon]||0)+1;
       const total=rows.length||1,keys=["healthy","at","below","zero","unknown"],colors={healthy:"#16a34a",at:"#eab308",below:"#f97316",zero:"#e11d48",unknown:"#94a3b8"},names={healthy:"stockAbove",at:"stockEqual",below:"stockBelow",zero:"stockZero",unknown:"stockUnknown"};
@@ -11733,32 +11703,88 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       const rings=keys.map(k=>{const len=count[k]/total*c,dash=`${len.toFixed(2)} ${(c-len).toFixed(2)}`,x=`<circle cx="100" cy="100" r="${r}" fill="none" stroke="${colors[k]}" stroke-width="23" stroke-dasharray="${dash}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 100 100)"><title>${thoatHTML(tuDien(names[k]))}: ${count[k]} (${(count[k]/total*100).toFixed(1)}%)</title></circle>`;offset+=len;return x}).join("");
       const bars=keys.map(k=>{const p=count[k]/total*100;return `<div class="stock-status-row"><span class="stock-status-name"><i class="stock-status-dot" style="background:${colors[k]}"></i>${thoatHTML(tuDien(names[k]))}</span><span class="stock-status-track"><i class="stock-status-fill" style="width:${p.toFixed(1)}%;background:${colors[k]}"></i></span><span class="stock-status-number"><strong>${dinhDangSoLuong.format(count[k])}</strong> · ${p.toFixed(1)}%</span></div>`}).join("");
       target.className="dashboard-chart-body modern-stock-status";
-      target.innerHTML=`<div class="stock-status-gauge"><svg viewBox="0 0 200 200" role="img" aria-label="${thoatHTML(tuDien("stockDistribution"))}"><circle cx="100" cy="100" r="66" fill="none" stroke="rgba(148,163,184,.16)" stroke-width="23"/>${rings}</svg><div class="stock-status-center"><strong>${readyPct.toFixed(1)}%</strong><b>Sẵn sàng</b><span>${dinhDangSoLuong.format(total)} mã vật tư</span></div></div><div class="stock-status-bars">${bars}<div class="stock-status-foot">Sẵn sàng = Trên định mức + Đúng định mức. Thanh ngang thể hiện tỷ trọng từng trạng thái.</div></div>`;
+      target.innerHTML=`<div class="stock-status-gauge"><svg viewBox="0 0 200 200" role="img" aria-label="${thoatHTML(tuDien("stockDistribution"))}"><circle cx="100" cy="100" r="66" fill="none" stroke="rgba(148,163,184,.16)" stroke-width="23"/>${rings}</svg><div class="stock-status-center"><strong>${readyPct.toFixed(1)}%</strong><b>${thoatHTML(tuDien("executiveReady"))}</b><span>${thoatHTML(tuDien("executiveMaterials",{count:dinhDangSoLuong.format(total)}))}</span></div></div><div class="stock-status-bars">${bars}<div class="stock-status-foot">${thoatHTML(tuDien("executiveReadyHelp"))}</div></div>`;
     }
     vePhanBoTrangThai=vePhanBoTrangThaiNangCap;
 
-    function veTongQuanDieuHanhCoChuThich(){
-      const root=document.getElementById("insight-usage-detail"),note=document.getElementById("dashboard-usage-detail-summary");if(!root)return;
-      if(!historyLoaded){root.textContent=tuDien(historyLoading?"dashUsageLoading":"dashUsageUnavailable");return;}
-      const rows=lichSuTheoHall(),col=cotGiaTriLichSuKho();if(!rows||col<0){root.textContent=tuDien("dashUsageUnavailable");return;}
-      const period=document.getElementById("dashboard-usage-detail-period")?.value||"month";
-      const wk=iso=>{const d=new Date(iso+"T00:00:00Z"),day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-day);const y=d.getUTCFullYear(),f=new Date(Date.UTC(y,0,1));return `${y}-W${String(Math.ceil((((d-f)/86400000)+1)/7)).padStart(2,"0")}`};
-      const key=iso=>period==="year"?iso.slice(0,4):period==="week"?wk(iso):iso.slice(0,7),map=new Map();
-      for(const rec of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(rec.date||""))continue;const v=chuyenThanhSo(rec.cells?.[col]);if(!Number.isFinite(v))continue;const k=key(rec.date);if(!map.has(k))map.set(k,{in:0,out:0});map.get(k)[rec.type==="out"?"out":"in"]+=Math.abs(v)}
-      const all=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0])),v=all.slice(-12),cur=v.at(-1)?.[1]||{in:0,out:0},prev=v.at(-2)?.[1]||{in:0,out:0};
-      const pct=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b!==0?(a-b)/Math.abs(b)*100:null,avg=(a,k)=>a.length?a.reduce((t,x)=>t+x[1][k],0)/a.length:0,factor=period==="week"?4.345:period==="year"?1/12:1;
-      const ratios=v.map(x=>x[1].in>0?x[1].out/x[1].in*100:0),outs=v.map(x=>x[1].out),ins=v.map(x=>x[1].in),net=v.map(x=>x[1].in-x[1].out),turn=cur.in>0?cur.out/cur.in*100:null,prevTurn=prev.in>0?prev.out/prev.in*100:null;
-      const delta=x=>{const c=x===null||Math.abs(x)<.05?"flat":x>0?"up":"down";return `<span class="executive-delta ${c}">${c==="up"?"▲":c==="down"?"▼":"•"} ${x===null?"—":Math.abs(x).toFixed(1)+"%"}</span>`},spark=a=>{if(!a.length)return"";const W=180,H=36,min=Math.min(...a),sp=Math.max(...a)-min||1,pts=a.map((x,i)=>`${a.length===1?90:i*W/(a.length-1)},${H-3-(x-min)/sp*(H-8)}`),last=pts.at(-1).split(',');return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline class="executive-line" points="${pts.join(' ')}"/><circle cx="${last[0]}" cy="${last[1]}" r="2.6" fill="#087ea4"/></svg>`},money=x=>dinhDangRutGonKho(x)+" ₫";
-      const cards=[
-        ["Tỷ lệ xuất / nhập kỳ gần nhất",turn===null?(cur.out>0?"∞":"0,0%"):turn.toFixed(1)+"%",pct(turn,prevTurn),ratios,"Giá trị xuất chia cho giá trị nhập của kỳ gần nhất."],
-        ["Consumption TB / tháng",money(avg(v,"out")*factor),pct(cur.out,prev.out),outs,"Giá trị xuất bình quân được quy đổi về một tháng."],
-        ["Giá trị nhập kỳ gần nhất",money(cur.in),pct(cur.in,prev.in),ins,"Tổng giá trị INPUT của tuần, tháng hoặc năm đang chọn."],
-        ["Biến động ròng kỳ gần nhất",money(cur.in-cur.out),pct(cur.in-cur.out,prev.in-prev.out),net,"Giá trị nhập trừ giá trị xuất; dương làm tồn tăng, âm làm tồn giảm."]
-      ];
-      root.innerHTML=cards.map(c=>`<article class="executive-stat"><small>${c[0]}</small><div class="executive-stat-head"><strong>${c[1]}</strong>${delta(c[2])}</div>${spark(c[3])}<p class="executive-help">${c[4]}<span class="executive-compare">% bên phải so với kỳ liền trước.</span></p></article>`).join("");
-      const labels={week:"tuần",month:"tháng",year:"năm"};if(note)note.textContent=`Hiển thị ${Math.min(12,all.length)} ${labels[period]} gần nhất · kỳ hiện tại ${all.at(-1)?.[0]||"—"}`;
+    Object.assign(NGON_NGU.vi, {
+      executiveRatio:"Tỷ lệ xuất / nhập trong kỳ", executiveAverage:"Giá trị xuất TB / tháng",
+      executiveIncoming:"Giá trị nhập trong kỳ", executiveNet:"Chênh lệch nhập − xuất",
+      executiveRatioHelp:"Giá trị xuất chia cho giá trị nhập trong khoảng đã chọn.",
+      executiveAverageHelp:"Tổng giá trị xuất ÷ số ngày trong kỳ × 30,4375 ngày; bao gồm ngày không giao dịch.",
+      executiveIncomingHelp:"Chỉ tính giao dịch Nhập trong khoảng đã chọn.",
+      executiveNetHelp:"Giá trị nhập trừ giá trị xuất; không thay thế số dư tồn kho thực tế.",
+      executiveCompare:"So với khoảng trước: {from} – {to}.",
+      executiveScope:"{from} – {to} · Xu hướng {count} nhóm thời gian cuối · Nhóm không giao dịch = 0",
+      executiveNoComparison:"Không có cơ sở so sánh", executiveReady:"Sẵn sàng",
+      executiveMaterials:"{count} mã vật tư", executiveReadyHelp:"Sẵn sàng = trên hoặc đúng điểm đặt hàng. Thanh ngang thể hiện tỷ trọng từng trạng thái."
+    });
+    Object.assign(NGON_NGU.en, {
+      executiveRatio:"Outbound / inbound in period", executiveAverage:"Average monthly outbound value",
+      executiveIncoming:"Inbound value in period", executiveNet:"Inbound minus outbound",
+      executiveRatioHelp:"Outbound value divided by inbound value in the selected range.",
+      executiveAverageHelp:"Outbound value ÷ calendar days × 30.4375 days, including days without movements.",
+      executiveIncomingHelp:"Inbound movements within the selected range only.",
+      executiveNetHelp:"Inbound minus outbound value; this is not the recorded inventory balance.",
+      executiveCompare:"Compared with: {from} – {to}.",
+      executiveScope:"{from} – {to} · Last {count} time buckets · Buckets without movements = 0",
+      executiveNoComparison:"No comparison baseline", executiveReady:"Ready",
+      executiveMaterials:"{count} materials", executiveReadyHelp:"Ready = above or at reorder point. Bars show each status share."
+    });
+
+    function duLieuDieuHanhTheoKy(rows,headers,period,range){
+      const buckets=nhomKyTrongKhoangKho(period,range);
+      const current=tinhGiaTriNhapXuat(rows,headers,period,buckets,range);
+      const previousRange={from:range.prevFrom,to:range.prevTo};
+      const previous=tinhGiaTriNhapXuat(rows,headers,period,
+        nhomKyTrongKhoangKho(period,previousRange),previousRange);
+      // Totals cover the full range even if the visual bucket list is capped.
+      const sum=r=>{const t={in:0,out:0};
+        for(const [date,day] of tongHopGiaoDichTheoNgay(rows,headers).days)
+          if(date>=r.from&&date<=r.to){t.in+=day.in;t.out+=day.out;}
+        return t;};
+      return {current:sum(range),previous:sum(previousRange),missing:current.missing||previous.missing,
+        averageDays:khoangNgayKho(range.from,range.to),previousDays:khoangNgayKho(previousRange.from,previousRange.to),
+        series:buckets.slice(-12).map(b=>({...b,...current.values.get(b.key)}))};
     }
-    veBieuDoSuDungKho=function(){veMotBieuDoNhapXuat("insight-usage","dashboard-usage-period","dashboard-usage-summary");veTongQuanDieuHanhCoChuThich()};
+
+    function veTongQuanDieuHanhCoChuThich(){
+      if(tabHienTai!=="dashboard")return;
+      const root=document.getElementById("insight-usage-detail"),note=document.getElementById("dashboard-usage-detail-summary");
+      if(!root)return;
+      if(note)note.textContent="";
+      if(!historyLoaded){root.textContent=tuDien(historyLoading?"dashUsageLoading":"dashUsageUnavailable");return;}
+      const range=layKyPhanTichKho(),rows=lichSuTheoHall();
+      if(!range){root.textContent=tuDien("dashboardTimeInvalid");return;}
+      if(!rows){root.textContent=tuDien(loiCotHall("history"));return;}
+      const period=document.getElementById("dashboard-usage-detail-period")?.value||"month";
+      const data=duLieuDieuHanhTheoKy(rows,historyColumns,period,range);
+      if(data.missing){root.textContent=tuDien("dashUsageUnavailable");return;}
+      const cur=data.current,prev=data.previous,v=data.series;
+      const pct=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b!==0?(a-b)/Math.abs(b)*100:null;
+      const ratio=x=>x.in>0?x.out/x.in*100:null;
+      const average=cur.out/data.averageDays*30.4375,priorAverage=prev.out/data.previousDays*30.4375;
+      const nf=new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",{maximumFractionDigits:1});
+      const delta=x=>{const c=x===null||Math.abs(x)<.05?"flat":x>0?"up":"down";
+        return `<span class="executive-delta ${c}" title="${thoatHTML(x===null?tuDien("executiveNoComparison"):tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo}))}">${c==="up"?"▲":c==="down"?"▼":"•"} ${x===null?"—":nf.format(Math.abs(x))+"%"}</span>`;};
+      const spark=a=>{if(!a.length)return"";const W=180,H=36,min=Math.min(...a),sp=Math.max(...a)-min||1;
+        const pts=a.map((x,i)=>`${a.length===1?90:i*W/(a.length-1)},${H-3-(x-min)/sp*(H-8)}`);
+        return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><polyline class="executive-line" points="${pts.join(' ')}"/></svg>`;};
+      const money=x=>dinhDangRutGonKho(x)+" ₫";
+      const cards=[
+        ["executiveRatio",ratio(cur)===null?"—":nf.format(ratio(cur))+"%",pct(ratio(cur),ratio(prev)),v.map(x=>ratio(x)??0),"executiveRatioHelp"],
+        ["executiveAverage",money(average),pct(average,priorAverage),v.map(x=>x.out),"executiveAverageHelp"],
+        ["executiveIncoming",money(cur.in),pct(cur.in,prev.in),v.map(x=>x.in),"executiveIncomingHelp"],
+        ["executiveNet",money(cur.in-cur.out),pct(cur.in-cur.out,prev.in-prev.out),v.map(x=>x.in-x.out),"executiveNetHelp"]
+      ];
+      root.innerHTML=cards.map(c=>`<article class="executive-stat"><small>${thoatHTML(tuDien(c[0]))}</small><div class="executive-stat-head"><strong>${c[1]}</strong>${delta(c[2])}</div>${spark(c[3])}<details class="executive-help"><summary>${ngonNguHienTai==="en"?"Calculation":"Cách tính"}</summary>${thoatHTML(tuDien(c[4]))}</details></article>`).join("");
+      if(note)note.textContent=tuDien("executiveScope",{from:range.from,to:range.to,count:v.length})+" · "+tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo});
+    }
+    veBieuDoSuDungKho=function(){
+      if(tabHienTai!=="dashboard")return;
+      veMotBieuDoNhapXuat("insight-usage","dashboard-usage-period","dashboard-usage-summary");
+      veTongQuanDieuHanhCoChuThich();
+    };
 
     function capNhatHaiCardTiLe(){try{const r=layKyPhanTichKho(),w=khoangTuanCuoiDashboard(r),c=cotGiaTriLichSuKho(),ok=historyLoaded&&c>=0,ratio=t=>!t?"—":t.in>0?new Intl.NumberFormat("vi-VN",{maximumFractionDigits:1}).format(t.out/t.in*100)+"%":t.out>0?"∞":"0,0%",a=ok&&r?tongNhapXuatTrongKhoang(r,c):null,b=ok&&w?tongNhapXuatTrongKhoang(w,c):null,x=document.getElementById("warehouse-period-inventory"),y=document.getElementById("warehouse-week-inventory");if(x)x.textContent=ratio(a);if(y)y.textContent=ratio(b);const xn=document.getElementById("warehouse-period-inventory-date"),yn=document.getElementById("warehouse-week-inventory-date");if(xn)xn.textContent="Giá trị xuất ÷ giá trị nhập";if(yn)yn.textContent="Giá trị xuất ÷ giá trị nhập"}catch(e){}}
     if(typeof veTongQuanDashboard==="function"){const originalDashboard=veTongQuanDashboard;veTongQuanDashboard=function(){originalDashboard.apply(this,arguments);capNhatHaiCardTiLe()}}
@@ -11850,3 +11876,4 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 </dialog>
 </body>
 </html>
+
