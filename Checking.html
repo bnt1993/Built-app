@@ -4646,6 +4646,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     const CAC_TAB=["stock","analytics","dashboard","catalog","search-history","requests"];
     function chuyenTab(tab, opts={}) {
       if(!CAC_TAB.includes(tab))return;
+      if(tab!=="catalog"&&typeof dongChiTietDanhMuc==="function")dongChiTietDanhMuc();
       tabHienTai=tab;
       // Charts and analytics tables share a scrollable workspace shell.
       document.body.classList.toggle("stock-one-screen",tab==="stock");
@@ -11835,35 +11836,88 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     setTimeout(capNhatCanhBaoKhoNangCap,0);
 
 
-    let catalogDetailOriginalParent=null,catalogDetailOriginalNext=null;
+    // Move the existing panel, preserving image state and event listeners.
+    // The marker records its position once, even if another item opens in the dialog.
+    let catalogDetailSession=null;
+    function traChiTietVeTraCuu(){
+      const host=document.getElementById("catalog-detail-host");
+      const detail=catalogDetailSession?.detail||host?.querySelector(".detail-section");
+      if(!detail)return;
+      const marker=catalogDetailSession?.marker;
+      const parent=marker?.parentNode||catalogDetailSession?.parent||
+        document.querySelector("#view-stock .main-container");
+      if(!parent)return;
+      if(marker?.parentNode===parent)parent.insertBefore(detail,marker);
+      else if(detail.parentNode!==parent)parent.appendChild(detail);
+      marker?.remove();
+      catalogDetailSession=null;
+    }
     function moChiTietDanhMuc(sap){
       sap=chuanHoaMaSap(sap);if(!sap)return;
-      const dialog=document.getElementById("catalog-detail-dialog"),host=document.getElementById("catalog-detail-host"),detail=document.querySelector("#catalog-detail-host .detail-section, #view-stock .detail-section");
+      const dialog=document.getElementById("catalog-detail-dialog");
+      const host=document.getElementById("catalog-detail-host");
+      const title=document.getElementById("catalog-detail-title");
+      if(!dialog||!host||!title)return;
       const item=chiMucSap.get(sap.toLowerCase())?.[0];
-      if(!dialog||!host||!detail)return;
-      if(!item){
-        document.getElementById("catalog-detail-title").textContent=sap;
-        host.innerHTML='<div class="catalog-detail-loading">Không tìm thấy mã SAP này trong dữ liệu tồn kho.</div>';
-        if(typeof dialog.showModal==="function")dialog.showModal();else dialog.setAttribute("open","");
-        return;
+      try{
+        if(!item){
+          // Never delete the shared panel when showing a missing-material message.
+          traChiTietVeTraCuu();
+          title.textContent=sap;
+          const message=document.createElement("div");
+          message.className="catalog-detail-loading";
+          message.textContent=ngonNguHienTai==="en"?
+            "This SAP code was not found in stock data.":
+            "Không tìm thấy mã SAP này trong dữ liệu tồn kho.";
+          host.replaceChildren(message);
+        }else{
+          const detail=catalogDetailSession?.detail||
+            document.querySelector("#view-stock .detail-section");
+          if(!detail)return;
+          if(!catalogDetailSession){
+            const marker=document.createComment("catalog-detail-return");
+            const parent=detail.parentNode;
+            parent.insertBefore(marker,detail);
+            catalogDetailSession={detail,parent,marker};
+          }
+          chonDong(item.chiSo,null);
+          title.textContent=`${sap} · ${String(item.dong?.[1]??"").trim()||
+            (ngonNguHienTai==="en"?"Material details":"Thông tin vật tư")}`;
+          if(detail.parentNode!==host)host.replaceChildren(detail);
+        }
+        if(!dialog.open){
+          if(typeof dialog.showModal==="function")dialog.showModal();
+          else dialog.setAttribute("open","");
+        }
+      }catch(error){
+        dongChiTietDanhMuc();
+        throw error;
       }
-      catalogDetailOriginalParent=detail.parentNode;catalogDetailOriginalNext=detail.nextSibling;
-      chonDong(item.chiSo,null);
-      document.getElementById("catalog-detail-title").textContent=`${sap} · ${String(item.dong?.[1]??"").trim()||"Thông tin vật tư"}`;
-      host.replaceChildren(detail);
-      if(typeof dialog.showModal==="function")dialog.showModal();else dialog.setAttribute("open","");
     }
     function dongChiTietDanhMuc(){
-      const dialog=document.getElementById("catalog-detail-dialog"),detail=document.querySelector("#catalog-detail-host .detail-section");
-      if(detail&&catalogDetailOriginalParent){
-        if(catalogDetailOriginalNext&&catalogDetailOriginalNext.parentNode===catalogDetailOriginalParent)catalogDetailOriginalParent.insertBefore(detail,catalogDetailOriginalNext);
-        else catalogDetailOriginalParent.appendChild(detail);
-      }
-      catalogDetailOriginalParent=null;catalogDetailOriginalNext=null;
-      if(dialog?.open)dialog.close();else dialog?.removeAttribute("open");
+      traChiTietVeTraCuu();
+      const dialog=document.getElementById("catalog-detail-dialog");
+      if(dialog?.open&&typeof dialog.close==="function")dialog.close();
+      else dialog?.removeAttribute("open");
     }
-    document.getElementById("catalog-detail-dialog")?.addEventListener("click",e=>{if(e.target===e.currentTarget)dongChiTietDanhMuc()});
-    document.getElementById("catalog-detail-dialog")?.addEventListener("cancel",e=>{e.preventDefault();dongChiTietDanhMuc()});
+    function khoiTaoChiTietDanhMuc(){
+      const dialog=document.getElementById("catalog-detail-dialog");
+      if(!dialog||dialog.dataset.detailEventsBound)return;
+      dialog.dataset.detailEventsBound="true";
+      dialog.addEventListener("click",event=>{
+        if(event.target===dialog)dongChiTietDanhMuc();
+      });
+      dialog.addEventListener("cancel",event=>{
+        event.preventDefault();dongChiTietDanhMuc();
+      });
+      dialog.addEventListener("close",()=>{
+        // A queued close event from an earlier opening must not disturb a new one.
+        if(!dialog.open)traChiTietVeTraCuu();
+      });
+    }
+    if(document.readyState==="loading")
+      document.addEventListener("DOMContentLoaded",khoiTaoChiTietDanhMuc,{once:true});
+    else khoiTaoChiTietDanhMuc();
 </script>
 <dialog aria-labelledby="catalog-detail-title" class="catalog-detail-dialog" id="catalog-detail-dialog">
 <div class="catalog-detail-shell">
