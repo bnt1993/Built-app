@@ -53,7 +53,7 @@ domCtx.vePhanBoTrangThai([
 ]);
 assert.match(node('metric-instock-rate').textContent,/33\.3%/,'unknown rows must not count as positive stock');
 const popupCtx=load(['dongStockLichSuVatTu'],{
-  tatCaDuLieu:[[],['A','Motor',10]],materialHistoryStockIndex:1,
+  tatCaDuLieu:[[],['A','Motor',10]],tieuDeCot:[],materialHistoryStockIndex:1,
   materialHistorySap:'A',materialHistoryHall:'hall1',materialHistoryFromDormant:false,
   cotStorageLocation:()=>-1,chuanHoaMaSap:String,hallTuStorageLocation:()=> ''
 });
