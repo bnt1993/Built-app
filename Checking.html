@@ -2682,8 +2682,8 @@
     :is(#view-dashboard,#view-analytics) .warehouse-context-note {margin:0;color:var(--muted);font-size:12px;line-height:1.55}
     #warehouse-filters .warehouse-data-status {flex:1 1 100%;margin:0;color:var(--muted);font-size:12px}
     #warehouse-filters .warehouse-data-status[data-issue="true"] {color:var(--red)}
-    #warehouse-filters[data-view="analytics"] .warehouse-group-control {display:none}
-    #warehouse-filters[data-view="analytics"]:not([data-report="out"]) > label:not(.dashboard-hall-control) {display:none}
+    :is(#view-dashboard,#view-analytics) #warehouse-filters[data-view="analytics"] .warehouse-group-control {display:none}
+    :is(#view-dashboard,#view-analytics) #warehouse-filters[data-view="analytics"]:not([data-report="out"]) > label:not(.dashboard-hall-control) {display:none}
     #view-dashboard .warehouse-primary-kpis {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
     #view-dashboard .warehouse-primary-kpis .warehouse-kpi {min-height:142px;padding:16px;background:var(--app-panel);border-left-width:3px;border-top-width:1px;box-shadow:none}
     #view-dashboard .warehouse-primary-kpis .warehouse-kpi:hover {transform:none;box-shadow:none}
