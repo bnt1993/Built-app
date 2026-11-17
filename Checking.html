@@ -4647,6 +4647,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     function chuyenTab(tab, opts={}) {
       if(!CAC_TAB.includes(tab))return;
       if(tab!=="catalog"&&typeof dongChiTietDanhMuc==="function")dongChiTietDanhMuc();
+      if(tab!==tabHienTai&&typeof saveWorkspace==="function")saveWorkspace(tabHienTai);
       tabHienTai=tab;
       // Charts and analytics tables share a scrollable workspace shell.
       document.body.classList.toggle("stock-one-screen",tab==="stock");
@@ -4666,6 +4667,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       document.querySelector(".breadcrumbs .active").textContent=tuDien(
         tab==="stock"?"tabStock":tab==="analytics"?"tabAnalytics":tab==="dashboard"?"tabDashboard":tab==="catalog"?"catalogTab":tab==="search-history"?"searchHistoryTab":"requestTab");
       if(opts.persist!==false)ghiTuyChon("checking-active-tab",tab);
+      if(typeof restoreScroll==="function")requestAnimationFrame(()=>restoreScroll(tab));
+      if(typeof showDataScope==="function")showDataScope(tab);
       if(tab==="catalog"&&!danhMucTrangThai.loaded&&!danhMucTrangThai.loading)taiDanhMuc();
       if(tab==="search-history")veLichSuTimKiem();
       if(tab==="requests")veYeuCauVatTu();
@@ -8340,6 +8343,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       const cheDoTim = document.querySelector('input[name="truongTim"]:checked').value;
       const chiTonKho = document.getElementById("chk-ton-kho").checked;
       const locCanhBao=document.getElementById("loc-canh-bao").value;
+      if(rawQuery||locCanhBao!=="all")window.checkingAttentionFilter=false;
       const {terms:nhieuTuKhoa,exactSap:danhSachSap}=phanTichTimKiem(tuKhoa,cheDoTim);
       const compiledTerms=nhieuTuKhoa.map(keyword=>({keyword,
         hasDigit:/\d/.test(keyword),compact:keyword.replace(/[^a-z0-9]/g,"")}));
@@ -8364,7 +8368,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
             : !tuKhoa||compiledTerms.some(term=>
                 khopTuKhoaVatTu(muc,term,truongTim,ganDung));
           if (hopTuKhoa && (cheDoTim!=="favorites" || favoriteMaterials.has(chuanHoaMaSap(muc.dong[0]))) && (!chiTonKho || muc.coTonKho) &&
-              (locCanhBao==="all" || muc.trangThaiTon===locCanhBao)) moi.push(muc);
+              (locCanhBao==="all" || muc.trangThaiTon===locCanhBao) && (!window.checkingAttentionFilter||["zero","at","below"].includes(muc.trangThaiTon))) moi.push(muc);
         }
         if (viTri < tong) {
           requestAnimationFrame(xuLyNhom);
@@ -11801,7 +11805,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       }
       if(hall!=="hall2"&&analyticsReady){
         attention=duLieuTimKiem.filter(r=>["zero","at","below"].includes(r.trangThaiTon)).length;
-        if(attention)alerts.push({level:"danger",icon:"!",title:"Nguy cơ thiếu hàng",badge:"Ưu tiên cao",text:tuDien("dashAlertReorder",{count:dinhDangSoLuong.format(attention)})});
+        if(attention)alerts.push({level:"danger",icon:"!",title:ngonNguHienTai==="en"?"Low stock risk":"Nguy cơ thiếu hàng",badge:ngonNguHienTai==="en"?"High priority":"Ưu tiên cao",text:tuDien("dashAlertReorder",{count:dinhDangSoLuong.format(attention)}),filter:"attention"});
       }
       if(historyLoaded&&range&&lichSuTheoHall()){
         const col=cotGiaTriLichSuKho();if(col>=0){
@@ -11829,12 +11833,120 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       for(const a of list){
         const part=document.createElement("article");part.className="dashboard-alert";part.dataset.level=a.level;
         part.innerHTML=`<span class="dashboard-alert-icon">${a.icon}</span><div class="dashboard-alert-content"><div class="dashboard-alert-title">${a.title}</div><div class="dashboard-alert-text">${thoatHTML(a.text)}</div>${a.codes?.length?`<div class="alert-code-list">${a.codes.map(c=>`<span class="alert-code">${thoatHTML(c)}</span>`).join("")}</div>`:""}</div><span class="dashboard-alert-badge">${a.badge}</span>`;
+        if(a.filter||a.codes?.length){
+          part.tabIndex=0;part.setAttribute("role","button");
+          const action=()=>drillAlert(a);
+          part.addEventListener("click",action);
+          part.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();action();}});
+        }
         node.appendChild(part);
       }
+      showDataScope("dashboard");
     }
     capNhatCanhBaoKho=capNhatCanhBaoKhoNangCap;
     setTimeout(capNhatCanhBaoKhoNangCap,0);
 
+
+
+    // Persistent tab workspace, column visibility and source scope.
+    const WORKSPACE_KEY="checking-workspace-v4";
+    let workspaces={};try{workspaces=JSON.parse(docTuyChon(WORKSPACE_KEY)||"{}")||{};}catch{}
+    let workspaceRestoring=false,workspaceTimer;
+    function saveWorkspace(tab){
+      if(workspaceRestoring||!CAC_TAB.includes(tab))return;
+      const pane=document.getElementById("view-"+tab);if(!pane)return;
+      const fields={},scrolls={};
+      pane.querySelectorAll("input[id],select[id],textarea[id]").forEach(el=>{
+        if(["file","password","button"].includes(el.type))return;
+        fields[el.id]=el.type==="checkbox"?el.checked:el.value;
+      });
+      pane.querySelectorAll(".table-wrapper,.catalog-table-scroll,.analytics-table-scroll").forEach((el,i)=>scrolls[i]=[el.scrollTop,el.scrollLeft]);
+      workspaces[tab]={fields,scrolls};
+      ghiTuyChon(WORKSPACE_KEY,JSON.stringify(workspaces));
+    }
+    function restoreScroll(tab){
+      const pane=document.getElementById("view-"+tab),saved=workspaces[tab];if(!pane||!saved)return;
+      pane.querySelectorAll(".table-wrapper,.catalog-table-scroll,.analytics-table-scroll").forEach((el,i)=>{
+        if(saved.scrolls?.[i]){el.scrollTop=saved.scrolls[i][0];el.scrollLeft=saved.scrolls[i][1];}
+      });
+    }
+    function restoreWorkspaces(){
+      workspaceRestoring=true;
+      for(const tab of CAC_TAB){
+        const pane=document.getElementById("view-"+tab),fields=workspaces[tab]?.fields;if(!pane||!fields)continue;
+        for(const [id,value] of Object.entries(fields)){
+          const el=document.getElementById(id);
+          if(!el||!pane.contains(el)||["file","password"].includes(el.type))continue;
+          if(el.type==="checkbox")el.checked=value===true;
+          else if(typeof value==="string"&&el.tagName==="SELECT"&&![...el.options].some(o=>o.value===value))continue;
+          else if(typeof value==="string")el.value=value;
+        }
+      }
+      workspaceRestoring=false;
+      if(chiMucSanSang)locDuLieu();
+      requestAnimationFrame(()=>restoreScroll(tabHienTai));
+    }
+    document.addEventListener("change",e=>{if(e.target.closest?.(".view-pane")){clearTimeout(workspaceTimer);workspaceTimer=setTimeout(()=>saveWorkspace(tabHienTai),250);}},true);
+    document.addEventListener("input",e=>{if(e.target.closest?.(".view-pane")){clearTimeout(workspaceTimer);workspaceTimer=setTimeout(()=>saveWorkspace(tabHienTai),400);}},true);
+    window.addEventListener("pagehide",()=>saveWorkspace(tabHienTai));
+    function showDataScope(tab){
+      const pane=document.getElementById("view-"+tab);if(!pane)return;
+      let node=pane.querySelector(".checking-scope-note");
+      if(!node){node=document.createElement("p");node.className="checking-scope-note";pane.querySelector(".pane-heading,.section-header,.hero-section")?.after(node);}
+      if(!node)return;
+      const en=ngonNguHienTai==="en",hall=typeof hallDangLoc==="function"?hallDangLoc():"all";
+      node.textContent=(en?"Data scope: ":"Phạm vi dữ liệu: ")+(hall==="hall2"?(en?"Hall 2: stock valuation unavailable; movements only":"Hall 2: không có giá trị tồn kho, chỉ có lịch sử xuất nhập"):hall==="hall1"?(en?"Hall 1 stock and movements":"Tồn kho và xuất nhập Hall 1"):(en?"All: stock valuation from Hall 1; movements by filter":"Tất cả: giá trị tồn kho theo nguồn Hall 1; xuất nhập theo bộ lọc"));
+    }
+    function drillAlert(a){
+      chuyenTab("stock");
+      const search=document.getElementById("o-tim-kiem"),warning=document.getElementById("loc-canh-bao");
+      warning.value="all";window.checkingAttentionFilter=false;
+      if(a.filter==="attention"){search.value="";window.checkingAttentionFilter=true;}
+      else if(a.codes?.length){
+        search.value=a.codes.join(",");
+        const radio=document.querySelector('input[name="truongTim"][value="sap"]');if(radio)radio.checked=true;
+      }else return;
+      locDuLieu();showDataScope("stock");
+    }
+    const COLUMN_KEY="checking-columns-v2";
+    let columnHidden={};try{columnHidden=JSON.parse(docTuyChon(COLUMN_KEY)||"{}")||{};}catch{}
+    function applyColumns(){
+      let style=document.getElementById("checking-column-css");
+      if(!style){style=document.createElement("style");style.id="checking-column-css";document.head.appendChild(style);}
+      const rules=[];
+      for(const table of ["bang-du-lieu","catalog-table"]){
+        const max=document.getElementById(table)?.querySelectorAll("thead th").length||0;
+        for(const n of columnHidden[table]||[])if(Number.isInteger(n)&&n>1&&n<=max)
+          rules.push("#"+table+" tr > :nth-child("+n+"){display:none!important}");
+      }
+      style.textContent=rules.join("\n");
+    }
+    function openColumns(table){
+      const heads=[...document.querySelectorAll("#"+table+" thead th")],dialog=document.getElementById("checking-columns-dialog"),body=document.getElementById("checking-columns-options");
+      if(!heads.length)return;body.replaceChildren();
+      const hidden=new Set(columnHidden[table]||[]);
+      heads.forEach((th,i)=>{
+        const label=document.createElement("label"),input=document.createElement("input");
+        input.type="checkbox";input.checked=!hidden.has(i+1);input.disabled=i===0;
+        input.addEventListener("change",()=>{
+          if(input.checked)hidden.delete(i+1);else hidden.add(i+1);
+          columnHidden[table]=[...hidden];ghiTuyChon(COLUMN_KEY,JSON.stringify(columnHidden));applyColumns();
+        });
+        label.append(input,document.createTextNode(" "+th.textContent.trim().replace(/[↕▲▼]/g,"")));body.appendChild(label);
+      });
+      dialog.showModal();
+    }
+    function initWorkspace(){
+      for(const [table,selector] of [["bang-du-lieu","#view-stock .section-header"],["catalog-table","#view-catalog .catalog-actions"]]){
+        const anchor=document.querySelector(selector);if(!anchor)continue;
+        const button=document.createElement("button");button.type="button";button.className="btn btn-secondary checking-columns-button";
+        button.textContent=ngonNguHienTai==="en"?"Columns":"Tùy chỉnh cột";
+        button.addEventListener("click",()=>openColumns(table));anchor.appendChild(button);
+      }
+      applyColumns();restoreWorkspaces();showDataScope(tabHienTai);
+    }
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initWorkspace,{once:true});
+    else initWorkspace();
 
     // Move the existing panel, preserving image state and event listeners.
     // The marker records its position once, even if another item opens in the dialog.
@@ -11928,6 +12040,17 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <div class="catalog-detail-host" id="catalog-detail-host"></div>
 </div>
 </dialog>
+<dialog id="checking-columns-dialog" aria-label="Tùy chỉnh cột" class="checking-columns-dialog">
+<header><strong>Tùy chỉnh cột</strong><button type="button" class="btn btn-secondary" onclick="document.getElementById('checking-columns-dialog').close()">✕</button></header>
+<div id="checking-columns-options" class="checking-columns-options"></div></dialog>
+<style>
+.checking-scope-note{margin:8px 12px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;background:var(--surface-subtle)}
+.checking-columns-dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);width:min(440px,94vw);max-height:80vh;padding:20px}
+.checking-columns-dialog header{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.checking-columns-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px;max-height:55vh;overflow:auto}
+.checking-columns-options label{display:flex;align-items:center;gap:8px;font-size:13px}
+.dashboard-alert[role="button"]{cursor:pointer}.dashboard-alert[role="button"]:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+</style>
 </body>
 </html>
 
