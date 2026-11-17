@@ -52,6 +52,14 @@ domCtx.vePhanBoTrangThai([
   {trangThaiTon:'unknown',soLuong:NaN}
 ]);
 assert.match(node('metric-instock-rate').textContent,/33\.3%/,'unknown rows must not count as positive stock');
+const popupCtx=load(['dongStockLichSuVatTu'],{
+  tatCaDuLieu:[[],['A','Motor',10]],materialHistoryStockIndex:1,
+  materialHistorySap:'A',materialHistoryHall:'hall1',materialHistoryFromDormant:false,
+  cotStorageLocation:()=>-1,chuanHoaMaSap:String,hallTuStorageLocation:()=> ''
+});
+assert.equal(popupCtx.dongStockLichSuVatTu(),popupCtx.tatCaDuLieu[1],'Hall 1 popup stock without a location column');
+popupCtx.materialHistoryHall='hall2';
+assert.equal(popupCtx.dongStockLichSuVatTu(),undefined,'Hall 2 must not borrow Hall 1 stock');
 const controls={'dashboard-limit':{value:'20'},'dashboard-out-min':{value:'500'},
   'dashboard-dormant-days':{value:'90'},'analytics-cons-horizon':{value:'12'},
   'analytics-cons-status':{value:'all'}};

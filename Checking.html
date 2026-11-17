@@ -8285,7 +8285,7 @@
       const valid=row=>Array.isArray(row)&&
         chuanHoaMaSap(row[0]).toLowerCase()===materialHistorySap.toLowerCase()&&
         (materialHistoryHall==="all"||
-          materialHistoryFromDormant&&materialHistoryHall==="hall1"&&hallColumn<0||hallColumn>=0&&
+          materialHistoryHall==="hall1"&&hallColumn<0||hallColumn>=0&&
           hallTuStorageLocation(row[hallColumn])===materialHistoryHall);
       return valid(selected)?selected:tatCaDuLieu.find(valid);
     }
