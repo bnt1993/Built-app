@@ -30,6 +30,8 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.locator('#tab-dashboard').click();
     await page.waitForFunction(()=>historyLoaded&&analyticsReady);
     assert.equal(await page.locator('#view-dashboard .warehouse-primary-kpis .warehouse-kpi:visible').count(),4);
+    const cardBoxes=await page.locator('.warehouse-primary-kpis .warehouse-kpi').evaluateAll(nodes=>nodes.map(node=>({x:node.getBoundingClientRect().x,y:node.getBoundingClientRect().y})));
+    assert(cardBoxes.every(box=>Math.abs(box.y-cardBoxes[0].y)<2),'four cards must share one desktop row');
     assert.equal(await page.locator('#view-dashboard .warehouse-charts .dashboard-chart:visible').count(),2);
     assert.equal(await page.locator('#warehouse-additional-details').getAttribute('open'),null);
     await page.locator('#dashboard-hall').selectOption('hall1');
@@ -65,7 +67,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.keyboard.press('Escape');
     await page.locator('#analytics-search').fill('missing-code');
     assert.equal(await page.evaluate(()=>taoDuLieuXuatThongKe('out').rows.length),0);
-    assert.equal(await page.locator('#analytics-kpi-out-value').getAttribute('title'),'0 ₫');
+    assert.match(await page.locator('#analytics-kpi-out-value').getAttribute('title'),/^0\s₫$/);
     await page.locator('#analytics-search').fill('Motor');
     assert.deepEqual(await page.evaluate(()=>taoDuLieuXuatThongKe('out').rows.map(r=>r[0])),['A']);
     const download=page.waitForEvent('download');

@@ -2673,6 +2673,101 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Warehouse overview: one financial scope, two charts and one active report. */
+    :is(#view-dashboard,#view-analytics) [hidden] {display:none!important}
+    :is(#view-dashboard,#view-analytics) .pane-heading {background:var(--app-panel);box-shadow:none}
+    :is(#view-dashboard,#view-analytics) .pane-heading h1 {font-size:24px}
+    :is(#view-dashboard,#view-analytics) .pane-heading p {font-size:13px;line-height:1.5}
+    :is(#view-dashboard,#view-analytics) .warehouse-context-note {margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+    #warehouse-filters .warehouse-data-status {flex:1 1 100%;margin:0;color:var(--muted);font-size:12px}
+    #warehouse-filters .warehouse-data-status[data-issue="true"] {color:var(--red)}
+    #warehouse-filters[data-view="analytics"] .warehouse-group-control {display:none}
+    #warehouse-filters[data-view="analytics"]:not([data-report="out"]) > label:not(.dashboard-hall-control) {display:none}
+    #view-dashboard .warehouse-primary-kpis {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    #view-dashboard .warehouse-primary-kpis .warehouse-kpi {min-height:142px;padding:16px;background:var(--app-panel);border-left-width:3px;border-top-width:1px;box-shadow:none}
+    #view-dashboard .warehouse-primary-kpis .warehouse-kpi:hover {transform:none;box-shadow:none}
+    #view-dashboard .warehouse-primary-kpis h2 {font-size:13px;line-height:1.4;margin:0 0 12px;color:var(--muted);font-weight:700}
+    #view-dashboard .warehouse-primary-kpis strong {font-size:clamp(23px,2.1vw,32px);line-height:1.2;color:var(--ink);overflow-wrap:normal}
+    #view-dashboard .warehouse-primary-kpis small {font-size:11px;line-height:1.5;margin-top:7px;overflow-wrap:anywhere}
+    #view-dashboard .warehouse-primary-kpis .dashboard-compare-delta {font-size:12px;border:0;padding:0;background:none;color:var(--muted)}
+    #view-dashboard .warehouse-primary-kpis .dashboard-compare-delta[data-change] {color:var(--muted)}
+    #view-dashboard .warehouse-charts .dashboard-chart {height:320px;padding:16px;box-shadow:none}
+    #view-dashboard .warehouse-charts .dashboard-chart-heading h3 {font-size:15px}
+    #view-dashboard .warehouse-charts .dashboard-chart > .insight-note {font-size:12px;line-height:1.5}
+    #view-dashboard .warehouse-charts .dashboard-chart-body {min-width:0;overflow:auto}
+    #view-dashboard .warehouse-charts .warehouse-line-chart {min-width:0!important;width:100%;height:100%}
+    #view-dashboard .warehouse-charts .warehouse-chart-dense .warehouse-line-chart {min-width:var(--warehouse-chart-width)!important}
+    #view-dashboard .warehouse-line-chart .warehouse-axis-label {font-size:11px}
+    #view-dashboard .dashboard-alert-panel {margin:0;box-shadow:none}
+    #view-dashboard .dashboard-alert-header small {display:none}
+    #view-dashboard .dashboard-alert-list {gap:8px}
+    #view-dashboard .dashboard-alert {background:var(--app-panel);font-size:12px;line-height:1.5;flex-basis:280px}
+    .warehouse-shortcuts {display:flex;flex-wrap:wrap;gap:8px}
+    .warehouse-shortcuts .btn {font-weight:650;min-height:36px}
+    :is(#view-dashboard,#view-analytics) .warehouse-additional {margin:0;border:1px solid var(--line);border-radius:12px;background:var(--app-panel)}
+    .warehouse-additional > summary {cursor:pointer;padding:12px 15px;font-size:13px;font-weight:700;color:var(--muted)}
+    .warehouse-additional > summary:focus-visible {outline:2px solid var(--blue);outline-offset:2px}
+    .warehouse-additional-body {display:flex;flex-direction:column;gap:18px;padding:4px 15px 15px}
+    #view-dashboard .warehouse-week-summary .warehouse-kpi-cards {grid-template-columns:repeat(4,minmax(0,1fr))}
+    #view-dashboard .warehouse-stock-summary .metric-grid {grid-template-columns:repeat(4,minmax(0,1fr))}
+    #view-dashboard .warehouse-additional .warehouse-support-grid {align-items:start}
+    #view-dashboard .warehouse-additional .warehouse-support-grid .dashboard-chart {height:270px}
+    #view-dashboard .warehouse-additional .dashboard-utilities {margin:0}
+    #view-analytics .analytics-quickbar {box-shadow:none;justify-content:flex-start;gap:12px}
+    .warehouse-report-picker {display:flex;flex:0 1 270px;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+    .warehouse-report-picker select {height:38px;border:1px solid var(--line);border-radius:9px;background:var(--app-field);color:var(--ink);padding:0 10px;font-size:13px;max-width:100%}
+    #view-analytics .analytics-quick-search {min-width:0;align-self:end}
+    #view-analytics .analytics-quick-search input {min-width:0;height:38px;font-size:13px;width:100%}
+    #view-analytics .analytics-quickbar > .btn {align-self:end;min-height:38px}
+    #view-analytics .analytics-inline-summary {display:flex;flex-wrap:wrap;gap:5px 10px;align-items:center;font-size:13px;color:var(--muted);padding:0 2px}
+    #view-analytics .analytics-inline-summary strong {color:var(--ink);font-variant-numeric:tabular-nums}
+    #view-analytics .analytics-tables {display:block;min-width:0}
+    #view-analytics .analytics-tables > .dashboard-chart {display:flex;flex-direction:column;height:clamp(460px,calc(100dvh - 365px),800px);min-width:0;margin:0;padding:16px;box-shadow:none}
+    #view-analytics #analytics-consumption-card {height:clamp(480px,calc(100dvh - 365px),800px)}
+    #view-analytics .analytics-tables .dashboard-chart-body {flex:1 1 0;min-height:180px;max-height:none;overflow:auto}
+    #view-analytics .analytics-tables .dashboard-chart-heading {align-items:center}
+    #view-analytics .analytics-tables h3 {font-size:15px;margin:0}
+    #view-analytics .analytics-tables .insight-note {font-size:12px;line-height:1.55}
+    #view-analytics .dashboard-detail-table {min-width:640px;width:100%;font-size:13px}
+    #view-analytics .dashboard-detail-table th {position:sticky;top:0;z-index:2;background:var(--app-panel);padding:10px 9px;white-space:nowrap}
+    #view-analytics .dashboard-detail-table td {padding:10px 9px;vertical-align:middle;line-height:1.45}
+    #view-analytics .dashboard-detail-table td:not(:first-child) {text-align:right;font-variant-numeric:tabular-nums}
+    #view-analytics .dashboard-detail-table .material-sap {font-size:13px;font-weight:750}
+    #view-analytics .dashboard-detail-table .material-name {font-size:12px;line-height:1.45;max-width:420px}
+    #view-analytics .warehouse-history-button {min-height:32px;padding:5px 9px;font-size:12px;font-weight:600}
+    #view-analytics .dashboard-mini-pager {padding-top:10px;margin-top:8px;flex-wrap:wrap}
+    #view-analytics .dashboard-mini-size,#view-analytics .dashboard-mini-page {font-size:12px;gap:6px}
+    #view-analytics .dashboard-mini-pager input,#view-analytics .dashboard-mini-pager select {min-height:32px;font-size:12px}
+    #view-analytics .dashboard-mini-page button {min-width:32px;min-height:32px}
+    #view-analytics .warehouse-more-filters {margin:8px 0}
+    #view-analytics .warehouse-more-filters summary {font-size:12px;color:var(--muted);font-weight:650;cursor:pointer}
+    #view-analytics .warehouse-more-filters .dashboard-out-range {margin:10px 0}
+    #view-analytics .analytics-export > .insight-box {border:0;box-shadow:none}
+    #view-analytics .cons-summary-strip {font-size:12px;font-weight:600;gap:6px 12px}
+    #view-analytics .age-badge,#view-analytics .cover-badge {font-size:12px}
+    @media(max-width:1150px) {
+      #view-dashboard .warehouse-primary-kpis {grid-template-columns:repeat(2,minmax(0,1fr))}
+      #view-dashboard .warehouse-primary-kpis .warehouse-kpi {min-height:128px}
+      #view-dashboard .warehouse-additional .warehouse-week-summary .warehouse-kpi-cards,
+      #view-dashboard .warehouse-additional .warehouse-stock-summary .metric-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:700px) {
+      :is(#view-dashboard,#view-analytics) .pane-heading {padding:12px}
+      :is(#view-dashboard,#view-analytics) .pane-heading h1 {font-size:22px}
+      #view-dashboard .warehouse-primary-kpis {gap:8px}
+      #view-dashboard .warehouse-primary-kpis .warehouse-kpi {padding:12px;min-height:132px}
+      #view-dashboard .warehouse-primary-kpis strong {font-size:22px}
+      #view-dashboard .warehouse-primary-kpis h2 {font-size:12px}
+      #view-dashboard .warehouse-charts .dashboard-chart {height:300px;padding:12px}
+      #view-dashboard .warehouse-shortcuts .btn {flex:1 1 calc(50% - 8px);white-space:normal}
+      .warehouse-report-picker {flex:1 1 100%;min-width:0}
+      #view-analytics .analytics-quick-search {flex:1 1 100%}
+      #view-analytics .analytics-quickbar > .btn {width:100%;white-space:normal}
+      #view-analytics .analytics-tables > .dashboard-chart,#view-analytics #analytics-consumption-card {height:590px;padding:12px}
+      #view-analytics .dashboard-mini-pager {justify-content:center}
+      #warehouse-filters .warehouse-data-status {overflow-wrap:anywhere}
+    }
 </style>
 </head>
 <body>
