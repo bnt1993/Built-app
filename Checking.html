@@ -6980,7 +6980,9 @@
     }
     function moLichSuDashboardTheoSap(sap,hall=hallDangLoc(),fromDormant=false){
       const dormant=fromDormant&&hall==="hall1";
-      const item=((dormant?tonKhoHall1TonLau():tonKhoTheoHall(hall))||[]).find(v=>
+      const scope=dormant?tonKhoHall1TonLau():
+        tonKhoTheoHall(hall)||(hall!=="hall2"?duLieuTimKiem:[]);
+      const item=(scope||[]).find(v=>
         chuanHoaMaSap(v.dong[0]).toLowerCase()===String(sap).toLowerCase());
       if(item){moLichSuVatTu(item.chiSo,hall,dormant);return;}
       if(!historyLoaded)return;
@@ -7113,7 +7115,8 @@
         "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       const descCol=cotHistoryTheoTen(historyColumns,[
         "Material Description","Description","Mô tả","Mô tả vật tư"]);
-      const stockBySap=new Map((tonKhoTheoHall()||[]).map(item=>
+      // Material descriptions remain available even when Stock has no location column.
+      const stockBySap=new Map(duLieuTimKiem.map(item=>
         [chuanHoaMaSap(item.dong[0]).toLowerCase(),item]));
       const grouped=new Map();
       for(const rec of locGiaoDichKho(range,["out"])){
@@ -10083,9 +10086,10 @@
         const rows=sapXepBangPhanTich(locVatTuBaoCaoKho(dashboardTopValueCache).slice(0,limit),"value");
         return make("dashboardExportTopValue","Top ton",
           ["dashboardExportSap","dashboardExportDescription","dashTopQuantity",
-           "dashboardExportUnit","dashboardExportValue"],
+           "dashboardExportUnit","dashboardDormantUnitPrice","dashboardExportValue"],
           rows.map(r=>[r.name,r.description||"",r.unit&&!r.inconsistent?r.quantity:null,
-            r.mixed?tr("dashTopMixedUnits"):r.missing?"":r.unit,r.value]),[4],
+            r.mixed?tr("dashTopMixedUnits"):r.missing?"":r.unit,
+            r.priceMixed?tr("dashboardDormantMultiplePrices"):r.priceValid?r.price:null,r.value]),[4,5],
           [extra("dashboardExportTopN",limit),extra("dashboardExportSort",order("value"))]);
       }
       if(kind==="out"){

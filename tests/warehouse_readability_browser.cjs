@@ -4,7 +4,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
   try{
     const page=await browser.newPage({viewport:{width:1440,height:1000},timezoneId:'Asia/Ho_Chi_Minh'});
     await page.clock.install({time:new Date('2026-11-17T03:00:00Z')});
-    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    const errors=[];page.on('pageerror',error=>{errors.push(error.message);console.error('APP ERROR:',error.message);});
     const stock=[['SAP','Description','Stock','Price','Unit','Reorder Point'],
       ['A','Motor',10,100,'PC',5],['B','Valve',0,50,'PC',5],
       ['C','Unknown stock','bad',50,'PC',5],['D','Old spare',2,250,'PC',4]];
@@ -64,6 +64,7 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     assert.equal(await page.locator('#material-history-to').inputValue(),'2026-11-17');
     assert.equal(await page.locator('#material-history-kind').inputValue(),'out');
     assert.equal(await page.evaluate(()=>materialHistoryHall),'hall1');
+    assert.equal(await page.locator('#material-history-stock').innerText(),'10 PC','Hall 1 stock is available without a location column');
     await page.keyboard.press('Escape');
     await page.locator('#analytics-search').fill('missing-code');
     assert.equal(await page.evaluate(()=>taoDuLieuXuatThongKe('out').rows.length),0);

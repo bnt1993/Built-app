@@ -56,8 +56,8 @@ const controls={'dashboard-limit':{value:'20'},'dashboard-out-min':{value:'500'}
   'dashboard-dormant-days':{value:'90'},'analytics-cons-horizon':{value:'12'},
   'analytics-cons-status':{value:'all'}};
 const source=[
-  {sap:'A',name:'A',description:'Motor',value:900,quantity:3,unit:'PC',quantityValid:true},
-  {sap:'B',name:'B',description:'Valve',value:700,quantity:2,unit:'PC',quantityValid:true}
+  {sap:'A',name:'A',description:'Motor',value:900,quantity:3,unit:'PC',quantityValid:true,price:300,priceValid:true},
+  {sap:'B',name:'B',description:'Valve',value:700,quantity:2,unit:'PC',quantityValid:true,price:350,priceValid:true}
 ];
 const expCtx=load(['locVatTuBaoCaoKho','layDongTieuThuDaLoc','taoDuLieuXuatThongKe'],{
   document:{getElementById:id=>controls[id]},analyticsSearchQuery:'motor',ngonNguHienTai:'vi',
@@ -80,6 +80,7 @@ for(const kind of ['value','out','dormant']){
   const result=expCtx.taoDuLieuXuatThongKe(kind);
   assert.deepEqual(Array.from(result.rows,r=>r[0]),['A'],kind+' export must use the search');
 }
+assert.equal(expCtx.taoDuLieuXuatThongKe('value').rows[0][4],300,'Excel includes the displayed unit price');
 expCtx.analyticsSearchQuery='missing';
 assert.equal(expCtx.taoDuLieuXuatThongKe('consumption').rows.length,0,'an empty filtered report must never export all materials');
 expCtx.analyticsSearchQuery='';
