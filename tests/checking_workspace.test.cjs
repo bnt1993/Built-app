@@ -2,7 +2,7 @@
 const {test}=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
 const html=fs.readFileSync(path.join(__dirname,"../Checking.html"),"utf8");
 test("all inline scripts compile",()=>{
- for(const match of html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi))new vm.Script(match[1]);
+ for(const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi))new vm.Script(match[1]);
 });
 test("tab state and scroll have persistent restore paths",()=>{
  for(const name of ["saveWorkspace","restoreWorkspaces","restoreScroll","WORKSPACE_KEY"])
