@@ -2911,14 +2911,10 @@
       </section>
 
       <section id="view-dashboard" class="view-pane" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
-        <div class="pane-heading">
-          <div>
-            <h1 data-i18n="warehouseDashboardHeading">Dashboard kho</h1>
-            <p data-i18n="warehouseDashboardDesc">Theo dõi tổng quan giá trị xuất, nhập, tồn kho và cảnh báo vận hành theo thời gian thực.</p>
-          </div>
-          <span class="record-count" id="warehouse-summary-note" role="status"></span>
-        </div>
-
+        <div class="pane-heading"><div>
+          <h1 data-i18n="warehouseDashboardHeading">Tổng quan kho</h1>
+          <p data-i18n="warehouseDashboardDesc">Giá trị nhập, xuất và tồn ghi nhận trong khoảng thời gian đã chọn.</p>
+        </div><button type="button" class="btn btn-secondary" onclick="lamMoiToanBoNguon()" data-i18n="warehouseRefresh">Làm mới dữ liệu</button></div>
         <section id="warehouse-filters" class="dashboard-period-strip" aria-label="Khoảng thời gian phân tích" data-i18n-aria="dashboardTimeTitle">
           <div class="dashboard-period-intro">
             <strong data-i18n="dashboardTimeTitle">Khoảng thời gian phân tích</strong>
@@ -2931,7 +2927,15 @@
               <option value="hall2" data-i18n="dashboardHall2">Hall 2</option>
             </select>
           </label>
-          <label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
+          <label class="warehouse-group-control"><span data-i18n="warehouseGroupBy">Nhóm theo</span>
+            <select id="warehouse-group-period" onchange="doiNhomKyKho(this.value)">
+              <option value="day" data-i18n="dashDay">Ngày</option>
+              <option value="week" data-i18n="dashWeek">Tuần</option>
+              <option value="month" data-i18n="dashMonth" selected>Tháng</option>
+              <option value="year" data-i18n="dashYear">Năm</option>
+            </select>
+          </label>
+          <label class="warehouse-period-control"><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
             <select id="dashboard-range-mode" onchange="doiKyPhanTichKho()">
               <option value="week" data-i18n="dashboardTimeWeek">7 ngày gần đây</option>
               <option value="month" data-i18n="dashboardTimeMonth" selected>Tháng hiện tại</option>
@@ -2956,41 +2960,75 @@
             <input id="dashboard-range-to" type="date" onchange="doiKyPhanTichKho()">
           </label>
           <p id="dashboard-hall-status" class="dashboard-hall-status insight-note" role="status" aria-live="polite"></p>
+          <p id="warehouse-data-status" class="warehouse-data-status" role="status"></p>
         </section>
+        <section class="warehouse-primary-kpis" data-i18n-aria="warehouseOverview">
+          <article class="warehouse-kpi" data-tone="inventory">
+            <h2 data-i18n="warehouseClosing">Giá trị tồn ghi nhận</h2>
+            <strong id="warehouse-period-inventory">—</strong>
+            <small id="warehouse-period-inventory-date"></small>
+          </article>
+          <article class="warehouse-kpi" data-tone="in">
+            <h2 data-i18n="dashboardCompareIn">Giá trị nhập</h2>
+            <strong id="dashboard-compare-in-current">—</strong>
+            <span class="dashboard-compare-delta" id="dashboard-compare-in-change">—</span>
+            <small id="dashboard-compare-in-prior"></small>
+          </article>
+          <article class="warehouse-kpi" data-tone="out">
+            <h2 data-i18n="dashboardCompareOut">Giá trị xuất</h2>
+            <strong id="dashboard-compare-out-current">—</strong>
+            <span class="dashboard-compare-delta" id="dashboard-compare-out-change">—</span>
+            <small id="dashboard-compare-out-prior"></small>
+          </article>
+          <article class="warehouse-kpi" data-tone="net">
+            <h2 data-i18n="warehouseNet">Chênh lệch nhập − xuất</h2>
+            <strong id="warehouse-period-net">—</strong>
+            <small id="dashboard-compare-periods"></small>
+          </article>
+        </section>
+        <p id="warehouse-summary-note" class="warehouse-context-note" role="status"></p>
+        <section class="insights-panel" id="insights-panel" aria-label="Biểu đồ kho" data-i18n-aria="warehouseCharts">
+          <div class="insight-grid warehouse-charts">
+            <div class="insight-box dashboard-chart dashboard-time-chart">
+              <div class="dashboard-chart-heading">
+                <h3 data-i18n="dashValueTrendTitle">Tổng giá trị kho theo thời gian</h3>
+              </div>
+              <p class="insight-note" data-i18n="dashValueTrendNote">Biểu đồ đường diện tích từ Amount.js (di chuột lên điểm dữ liệu để xem chi tiết).</p>
+              <div id="insight-value-trend" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashValueTrendTitle"></div>
+              <p id="dashboard-value-trend-summary" class="insight-note" role="status"></p>
+              <p id="dashboard-amount-status" class="insight-note" role="status" aria-live="polite"></p>
+            </div>
 
-        <section class="warehouse-kpi-grid" data-i18n-aria="warehouseOverview">
-          <div class="warehouse-kpi-group">
-            <div class="warehouse-group-heading">
-              <h2 data-i18n="warehouseSelectedPeriod">Tổng giá trị trong kỳ đã chọn</h2>
-              <span id="warehouse-period-label"></span>
+            <div class="insight-box dashboard-chart dashboard-time-chart">
+              <div class="dashboard-chart-heading">
+                <h3 data-i18n="dashUsageTitle">Giá trị nhập / xuất &amp; Dòng tiền thuần</h3>
+              </div>
+              <p class="insight-note" data-i18n="dashUsageNote">Nhấn vào cột kỳ bất kỳ để xem danh sách giao dịch chi tiết của kỳ đó.</p>
+              <div id="insight-usage" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashUsageTitle"></div>
+              <p id="dashboard-usage-summary" class="insight-note" role="status"></p>
             </div>
-            <div class="warehouse-kpi-cards">
-              <article class="warehouse-kpi" data-tone="inventory">
-                <h3 data-i18n="warehouseClosing">Giá trị tồn ghi nhận</h3>
-                <strong id="warehouse-period-inventory">—</strong>
-                <small id="warehouse-period-inventory-date"></small>
-              </article>
-              <article class="warehouse-kpi" data-tone="in">
-                <h3 data-i18n="dashboardCompareIn">Giá trị nhập</h3>
-                <strong id="dashboard-compare-in-current">—</strong>
-                <span class="dashboard-compare-delta" id="dashboard-compare-in-change">—</span>
-                <small id="dashboard-compare-in-prior"></small>
-              </article>
-              <article class="warehouse-kpi" data-tone="out">
-                <h3 data-i18n="dashboardCompareOut">Giá trị xuất</h3>
-                <strong id="dashboard-compare-out-current">—</strong>
-                <span class="dashboard-compare-delta" id="dashboard-compare-out-change">—</span>
-                <small id="dashboard-compare-out-prior"></small>
-              </article>
-              <article class="warehouse-kpi" data-tone="net">
-                <h3 data-i18n="warehouseNet">Biến động nhập − xuất</h3>
-                <strong id="warehouse-period-net">—</strong>
-                <small id="dashboard-compare-periods"></small>
-              </article>
-            </div>
+
           </div>
+        </section>
+          <section class="dashboard-alert-panel" aria-label="Cảnh báo kho" data-i18n-aria="dashAlertHeading">
+            <div class="dashboard-alert-header">
+              <h2 data-i18n="dashAlertHeading">Cảnh báo kho thông minh</h2>
+              <small data-i18n="dashAlertRule">Giá trị ±10% · xuất tăng &gt;100% · chạm định mức ROP</small>
+            </div>
+            <div id="dashboard-alert-list" class="dashboard-alert-list" role="status" aria-live="polite"></div>
+          </section>
 
-          <div class="warehouse-kpi-group">
+
+        <nav class="warehouse-shortcuts" data-i18n-aria="warehouseReportLinks">
+          <button type="button" class="btn btn-secondary" onclick="moBaoCaoKho('value')" data-i18n="warehouseReportValue">Giá trị tồn cao</button>
+          <button type="button" class="btn btn-secondary" onclick="moBaoCaoKho('out')" data-i18n="warehouseReportOut">Xuất nhiều</button>
+          <button type="button" class="btn btn-secondary" onclick="moBaoCaoKho('dormant')" data-i18n="warehouseReportDormant">Tồn lâu</button>
+          <button type="button" class="btn btn-secondary" onclick="moBaoCaoKho('consumption')" data-i18n="warehouseReportConsumption">Mức sử dụng</button>
+        </nav>
+        <details class="warehouse-additional" id="warehouse-additional-details">
+          <summary data-i18n="warehouseAdditionalInfo">Thông tin bổ sung và tình trạng dữ liệu</summary>
+          <div class="warehouse-additional-body">
+            <section class="warehouse-week-summary">          <div class="warehouse-kpi-group">
             <div class="warehouse-group-heading">
               <h2 data-i18n="warehouseLastWeek">Tuần cuối trong kỳ đã chọn</h2>
               <span id="warehouse-week-label"></span>
@@ -3018,8 +3056,7 @@
               </article>
             </div>
           </div>
-        </section>
-
+</section>
         <section class="warehouse-stock-summary">
           <h2 class="dashboard-charts-title" data-i18n="warehouseCurrentStock">Tổng quan tồn kho hiện tại</h2>
           <section class="metric-grid" data-i18n-aria="metricsAria" aria-label="Thống kê tồn kho">
@@ -3047,49 +3084,8 @@
           </section>
         </section>
 
-        <section class="insights-panel" id="insights-panel" aria-labelledby="dashboard-charts-heading">
-          <div class="insight-grid warehouse-charts">
-            <div class="insight-box dashboard-chart dashboard-time-chart">
-              <div class="dashboard-chart-heading">
-                <h3 data-i18n="dashValueTrendTitle">Tổng giá trị kho theo thời gian</h3>
-                <div class="dashboard-chart-filters">
-                  <label><span data-i18n="dashValueTrendPeriod">Xem theo</span>
-                    <select id="dashboard-value-period" onchange="veBieuDoGiaTriKho()">
-                      <option value="day" data-i18n="dashDay">Ngày</option>
-                      <option value="week" data-i18n="dashWeek">Hằng tuần</option>
-                      <option value="month" data-i18n="dashMonth" selected>Tháng</option>
-                      <option value="year" data-i18n="dashYear">Năm</option>
-                    </select>
-                  </label>
-                  <button type="button" class="btn btn-soft" onclick="taiLaiAmount()" data-i18n="dashAmountRefresh">Làm mới Amount</button>
-                </div>
-              </div>
-              <p class="insight-note" data-i18n="dashValueTrendNote">Biểu đồ đường diện tích từ Amount.js (di chuột lên điểm dữ liệu để xem chi tiết).</p>
-              <div id="insight-value-trend" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashValueTrendTitle"></div>
-              <p id="dashboard-value-trend-summary" class="insight-note" role="status"></p>
-              <p id="dashboard-amount-status" class="insight-note" role="status" aria-live="polite"></p>
-            </div>
 
-            <div class="insight-box dashboard-chart dashboard-time-chart">
-              <div class="dashboard-chart-heading">
-                <h3 data-i18n="dashUsageTitle">Giá trị nhập / xuất &amp; Dòng tiền thuần</h3>
-                <div class="dashboard-chart-filters">
-                  <label><span data-i18n="dashUsagePeriod">Chu kỳ</span>
-                    <select id="dashboard-usage-period" onchange="veBieuDoSuDungKho()">
-                      <option value="week" data-i18n="dashWeek">Hằng tuần</option>
-                      <option value="month" data-i18n="dashMonth" selected>Hằng tháng</option>
-                      <option value="year" data-i18n="dashYear">Hằng năm</option>
-                    </select>
-                  </label>
-                  <button class="btn btn-soft" type="button" onclick="taiHistory(true)" data-i18n-title="historyRefresh" title="Tải lại lịch sử">↻</button>
-                </div>
-              </div>
-              <p class="insight-note" data-i18n="dashUsageNote">Nhấn vào cột kỳ bất kỳ để xem danh sách giao dịch chi tiết của kỳ đó.</p>
-              <div id="insight-usage" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="dashUsageTitle"></div>
-              <p id="dashboard-usage-summary" class="insight-note" role="status"></p>
-            </div>
-
-            <div class="insight-box dashboard-chart">
+            <div class="warehouse-support-grid">            <div class="insight-box dashboard-chart">
               <div class="dashboard-chart-heading">
                 <h3 data-i18n="stockDistribution">Phân bố trạng thái định mức tồn kho</h3>
               </div>
@@ -3097,45 +3093,12 @@
               <div id="insight-stock-distribution" class="stock-distribution dashboard-chart-body"></div>
             </div>
 
-            <div class="insight-box dashboard-chart">
-              <div class="dashboard-chart-heading">
-                <h3 data-i18n="warehouseMovementDetail">Chi tiết biến động tuần / kỳ ngắn hạn</h3>
-                <label><span data-i18n="dashValueTrendPeriod">Xem theo</span>
-                  <select id="dashboard-usage-detail-period" onchange="veBieuDoSuDungKho()">
-                    <option value="week" data-i18n="dashWeek" selected>Hằng tuần</option>
-                    <option value="month" data-i18n="dashMonth">Hằng tháng</option>
-                    <option value="year" data-i18n="dashYear">Hằng năm</option>
-                  </select>
-                </label>
-              </div>
-              <p class="insight-note" data-i18n="warehouseLineNote">So sánh nhịp độ nhập và xuất ngắn hạn (nhấn cột để xem giao dịch).</p>
-              <div id="insight-usage-detail" class="dashboard-chart-body" role="region" tabindex="0" data-i18n-aria="warehouseMovementDetail"></div>
-              <p id="dashboard-usage-detail-summary" class="insight-note" role="status"></p>
-            </div>
-          </div>
-          <div hidden>
-            <select id="dashboard-value-detail-period"><option value="week" selected>week</option></select>
-            <div id="insight-value-detail"></div>
-            <p id="dashboard-value-detail-summary"></p>
-          </div>
-        </section>
-
-        <div class="warehouse-support-grid">
-          <section class="dashboard-alert-panel" aria-label="Cảnh báo kho" data-i18n-aria="dashAlertHeading">
-            <div class="dashboard-alert-header">
-              <h2 data-i18n="dashAlertHeading">Cảnh báo kho thông minh</h2>
-              <small data-i18n="dashAlertRule">Giá trị ±10% · xuất tăng &gt;100% · chạm định mức ROP</small>
-            </div>
-            <div id="dashboard-alert-list" class="dashboard-alert-list" role="status" aria-live="polite"></div>
-          </section>
-
           <div class="insight-box">
             <h3 style="margin:0 0 4px;font-size:14px" data-i18n="inventoryHistory">Lịch sử định giá kho (Amount.js)</h3>
             <p class="insight-note" style="margin:0 0 8px" data-i18n="dashSnapshotNote">Các bản ghi gần nhất từ Amount.js.</p>
             <div id="insight-history" class="history-grid"></div>
           </div>
-        </div>
-
+</div>
         <div class="dashboard-utilities">
           <section class="dashboard-source-panel" aria-label="Trạng thái nguồn dữ liệu" data-i18n-aria="dashSourceHeading">
             <div class="dashboard-source-heading">
@@ -3166,59 +3129,59 @@
             <div id="bao-cao-nhac-tin" class="insight-note" style="margin-top:8px" role="status"></div>
           </section>
         </div>
+          </div>
+        </details>
+        <div hidden>
+          <span id="warehouse-period-label"></span>
+          <select id="dashboard-value-period"><option value="day">day</option><option value="week">week</option><option value="month" selected>month</option><option value="year">year</option></select>
+          <select id="dashboard-usage-period"><option value="day">day</option><option value="week">week</option><option value="month" selected>month</option><option value="year">year</option></select>
+          <select id="dashboard-usage-detail-period"><option value="week">week</option><option value="month">month</option><option value="year">year</option></select>
+          <select id="dashboard-value-detail-period"><option value="week">week</option></select>
+          <div id="insight-usage-detail"></div><p id="dashboard-usage-detail-summary"></p>
+          <div id="insight-value-detail"></div><p id="dashboard-value-detail-summary"></p>
+        </div>
       </section>
 
       <section id="view-analytics" class="view-pane" role="tabpanel" aria-labelledby="tab-analytics" hidden>
-        <div class="pane-heading">
-          <div>
-            <h1 data-i18n="dashboardHeading">Phân tích kho chuyên sâu</h1>
-            <p data-i18n="warehouseAnalyticsDesc">Phân loại Pareto ABC, thống kê tiêu thụ 1–2–3 năm &amp; số ngày Cover, xếp hạng xuất nhiều và tồn lâu.</p>
-          </div>
-          <button type="button" class="btn btn-primary" onclick="xuatNhanhBaoCaoKho('all')">↓ <span data-i18n="dashboardExportAll">Xuất tất cả báo cáo (.xlsx)</span></button>
-        </div>
-
-        <section class="analytics-kpi-strip" aria-label="Chỉ số phân tích kho">
-          <article class="analytics-kpi-card">
-            <span data-i18n="analyticsKpiAbcTitle">Nhóm A (80% giá trị tồn)</span>
-            <strong id="analytics-kpi-abc-value">—</strong>
-            <small id="analytics-kpi-abc-note">Đang tính tỷ trọng Pareto...</small>
-          </article>
-          <article class="analytics-kpi-card" data-accent="amber">
-            <span data-i18n="analyticsKpiDormantTitle">Vốn đọng tồn lâu (Dead-stock)</span>
-            <strong id="analytics-kpi-dormant-value">—</strong>
-            <small id="analytics-kpi-dormant-note">Theo ngưỡng ngày đang chọn</small>
-          </article>
-          <article class="analytics-kpi-card" data-accent="red">
-            <span data-i18n="analyticsKpiOutTitle">Tổng giá trị xuất trong kỳ</span>
-            <strong id="analytics-kpi-out-value">—</strong>
-            <small id="analytics-kpi-out-note">Theo bộ lọc vật tư xuất</small>
-          </article>
-          <article class="analytics-kpi-card" data-accent="green">
-            <span data-i18n="analyticsKpiSlowRateTitle">Tỷ lệ mã chậm luân chuyển</span>
-            <strong id="analytics-kpi-slow-rate">—</strong>
-            <small id="analytics-kpi-slow-note">Mã tồn lâu / Tổng mã có tồn</small>
-          </article>
-        </section>
-
+        <div class="pane-heading"><div>
+          <h1 data-i18n="dashboardHeading">Phân tích kho</h1>
+          <p data-i18n="warehouseAnalyticsDesc">Chọn báo cáo để xem chi tiết vật tư, sắp xếp và xuất Excel.</p>
+        </div><button type="button" class="btn btn-secondary" onclick="xuatNhanhBaoCaoKho('all')" data-i18n="warehouseExportAll">Xuất tất cả báo cáo</button></div>
         <div class="analytics-quickbar">
+          <label class="warehouse-report-picker"><span data-i18n="warehouseChooseReport">Báo cáo</span>
+            <select id="analytics-report-kind" onchange="chonBaoCaoKho(this.value)">
+              <option value="value" data-i18n="warehouseReportValue">Giá trị tồn cao</option>
+              <option value="out" data-i18n="warehouseReportOut">Xuất nhiều</option>
+              <option value="dormant" data-i18n="warehouseReportDormant">Tồn lâu</option>
+              <option value="consumption" data-i18n="warehouseReportConsumption">Mức sử dụng</option>
+            </select>
+          </label>
           <div class="analytics-quick-search">
             <input type="search" id="analytics-search" autocomplete="off"
-              data-i18n-placeholder="analyticsSearchPlaceholder"
-              placeholder="Lọc nhanh mã SAP hoặc mô tả vật tư trong tất cả bảng..."
-              oninput="locNhanhPhanTichKho()">
+              data-i18n-placeholder="analyticsSearchPlaceholder" data-i18n-aria="analyticsSearchPlaceholder"
+              placeholder="Lọc mã SAP hoặc tên vật tư..." oninput="locNhanhPhanTichKho()">
             <button type="button" class="btn btn-secondary" onclick="xoaLocNhanhPhanTich()" data-i18n="clear">Xóa</button>
           </div>
-          <div class="abc-filter-pills" role="group" aria-label="Lọc nhóm ABC">
-            <span style="font-size:11px;font-weight:750;color:var(--muted)" data-i18n="analyticsAbcFilter">Phân loại ABC:</span>
-            <button type="button" class="abc-pill" data-abc="all" aria-pressed="true" onclick="chonNhomAbc('all')" data-i18n="searchAll">Tất cả</button>
-            <button type="button" class="abc-pill" data-abc="A" aria-pressed="false" onclick="chonNhomAbc('A')">Nhóm A (80%)</button>
-            <button type="button" class="abc-pill" data-abc="B" aria-pressed="false" onclick="chonNhomAbc('B')">Nhóm B (15%)</button>
-            <button type="button" class="abc-pill" data-abc="C" aria-pressed="false" onclick="chonNhomAbc('C')">Nhóm C (5%)</button>
-          </div>
+          <button type="button" class="btn btn-primary" onclick="xuatBaoCaoDangXem()" data-i18n="warehouseExportCurrent">Xuất báo cáo đang xem</button>
+        </div>
+        <p id="analytics-report-scope" class="warehouse-context-note" role="status"></p>
+        <div class="analytics-inline-summary" data-summary-for="value">
+          <span data-i18n="warehouseMatching">Số mã hiển thị:</span> <strong id="analytics-value-count">—</strong>
+          <span data-i18n="warehouseReportTotal">Tổng giá trị:</span> <strong id="analytics-value-total">—</strong>
+        </div>
+        <div class="analytics-inline-summary" data-summary-for="out" hidden>
+          <span data-i18n="analyticsKpiOutTitle">Giá trị xuất sau bộ lọc:</span> <strong id="analytics-kpi-out-value">—</strong>
+          <span id="analytics-kpi-out-note"></span>
+        </div>
+        <div class="analytics-inline-summary" data-summary-for="dormant" hidden>
+          <span data-i18n="analyticsKpiDormantTitle">Giá trị tồn lâu:</span> <strong id="analytics-kpi-dormant-value">—</strong>
+          <span id="analytics-kpi-dormant-note"></span>
+          <span data-i18n="analyticsKpiSlowRateTitle">Tỷ lệ mã tồn lâu:</span> <strong id="analytics-kpi-slow-rate">—</strong>
+          <span id="analytics-kpi-slow-note"></span>
         </div>
 
         <section class="analytics-tables" data-i18n-aria="warehouseTables">
-          <div class="insight-box dashboard-chart dashboard-top-card">
+          <div id="analytics-report-value" data-warehouse-report="value" class="insight-box dashboard-chart dashboard-top-card">
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashTopValue">Phân tích ABC &amp; Vật tư có giá trị tồn cao nhất</h3>
               <div class="dashboard-chart-filters">
@@ -3230,18 +3193,17 @@
                     <option value="5000" data-i18n="searchAll">Tất cả</option>
                   </select>
                 </label>
-                <button type="button" class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('value')">↓ Excel</button>
               </div>
             </div>
             <p class="insight-note" data-i18n="dashValueNote">Phân loại Pareto ABC dựa trên giá trị tồn kho tích lũy (Nhóm A ≤ 80%, Nhóm B ≤ 95%, Nhóm C &gt; 95%).</p>
             <div id="insight-top" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashTopValue"></div>
           </div>
 
-          <div class="insight-box dashboard-chart dashboard-table-chart">
+          <div id="analytics-report-out" data-warehouse-report="out" class="insight-box dashboard-chart dashboard-table-chart" hidden>
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashboardTopOutTitle">Vật tư xuất nhiều nhất theo giá trị</h3>
               <div class="dashboard-chart-filters">
-                <label><span data-i18n="dashboardTimeMode">Kỳ</span>
+                <label hidden><span data-i18n="dashboardTimeMode">Kỳ</span>
                   <select id="dashboard-out-period" onchange="doiLocTopXuatKho()">
                     <option value="selected" data-i18n="dashboardTimeSelected" selected>Theo khoảng đã chọn</option>
                     <option value="week" data-i18n="dashWeek">Hằng tuần</option>
@@ -3249,16 +3211,16 @@
                     <option value="year" data-i18n="dashYear">Hằng năm</option>
                   </select>
                 </label>
-                <button type="button" class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('out')">↓ Excel</button>
               </div>
             </div>
             <p class="insight-note" data-i18n="dashboardTopOutNote">Nhấn đúp dòng vật tư để mở lịch sử nhập/xuất chi tiết.</p>
-            <div class="dashboard-out-range">
+            <details class="warehouse-more-filters"><summary data-i18n="warehouseMoreFilters">Lọc thêm</summary><div class="dashboard-out-range">
               <label for="dashboard-out-min" data-i18n="dashboardOutMinLabel">Giá trị xuất tối thiểu</label>
               <input id="dashboard-out-min" type="range" min="0" max="0" step="1" value="0"
                 oninput="doiNguongXuatKho()" data-i18n-aria="dashboardOutMinLabel" disabled>
               <output id="dashboard-out-min-value" for="dashboard-out-min">0 ₫</output>
             </div>
+            </details>
             <p id="dashboard-out-matches" class="dashboard-report-count" role="status" aria-live="polite" data-i18n="dashboardReportCountUnavailable">Số mã phù hợp: —</p>
             <div id="dashboard-top-out" class="dashboard-chart-body" tabindex="0" role="region" data-i18n-aria="dashboardTopOutTitle"></div>
             <div id="dashboard-out-pager" class="dashboard-mini-pager">
@@ -3287,7 +3249,7 @@
             <p id="dashboard-top-out-note" class="insight-note" role="status"></p>
           </div>
 
-          <div class="insight-box dashboard-chart dashboard-table-chart">
+          <div id="analytics-report-dormant" data-warehouse-report="dormant" class="insight-box dashboard-chart dashboard-table-chart" hidden>
             <div class="dashboard-chart-heading">
               <h3 data-i18n="dashboardDormantTitle">Vật tư tồn lâu chưa xuất (Dead-Stock)</h3>
               <div class="dashboard-chart-filters">
@@ -3300,7 +3262,6 @@
                     <option value="1095" data-i18n="dashboardDormant1095">3 năm</option>
                   </select>
                 </label>
-                <button type="button" class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('dormant')">↓ Excel</button>
               </div>
             </div>
             <p class="insight-note" data-i18n="dashboardDormantNote">Chỉ Hall 1: vật tư còn tồn nhưng chưa phát sinh xuất trong khoảng chọn.</p>
@@ -3332,7 +3293,7 @@
             <p id="dashboard-dormant-note" class="insight-note" role="status"></p>
           </div>
 
-          <div id="analytics-consumption-card" class="insight-box dashboard-chart dashboard-table-chart">
+          <div id="analytics-consumption-card" data-warehouse-report="consumption" class="insight-box dashboard-chart dashboard-table-chart" hidden>
             <div class="dashboard-chart-heading">
               <h3 data-i18n="consCardTitle">Thống kê tiêu thụ (Consumption) 1–2–3 năm &amp; Số ngày Cover tồn kho</h3>
               <div class="dashboard-chart-filters">
@@ -3353,7 +3314,6 @@
                     <option value="idle" data-i18n="consStatusIdle">Không phát sinh xuất (∞)</option>
                   </select>
                 </label>
-                <button type="button" class="btn btn-soft card-export-btn" onclick="xuatExcelConsumption()">↓ Excel</button>
               </div>
             </div>
             <p class="insight-note" data-i18n="consCardNote">TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày Cover = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.</p>
@@ -3386,7 +3346,7 @@
           </div>
         </section>
 
-        <section class="analytics-export">
+        <details class="analytics-export warehouse-additional"><summary data-i18n="warehouseOtherExports">Các báo cáo xuất bổ sung</summary>
           <div class="insight-box">
             <h3 data-i18n="dashboardExportAction">Xuất báo cáo Excel tổng hợp</h3>
             <div class="advanced-controls dashboard-export-controls" style="padding-top:0">
@@ -3408,7 +3368,7 @@
               </div>
             </div>
           </div>
-        </section>
+        </details>
       </section>
 
 
@@ -4446,6 +4406,220 @@
     Object.assign(NGON_NGU.en,{batchSapSummary:"Present in source: {found}/{total} SAP codes · Missing: {missing}",
       batchSapNone:"none",catalogOpenStock:"Look up stock and images for {sap}"});
 
+    Object.assign(NGON_NGU.vi, {
+      analyticsKpiAbcTitle: "Nhóm A (80% giá trị tồn)",
+      analyticsKpiDormantTitle: "Vốn đọng tồn lâu (Dead-stock)",
+      analyticsKpiOutTitle: "Tổng giá trị xuất trong kỳ",
+      analyticsKpiSlowRateTitle: "Tỷ lệ mã chậm luân chuyển",
+      analyticsSearchPlaceholder: "Lọc nhanh mã SAP hoặc mô tả vật tư trong tất cả bảng...",
+      analyticsAbcFilter: "Phân loại ABC:",
+      dashAbcClass: "Nhóm ABC",
+      dashSharePercent: "Tỷ trọng",
+      dashCumPercent: "Tích lũy",
+      dashNetFlow: "Thuần (Nhập − Xuất)",
+      dashHoverHint: "Di chuột hoặc chọn cột/điểm để xem số liệu chi tiết",
+      consCardTitle: "Thống kê tiêu thụ (Consumption) 1–2–3 năm & Số ngày Cover tồn kho",
+      consHorizonLabel: "Mốc tính TB & Cover",
+      consHorizon1Y: "1 năm (12 tháng)",
+      consHorizon2Y: "2 năm (24 tháng)",
+      consHorizon3Y: "3 năm (36 tháng)",
+      consStatusLabel: "Mức Cover",
+      consStatusAll: "Tất cả mức",
+      consStatusCritical: "Nguy cấp (< 30 ngày)",
+      consStatusWarn: "Cảnh báo (30–90 ngày)",
+      consStatusSafe: "An toàn (> 90 ngày)",
+      consStatusZero: "Hết hàng (= 0 ngày)",
+      consStatusIdle: "Không phát sinh xuất (∞)",
+      consCardNote: "TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày Cover = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.",
+      consColStock: "Tồn hiện tại",
+      consCol1Y: "Tiêu thụ 1 năm",
+      consCol2Y: "Tiêu thụ 2 năm",
+      consCol3Y: "Tiêu thụ 3 năm",
+      consColAvgMonth: "TB / tháng",
+      consColCoverDays: "Cover (ngày)",
+      consDaysUnit: "{days} ngày",
+      consNoUsage: "∞ (Không xuất)",
+      consUnitMismatch: "Sai lệch ĐVT",
+      consEmpty: "Không có vật tư nào phù hợp với bộ lọc tiêu thụ hiện tại.",
+      consSummaryTotal: "Phù hợp: <b>{count}</b> mã SAP",
+      consSummaryCritical: "Nguy cấp (<30 ngày): <b>{count}</b> mã",
+      consSummaryWarn: "Cảnh báo (30–90 ngày): <b>{count}</b> mã",
+      consSummaryAvgCover: "Cover trung vị: <b>{days}</b> ngày"
+    });
+    Object.assign(NGON_NGU.en, {
+      analyticsKpiAbcTitle: "Class A (80% stock value)",
+      analyticsKpiDormantTitle: "Slow-moving capital",
+      analyticsKpiOutTitle: "Total outbound value",
+      analyticsKpiSlowRateTitle: "Slow-moving SKU ratio",
+      analyticsSearchPlaceholder: "Quick filter SAP code or description across all tables...",
+      analyticsAbcFilter: "ABC Class:",
+      dashAbcClass: "ABC",
+      dashSharePercent: "Share",
+      dashCumPercent: "Cum. %",
+      dashNetFlow: "Net (In − Out)",
+      dashHoverHint: "Hover or focus a point/bar to inspect exact figures",
+      consCardTitle: "1–2–3 Year Consumption & Stock Coverage (Days)",
+      consHorizonLabel: "Avg & Cover Basis",
+      consHorizon1Y: "1 Year (12 mos)",
+      consHorizon2Y: "2 Years (24 mos)",
+      consHorizon3Y: "3 Years (36 mos)",
+      consStatusLabel: "Coverage Tier",
+      consStatusAll: "All tiers",
+      consStatusCritical: "Critical (< 30 days)",
+      consStatusWarn: "Warning (30–90 days)",
+      consStatusSafe: "Healthy (> 90 days)",
+      consStatusZero: "Out of stock (0 days)",
+      consStatusIdle: "No outbound (∞)",
+      consCardNote: "Monthly Avg = Period Consumption ÷ Months (12/24/36). Coverage Days = (Current Stock ÷ Monthly Avg) × 30. Double-click a row for history.",
+      consColStock: "Current Stock",
+      consCol1Y: "1Y Consumption",
+      consCol2Y: "2Y Consumption",
+      consCol3Y: "3Y Consumption",
+      consColAvgMonth: "Avg / Month",
+      consColCoverDays: "Coverage (Days)",
+      consDaysUnit: "{days} days",
+      consNoUsage: "∞ (No usage)",
+      consUnitMismatch: "Unit mismatch",
+      consEmpty: "No materials match the current consumption filter.",
+      consSummaryTotal: "Matching: <b>{count}</b> SKUs",
+      consSummaryCritical: "Critical (<30d): <b>{count}</b> SKUs",
+      consSummaryWarn: "Warning (30–90d): <b>{count}</b> SKUs",
+      consSummaryAvgCover: "Median coverage: <b>{days}</b> days"
+    });
+    Object.assign(NGON_NGU.vi, {
+      "warehouseDashboardHeading": "Tổng quan kho",
+      "warehouseDashboardDesc": "Giá trị nhập, xuất và tồn ghi nhận trong khoảng thời gian đã chọn.",
+      "dashboardHeading": "Phân tích kho",
+      "warehouseAnalyticsDesc": "Chọn báo cáo để xem chi tiết vật tư, sắp xếp và xuất Excel.",
+      "tabDashboard": "Tổng quan",
+      "warehouseRefresh": "Làm mới dữ liệu",
+      "warehouseCharts": "Biểu đồ kho",
+      "warehouseGroupBy": "Nhóm theo",
+      "warehouseAdditionalInfo": "Thông tin bổ sung và tình trạng dữ liệu",
+      "warehouseReportLinks": "Mở báo cáo chi tiết",
+      "warehouseChooseReport": "Báo cáo",
+      "warehouseReportValue": "Giá trị tồn cao",
+      "warehouseReportOut": "Xuất nhiều",
+      "warehouseReportDormant": "Tồn lâu",
+      "warehouseReportConsumption": "Mức sử dụng",
+      "warehouseExportAll": "Xuất tất cả báo cáo",
+      "warehouseExportCurrent": "Xuất báo cáo đang xem",
+      "warehouseOtherExports": "Các báo cáo xuất bổ sung",
+      "warehouseHistoryAction": "Xem lịch sử",
+      "warehouseMoreFilters": "Lọc thêm",
+      "warehouseMatching": "Số mã hiển thị:",
+      "warehouseReportTotal": "Tổng giá trị:",
+      "warehouseMaterialCount": "{count} mã vật tư",
+      "warehouseDormantSummary": "{count} mã chưa xuất từ {days} ngày",
+      "warehouseSlowSummary": "{count} / {total} mã có tồn sau bộ lọc",
+      "warehouseMissingPrices": "{count} mã chưa đủ đơn giá hoặc số lượng",
+      "warehouseIncrease": "Tăng {percent}%",
+      "warehouseDecrease": "Giảm {percent}%",
+      "warehouseNet": "Chênh lệch nhập − xuất",
+      "warehouseCurrentScope": "Theo dữ liệu tồn kho hiện tại",
+      "warehouseScopeValue": "Tồn kho hiện tại · Giá trị = số lượng × đơn giá · Không thay đổi theo kỳ giao dịch.",
+      "warehouseScopeOut": "Giao dịch xuất từ {from} đến {to} · Theo khu vực kho đã chọn.",
+      "warehouseScopeDormant": "Chỉ Hall 1 · Số ngày không xuất tính đến {today} · Theo tồn hiện tại.",
+      "warehouseScopeConsumption": "Tồn hiện tại · Trung bình {months} tháng gần đây tính đến {today} · Là ước tính theo lịch sử xuất.",
+      "warehouseSourceChecked": "Kiểm tra gần nhất: {time}",
+      "warehouseSourceWaiting": "Đang kiểm tra dữ liệu",
+      "warehouseSourceIssue": "Một số nguồn chưa sẵn sàng hoặc đang dùng dữ liệu cũ",
+      "warehouseSourceDates": "Tồn: {stock} · Giao dịch: {history} · Định giá: {amount}",
+      "warehouseRankMax": "Tối đa 5.000 mã",
+      "warehouseFormula": "Cách tính",
+      "warehouseMonthUnit": "tháng",
+      "analyticsSearchPlaceholder": "Lọc mã SAP hoặc tên vật tư…",
+      "analyticsKpiDormantTitle": "Giá trị tồn lâu:",
+      "analyticsKpiOutTitle": "Giá trị xuất sau bộ lọc:",
+      "analyticsKpiSlowRateTitle": "Tỷ lệ mã tồn lâu:",
+      "dashTopValue": "Vật tư có giá trị tồn cao",
+      "dashValueNote": "Tổng hợp theo mã SAP từ tồn hiện tại. Đơn giá khác nhau được ghi rõ; chỉ cộng số lượng khi cùng đơn vị.",
+      "dashboardDormantTitle": "Vật tư tồn lâu chưa xuất",
+      "dashboardExportDormant": "Vật tư tồn lâu",
+      "dashboardExportTopValue": "Vật tư có giá trị tồn cao",
+      "dashUsageTitle": "Giá trị nhập và xuất",
+      "dashUsageNote": "Chọn cột để xem giao dịch đúng kỳ và khu vực kho.",
+      "dashValueTrendTitle": "Giá trị tồn ghi nhận theo thời gian",
+      "dashValueTrendNote": "Dữ liệu từ các lần ghi nhận định giá. Khoảng thiếu dữ liệu được để trống.",
+      "dashCoverageNote": "So sánh tồn kho với điểm đặt hàng lại.",
+      "dashHoverHint": "Chọn hoặc chạm điểm dữ liệu để xem giá trị chính xác.",
+      "consCardTitle": "Mức sử dụng và số ngày sử dụng ước tính",
+      "consHorizonLabel": "Mốc tính trung bình",
+      "consStatusLabel": "Số ngày sử dụng ước tính",
+      "consColCoverDays": "Số ngày ước tính",
+      "consCardNote": "Trung bình tháng = số lượng xuất trong mốc chọn ÷ 12, 24 hoặc 36. Số ngày ước tính = tồn hiện tại ÷ trung bình tháng × 30. Không phát sinh xuất hoặc thiếu đơn vị không có nghĩa là đủ hàng.",
+      "consSummaryAvgCover": "Trung vị thời gian sử dụng: <b>{days}</b> ngày",
+      "consNoUsage": "Chưa ước tính (không xuất)",
+      "consColAvgMonth": "Trung bình/tháng",
+      "inventoryHistory": "Lịch sử giá trị tồn ghi nhận",
+      "warehouseCurrentStock": "Tồn kho hiện tại — khác với giá trị ghi nhận trong kỳ",
+      "rankTop10": "10 mã cao nhất",
+      "rankTop20": "20 mã cao nhất",
+      "rankTop50": "50 mã cao nhất"
+    });
+    Object.assign(NGON_NGU.en, {
+      "warehouseDashboardHeading": "Warehouse overview",
+      "warehouseDashboardDesc": "Inbound, outbound and recorded inventory values for the selected interval.",
+      "dashboardHeading": "Inventory analysis",
+      "warehouseAnalyticsDesc": "Choose a report to inspect materials, sort results and export Excel.",
+      "warehouseRefresh": "Refresh data",
+      "warehouseCharts": "Warehouse charts",
+      "warehouseGroupBy": "Group by",
+      "warehouseAdditionalInfo": "Additional information and data status",
+      "warehouseReportLinks": "Open detailed reports",
+      "warehouseChooseReport": "Report",
+      "warehouseReportValue": "Highest inventory value",
+      "warehouseReportOut": "Top outbound",
+      "warehouseReportDormant": "Slow moving",
+      "warehouseReportConsumption": "Usage",
+      "warehouseExportAll": "Export all reports",
+      "warehouseExportCurrent": "Export current report",
+      "warehouseOtherExports": "Additional report exports",
+      "warehouseHistoryAction": "View history",
+      "warehouseMoreFilters": "More filters",
+      "warehouseMatching": "Displayed materials:",
+      "warehouseReportTotal": "Total value:",
+      "warehouseMaterialCount": "{count} material codes",
+      "warehouseDormantSummary": "{count} materials without issues for at least {days} days",
+      "warehouseSlowSummary": "{count} / {total} stocked materials after filters",
+      "warehouseMissingPrices": "{count} materials with incomplete price or quantity",
+      "warehouseIncrease": "Increase {percent}%",
+      "warehouseDecrease": "Decrease {percent}%",
+      "warehouseNet": "Inbound − outbound value",
+      "warehouseCurrentScope": "Current inventory data",
+      "warehouseScopeValue": "Current stock · Value = quantity × unit price · Independent of the transaction interval.",
+      "warehouseScopeOut": "Outbound transactions from {from} to {to} · Selected warehouse area.",
+      "warehouseScopeDormant": "Hall 1 only · Inactivity measured through {today} · Current stock.",
+      "warehouseScopeConsumption": "Current stock · {months}-month average through {today} · Estimate based on issue history.",
+      "warehouseSourceChecked": "Last checked: {time}",
+      "warehouseSourceWaiting": "Checking data",
+      "warehouseSourceIssue": "Some sources are unavailable or showing earlier data",
+      "warehouseSourceDates": "Stock: {stock} · Transactions: {history} · Valuation: {amount}",
+      "warehouseRankMax": "Up to 5,000 materials",
+      "warehouseFormula": "Calculation",
+      "warehouseMonthUnit": "month",
+      "analyticsSearchPlaceholder": "Filter SAP code or material description…",
+      "analyticsKpiDormantTitle": "Slow-moving value:",
+      "analyticsKpiOutTitle": "Outbound value after filters:",
+      "analyticsKpiSlowRateTitle": "Slow-moving ratio:",
+      "dashTopValue": "Materials with the highest inventory value",
+      "dashValueNote": "Grouped by SAP from current stock. Different unit prices are identified; quantities are added only for matching units.",
+      "dashUsageTitle": "Inbound and outbound values",
+      "dashUsageNote": "Select a bar to view transactions within the selected interval and warehouse.",
+      "dashValueTrendTitle": "Recorded inventory value over time",
+      "dashValueTrendNote": "Recorded valuations only. Missing intervals remain gaps.",
+      "dashCoverageNote": "Compare current stock with its reorder point.",
+      "dashHoverHint": "Select or tap a data point to inspect its exact value.",
+      "consCardTitle": "Usage and estimated stock coverage",
+      "consHorizonLabel": "Average basis",
+      "consStatusLabel": "Estimated coverage",
+      "consColCoverDays": "Estimated days",
+      "consCardNote": "Monthly average = issued quantity ÷ 12, 24 or 36 months. Estimated days = current stock ÷ monthly average × 30. No issues or missing units do not establish sufficient stock.",
+      "consSummaryAvgCover": "Median estimated coverage: <b>{days}</b> days",
+      "consNoUsage": "Not estimated (no issues)",
+      "warehouseCurrentStock": "Current stock — separate from valuations recorded in the interval"
+    });
+
     function tuDien(key, values = {}) {
       const text = NGON_NGU[ngonNguHienTai][key] ?? NGON_NGU.vi[key] ?? key;
       return String(text).replace(/\{([a-zA-Z]+)\}/g, (_, variable) =>
@@ -4553,7 +4727,99 @@
 
     // Tabs switch views without reloading or losing stock search/gallery state.
     let tabHienTai="stock";
+    let warehouseReportKind="value";
+    let analyticsSearchQuery="";
     const CAC_TAB=["stock","analytics","dashboard","catalog","search-history","requests"];
+    function chonBaoCaoKho(kind) {
+      if (!["value", "out", "dormant", "consumption"].includes(kind)) return;
+      warehouseReportKind = kind;
+      ghiTuyChon("checking-warehouse-report", kind);
+      capNhatKhongGianBaoCaoKho();
+    }
+    function capNhatKhongGianBaoCaoKho() {
+      const select = document.getElementById("analytics-report-kind");
+      if (select) select.value = warehouseReportKind;
+      document.querySelectorAll("[data-warehouse-report]").forEach(panel => {
+        panel.hidden = panel.dataset.warehouseReport !== warehouseReportKind;
+      });
+      document.querySelectorAll("[data-summary-for]").forEach(panel => {
+        panel.hidden = panel.dataset.summaryFor !== warehouseReportKind;
+      });
+      const bar = document.getElementById("warehouse-filters");
+      if (bar) { bar.dataset.view = tabHienTai; bar.dataset.report = warehouseReportKind; }
+      const keys = {value:"warehouseScopeValue",out:"warehouseScopeOut",
+        dormant:"warehouseScopeDormant",consumption:"warehouseScopeConsumption"};
+      const scope = document.getElementById("analytics-report-scope");
+      const range = layKyPhanTichKho();
+      const from = range ? dinhDangNgayXuat(range.from) : "—";
+      const to = range ? dinhDangNgayXuat(range.to) : "—";
+      if (scope) scope.textContent = tuDien(keys[warehouseReportKind], {
+        from, to, today:dinhDangNgayXuat(ngayDiaPhuongISO()),
+        months:document.getElementById("analytics-cons-horizon").value
+      });
+      const summary = document.getElementById("dashboard-range-summary");
+      if (summary) summary.textContent = tabHienTai === "analytics" && warehouseReportKind !== "out" ?
+        tuDien("warehouseCurrentScope") : range ?
+        tuDien("dashboardTimeCurrent", {from:range.from,to:range.to}) : tuDien("dashboardTimeInvalid");
+    }
+    function doiNhomKyKho(mode) {
+      if (!["day","week","month","year"].includes(mode)) return;
+      document.getElementById("warehouse-group-period").value = mode;
+      document.getElementById("dashboard-value-period").value = mode;
+      document.getElementById("dashboard-usage-period").value = mode;
+      veBieuDoGiaTriKho();
+      veBieuDoSuDungKho();
+    }
+    function moBaoCaoKho(kind) {
+      chonBaoCaoKho(kind);
+      chuyenTab("analytics");
+      document.getElementById("analytics-report-kind").focus();
+    }
+    function xuatBaoCaoDangXem() {
+      xuatNhanhBaoCaoKho(warehouseReportKind);
+    }
+    function locVatTuBaoCaoKho(rows) {
+      return rows.filter(rec => !analyticsSearchQuery ||
+        chuanHoaTimKiem((rec.sap || rec.name || "") + " " +
+          (rec.description || "")).includes(analyticsSearchQuery));
+    }
+    function xoaChiSoBaoCaoKho(kind) {
+      const groups = {
+        value:["analytics-value-count","analytics-value-total"],
+        out:["analytics-kpi-out-value"],
+        dormant:["analytics-kpi-dormant-value","analytics-kpi-slow-rate"]
+      };
+      for (const id of groups[kind] || []) {
+        const node = document.getElementById(id);
+        if (node) { node.textContent = "—"; node.title = ""; }
+      }
+      for (const suffix of kind === "out" ? ["analytics-kpi-out-note"] :
+        kind === "dormant" ? ["analytics-kpi-dormant-note","analytics-kpi-slow-note"] : []) {
+        const node = document.getElementById(suffix);
+        if (node) node.textContent = "";
+      }
+    }
+    function nutLichSuBaoCaoKho(sap) {
+      return '<button type="button" class="btn btn-secondary warehouse-history-button" data-history-sap="' +
+        thoatHTML(sap) + '">' + thoatHTML(tuDien("warehouseHistoryAction")) + '</button>';
+    }
+    function moLichSuTuBaoCaoKho(sap, kind) {
+      moLichSuDashboardTheoSap(sap, kind === "dormant" ? "hall1" : hallDangLoc(), kind === "dormant");
+      if (kind === "out") {
+        const range = phamViTopXuatKho();
+        if (range) {
+          document.getElementById("material-history-from").value = range.from;
+          document.getElementById("material-history-to").value = range.to;
+          document.getElementById("material-history-kind").value = "out";
+          locLichSuVatTu();
+        }
+      }
+    }
+    function loaiBangBaoCaoKho(id) {
+      return id === "dashboard-dormant" ? "dormant" : id === "dashboard-top-out" ? "out" :
+        id === "analytics-cons-body" ? "consumption" : "value";
+    }
+
     function chuyenTab(tab, opts={}) {
       if(!CAC_TAB.includes(tab))return;
       tabHienTai=tab;
@@ -4579,6 +4845,7 @@
       if(tab==="search-history")veLichSuTimKiem();
       if(tab==="requests")veYeuCauVatTu();
       if(tab==="dashboard"||tab==="analytics"){
+        capNhatKhongGianBaoCaoKho();
         // One filter bar keeps Hall/date scope identical in both workspaces.
         document.querySelector("#view-"+tab+" .pane-heading").after(
           document.getElementById("warehouse-filters"));
@@ -4600,30 +4867,42 @@
       document.getElementById("tab-"+CAC_TAB[next]).focus();
     }
 
-    function vePhanBoTrangThai(rows=duLieuTimKiem) {
-      const target=document.getElementById("insight-stock-distribution");
-      if(!analyticsReady){target.textContent=tuDien("noAnalytics");return}
-      const count={healthy:0,at:0,below:0,zero:0,unknown:0};
-      for(const record of rows)count[record.trangThaiTon]=(count[record.trangThaiTon]||0)+1;
-      const total=rows.length;
-      if(!total){target.textContent=tuDien("noAnalytics");return}
-      const shades={healthy:"#16a34a",at:"#facc15",below:"#fb923c",zero:"#e11d48",unknown:"#94a3b8"};
-      const names={healthy:"stockAbove",at:"stockEqual",below:"stockBelow",zero:"stockZero",unknown:"stockUnknown"};
-      let offset=0;
-      const sectors=[];
-      for(const key of ["healthy","at","below","zero","unknown"]){
-        const proportion=100*count[key]/total;
-        sectors.push(shades[key]+" "+offset.toFixed(4)+"% "+(offset+proportion).toFixed(4)+"%");
-        offset+=proportion;
+    function vePhanBoTrangThai(rows = duLieuTimKiem) {
+      const target = document.getElementById("insight-stock-distribution");
+      if (!analyticsReady || !rows.length) { target.textContent = tuDien("noAnalytics"); return; }
+      const count = { healthy: 0, at: 0, below: 0, zero: 0, unknown: 0 };
+      for (const r of rows) count[r.trangThaiTon] = (count[r.trangThaiTon] || 0) + 1;
+      const total = rows.length;
+      const shades = { healthy: "#16a34a", at: "#f59e0b", below: "#f97316", zero: "#e11d48", unknown: "#94a3b8" };
+      const names = { healthy: "stockAbove", at: "stockEqual", below: "stockBelow", zero: "stockZero", unknown: "stockUnknown" };
+
+      const rateEl = document.getElementById("metric-instock-rate");
+      if (rateEl) {
+        const ready = rows.filter(row => Number.isFinite(row.soLuong) && row.soLuong > 0).length;
+        rateEl.textContent = `${tuDien("stockNote")} (${((ready / total) * 100).toFixed(1)}%)`;
       }
-      const legend=Object.keys(names).map(key=>
-        '<div class="dist-row"><span class="dist-swatch" style="background:'+shades[key]+'"></span>'+
-        '<span>'+thoatHTML(tuDien(names[key]))+'</span><b>'+dinhDangSoLuong.format(count[key])+'</b></div>').join("");
-      target.innerHTML='<div class="stock-donut" role="img" aria-label="'+
-        thoatHTML(tuDien("stockDistribution"))+'" style="background:conic-gradient('+sectors.join(",")+')">'+
-        '<div class="stock-donut-inner"><strong>'+dinhDangSoLuong.format(total)+'</strong><span>'+
-        thoatHTML(tuDien("stockDistributionTotal"))+'</span></div></div>'+
-        '<div class="stock-distribution-list">'+legend+'</div>';
+
+      const r = 46, cx = 62, cy = 62, circumference = 2 * Math.PI * r;
+      let offset = 0;
+      const circles = ["healthy", "at", "below", "zero", "unknown"].map(key => {
+        const len = (count[key] / total) * circumference;
+        const dash = `${len.toFixed(2)} ${(circumference - len).toFixed(2)}`;
+        const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${shades[key]}" stroke-width="16" stroke-dasharray="${dash}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"><title>${thoatHTML(tuDien(names[key]))}: ${count[key]} (${((count[key] / total) * 100).toFixed(1)}%)</title></circle>`;
+        offset += len;
+        return seg;
+      }).join("");
+
+      const legend = Object.keys(names).map(key => {
+        const pct = ((count[key] / total) * 100).toFixed(1);
+        return `<div class="dist-row"><span class="dist-swatch" style="background:${shades[key]}"></span>
+          <span>${thoatHTML(tuDien(names[key]))}</span>
+          <b>${dinhDangSoLuong.format(count[key])} <small style="color:var(--muted);font-weight:500">(${pct}%)</small></b></div>`;
+      }).join("");
+
+      target.innerHTML = `<div style="position:relative;width:124px;height:124px;flex:0 0 124px">
+        <svg viewBox="0 0 124 124" width="124" height="124" role="img" aria-label="${thoatHTML(tuDien("stockDistribution"))}">${circles}</svg>
+        <div class="stock-donut-inner" style="position:absolute;inset:20px"><strong>${dinhDangSoLuong.format(total)}</strong><span>${thoatHTML(tuDien("stockDistributionTotal"))}</span></div>
+      </div><div class="stock-distribution-list">${legend}</div>`;
     }
 
     function doiNgonNgu(ngonNgu) {
@@ -5587,11 +5866,25 @@
         node.replaceChildren(title,desc);
       }
     }
+    function capNhatThongTinDuLieuKho() {
+      const node=document.getElementById("warehouse-data-status");
+      if(!node)return;
+      const entries=["stock","history","amount"].map(key=>trangThaiNguon[key]);
+      const issue=entries.some(entry=>["error","stale"].includes(entry.status));
+      const checked=entries.map(entry=>entry.at).filter(Boolean).slice(-1)[0];
+      node.dataset.issue=String(issue);
+      node.textContent=(checked?tuDien("warehouseSourceChecked",{time:checked}):tuDien("warehouseSourceWaiting"))+
+        (issue?" · "+tuDien("warehouseSourceIssue"):"");
+      node.title=tuDien("warehouseSourceDates",{
+        stock:trangThaiNguon.stock.updated||"—",history:trangThaiNguon.history.updated||"—",
+        amount:trangThaiNguon.amount.updated||"—"});
+    }
     function ghiNhanNguon(id,status,details={}){
       const entry=trangThaiNguon[id];if(!entry)return;
       Object.assign(entry,details,{status,at:new Date().toLocaleTimeString(
         ngonNguHienTai==="en"?"en-US":"vi-VN")});
       veTrangThaiNguon();
+      capNhatThongTinDuLieuKho();
     }
     function phanTramBienDongKho(current,previous){
       if(!Number.isFinite(current)||!Number.isFinite(previous)||previous===0)return null;
@@ -5891,8 +6184,12 @@
           const unit=unitCol>=0?String(rec.dong[unitCol]??"").trim().toUpperCase():"";
           let d=detailsBySap.get(sap);
           if(!d) {
-            d={description,quantity:0,unit:unit||"",inconsistent:false,mixed:false,missing:false};
+            d={description,quantity:0,unit:unit||"",inconsistent:false,mixed:false,missing:false,price:null,priceValid:false,priceMixed:false};
             detailsBySap.set(sap,d);
+          }
+          if(validPrice){
+            if(d.priceValid&&d.price!==price)d.priceMixed=true;
+            else if(!d.priceValid){d.price=price;d.priceValid=true;}
           }
           if(!d.description&&description)d.description=description;
           if(!unit)d.missing=true;
@@ -5982,27 +6279,37 @@
       }
     }
 
-    function veBangTopGiaTriVatTu(values,limit) {
-      const root=document.getElementById("insight-top");
-      if(!values.length) {root.textContent=tuDien("dashNoValue");return;}
-      const header='<thead><tr>'+
-        tieuDeSapXepPhanTich("value","material","dashTopMaterial")+
-        tieuDeSapXepPhanTich("value","quantity","dashTopQuantity")+
-        tieuDeSapXepPhanTich("value","unit","dashTopUnit")+
-        tieuDeSapXepPhanTich("value","value","dashTopValueColumn")+
-        '</tr></thead>';
-      // Top N means the N highest-value SAPs. Sort only within that shortlist.
-      const body=sapXepBangPhanTich(values.slice(0,limit),"value").map(rec=>{
-        const valid=rec.unit&&!rec.inconsistent&&Number.isFinite(rec.quantity);
-        const quantity=valid?dinhDangSoLuong.format(rec.quantity):"—";
-        const unit=rec.mixed?tuDien("dashTopMixedUnits"):
-          rec.missing||!rec.unit?"—":rec.unit;
-        return '<tr><td><span class="top-sap">'+thoatHTML(rec.name)+
-          '</span><span class="top-name">'+thoatHTML(rec.description||"—")+
-          '</span></td><td>'+thoatHTML(quantity)+'</td><td>'+thoatHTML(unit)+
-          '</td><td><strong>'+thoatHTML(dinhDangGiaTriKho(rec.value))+'</strong></td></tr>';
+    function veBangTopGiaTriVatTu(values, limit) {
+      const root = document.getElementById("insight-top");
+      const count = document.getElementById("analytics-value-count");
+      const total = document.getElementById("analytics-value-total");
+      const filtered = values.filter(rec => !analyticsSearchQuery ||
+        chuanHoaTimKiem(rec.name + " " + (rec.description || "")).includes(analyticsSearchQuery));
+      const shortlist = filtered.slice(0, limit);
+      if (count) count.textContent = dinhDangSoLuong.format(shortlist.length);
+      if (total) total.textContent = dinhDangGiaTriKho(shortlist.reduce((sum, rec) => sum + rec.value, 0));
+      if (!shortlist.length) { root.textContent = tuDien(values.length ? "noResults" : "dashNoValue"); return; }
+      const header = "<thead><tr>" +
+        tieuDeSapXepPhanTich("value", "material", "dashTopMaterial") +
+        tieuDeSapXepPhanTich("value", "quantity", "dashTopQuantity") +
+        tieuDeSapXepPhanTich("value", "unit", "dashTopUnit") +
+        tieuDeSapXepPhanTich("value", "price", "dashboardDormantUnitPrice") +
+        tieuDeSapXepPhanTich("value", "value", "dashTopValueColumn") +
+        "<th>" + thoatHTML(tuDien("warehouseHistoryAction")) + "</th></tr></thead>";
+      const body = sapXepBangPhanTich(shortlist, "value").map(rec => {
+        const valid = rec.unit && !rec.inconsistent && Number.isFinite(rec.quantity);
+        const unit = rec.mixed ? tuDien("dashTopMixedUnits") : rec.missing || !rec.unit ? "—" : rec.unit;
+        const price = rec.priceMixed ? tuDien("dashboardDormantMultiplePrices") :
+          rec.priceValid ? dinhDangGiaTriKho(rec.price) : "—";
+        return '<tr data-sap="' + thoatHTML(rec.name) + '" tabindex="0">' +
+          '<td><span class="material-sap">' + thoatHTML(rec.name) +
+          '</span><span class="material-name">' + thoatHTML(rec.description || "—") + '</span></td>' +
+          '<td>' + thoatHTML(valid ? dinhDangSoLuong.format(rec.quantity) : "—") + '</td>' +
+          '<td>' + thoatHTML(unit) + '</td><td>' + thoatHTML(price) + '</td>' +
+          '<td><strong>' + thoatHTML(dinhDangGiaTriKho(rec.value)) + '</strong></td>' +
+          '<td>' + nutLichSuBaoCaoKho(rec.name) + '</td></tr>';
       }).join("");
-      root.innerHTML='<table class="dashboard-top-table">'+header+'<tbody>'+body+'</tbody></table>';
+      root.innerHTML = '<table class="dashboard-detail-table">' + header + "<tbody>" + body + "</tbody></table>";
     }
 
     function capNhatThongKeNangCao() {
@@ -6022,6 +6329,7 @@
         document.getElementById("insight-stock-distribution").textContent=tuDien("dashboardHall2NoStockReport");
         dashboardTopValueCache=[];
         document.getElementById("insight-top").textContent=tuDien("dashboardHall2NoStockReport");
+        xoaChiSoBaoCaoKho("value");
       }else{
         const stockStats=filteredStock===duLieuTimKiem?stats:
           tinhPhanTichDashboard(duLieuTimKiem,tieuDeCot);
@@ -6038,6 +6346,8 @@
       veLichSuKho();
       capNhatCanhBaoKho();
       kiemTraNhacBaoCao();
+      if(typeof veBangConsumption123==="function")veBangConsumption123();
+      capNhatKhongGianBaoCaoKho();
     }
 
     function veLichSuKho() {
@@ -6107,7 +6417,7 @@
       const a=Math.abs(n);
       if(a>=1e9)return number.format(n/1e9)+(ngonNguHienTai==="en"?"B":" tỷ");
       if(a>=1e6)return number.format(n/1e6)+(ngonNguHienTai==="en"?"M":" tr");
-      if(a>=1e3)return number.format(n/1e3)+"k";
+      if(a>=1e3)return number.format(n/1e3)+(ngonNguHienTai==="en"?"k":" nghìn");
       return number.format(n);
     }
 
@@ -6165,7 +6475,7 @@
     }
 
     function veDuongGiaTriKho(id,periods,values){
-      const width=Math.max(620,periods.length*14),height=225;
+      const width=Math.max(620,periods.length*32),height=225;
       const left=65,right=22,top=20,bottom=42;
       const plotWidth=width-left-right,plotHeight=height-top-bottom;
       const maximum=Math.max(1,...values.values())*1.12;
@@ -6202,10 +6512,12 @@
       }
       const node=document.getElementById(id);
       node.innerHTML=svg+'</svg>';
+      node.classList.toggle("warehouse-chart-dense",periods.length>18);
+      node.style.setProperty("--warehouse-chart-width",width+"px");
       node.scrollLeft=0;
     }
 
-    function tinhGiaTriNhapXuat(rows,headers,mode,buckets) {
+    function tinhGiaTriNhapXuat(rows,headers,mode,buckets,range=null) {
       const amountCol=cotHistoryTheoTen(headers,["Amt.In","Amt.in loc.cur.",
         "Amt in local currency","Amount in local currency","Amount LC","Amount"]);
       const values=new Map(buckets.map(p=>[p.key,{in:0,out:0}]));
@@ -6214,6 +6526,7 @@
       for(const row of rows){
         if(row.type!=="in"&&row.type!=="out")continue;
         if(!ngayHistoryHopLe(row.date)){invalid++;continue;}
+        if(range&&(row.date<range.from||row.date>range.to))continue;
         const key=khoaNhomKho(row.date,mode);
         if(!values.has(key))continue;
         const amount=chuyenThanhSo(row.cells[amountCol]);
@@ -6309,6 +6622,7 @@
       veTopVatTuXuatKho();
       veBieuDoSuDungKho();
       veBieuDoGiaTriKho();
+      capNhatKhongGianBaoCaoKho();
     }
 
     // Storage Location is resolved by header, never by position: History.js may
@@ -6499,8 +6813,10 @@
       const amount=document.getElementById("dashboard-compare-"+type+"-current");
       const change=document.getElementById("dashboard-compare-"+type+"-change");
       const prior=document.getElementById("dashboard-compare-"+type+"-prior");
-      amount.textContent=dinhDangGiaTriKho(current);
-      prior.textContent=tuDien("dashboardComparePrevious")+": "+dinhDangGiaTriKho(previous);
+      amount.textContent=dinhDangRutGonKho(current)+" ₫";
+      amount.title=dinhDangGiaTriKho(current);
+      prior.textContent=tuDien("dashboardComparePrevious")+": "+dinhDangRutGonKho(previous)+" ₫";
+      prior.title=dinhDangGiaTriKho(previous);
       change.dataset.change="none";
       if(previous===0){
         change.textContent=current>0?tuDien("dashboardCompareNew"):"—";
@@ -6511,6 +6827,7 @@
           new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",
             {maximumFractionDigits:1}).format(percent)+"%";
         change.dataset.change=percent>0?"up":percent<0?"down":"none";
+        change.setAttribute("aria-label",tuDien(percent>0?"warehouseIncrease":"warehouseDecrease",{percent:Math.abs(percent).toFixed(1)}));
         change.title=change.textContent;
       }
     }
@@ -6590,33 +6907,22 @@
       if(!dialog.open)dialog.showModal();
       locLichSuVatTu();
     }
-    function moLichSuBangDashboard(event){
-      const tr=event.target.closest("tr[data-sap]");
-      if(tr&&event.currentTarget.contains(tr))moLichSuDashboardTheoSap(tr.dataset.sap,
-        event.currentTarget.id==="dashboard-dormant"?"hall1":hallDangLoc(),
-        event.currentTarget.id==="dashboard-dormant");
+    function moLichSuBangDashboard(event) {
+      if (event.target.closest("button")) return;
+      const row = event.target.closest("tr[data-sap]");
+      if (row && event.currentTarget.contains(row))
+        moLichSuTuBaoCaoKho(row.dataset.sap, loaiBangBaoCaoKho(event.currentTarget.id));
     }
-    function bamPhimLichSuBangDashboard(event){
-      if(event.key!=="Enter")return;
-      const row=event.target.closest("tr[data-sap]");
-      if(!row)return;
-      event.preventDefault();moLichSuDashboardTheoSap(row.dataset.sap,
-        event.currentTarget.id==="dashboard-dormant"?"hall1":hallDangLoc(),
-        event.currentTarget.id==="dashboard-dormant");
+    function bamPhimLichSuBangDashboard(event) {
+      if (event.key !== "Enter" || event.target.closest("button")) return;
+      const row = event.target.closest("tr[data-sap]");
+      if (!row) return;
+      event.preventDefault();
+      moLichSuTuBaoCaoKho(row.dataset.sap, loaiBangBaoCaoKho(event.currentTarget.id));
     }
 
-    function phamViTopXuatKho(){
-      const mode=document.getElementById("dashboard-out-period").value;
-      const global=layKyPhanTichKho();
-      if(mode==="selected")return global;
-      const now=new Date(),today=ngayDiaPhuongISO(now);
-      if(mode==="week")return {from:congNgayKho(today,-6),to:today};
-      if(mode==="month")return {from:today.slice(0,7)+"-01",to:today};
-      if(mode==="year"){
-        if(global?.mode==="year")return global;
-        return {from:now.getFullYear()+"-01-01",to:today};
-      }
-      return global;
+    function phamViTopXuatKho() {
+      return layKyPhanTichKho();
     }
 
     // Separate paging from the Stock lookup; both analytics tables remember
@@ -6645,6 +6951,7 @@
       document.getElementById(prefix+"-size").value=
         presets.includes(String(state.size))?String(state.size):"custom";
       document.getElementById(prefix+"-custom").value=String(state.size);
+      document.getElementById(prefix+"-custom").hidden=presets.includes(String(state.size));
       const pageInput=document.getElementById(prefix+"-page");
       pageInput.value=String(state.page);pageInput.max=String(maxPage);
       document.getElementById(prefix+"-pages").textContent="/ "+dinhDangSoLuong.format(maxPage);
@@ -6673,7 +6980,7 @@
       if(!dashboardTableState[kind])return;
       if(value==="custom"){
         const input=document.getElementById(bangKhoPrefix(kind)+"-custom");
-        input.focus();input.select();return;
+        input.hidden=false;input.focus();input.select();return;
       }
       datSoDongBangKho(kind,value);
     }
@@ -6744,82 +7051,120 @@
         .sort((a,b)=>b.value-a.value||a.sap.localeCompare(b.sap));
     }
 
-    function veTopVatTuXuatKho(){
-      const root=document.getElementById("dashboard-top-out");
-      capNhatSoMaBaoCaoKho("out");
-      const note=document.getElementById("dashboard-top-out-note");
-      const slider=document.getElementById("dashboard-out-min");
-      const amountText=document.getElementById("dashboard-out-min-value");
-      if(!historyLoaded){
-        root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardTopOutEmpty");
-        note.textContent="";slider.disabled=true;amountText.textContent="—";
-        capNhatPhanTrangBangKho("out",0);return;
+    function veTopVatTuXuatKho() {
+      const root = document.getElementById("dashboard-top-out");
+      const note = document.getElementById("dashboard-top-out-note");
+      const slider = document.getElementById("dashboard-out-min");
+      const sliderOut = document.getElementById("dashboard-out-min-value");
+      if (!root) return;
+      xoaChiSoBaoCaoKho("out");
+      capNhatSoMaBaoCaoKho("out", null);
+      capNhatPhanTrangBangKho("out", 0);
+      if (note) note.textContent = "";
+
+      if (!historyLoaded) {
+        root.textContent = tuDien(historyLoading ? "dashboardHistoryLoading" : "dashboardCompareNoHistory");
+        capNhatSoMaBaoCaoKho("out", null);
+        slider.disabled = true;
+        return;
       }
-      const range=phamViTopXuatKho();
-      if(hallDangLoc()!=="all"&&lichSuTheoHall()===null){
-        root.textContent=tuDien(loiCotHall("history"));
-        note.textContent="";slider.disabled=true;amountText.textContent="—";
-        capNhatPhanTrangBangKho("out",0);return;
+      if (!lichSuTheoHall()) {
+        root.textContent = tuDien(loiCotHall("history"));
+        capNhatSoMaBaoCaoKho("out", null);
+        slider.disabled = true;
+        return;
       }
-      if(!range){
-        root.textContent=tuDien("dashboardTimeInvalid");note.textContent="";
-        slider.disabled=true;amountText.textContent="—";
-        capNhatPhanTrangBangKho("out",0);return;
-      }
-      const key=range.from+"|"+range.to+"|"+hallDangLoc();
-      if(!dashboardOutCache||dashboardOutCache.key!==key||
-        dashboardOutCache.history!==historyAll||
-        dashboardOutCache.stock!==duLieuTimKiem){
-        const rows=thongKeTopVatTuXuatKho(range);
-        dashboardOutCache={key,history:historyAll,stock:duLieuTimKiem,rows};
-        dashboardTableState.out.page=1;
-        slider.value="0";
-        if(rows&&rows.length){
-          const max=rows[0].value;
-          const step=Math.max(1,10**Math.max(0,Math.floor(Math.log10(Math.max(1,max/100)))));
-          slider.min="0";slider.max=String(Math.ceil(max/step)*step);
-          slider.step=String(step);slider.disabled=false;
-        }else{
-          slider.min="0";slider.max="0";slider.step="1";slider.disabled=true;
+
+      const range = phamViTopXuatKho();
+      if (!range) { root.textContent = tuDien("dashboardTimeInvalid"); slider.disabled = true; return; }
+
+      const key = range.from + "|" + range.to + "|" + hallDangLoc();
+      if (!dashboardOutCache || dashboardOutCache.key !== key ||
+        dashboardOutCache.history !== historyAll || dashboardOutCache.stock !== duLieuTimKiem) {
+        const rows = thongKeTopVatTuXuatKho(range);
+        dashboardOutCache = { key, history: historyAll, stock: duLieuTimKiem, rows };
+        dashboardTableState.out.page = 1;
+        slider.value = "0";
+        if (rows && rows.length) {
+          const max = rows[0].value;
+          const step = Math.max(1, 10 ** Math.max(0, Math.floor(Math.log10(Math.max(1, max / 100)))));
+          slider.min = "0";
+          slider.max = String(Math.ceil(max / step) * step);
+          slider.step = String(step);
+          slider.disabled = false;
+        } else {
+          slider.min = "0"; slider.max = "0"; slider.step = "1"; slider.disabled = true;
         }
       }
-      const rows=dashboardOutCache.rows;
-      if(!rows){
-        root.textContent=tuDien("dashboardTopOutMissing");note.textContent="";
-        amountText.textContent="—";capNhatPhanTrangBangKho("out",0);return;
+
+      const allItems = dashboardOutCache.rows;
+      if (!allItems) {
+        root.textContent = tuDien("dashboardTopOutMissing");
+        capNhatSoMaBaoCaoKho("out", null);
+        return;
       }
-      const threshold=Math.max(0,Number(slider.value)||0);
-      amountText.textContent=dinhDangGiaTriKho(threshold);
-      amountText.title=tuDien("dashboardOutMinSummary",{amount:amountText.textContent});
-      const filtered=rows.filter(row=>row.value>=threshold);
-      capNhatSoMaBaoCaoKho("out",filtered.length);
-      const page=capNhatPhanTrangBangKho("out",filtered.length);
-      if(!filtered.length){
-        root.textContent=tuDien("dashboardTopOutEmpty");
-      }else{
-        const header='<thead><tr>'+
-          tieuDeSapXepPhanTich("out","material","dashTopMaterial")+
-          tieuDeSapXepPhanTich("out","quantity","dashboardTopOutCount")+
-          tieuDeSapXepPhanTich("out","unit","dashboardTopOutUnit")+
-          tieuDeSapXepPhanTich("out","value","dashboardTopOutValue")+'</tr></thead>';
-        root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-          sapXepBangPhanTich(filtered,"out").slice(page.start,page.end).map(rec=>{
-            const qty=rec.quantityValid&&!rec.mixed&&rec.unit?
-              dinhDangSoLuong.format(rec.quantity):"—";
-            const unit=rec.mixed?tuDien("dashboardOutMixedUnits"):(rec.unit||"—");
-            return '<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
-              thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
-              thoatHTML(rec.sap)+'</span><span class="material-name">'+
-              thoatHTML(rec.description||"—")+'</span></td><td>'+
-              thoatHTML(qty)+'</td><td>'+thoatHTML(unit)+'</td><td><strong>'+
-              thoatHTML(dinhDangGiaTriKho(rec.value))+'</strong></td></tr>';
-          }).join("")+'</tbody></table>';
+
+      const totalOutAll = allItems.reduce((s, r) => s + r.value, 0);
+      const kpiOutVal = document.getElementById("analytics-kpi-out-value");
+      const kpiOutNote = document.getElementById("analytics-kpi-out-note");
+
+      const minFilter = Math.max(0, Number(slider.value) || 0);
+      sliderOut.textContent = dinhDangGiaTriKho(minFilter);
+
+      const filtered = allItems.filter(r => {
+        if (r.value < minFilter) return false;
+        if (analyticsSearchQuery) {
+          const hay = chuanHoaTimKiem(r.sap + " " + (r.description || ""));
+          if (!hay.includes(analyticsSearchQuery)) return false;
+        }
+        return true;
+      });
+
+      if (kpiOutVal && kpiOutNote) {
+        const total = filtered.reduce((sum, item) => sum + item.value, 0);
+        kpiOutVal.textContent = dinhDangRutGonKho(total) + " ₫";
+        kpiOutVal.title = dinhDangGiaTriKho(total);
+        kpiOutNote.textContent = tuDien("warehouseMaterialCount", {count:dinhDangSoLuong.format(filtered.length)});
       }
-      note.textContent=tuDien("dashboardPagerSummary",{
-        from:filtered.length?dinhDangSoLuong.format(page.start+1):"0",
-        to:dinhDangSoLuong.format(page.end),
-        total:dinhDangSoLuong.format(page.total)
-      })+" · "+range.from+" – "+range.to;
+      capNhatSoMaBaoCaoKho("out", filtered.length);
+      if (!filtered.length) {
+        root.textContent = tuDien("dashboardTopOutEmpty");
+        capNhatPhanTrangBangKho("out", 0);
+        return;
+      }
+
+      const pageInfo = capNhatPhanTrangBangKho("out", filtered.length);
+      const slice = sapXepBangPhanTich(filtered, "out").slice(pageInfo.start, pageInfo.end);
+
+      const thead = `<thead><tr>
+        ${tieuDeSapXepPhanTich("out", "material", "dashTopMaterial")}
+        ${tieuDeSapXepPhanTich("out", "quantity", "dashboardTopOutCount")}
+        ${tieuDeSapXepPhanTich("out", "unit", "dashboardTopOutUnit")}
+        ${tieuDeSapXepPhanTich("out", "value", "dashboardTopOutValue")}
+        <th>${thoatHTML(tuDien("warehouseHistoryAction"))}</th>
+      </tr></thead>`;
+
+      const tbody = slice.map(r => {
+        const qtyText = r.quantityValid && !r.mixed && r.unit ? dinhDangSoLuong.format(r.quantity) : "—";
+        const unitText = r.mixed ? tuDien("dashboardOutMixedUnits") : (r.unit || "—");
+        const share = totalOutAll > 0 ? ((r.value / totalOutAll) * 100).toFixed(1) + "%" : "";
+        return `<tr data-sap="${thoatHTML(r.sap)}" tabindex="0" title="${thoatHTML(tuDien("dashboardTopDoubleClick"))}">
+          <td><span class="material-sap">${thoatHTML(r.sap)}</span><span class="material-name">${thoatHTML(r.description || "—")}</span></td>
+          <td>${thoatHTML(qtyText)}</td>
+          <td>${thoatHTML(unitText)}</td>
+          <td><strong>${thoatHTML(dinhDangGiaTriKho(r.value))}</strong> <small style="color:var(--muted)">(${share})</small></td>
+          <td>${nutLichSuBaoCaoKho(r.sap)}</td>
+        </tr>`;
+      }).join("");
+
+      root.innerHTML = `<table class="dashboard-detail-table">${thead}<tbody>${tbody}</tbody></table>`;
+      if (note) {
+        note.textContent = tuDien("dashboardPagerSummary", {
+          from: dinhDangSoLuong.format(pageInfo.start + 1),
+          to: dinhDangSoLuong.format(pageInfo.end),
+          total: dinhDangSoLuong.format(pageInfo.total)
+        }) + " · " + range.from + " – " + range.to;
+      }
     }
 
     function tonKhoHall1TonLau(){
@@ -6884,78 +7229,227 @@
         a.sap.localeCompare(b.sap));
     }
 
-    function veVatTuTonLau(){
-      const root=document.getElementById("dashboard-dormant");
-      capNhatSoMaBaoCaoKho("dormant");
-      const note=document.getElementById("dashboard-dormant-note");
-      const unavailable=hallDangLoc()==="hall2";
-      document.getElementById("dashboard-dormant-days").disabled=unavailable;
-      const pager=document.getElementById("dashboard-dormant-pager");
-      pager.hidden=true;
-      if(unavailable){
-        dashboardDormantCache=null;
-        root.textContent=tuDien("dashboardDormantHall2Unavailable");
-        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
+    function veVatTuTonLau() {
+      const root = document.getElementById("dashboard-dormant");
+      const note = document.getElementById("dashboard-dormant-note");
+      const unavailable = hallDangLoc() === "hall2";
+      document.getElementById("dashboard-dormant-days").disabled = unavailable;
+      const pager = document.getElementById("dashboard-dormant-pager");
+      if (!root) return;
+      xoaChiSoBaoCaoKho("dormant");
+      capNhatSoMaBaoCaoKho("dormant", null);
+      if (note) note.textContent = "";
+
+      if (unavailable) {
+        dashboardDormantCache = null;
+        root.textContent = tuDien("dashboardDormantHall2Unavailable");
+        capNhatSoMaBaoCaoKho("dormant", null);
+        pager.hidden = true;
+        return;
       }
-      if(!historyLoaded){
-        root.textContent=tuDien(historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory");
-        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
+      if (!historyLoaded) {
+        root.textContent = tuDien(historyLoading ? "dashboardHistoryLoading" : "dashboardDormantNoHistory");
+        pager.hidden = true;
+        return;
       }
-      const days=Number(document.getElementById("dashboard-dormant-days").value)||90;
-      const today=ngayDiaPhuongISO();
-      if(!dashboardDormantCache||dashboardDormantCache.days!==days||
-        dashboardDormantCache.today!==today||
-        dashboardDormantCache.hall!==hallDangLoc()||
-        dashboardDormantCache.history!==historyAll||
-        dashboardDormantCache.stock!==duLieuTimKiem){
-        const rows=thongKeVatTuTonLau(days);
-        dashboardDormantCache={days,today,hall:hallDangLoc(),history:historyAll,stock:duLieuTimKiem,rows};
-        dashboardTableState.dormant.page=1;
+
+      const days = Number(document.getElementById("dashboard-dormant-days").value) || 90;
+      const today = ngayDiaPhuongISO();
+      if (!dashboardDormantCache || dashboardDormantCache.days !== days ||
+        dashboardDormantCache.today !== today || dashboardDormantCache.hall !== hallDangLoc() ||
+        dashboardDormantCache.history !== historyAll || dashboardDormantCache.stock !== duLieuTimKiem) {
+        const rows = thongKeVatTuTonLau(days);
+        dashboardDormantCache = { days, today, hall: hallDangLoc(), history: historyAll, stock: duLieuTimKiem, rows };
+        dashboardTableState.dormant.page = 1;
       }
-      const rows=dashboardDormantCache.rows;
-      if(rows===null){
-        root.textContent=tuDien(tonKhoHall1TonLau()===null?
-          loiCotHall("stock"):lichSuTheoHall("hall1")===null?
-          loiCotHall("history"):"dashboardDormantMissing");
-        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
+
+      const dormantAll = dashboardDormantCache.rows;
+      if (dormantAll === null) {
+        root.textContent = tuDien(tonKhoHall1TonLau() === null ? loiCotHall("stock") : loiCotHall("history"));
+        pager.hidden = true;
+        return;
       }
-      capNhatSoMaBaoCaoKho("dormant",rows.length);
-      if(!rows.length){
-        root.textContent=tuDien("dashboardDormantEmpty");
-        note.textContent="";capNhatPhanTrangBangKho("dormant",0);return;
+
+      const filtered = locVatTuBaoCaoKho(dormantAll);
+      const dormantCapital = filtered.reduce((sum, r) =>
+        sum + (r.quantityValid && r.priceValid && !r.priceMixed ? r.quantity * r.price : 0), 0);
+      const positiveSkus = new Set(locVatTuBaoCaoKho((tonKhoHall1TonLau() || [])
+        .filter(x => Number.isFinite(x.soLuong) && x.soLuong > 0)
+        .map(x => ({sap:chuanHoaMaSap(x.dong[0]),description:String(x.dong[1] || "")})))
+        .map(x => x.sap.toLowerCase())).size;
+      const kpiDormVal = document.getElementById("analytics-kpi-dormant-value");
+      const kpiDormNote = document.getElementById("analytics-kpi-dormant-note");
+      const kpiSlowRate = document.getElementById("analytics-kpi-slow-rate");
+      const kpiSlowNote = document.getElementById("analytics-kpi-slow-note");
+      if (kpiDormVal && kpiDormNote) {
+        kpiDormVal.textContent = dinhDangRutGonKho(dormantCapital) + " ₫";
+        kpiDormVal.title = dinhDangGiaTriKho(dormantCapital);
+        const excluded = filtered.filter(r => !r.quantityValid || !r.priceValid || r.priceMixed).length;
+        kpiDormNote.textContent = tuDien("warehouseDormantSummary", {
+          count:dinhDangSoLuong.format(filtered.length), days}) +
+          (excluded ? " · " + tuDien("warehouseMissingPrices", {count:excluded}) : "");
       }
-      pager.hidden=false;
-      const page=capNhatPhanTrangBangKho("dormant",rows.length);
-      const header='<thead><tr>'+
-        tieuDeSapXepPhanTich("dormant","material","dashTopMaterial")+
-        tieuDeSapXepPhanTich("dormant","stock","dashboardDormantStock")+
-        tieuDeSapXepPhanTich("dormant","last","dashboardDormantLast")+
-        tieuDeSapXepPhanTich("dormant","price","dashboardDormantUnitPrice")+'</tr></thead>';
-      root.innerHTML='<table class="dashboard-detail-table">'+header+'<tbody>'+
-        sapXepBangPhanTich(rows,"dormant").slice(page.start,page.end).map(rec=>{
-          const quantity=rec.quantityValid?
-            dinhDangSoLuong.format(rec.quantity)+" "+rec.unit:"—";
-          const price=rec.priceMixed?tuDien("dashboardDormantMultiplePrices"):
-            rec.priceValid?dinhDangGiaTriKho(rec.price):"—";
-          return '<tr tabindex="0" data-sap="'+thoatHTML(rec.sap)+'" title="'+
-            thoatHTML(tuDien("dashboardTopDoubleClick"))+'"><td><span class="material-sap">'+
-            thoatHTML(rec.sap)+'</span><span class="material-name">'+
-            thoatHTML(rec.description||"—")+'</span></td><td>'+
-            thoatHTML(quantity)+'</td><td>'+thoatHTML(rec.last||tuDien("dashboardDormantNever"))+
-            '</td><td>'+thoatHTML(price)+'</td></tr>';
-        }).join("")+'</tbody></table>';
-      note.textContent=tuDien("dashboardPagerSummary",{
-        from:dinhDangSoLuong.format(page.start+1),
-        to:dinhDangSoLuong.format(page.end),
-        total:dinhDangSoLuong.format(page.total)
-      });
+      if (kpiSlowRate && kpiSlowNote) {
+        kpiSlowRate.textContent = positiveSkus > 0 ?
+          dinhDangSoLuong.format(Math.round(filtered.length / positiveSkus * 1000) / 10) + "%" : "—";
+        kpiSlowNote.textContent = tuDien("warehouseSlowSummary", {
+          count:dinhDangSoLuong.format(filtered.length),total:dinhDangSoLuong.format(positiveSkus)});
+      }
+
+      capNhatSoMaBaoCaoKho("dormant", filtered.length);
+      if (!filtered.length) {
+        root.textContent = tuDien("dashboardDormantEmpty");
+        pager.hidden = true;
+        capNhatPhanTrangBangKho("dormant", 0);
+        return;
+      }
+
+      pager.hidden = false;
+      const pageInfo = capNhatPhanTrangBangKho("dormant", filtered.length);
+      const slice = sapXepBangPhanTich(filtered, "dormant").slice(pageInfo.start, pageInfo.end);
+
+      const thead = `<thead><tr>
+        ${tieuDeSapXepPhanTich("dormant", "material", "dashTopMaterial")}
+        ${tieuDeSapXepPhanTich("dormant", "stock", "dashboardDormantStock")}
+        ${tieuDeSapXepPhanTich("dormant", "last", "dashboardDormantLast")}
+        ${tieuDeSapXepPhanTich("dormant", "price", "dashboardDormantUnitPrice")}
+        <th>${thoatHTML(tuDien("warehouseHistoryAction"))}</th>
+      </tr></thead>`;
+
+      const tbody = slice.map(r => {
+        const qtyText = r.quantityValid ? `${dinhDangSoLuong.format(r.quantity)} ${r.unit}` : "—";
+        const priceText = r.priceMixed ? tuDien("dashboardDormantMultiplePrices") : r.priceValid ? dinhDangGiaTriKho(r.price) : "—";
+        const dCount = r.days ?? 9999;
+        const badgeCls = dCount >= 365 ? "age-critical" : dCount >= 180 ? "age-warn" : "age-watch";
+        const lastLabel = r.last ? dinhDangNgayXuat(r.last) + " (" + tuDien("consDaysUnit", {days:r.days}) + ")" : tuDien("dashboardDormantNever");
+        return `<tr data-sap="${thoatHTML(r.sap)}" tabindex="0" title="${thoatHTML(tuDien("dashboardTopDoubleClick"))}">
+          <td><span class="material-sap">${thoatHTML(r.sap)}</span><span class="material-name">${thoatHTML(r.description || "—")}</span></td>
+          <td>${thoatHTML(qtyText)}</td>
+          <td><span class="age-badge ${badgeCls}">${thoatHTML(lastLabel)}</span></td>
+          <td><strong>${thoatHTML(priceText)}</strong></td>
+          <td>${nutLichSuBaoCaoKho(r.sap)}</td>
+        </tr>`;
+      }).join("");
+
+      root.innerHTML = `<table class="dashboard-detail-table">${thead}<tbody>${tbody}</tbody></table>`;
+      if (note) {
+        note.textContent = tuDien("dashboardPagerSummary", {
+          from: dinhDangSoLuong.format(pageInfo.start + 1),
+          to: dinhDangSoLuong.format(pageInfo.end),
+          total: dinhDangSoLuong.format(pageInfo.total)
+        });
+      }
     }
 
-    function veBieuDoSuDungKho(){
-      veNhapXuatTheoChuKy("insight-usage","dashboard-usage-summary",
-        document.getElementById("dashboard-usage-period").value);
-      veNhapXuatTheoChuKy("insight-usage-detail","dashboard-usage-detail-summary",
-        document.getElementById("dashboard-usage-detail-period").value);
+    function veBieuDoSuDungKho() {
+      veMotBieuDoNhapXuat("insight-usage", "dashboard-usage-period", "dashboard-usage-summary");
+    }
+
+    function hienSoLieuBieuDoKho(node) {
+      node.closest(".svg-chart-wrap").querySelector(".chart-hover-banner").textContent = node.dataset.chartInfo;
+    }
+    function veMotBieuDoNhapXuat(containerId, selectId, summaryId) {
+      const container = document.getElementById(containerId);
+      const summary = document.getElementById(summaryId);
+      if (!container) return;
+
+      if (!historyLoaded) {
+        container.textContent = tuDien(historyLoading ? "dashUsageLoading" : "dashUsageUnavailable");
+        if (summary) summary.textContent = "";
+        return;
+      }
+      const rows = lichSuTheoHall();
+      if (!rows) {
+        container.textContent = tuDien(loiCotHall("history"));
+        if (summary) summary.textContent = "";
+        return;
+      }
+
+      const mode = document.getElementById(selectId)?.value || "month";
+      const range = layKyPhanTichKho();
+      if (!range) {
+        container.textContent = tuDien("dashboardTimeInvalid");
+        if (summary) summary.textContent = "";
+        return;
+      }
+      const buckets = nhomKyTrongKhoangKho(mode, range);
+      if (!buckets.length) {
+        container.textContent = tuDien("dashUsageNoData");
+        if (summary) summary.textContent = "";
+        return;
+      }
+
+      const stats = tinhGiaTriNhapXuat(rows, historyColumns, mode, buckets, range);
+      if (stats.missing) {
+        container.textContent = tuDien("dashUsageNoQty");
+        if (summary) summary.textContent = "";
+        return;
+      }
+
+      const series = buckets.map(b => {
+        const v = stats.values.get(b.key) || { in: 0, out: 0 };
+        return { ...b, in: v.in, out: v.out, net: v.in - v.out };
+      });
+      const maxVal = Math.max(1, ...series.flatMap(s => [s.in, s.out]));
+
+      const colW = 46, W = Math.max(520, series.length * colW + 80), H = 200;
+      const padL = 58, padR = 16, padT = 16, padB = 34;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+      const getY = v => padT + plotH * (1 - v / maxVal);
+
+      let grid = "";
+      for (let i = 0; i <= 4; i++) {
+        const val = (maxVal * i) / 4;
+        const y = getY(val).toFixed(1);
+        grid += `<line class="svg-grid" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"/>
+          <text class="svg-axis" x="${padL - 7}" y="${Number(y) + 3}" text-anchor="end">${thoatHTML(dinhDangRutGonKho(val))}</text>`;
+      }
+
+      const slotW = plotW / series.length;
+      const barW = Math.min(14, Math.max(5, slotW * 0.34));
+      const labelStep = series.length > 18 ? Math.ceil(series.length / 12) : 1;
+      const bars = series.map((s, i) => {
+        const cx = padL + slotW * (i + 0.5);
+        const hIn = (s.in / maxVal) * plotH;
+        const hOut = (s.out / maxVal) * plotH;
+        const yIn = padT + plotH - hIn;
+        const yOut = padT + plotH - hOut;
+        const tip = s.title + " · " + tuDien("historyInShort") + ": " + dinhDangGiaTriKho(s.in) +
+          " · " + tuDien("historyOutShort") + ": " + dinhDangGiaTriKho(s.out) +
+          " · " + tuDien("dashNetFlow") + ": " + dinhDangGiaTriKho(s.net);
+        const showLbl = i === series.length - 1 || (i % labelStep === 0 && series.length - 1 - i >= labelStep);
+        return `<g class="trend-column" data-period-key="${thoatHTML(s.key)}" data-period-mode="${mode}" tabindex="0" role="button"
+            aria-label="${thoatHTML(tuDien("dashDrillHint", { period: s.title }))}"
+            data-chart-info="${thoatHTML(tip)}"
+            onmouseenter="hienSoLieuBieuDoKho(this)" onfocus="hienSoLieuBieuDoKho(this)">
+          <title>${thoatHTML(tip)}</title>
+          <rect class="svg-bar-in movement-in" x="${(cx - barW - 1).toFixed(1)}" y="${yIn.toFixed(1)}" width="${barW.toFixed(1)}" height="${hIn.toFixed(1)}"/>
+          <rect class="svg-bar-out movement-out" x="${(cx + 1).toFixed(1)}" y="${yOut.toFixed(1)}" width="${barW.toFixed(1)}" height="${hOut.toFixed(1)}"/>
+          ${showLbl ? `<text class="svg-axis" x="${cx.toFixed(1)}" y="${H - 10}" text-anchor="middle">${thoatHTML(s.label)}</text>` : ""}
+        </g>`;
+      }).join("");
+
+      container.innerHTML = `<div class="svg-chart-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <div class="movement-legend" style="margin:0">
+            <span class="movement-legend-in">${thoatHTML(tuDien("historyInShort"))}</span>
+            <span class="movement-legend-out">${thoatHTML(tuDien("historyOutShort"))}</span>
+          </div>
+          <div class="chart-hover-banner" style="margin:0;flex:1">${thoatHTML(tuDien("dashHoverHint"))}</div>
+        </div>
+        <div style="overflow-x:auto;flex:1">
+          <svg viewBox="0 0 ${W} ${H}" style="min-width:${W}px;height:100%">${grid}${bars}</svg>
+        </div>
+      </div>`;
+
+      if (summary) {
+        summary.textContent = tuDien("dashUsageSummary", {
+          count: dinhDangSoLuong.format(stats.count),
+          incoming: dinhDangGiaTriKho(stats.incoming),
+          outgoing: dinhDangGiaTriKho(stats.outgoing),
+          period: `${range.from} – ${range.to}`
+        });
+      }
     }
 
     function veNhapXuatTheoChuKy(id,summaryId,mode){
@@ -7087,13 +7581,11 @@
       if(node.open)node.close();
     }
 
-    function veBieuDoGiaTriKho(){
+    function veBieuDoGiaTriKho() {
       hienThiTongGiaTriKho();
       veTongQuanDashboard();
-      veTonKhoTheoChuKy("insight-value-trend","dashboard-value-trend-summary",
-        document.getElementById("dashboard-value-period").value,false);
-      veTonKhoTheoChuKy("insight-value-detail","dashboard-value-detail-summary",
-        document.getElementById("dashboard-value-detail-period").value,true);
+      veTonKhoTheoChuKy("insight-value-trend", "dashboard-value-trend-summary",
+        document.getElementById("dashboard-value-period").value, true);
     }
 
     function veTonKhoTheoChuKy(id,summaryId,mode,line){
@@ -9481,7 +9973,7 @@
         (dashboardSortState[key].direction<0?" ↓":" ↑");
       const extra=(key,value)=>[tr(key),String(value)];
       const meta=[extra("dashboardExportHall",hallLabel),
-        extra("dashboardExportRange",rangeLabel(period)),
+        extra("dashboardExportRange",["value","dormant","consumption"].includes(kind)?tr("warehouseCurrentScope"):rangeLabel(period)),
         extra("dashboardExportGenerated",new Date().toLocaleString(
           ngonNguHienTai==="en"?"en-US":"vi-VN"))];
       const make=(title,sheet,columns,rows,money=[],options=[])=>({
@@ -9493,7 +9985,7 @@
       if(kind==="value"){
         stock();
         const limit=Number(document.getElementById("dashboard-limit").value)||10;
-        const rows=sapXepBangPhanTich(dashboardTopValueCache.slice(0,limit),"value");
+        const rows=sapXepBangPhanTich(locVatTuBaoCaoKho(dashboardTopValueCache).slice(0,limit),"value");
         return make("dashboardExportTopValue","Top ton",
           ["dashboardExportSap","dashboardExportDescription","dashTopQuantity",
            "dashboardExportUnit","dashboardExportValue"],
@@ -9511,7 +10003,7 @@
         const source=valid?dashboardOutCache.rows:thongKeTopVatTuXuatKho(range);
         if(!source)fail();
         const minimum=Math.max(0,Number(document.getElementById("dashboard-out-min").value)||0);
-        const rows=sapXepBangPhanTich(source.filter(r=>r.value>=minimum),"out");
+        const rows=sapXepBangPhanTich(locVatTuBaoCaoKho(source).filter(r=>r.value>=minimum),"out");
         return make("dashboardExportTopOut","Top xuat",
           ["dashboardExportSap","dashboardExportDescription","dashboardTopOutCount",
            "dashboardExportUnit","dashboardExportOut"],
@@ -9530,7 +10022,7 @@
           dashboardDormantCache.history===historyAll&&dashboardDormantCache.stock===duLieuTimKiem;
         const source=valid?dashboardDormantCache.rows:thongKeVatTuTonLau(days);
         if(!source)fail();
-        const rows=sapXepBangPhanTich(source,"dormant");
+        const rows=sapXepBangPhanTich(locVatTuBaoCaoKho(source),"dormant");
         return make("dashboardExportDormant","Ton lau",
           ["dashboardExportSap","dashboardExportDescription","dashboardDormantStock",
            "dashboardExportUnit","dashboardDormantLast","dashboardDormantUnitPrice"],
@@ -9543,7 +10035,7 @@
         stock();history();
         const horizon=Number(document.getElementById("analytics-cons-horizon")?.value)||12;
         const hKey=horizon===36?"m36":horizon===24?"m24":"m12";
-        const rows=consTableState.filteredRows.length?consTableState.filteredRows:tinhDuLieuConsumption123(hall);
+        const rows=sapXepDongTieuThu(layDongTieuThuDaLoc(hall));
         return make("consCardTitle","Consumption "+horizon+"M",
           ["dashboardExportSap","dashboardExportDescription","consColStock",
            "dashboardExportUnit","consCol1Y","consCol2Y","consCol3Y","consColAvgMonth","consColCoverDays"],
@@ -10379,10 +10871,15 @@
     document.getElementById("dashboard-range-from").value=
       ngayDiaPhuongISO(new Date(dashboardNow.getFullYear(),dashboardNow.getMonth(),1));
     document.getElementById("dashboard-range-to").value=ngayDiaPhuongISO(dashboardNow);
-    for(const id of ["dashboard-top-out","dashboard-dormant"]){
+    for(const id of ["insight-top","dashboard-top-out","dashboard-dormant","analytics-cons-body"]){
       const node=document.getElementById(id);
       node.addEventListener("dblclick",moLichSuBangDashboard);
       node.addEventListener("keydown",bamPhimLichSuBangDashboard);
+      node.addEventListener("click",event=>{
+        const button=event.target.closest("button[data-history-sap]");
+        if(button&&node.contains(button))
+          moLichSuTuBaoCaoKho(button.dataset.historySap,loaiBangBaoCaoKho(node.id));
+      });
     }
     const giaoDichCharts=["insight-usage","insight-usage-detail"].map(id=>document.getElementById(id));
     function chonKyTrenBieuDo(event){
@@ -10421,100 +10918,12 @@
   </script>
 
 <script>
-    // ================= NÂNG CẤP DASHBOARD, PHÂN TÍCH ABC & CONSUMPTION 1-2-3 NĂM =================
-    Object.assign(NGON_NGU.vi, {
-      analyticsKpiAbcTitle: "Nhóm A (80% giá trị tồn)",
-      analyticsKpiDormantTitle: "Vốn đọng tồn lâu (Dead-stock)",
-      analyticsKpiOutTitle: "Tổng giá trị xuất trong kỳ",
-      analyticsKpiSlowRateTitle: "Tỷ lệ mã chậm luân chuyển",
-      analyticsSearchPlaceholder: "Lọc nhanh mã SAP hoặc mô tả vật tư trong tất cả bảng...",
-      analyticsAbcFilter: "Phân loại ABC:",
-      dashAbcClass: "Nhóm ABC",
-      dashSharePercent: "Tỷ trọng",
-      dashCumPercent: "Tích lũy",
-      dashNetFlow: "Thuần (Nhập − Xuất)",
-      dashHoverHint: "Di chuột hoặc chọn cột/điểm để xem số liệu chi tiết",
-      consCardTitle: "Thống kê tiêu thụ (Consumption) 1–2–3 năm & Số ngày Cover tồn kho",
-      consHorizonLabel: "Mốc tính TB & Cover",
-      consHorizon1Y: "1 năm (12 tháng)",
-      consHorizon2Y: "2 năm (24 tháng)",
-      consHorizon3Y: "3 năm (36 tháng)",
-      consStatusLabel: "Mức Cover",
-      consStatusAll: "Tất cả mức",
-      consStatusCritical: "Nguy cấp (< 30 ngày)",
-      consStatusWarn: "Cảnh báo (30–90 ngày)",
-      consStatusSafe: "An toàn (> 90 ngày)",
-      consStatusZero: "Hết hàng (= 0 ngày)",
-      consStatusIdle: "Không phát sinh xuất (∞)",
-      consCardNote: "TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày Cover = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.",
-      consColStock: "Tồn hiện tại",
-      consCol1Y: "Tiêu thụ 1 năm",
-      consCol2Y: "Tiêu thụ 2 năm",
-      consCol3Y: "Tiêu thụ 3 năm",
-      consColAvgMonth: "TB / tháng",
-      consColCoverDays: "Cover (ngày)",
-      consDaysUnit: "{days} ngày",
-      consNoUsage: "∞ (Không xuất)",
-      consUnitMismatch: "Sai lệch ĐVT",
-      consEmpty: "Không có vật tư nào phù hợp với bộ lọc tiêu thụ hiện tại.",
-      consSummaryTotal: "Phù hợp: <b>{count}</b> mã SAP",
-      consSummaryCritical: "Nguy cấp (<30 ngày): <b>{count}</b> mã",
-      consSummaryWarn: "Cảnh báo (30–90 ngày): <b>{count}</b> mã",
-      consSummaryAvgCover: "Cover trung vị: <b>{days}</b> ngày"
-    });
+    // Usage calculations share the current report filters and preserve source units.
 
-    Object.assign(NGON_NGU.en, {
-      analyticsKpiAbcTitle: "Class A (80% stock value)",
-      analyticsKpiDormantTitle: "Slow-moving capital",
-      analyticsKpiOutTitle: "Total outbound value",
-      analyticsKpiSlowRateTitle: "Slow-moving SKU ratio",
-      analyticsSearchPlaceholder: "Quick filter SAP code or description across all tables...",
-      analyticsAbcFilter: "ABC Class:",
-      dashAbcClass: "ABC",
-      dashSharePercent: "Share",
-      dashCumPercent: "Cum. %",
-      dashNetFlow: "Net (In − Out)",
-      dashHoverHint: "Hover or focus a point/bar to inspect exact figures",
-      consCardTitle: "1–2–3 Year Consumption & Stock Coverage (Days)",
-      consHorizonLabel: "Avg & Cover Basis",
-      consHorizon1Y: "1 Year (12 mos)",
-      consHorizon2Y: "2 Years (24 mos)",
-      consHorizon3Y: "3 Years (36 mos)",
-      consStatusLabel: "Coverage Tier",
-      consStatusAll: "All tiers",
-      consStatusCritical: "Critical (< 30 days)",
-      consStatusWarn: "Warning (30–90 days)",
-      consStatusSafe: "Healthy (> 90 days)",
-      consStatusZero: "Out of stock (0 days)",
-      consStatusIdle: "No outbound (∞)",
-      consCardNote: "Monthly Avg = Period Consumption ÷ Months (12/24/36). Coverage Days = (Current Stock ÷ Monthly Avg) × 30. Double-click a row for history.",
-      consColStock: "Current Stock",
-      consCol1Y: "1Y Consumption",
-      consCol2Y: "2Y Consumption",
-      consCol3Y: "3Y Consumption",
-      consColAvgMonth: "Avg / Month",
-      consColCoverDays: "Coverage (Days)",
-      consDaysUnit: "{days} days",
-      consNoUsage: "∞ (No usage)",
-      consUnitMismatch: "Unit mismatch",
-      consEmpty: "No materials match the current consumption filter.",
-      consSummaryTotal: "Matching: <b>{count}</b> SKUs",
-      consSummaryCritical: "Critical (<30d): <b>{count}</b> SKUs",
-      consSummaryWarn: "Warning (30–90d): <b>{count}</b> SKUs",
-      consSummaryAvgCover: "Median coverage: <b>{days}</b> days"
-    });
 
-    let analyticsAbcFilter = "all";
-    let analyticsSearchQuery = "";
 
-    function chonNhomAbc(nhom) {
-      analyticsAbcFilter = nhom;
-      document.querySelectorAll(".abc-pill").forEach(btn =>
-        btn.setAttribute("aria-pressed", String(btn.dataset.abc === nhom))
-      );
-      const limit = Number(document.getElementById("dashboard-limit").value) || 20;
-      veBangTopGiaTriVatTu(dashboardTopValueCache, limit);
-    }
+
+
 
     function locNhanhPhanTichKho() {
       analyticsSearchQuery = chuanHoaTimKiem(document.getElementById("analytics-search")?.value || "").trim();
@@ -10532,7 +10941,8 @@
       const input = document.getElementById("analytics-search");
       if (input) input.value = "";
       analyticsSearchQuery = "";
-      chonNhomAbc("all");
+      const limit = Number(document.getElementById("dashboard-limit").value) || 20;
+      veBangTopGiaTriVatTu(dashboardTopValueCache, limit);
       locNhanhPhanTichKho();
     }
 
@@ -10542,528 +10952,14 @@
       if (typeof xuatBaoCaoThongKe === "function") xuatBaoCaoThongKe();
     }
 
-    function tinhPhanTichABC(values) {
-      const totalValue = values.reduce((sum, item) => sum + (Number.isFinite(item.value) ? item.value : 0), 0);
-      let cumulative = 0;
-      return values.map(item => {
-        const share = totalValue > 0 ? (item.value / totalValue) * 100 : 0;
-        const prevCum = cumulative;
-        cumulative += share;
-        const abc = totalValue <= 0 ? "C" : prevCum < 80 ? "A" : prevCum < 95 ? "B" : "C";
-        return { ...item, share, cumulative: Math.min(100, cumulative), abc };
-      });
-    }
 
-    veBangTopGiaTriVatTu = function(values, limit) {
-      const root = document.getElementById("insight-top");
-      if (!values.length) { root.textContent = tuDien("dashNoValue"); return; }
 
-      const abcList = tinhPhanTichABC(values);
-      const classA = abcList.filter(x => x.abc === "A");
-      const classAValue = classA.reduce((s, x) => s + x.value, 0);
-      const totalVal = abcList.reduce((s, x) => s + x.value, 0);
-      const kpiAbcVal = document.getElementById("analytics-kpi-abc-value");
-      const kpiAbcNote = document.getElementById("analytics-kpi-abc-note");
-      if (kpiAbcVal && kpiAbcNote) {
-        kpiAbcVal.textContent = dinhDangRutGonKho(classAValue) + " ₫";
-        kpiAbcVal.title = dinhDangGiaTriKho(classAValue);
-        kpiAbcNote.textContent = `${classA.length} / ${abcList.length} mã SAP (${totalVal > 0 ? ((classAValue / totalVal) * 100).toFixed(1) : 0}% tổng giá trị)`;
-      }
 
-      const filtered = abcList.filter(rec => {
-        if (analyticsAbcFilter !== "all" && rec.abc !== analyticsAbcFilter) return false;
-        if (analyticsSearchQuery) {
-          const hay = chuanHoaTimKiem(rec.name + " " + (rec.description || ""));
-          if (!hay.includes(analyticsSearchQuery)) return false;
-        }
-        return true;
-      });
 
-      if (!filtered.length) { root.textContent = tuDien("noResults"); return; }
 
-      const header = "<thead><tr>" +
-        tieuDeSapXepPhanTich("value", "material", "dashTopMaterial") +
-        "<th>" + thoatHTML(tuDien("dashAbcClass")) + "</th>" +
-        tieuDeSapXepPhanTich("value", "quantity", "dashTopQuantity") +
-        tieuDeSapXepPhanTich("value", "unit", "dashTopUnit") +
-        tieuDeSapXepPhanTich("value", "value", "dashTopValueColumn") +
-        "<th>" + thoatHTML(tuDien("dashSharePercent")) + "</th>" +
-        "<th>" + thoatHTML(tuDien("dashCumPercent")) + "</th>" +
-        "</tr></thead>";
 
-      const body = sapXepBangPhanTich(filtered.slice(0, limit), "value").map(rec => {
-        const valid = rec.unit && !rec.inconsistent && Number.isFinite(rec.quantity);
-        const quantity = valid ? dinhDangSoLuong.format(rec.quantity) : "—";
-        const unit = rec.mixed ? tuDien("dashTopMixedUnits") : (rec.missing || !rec.unit ? "—" : rec.unit);
-        return `<tr data-sap="${thoatHTML(rec.name)}" ondblclick="moLichSuDashboardTheoSap('${thoatHTML(rec.name)}')" title="${thoatHTML(tuDien("dashboardTopDoubleClick"))}">
-          <td><span class="top-sap">${thoatHTML(rec.name)}</span><span class="top-name">${thoatHTML(rec.description || "—")}</span></td>
-          <td><span class="abc-badge abc-${rec.abc}">${rec.abc}</span></td>
-          <td>${thoatHTML(quantity)}</td>
-          <td>${thoatHTML(unit)}</td>
-          <td><strong>${thoatHTML(dinhDangGiaTriKho(rec.value))}</strong></td>
-          <td>${rec.share.toFixed(1)}%</td>
-          <td>${rec.cumulative.toFixed(1)}%</td>
-        </tr>`;
-      }).join("");
 
-      root.innerHTML = `<table class="dashboard-top-table">${header}<tbody>${body}</tbody></table>`;
-    };
 
-    vePhanBoTrangThai = function(rows = duLieuTimKiem) {
-      const target = document.getElementById("insight-stock-distribution");
-      if (!analyticsReady || !rows.length) { target.textContent = tuDien("noAnalytics"); return; }
-      const count = { healthy: 0, at: 0, below: 0, zero: 0, unknown: 0 };
-      for (const r of rows) count[r.trangThaiTon] = (count[r.trangThaiTon] || 0) + 1;
-      const total = rows.length;
-      const shades = { healthy: "#16a34a", at: "#f59e0b", below: "#f97316", zero: "#e11d48", unknown: "#94a3b8" };
-      const names = { healthy: "stockAbove", at: "stockEqual", below: "stockBelow", zero: "stockZero", unknown: "stockUnknown" };
-
-      const rateEl = document.getElementById("metric-instock-rate");
-      if (rateEl) {
-        const ready = total - count.zero;
-        rateEl.textContent = `${tuDien("stockNote")} (${((ready / total) * 100).toFixed(1)}%)`;
-      }
-
-      const r = 46, cx = 62, cy = 62, circumference = 2 * Math.PI * r;
-      let offset = 0;
-      const circles = ["healthy", "at", "below", "zero", "unknown"].map(key => {
-        const len = (count[key] / total) * circumference;
-        const dash = `${len.toFixed(2)} ${(circumference - len).toFixed(2)}`;
-        const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${shades[key]}" stroke-width="16" stroke-dasharray="${dash}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"><title>${thoatHTML(tuDien(names[key]))}: ${count[key]} (${((count[key] / total) * 100).toFixed(1)}%)</title></circle>`;
-        offset += len;
-        return seg;
-      }).join("");
-
-      const legend = Object.keys(names).map(key => {
-        const pct = ((count[key] / total) * 100).toFixed(1);
-        return `<div class="dist-row"><span class="dist-swatch" style="background:${shades[key]}"></span>
-          <span>${thoatHTML(tuDien(names[key]))}</span>
-          <b>${dinhDangSoLuong.format(count[key])} <small style="color:var(--muted);font-weight:500">(${pct}%)</small></b></div>`;
-      }).join("");
-
-      target.innerHTML = `<div style="position:relative;width:124px;height:124px;flex:0 0 124px">
-        <svg viewBox="0 0 124 124" width="124" height="124" role="img" aria-label="${thoatHTML(tuDien("stockDistribution"))}">${circles}</svg>
-        <div class="stock-donut-inner" style="position:absolute;inset:20px"><strong>${dinhDangSoLuong.format(total)}</strong><span>${thoatHTML(tuDien("stockDistributionTotal"))}</span></div>
-      </div><div class="stock-distribution-list">${legend}</div>`;
-    };
-
-    veBieuDoGiaTriKho = function() {
-      hienThiTongGiaTriKho();
-      veTongQuanDashboard();
-      const container = document.getElementById("insight-value-trend");
-      const summary = document.getElementById("dashboard-value-trend-summary");
-      if (!container) return;
-
-      if (hallDangLoc() === "hall2") {
-        container.textContent = tuDien("dashboardHall2NoSnapshots");
-        if (summary) summary.textContent = "";
-        return;
-      }
-
-      const snapshots = layGiaTriKhoTuAmount();
-      if (!snapshots.length) {
-        container.textContent = tuDien("dashValueTrendEmpty");
-        if (summary) summary.textContent = "";
-        return;
-      }
-
-      const mode = document.getElementById("dashboard-value-period")?.value || "month";
-      const range = layKyPhanTichKho();
-      const filtered = range ? snapshots.filter(s => s.date >= range.from && s.date <= range.to) : snapshots;
-      if (!filtered.length) {
-        container.textContent = tuDien("dashValueTrendNoPeriod");
-        if (summary) summary.textContent = "";
-        return;
-      }
-
-      const grouped = new Map();
-      for (const item of filtered) {
-        const key = khoaNhomKho(item.date, mode);
-        grouped.set(key, item);
-      }
-      const points = [...grouped.entries()].map(([key, item]) => ({
-        key,
-        label: mode === "month" ? key.slice(5) + "/" + key.slice(2, 4) : mode === "day" ? item.date.slice(5) : key,
-        date: item.date,
-        value: item.value
-      }));
-
-      const W = Math.max(540, points.length * 46), H = 205;
-      const padL = 62, padR = 20, padT = 18, padB = 34;
-      const plotW = W - padL - padR, plotH = H - padT - padB;
-      const minV = Math.min(...points.map(p => p.value)) * 0.92;
-      const maxV = Math.max(...points.map(p => p.value)) * 1.05 || 1;
-      const spanV = Math.max(1, maxV - minV);
-
-      const getX = i => padL + (points.length === 1 ? plotW / 2 : (i * plotW) / (points.length - 1));
-      const getY = v => padT + plotH * (1 - (v - minV) / spanV);
-
-      let gridSvg = "";
-      for (let i = 0; i <= 4; i++) {
-        const val = minV + (spanV * i) / 4;
-        const y = getY(val).toFixed(1);
-        gridSvg += `<line class="svg-grid" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"/>
-          <text class="svg-axis" x="${padL - 8}" y="${Number(y) + 3}" text-anchor="end">${thoatHTML(dinhDangRutGonKho(val))}</text>`;
-      }
-
-      const coords = points.map((p, i) => `${getX(i).toFixed(1)},${getY(p.value).toFixed(1)}`);
-      const areaCoords = [`${getX(0).toFixed(1)},${(padT + plotH).toFixed(1)}`, ...coords, `${getX(points.length - 1).toFixed(1)},${(padT + plotH).toFixed(1)}`].join(" ");
-      const step = Math.max(1, Math.ceil(points.length / 10));
-
-      const dotsAndLabels = points.map((p, i) => {
-        const cx = getX(i).toFixed(1), cy = getY(p.value).toFixed(1);
-        const info = `${p.date} · ${dinhDangGiaTriKho(p.value)}`;
-        const showLabel = i === 0 || i === points.length - 1 || i % step === 0;
-        return `${showLabel ? `<text class="svg-axis" x="${cx}" y="${H - 10}" text-anchor="middle">${thoatHTML(p.label)}</text>` : ""}
-          <circle class="svg-dot" cx="${cx}" cy="${cy}" r="4" tabindex="0"
-            onmouseenter="this.closest('.svg-chart-wrap').querySelector('.chart-hover-banner').textContent='${thoatHTML(info)}'"
-            onfocus="this.closest('.svg-chart-wrap').querySelector('.chart-hover-banner').textContent='${thoatHTML(info)}'">
-            <title>${thoatHTML(info)}</title>
-          </circle>`;
-      }).join("");
-
-      container.innerHTML = `<div class="svg-chart-wrap">
-        <div class="chart-hover-banner">${thoatHTML(tuDien("dashHoverHint"))}</div>
-        <div style="overflow-x:auto;flex:1">
-          <svg viewBox="0 0 ${W} ${H}" style="min-width:${W}px;height:100%">
-            <defs>
-              <linearGradient id="dashValueGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="var(--blue)" stop-opacity="0.28"/>
-                <stop offset="100%" stop-color="var(--blue)" stop-opacity="0.01"/>
-              </linearGradient>
-            </defs>
-            ${gridSvg}
-            ${points.length > 1 ? `<polygon class="svg-area" points="${areaCoords}"/><polyline class="svg-line" points="${coords.join(" ")}"/>` : ""}
-            ${dotsAndLabels}
-          </svg>
-        </div>
-      </div>`;
-
-      if (summary) {
-        summary.textContent = tuDien("dashValueTrendSummary", {
-          count: points.length,
-          period: `${points[0].date} – ${points[points.length - 1].date}`
-        });
-      }
-    };
-
-    veBieuDoSuDungKho = function() {
-      veMotBieuDoNhapXuat("insight-usage", "dashboard-usage-period", "dashboard-usage-summary");
-      veMotBieuDoNhapXuat("insight-usage-detail", "dashboard-usage-detail-period", "dashboard-usage-detail-summary");
-    };
-
-    function veMotBieuDoNhapXuat(containerId, selectId, summaryId) {
-      const container = document.getElementById(containerId);
-      const summary = document.getElementById(summaryId);
-      if (!container) return;
-
-      if (!historyLoaded) {
-        container.textContent = tuDien(historyLoading ? "dashUsageLoading" : "dashUsageUnavailable");
-        if (summary) summary.textContent = "";
-        return;
-      }
-      const rows = lichSuTheoHall();
-      if (!rows) {
-        container.textContent = tuDien(loiCotHall("history"));
-        if (summary) summary.textContent = "";
-        return;
-      }
-
-      const mode = document.getElementById(selectId)?.value || "month";
-      const range = layKyPhanTichKho();
-      const buckets = nhomKyTrongKhoangKho(mode, range);
-      if (!buckets.length) {
-        container.textContent = tuDien("dashUsageNoData");
-        if (summary) summary.textContent = "";
-        return;
-      }
-
-      const stats = tinhGiaTriNhapXuat(rows, historyColumns, mode, buckets);
-      if (stats.missing) {
-        container.textContent = tuDien("dashUsageNoQty");
-        if (summary) summary.textContent = "";
-        return;
-      }
-
-      const series = buckets.map(b => {
-        const v = stats.values.get(b.key) || { in: 0, out: 0 };
-        return { ...b, in: v.in, out: v.out, net: v.in - v.out };
-      });
-      const maxVal = Math.max(1, ...series.flatMap(s => [s.in, s.out]));
-
-      const colW = 46, W = Math.max(520, series.length * colW + 80), H = 200;
-      const padL = 58, padR = 16, padT = 16, padB = 34;
-      const plotW = W - padL - padR, plotH = H - padT - padB;
-      const getY = v => padT + plotH * (1 - v / maxVal);
-
-      let grid = "";
-      for (let i = 0; i <= 4; i++) {
-        const val = (maxVal * i) / 4;
-        const y = getY(val).toFixed(1);
-        grid += `<line class="svg-grid" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"/>
-          <text class="svg-axis" x="${padL - 7}" y="${Number(y) + 3}" text-anchor="end">${thoatHTML(dinhDangRutGonKho(val))}</text>`;
-      }
-
-      const slotW = plotW / series.length;
-      const barW = Math.min(14, Math.max(5, slotW * 0.34));
-      const labelStep = series.length > 18 ? Math.ceil(series.length / 12) : 1;
-      const bars = series.map((s, i) => {
-        const cx = padL + slotW * (i + 0.5);
-        const hIn = (s.in / maxVal) * plotH;
-        const hOut = (s.out / maxVal) * plotH;
-        const yIn = padT + plotH - hIn;
-        const yOut = padT + plotH - hOut;
-        const tip = `${s.title} · Nhập: ${dinhDangGiaTriKho(s.in)} · Xuất: ${dinhDangGiaTriKho(s.out)} · Thuần: ${dinhDangGiaTriKho(s.net)}`;
-        const showLbl = i === series.length - 1 || (i % labelStep === 0 && series.length - 1 - i >= labelStep);
-        return `<g class="trend-column" data-period-key="${thoatHTML(s.key)}" data-period-mode="${mode}" tabindex="0" role="button"
-            aria-label="${thoatHTML(tuDien("dashDrillHint", { period: s.title }))}"
-            onmouseenter="this.closest('.svg-chart-wrap').querySelector('.chart-hover-banner').textContent='${thoatHTML(tip)}'"
-            onfocus="this.closest('.svg-chart-wrap').querySelector('.chart-hover-banner').textContent='${thoatHTML(tip)}'">
-          <title>${thoatHTML(tip)}</title>
-          <rect class="svg-bar-in" x="${(cx - barW - 1).toFixed(1)}" y="${yIn.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1, hIn).toFixed(1)}"/>
-          <rect class="svg-bar-out" x="${(cx + 1).toFixed(1)}" y="${yOut.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1, hOut).toFixed(1)}"/>
-          ${showLbl ? `<text class="svg-axis" x="${cx.toFixed(1)}" y="${H - 10}" text-anchor="middle">${thoatHTML(s.label)}</text>` : ""}
-        </g>`;
-      }).join("");
-
-      container.innerHTML = `<div class="svg-chart-wrap">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
-          <div class="movement-legend" style="margin:0">
-            <span class="movement-legend-in">${thoatHTML(tuDien("historyInShort"))}</span>
-            <span class="movement-legend-out">${thoatHTML(tuDien("historyOutShort"))}</span>
-          </div>
-          <div class="chart-hover-banner" style="margin:0;flex:1">${thoatHTML(tuDien("dashHoverHint"))}</div>
-        </div>
-        <div style="overflow-x:auto;flex:1">
-          <svg viewBox="0 0 ${W} ${H}" style="min-width:${W}px;height:100%">${grid}${bars}</svg>
-        </div>
-      </div>`;
-
-      if (summary) {
-        summary.textContent = tuDien("dashUsageSummary", {
-          count: dinhDangSoLuong.format(stats.count),
-          incoming: dinhDangGiaTriKho(stats.incoming),
-          outgoing: dinhDangGiaTriKho(stats.outgoing),
-          period: `${range.from} – ${range.to}`
-        });
-      }
-    }
-
-    veTopVatTuXuatKho = function() {
-      const root = document.getElementById("dashboard-top-out");
-      const note = document.getElementById("dashboard-top-out-note");
-      const slider = document.getElementById("dashboard-out-min");
-      const sliderOut = document.getElementById("dashboard-out-min-value");
-      if (!root) return;
-
-      if (!historyLoaded) {
-        root.textContent = tuDien(historyLoading ? "dashboardHistoryLoading" : "dashboardCompareNoHistory");
-        capNhatSoMaBaoCaoKho("out", null);
-        slider.disabled = true;
-        return;
-      }
-      if (!lichSuTheoHall()) {
-        root.textContent = tuDien(loiCotHall("history"));
-        capNhatSoMaBaoCaoKho("out", null);
-        slider.disabled = true;
-        return;
-      }
-
-      const range = phamViTopXuatKho();
-      if (!range) { root.textContent = tuDien("dashboardTimeInvalid"); return; }
-
-      const key = range.from + "|" + range.to + "|" + hallDangLoc();
-      if (!dashboardOutCache || dashboardOutCache.key !== key ||
-        dashboardOutCache.history !== historyAll || dashboardOutCache.stock !== duLieuTimKiem) {
-        const rows = thongKeTopVatTuXuatKho(range);
-        dashboardOutCache = { key, history: historyAll, stock: duLieuTimKiem, rows };
-        dashboardTableState.out.page = 1;
-        slider.value = "0";
-        if (rows && rows.length) {
-          const max = rows[0].value;
-          const step = Math.max(1, 10 ** Math.max(0, Math.floor(Math.log10(Math.max(1, max / 100)))));
-          slider.min = "0";
-          slider.max = String(Math.ceil(max / step) * step);
-          slider.step = String(step);
-          slider.disabled = false;
-        } else {
-          slider.min = "0"; slider.max = "0"; slider.step = "1"; slider.disabled = true;
-        }
-      }
-
-      const allItems = dashboardOutCache.rows;
-      if (!allItems) {
-        root.textContent = tuDien("dashboardTopOutMissing");
-        capNhatSoMaBaoCaoKho("out", null);
-        return;
-      }
-
-      const totalOutAll = allItems.reduce((s, r) => s + r.value, 0);
-      const kpiOutVal = document.getElementById("analytics-kpi-out-value");
-      const kpiOutNote = document.getElementById("analytics-kpi-out-note");
-      if (kpiOutVal && kpiOutNote) {
-        kpiOutVal.textContent = dinhDangRutGonKho(totalOutAll) + " ₫";
-        kpiOutVal.title = dinhDangGiaTriKho(totalOutAll);
-        kpiOutNote.textContent = `${dinhDangSoLuong.format(allItems.length)} mã SAP có phát sinh xuất`;
-      }
-
-      const minFilter = Math.max(0, Number(slider.value) || 0);
-      sliderOut.textContent = dinhDangGiaTriKho(minFilter);
-
-      const filtered = allItems.filter(r => {
-        if (r.value < minFilter) return false;
-        if (analyticsSearchQuery) {
-          const hay = chuanHoaTimKiem(r.sap + " " + (r.description || ""));
-          if (!hay.includes(analyticsSearchQuery)) return false;
-        }
-        return true;
-      });
-
-      capNhatSoMaBaoCaoKho("out", filtered.length);
-      if (!filtered.length) {
-        root.textContent = tuDien("dashboardTopOutEmpty");
-        capNhatPhanTrangBangKho("out", 0);
-        return;
-      }
-
-      const pageInfo = capNhatPhanTrangBangKho("out", filtered.length);
-      const slice = sapXepBangPhanTich(filtered, "out").slice(pageInfo.start, pageInfo.end);
-
-      const thead = `<thead><tr>
-        ${tieuDeSapXepPhanTich("out", "material", "dashTopMaterial")}
-        ${tieuDeSapXepPhanTich("out", "quantity", "dashboardTopOutCount")}
-        ${tieuDeSapXepPhanTich("out", "unit", "dashboardTopOutUnit")}
-        ${tieuDeSapXepPhanTich("out", "value", "dashboardTopOutValue")}
-      </tr></thead>`;
-
-      const tbody = slice.map(r => {
-        const qtyText = r.quantityValid && !r.mixed && r.unit ? dinhDangSoLuong.format(r.quantity) : "—";
-        const unitText = r.mixed ? tuDien("dashboardOutMixedUnits") : (r.unit || "—");
-        const share = totalOutAll > 0 ? ((r.value / totalOutAll) * 100).toFixed(1) + "%" : "";
-        return `<tr data-sap="${thoatHTML(r.sap)}" tabindex="0" title="${thoatHTML(tuDien("dashboardTopDoubleClick"))}">
-          <td><span class="material-sap">${thoatHTML(r.sap)}</span><span class="material-name">${thoatHTML(r.description || "—")}</span></td>
-          <td>${thoatHTML(qtyText)}</td>
-          <td>${thoatHTML(unitText)}</td>
-          <td><strong>${thoatHTML(dinhDangGiaTriKho(r.value))}</strong> <small style="color:var(--muted)">(${share})</small></td>
-        </tr>`;
-      }).join("");
-
-      root.innerHTML = `<table class="dashboard-detail-table">${thead}<tbody>${tbody}</tbody></table>`;
-      if (note) {
-        note.textContent = tuDien("dashboardPagerSummary", {
-          from: dinhDangSoLuong.format(pageInfo.start + 1),
-          to: dinhDangSoLuong.format(pageInfo.end),
-          total: dinhDangSoLuong.format(pageInfo.total)
-        }) + " · " + range.from + " – " + range.to;
-      }
-    };
-
-    veVatTuTonLau = function() {
-      const root = document.getElementById("dashboard-dormant");
-      const note = document.getElementById("dashboard-dormant-note");
-      const unavailable = hallDangLoc() === "hall2";
-      document.getElementById("dashboard-dormant-days").disabled = unavailable;
-      const pager = document.getElementById("dashboard-dormant-pager");
-      if (!root) return;
-
-      if (unavailable) {
-        dashboardDormantCache = null;
-        root.textContent = tuDien("dashboardDormantHall2Unavailable");
-        capNhatSoMaBaoCaoKho("dormant", null);
-        pager.hidden = true;
-        return;
-      }
-      if (!historyLoaded) {
-        root.textContent = tuDien(historyLoading ? "dashboardHistoryLoading" : "dashboardDormantNoHistory");
-        pager.hidden = true;
-        return;
-      }
-
-      const days = Number(document.getElementById("dashboard-dormant-days").value) || 90;
-      const today = ngayDiaPhuongISO();
-      if (!dashboardDormantCache || dashboardDormantCache.days !== days ||
-        dashboardDormantCache.today !== today || dashboardDormantCache.hall !== hallDangLoc() ||
-        dashboardDormantCache.history !== historyAll || dashboardDormantCache.stock !== duLieuTimKiem) {
-        const rows = thongKeVatTuTonLau(days);
-        dashboardDormantCache = { days, today, hall: hallDangLoc(), history: historyAll, stock: duLieuTimKiem, rows };
-        dashboardTableState.dormant.page = 1;
-      }
-
-      const dormantAll = dashboardDormantCache.rows;
-      if (dormantAll === null) {
-        root.textContent = tuDien(tonKhoHall1TonLau() === null ? loiCotHall("stock") : loiCotHall("history"));
-        pager.hidden = true;
-        return;
-      }
-
-      // Tính KPI Dead-stock & Tỷ lệ chậm luân chuyển
-      const dormantCapital = dormantAll.reduce((s, r) => s + (r.quantityValid && r.priceValid ? r.quantity * r.price : 0), 0);
-      const positiveSkus = new Set((tonKhoHall1TonLau() || []).filter(x => Number.isFinite(x.soLuong) && x.soLuong > 0).map(x => chuanHoaMaSap(x.dong[0]).toLowerCase())).size;
-      const kpiDormVal = document.getElementById("analytics-kpi-dormant-value");
-      const kpiDormNote = document.getElementById("analytics-kpi-dormant-note");
-      const kpiSlowRate = document.getElementById("analytics-kpi-slow-rate");
-      const kpiSlowNote = document.getElementById("analytics-kpi-slow-note");
-      if (kpiDormVal && kpiDormNote) {
-        kpiDormVal.textContent = dinhDangRutGonKho(dormantCapital) + " ₫";
-        kpiDormVal.title = dinhDangGiaTriKho(dormantCapital);
-        kpiDormNote.textContent = `${dinhDangSoLuong.format(dormantAll.length)} mã chưa xuất ≥ ${days} ngày`;
-      }
-      if (kpiSlowRate && kpiSlowNote) {
-        const rate = positiveSkus > 0 ? ((dormantAll.length / positiveSkus) * 100).toFixed(1) : "0.0";
-        kpiSlowRate.textContent = `${rate}%`;
-        kpiSlowNote.textContent = `${dormantAll.length} / ${positiveSkus} mã đang có tồn`;
-      }
-
-      const filtered = dormantAll.filter(r => {
-        if (analyticsSearchQuery) {
-          const hay = chuanHoaTimKiem(r.sap + " " + (r.description || ""));
-          if (!hay.includes(analyticsSearchQuery)) return false;
-        }
-        return true;
-      });
-
-      capNhatSoMaBaoCaoKho("dormant", filtered.length);
-      if (!filtered.length) {
-        root.textContent = tuDien("dashboardDormantEmpty");
-        pager.hidden = true;
-        capNhatPhanTrangBangKho("dormant", 0);
-        return;
-      }
-
-      pager.hidden = false;
-      const pageInfo = capNhatPhanTrangBangKho("dormant", filtered.length);
-      const slice = sapXepBangPhanTich(filtered, "dormant").slice(pageInfo.start, pageInfo.end);
-
-      const thead = `<thead><tr>
-        ${tieuDeSapXepPhanTich("dormant", "material", "dashTopMaterial")}
-        ${tieuDeSapXepPhanTich("dormant", "stock", "dashboardDormantStock")}
-        ${tieuDeSapXepPhanTich("dormant", "last", "dashboardDormantLast")}
-        ${tieuDeSapXepPhanTich("dormant", "price", "dashboardDormantUnitPrice")}
-      </tr></thead>`;
-
-      const tbody = slice.map(r => {
-        const qtyText = r.quantityValid ? `${dinhDangSoLuong.format(r.quantity)} ${r.unit}` : "—";
-        const priceText = r.priceMixed ? tuDien("dashboardDormantMultiplePrices") : r.priceValid ? dinhDangGiaTriKho(r.price) : "—";
-        const dCount = r.days ?? 9999;
-        const badgeCls = dCount >= 365 ? "age-critical" : dCount >= 180 ? "age-warn" : "age-watch";
-        const lastLabel = r.last ? `${r.last} (${r.days}d)` : tuDien("dashboardDormantNever");
-        return `<tr data-sap="${thoatHTML(r.sap)}" tabindex="0" title="${thoatHTML(tuDien("dashboardTopDoubleClick"))}">
-          <td><span class="material-sap">${thoatHTML(r.sap)}</span><span class="material-name">${thoatHTML(r.description || "—")}</span></td>
-          <td>${thoatHTML(qtyText)}</td>
-          <td><span class="age-badge ${badgeCls}">${thoatHTML(lastLabel)}</span></td>
-          <td><strong>${thoatHTML(priceText)}</strong></td>
-        </tr>`;
-      }).join("");
-
-      root.innerHTML = `<table class="dashboard-detail-table">${thead}<tbody>${tbody}</tbody></table>`;
-      if (note) {
-        note.textContent = tuDien("dashboardPagerSummary", {
-          from: dinhDangSoLuong.format(pageInfo.start + 1),
-          to: dinhDangSoLuong.format(pageInfo.end),
-          total: dinhDangSoLuong.format(pageInfo.total)
-        });
-      }
-    };
 
     // ================= THỐNG KÊ CONSUMPTION 1-2-3 NĂM & COVER (NGÀY) =================
     const consTableState = {
@@ -11213,6 +11109,7 @@
     function doiLocConsumption() {
       consTableState.page = 1;
       veBangConsumption123();
+      capNhatKhongGianBaoCaoKho();
     }
 
     function doiSapXepConsumption(col) {
@@ -11229,7 +11126,7 @@
     function chonSoDongConsumption(val) {
       if (val === "custom") {
         const inp = document.getElementById("analytics-cons-custom");
-        inp.focus(); inp.select(); return;
+        inp.hidden=false;inp.focus(); inp.select(); return;
       }
       datSoDongConsumption(val);
     }
@@ -11252,11 +11149,44 @@
       document.getElementById("analytics-cons-body").scrollTop = 0;
     }
 
+    function layDongTieuThuDaLoc(hall = hallDangLoc()) {
+      const horizon = Number(document.getElementById("analytics-cons-horizon").value) || 12;
+      const status = document.getElementById("analytics-cons-status").value || "all";
+      const key = horizon === 36 ? "m36" : horizon === 24 ? "m24" : "m12";
+      return locVatTuBaoCaoKho(tinhDuLieuConsumption123(hall))
+        .filter(item => status === "all" || item[key].tier === status);
+    }
+    function sapXepDongTieuThu(filtered) {
+      const horizon = Number(document.getElementById("analytics-cons-horizon").value) || 12;
+      const hKey = horizon === 36 ? "m36" : horizon === 24 ? "m24" : "m12";
+      const col = consTableState.sortCol;
+      const dir = consTableState.sortDir;
+      return filtered.slice().sort((a, b) => {
+        const ma = a[hKey], mb = b[hKey];
+        let va, vb;
+        if (col === "sap") return a.sap.localeCompare(b.sap) * dir;
+        if (col === "stock") { va = a.stock; vb = b.stock; }
+        else if (col === "c1") { va = a.qty1Y; vb = b.qty1Y; }
+        else if (col === "c2") { va = a.qty2Y; vb = b.qty2Y; }
+        else if (col === "c3") { va = a.qty3Y; vb = b.qty3Y; }
+        else if (col === "avg") { va = ma.avgMonth ?? -1; vb = mb.avgMonth ?? -1; }
+        else {
+          va = ma.coverDays === null ? 1e12 : ma.coverDays === Infinity ? 1e11 : ma.coverDays;
+          vb = mb.coverDays === null ? 1e12 : mb.coverDays === Infinity ? 1e11 : mb.coverDays;
+        }
+        return (va - vb) * dir || a.sap.localeCompare(b.sap);
+      });
+
+    }
+
     function veBangConsumption123() {
       const root = document.getElementById("analytics-cons-body");
       const summaryEl = document.getElementById("analytics-cons-summary");
       const noteEl = document.getElementById("analytics-cons-note");
       if (!root) return;
+      consTableState.filteredRows = [];
+      document.getElementById("analytics-cons-pager").hidden = true;
+      if (noteEl) noteEl.textContent = "";
 
       if (hallDangLoc() === "hall2") {
         root.textContent = tuDien("dashboardHall2NoStockReport");
@@ -11273,16 +11203,7 @@
       const statusFilter = document.getElementById("analytics-cons-status")?.value || "all";
       const hKey = horizon === 36 ? "m36" : horizon === 24 ? "m24" : "m12";
 
-      const allData = tinhDuLieuConsumption123();
-      const filtered = allData.filter(item => {
-        const metric = item[hKey];
-        if (statusFilter !== "all" && metric.tier !== statusFilter) return false;
-        if (analyticsSearchQuery) {
-          const hay = chuanHoaTimKiem(item.sap + " " + item.description);
-          if (!hay.includes(analyticsSearchQuery)) return false;
-        }
-        return true;
-      });
+      const filtered = layDongTieuThuDaLoc();
 
       let criticalCount = 0, warnCount = 0;
       const finiteCovers = [];
@@ -11306,23 +11227,7 @@
         `;
       }
 
-      const col = consTableState.sortCol;
-      const dir = consTableState.sortDir;
-      const sorted = filtered.slice().sort((a, b) => {
-        const ma = a[hKey], mb = b[hKey];
-        let va, vb;
-        if (col === "sap") return a.sap.localeCompare(b.sap) * dir;
-        if (col === "stock") { va = a.stock; vb = b.stock; }
-        else if (col === "c1") { va = a.qty1Y; vb = b.qty1Y; }
-        else if (col === "c2") { va = a.qty2Y; vb = b.qty2Y; }
-        else if (col === "c3") { va = a.qty3Y; vb = b.qty3Y; }
-        else if (col === "avg") { va = ma.avgMonth ?? -1; vb = mb.avgMonth ?? -1; }
-        else {
-          va = ma.coverDays === null ? 1e12 : ma.coverDays === Infinity ? 1e11 : ma.coverDays;
-          vb = mb.coverDays === null ? 1e12 : mb.coverDays === Infinity ? 1e11 : mb.coverDays;
-        }
-        return (va - vb) * dir || a.sap.localeCompare(b.sap);
-      });
+      const sorted = sapXepDongTieuThu(filtered);
 
       consTableState.filteredRows = sorted;
 
@@ -11331,10 +11236,14 @@
       const start = (consTableState.page - 1) * consTableState.size;
       const slice = sorted.slice(start, start + consTableState.size);
 
+      document.getElementById("analytics-cons-pager").hidden = !sorted.length;
       document.getElementById("analytics-cons-page").value = String(consTableState.page);
       document.getElementById("analytics-cons-page").max = String(maxPage);
       document.getElementById("analytics-cons-pages").textContent = "/ " + dinhDangSoLuong.format(maxPage);
       document.getElementById("analytics-cons-custom").value = String(consTableState.size);
+      const presetConsSize=["25","50","75","100","200","500"].includes(String(consTableState.size));
+      document.getElementById("analytics-cons-size").value=presetConsSize?String(consTableState.size):"custom";
+      document.getElementById("analytics-cons-custom").hidden=presetConsSize;
       for (const s of ["first", "prev"]) document.getElementById("analytics-cons-" + s).disabled = consTableState.page <= 1;
       for (const s of ["next", "last"]) document.getElementById("analytics-cons-" + s).disabled = consTableState.page >= maxPage;
 
@@ -11358,6 +11267,7 @@
         ${thBtn("c3", "consCol3Y")}
         ${thBtn("avg", "consColAvgMonth")}
         ${thBtn("cover", "consColCoverDays")}
+        <th>${thoatHTML(tuDien("warehouseHistoryAction"))}</th>
       </tr></thead>`;
 
       const tbody = slice.map(r => {
@@ -11367,14 +11277,15 @@
           m.tier === "safe" ? "cover-safe" :
           m.tier === "mismatch" ? "cover-mismatch" : "cover-idle";
         const coverText = dinhDangSoNgayCover(m.coverDays);
-        return `<tr data-sap="${thoatHTML(r.sap)}" tabindex="0" ondblclick="moLichSuDashboardTheoSap('${thoatHTML(r.sap)}')" onkeydown="bamPhimLichSuBangDashboard(event)">
+        return `<tr data-sap="${thoatHTML(r.sap)}" tabindex="0">
           <td><span class="material-sap">${thoatHTML(r.sap)}</span><span class="material-name">${thoatHTML(r.description || "—")}</span></td>
           <td><strong>${dinhDangSoLuong.format(r.stock)}</strong> <small style="color:var(--muted)">${thoatHTML(r.unit)}</small></td>
           <td>${dinhDangSoLuong.format(r.qty1Y)}</td>
           <td>${dinhDangSoLuong.format(r.qty2Y)}</td>
           <td>${dinhDangSoLuong.format(r.qty3Y)}</td>
-          <td><strong>${dinhDangThapPhan(m.avgMonth)}</strong> <small style="color:var(--muted)">${thoatHTML(r.unit)}/th</small></td>
+          <td><strong>${dinhDangThapPhan(m.avgMonth)}</strong> <small style="color:var(--muted)">${thoatHTML(r.unit)}/${thoatHTML(tuDien("warehouseMonthUnit"))}</small></td>
           <td><span class="cover-badge ${badgeCls}">${thoatHTML(coverText)}</span></td>
+          <td>${nutLichSuBaoCaoKho(r.sap)}</td>
         </tr>`;
       }).join("");
 
@@ -11424,90 +11335,9 @@
     }
 
     function xuatExcelConsumption() {
-      const rows = consTableState.filteredRows;
-      if (!rows.length) {
-        alert(tuDien("dashboardExportEmpty"));
-        return;
-      }
-      const horizon = Number(document.getElementById("analytics-cons-horizon")?.value) || 12;
-      const hKey = horizon === 36 ? "m36" : horizon === 24 ? "m24" : "m12";
-
-      const safeXML = v => String(v ?? "").replace(/[ --￾￿]/g, "")
-        .replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-      const colName = idx => String.fromCharCode(65 + idx);
-      const cellXML = (val, cIdx, rIdx, numeric) => {
-        const ref = colName(cIdx) + rIdx;
-        if (numeric && Number.isFinite(val)) return `<c r="${ref}"><v>${val}</v></c>`;
-        return `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${safeXML(val)}</t></is></c>`;
-      };
-
-      const headers = [
-        tuDien("colSap"),
-        tuDien("colDescription"),
-        tuDien("consColStock"),
-        tuDien("colUnit"),
-        tuDien("consCol1Y"),
-        tuDien("consCol2Y"),
-        tuDien("consCol3Y"),
-        `${tuDien("consColAvgMonth")} (${horizon}T)`,
-        `${tuDien("consColCoverDays")} (${horizon}T)`
-      ];
-
-      const sheetRows = [
-        `<row r="1">${headers.map((h, i) => cellXML(h, i, 1, false)).join("")}</row>`
-      ];
-
-      rows.forEach((r, idx) => {
-        const rNum = idx + 2;
-        const m = r[hKey];
-        const coverVal = Number.isFinite(m.coverDays) ? Math.round(m.coverDays * 10) / 10 : dinhDangSoNgayCover(m.coverDays);
-        const cells = [
-          cellXML(r.sap, 0, rNum, false),
-          cellXML(r.description, 1, rNum, false),
-          cellXML(r.stock, 2, rNum, true),
-          cellXML(r.unit, 3, rNum, false),
-          cellXML(r.qty1Y, 4, rNum, true),
-          cellXML(r.qty2Y, 5, rNum, true),
-          cellXML(r.qty3Y, 6, rNum, true),
-          cellXML(Number.isFinite(m.avgMonth) ? Math.round(m.avgMonth * 100) / 100 : "—", 7, rNum, Number.isFinite(m.avgMonth)),
-          cellXML(coverVal, 8, rNum, Number.isFinite(m.coverDays))
-        ];
-        sheetRows.push(`<row r="${rNum}">${cells.join("")}</row>`);
-      });
-
-      const worksheet = `<?xml version="1.0" encoding="UTF-8"?>
-        <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-          <sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
-          <sheetData>${sheetRows.join("")}</sheetData>
-          <autoFilter ref="A1:I${rows.length + 1}"/>
-        </worksheet>`;
-
-      const parts = [
-        { name: "[Content_Types].xml", data: '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>' },
-        { name: "_rels/.rels", data: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
-        { name: "xl/workbook.xml", data: '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Consumption_1_2_3Y" sheetId="1" r:id="rId1"/></sheets></workbook>' },
-        { name: "xl/_rels/workbook.xml.rels", data: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>' },
-        { name: "xl/worksheets/sheet1.xml", data: worksheet }
-      ];
-
-      const blob = new Blob([dongGoiZipXlsx(parts)], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `SAP_Consumption_${horizon}M_${new Date().toISOString().slice(0, 10)}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      xuatNhanhBaoCaoKho("consumption");
     }
 
-    const _gocCapNhatThongKeNangCao = capNhatThongKeNangCao;
-    capNhatThongKeNangCao = function () {
-      _gocCapNhatThongKeNangCao.apply(this, arguments);
-      veBangConsumption123();
-    };
 
     const _gocLocLichSuVatTu = typeof locLichSuVatTu === "function" ? locLichSuVatTu : null;
     if (_gocLocLichSuVatTu) {
@@ -11531,6 +11361,12 @@
         return res;
       };
     }
+    const savedWarehouseReport=docTuyChon("checking-warehouse-report");
+    if(["value","out","dormant","consumption"].includes(savedWarehouseReport))
+      warehouseReportKind=savedWarehouseReport;
+    capNhatKhongGianBaoCaoKho();
+    apDungNgonNgu();
+    capNhatThongTinDuLieuKho();
   </script>
 
 </body>

@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - Checking
+      - Checking.html
       - Amount.js
       - HistoryWorker.js
       - History.js
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - Checking
+      - Checking.html
       - Amount.js
       - HistoryWorker.js
       - History.js
@@ -34,6 +36,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate Checking.html warehouse scope, availability and exports
+        run: node tests/warehouse_readability_logic.cjs
       - name: Validate Amount.js reader and refresh
         run: node tests/amount_logic.cjs
       - name: Validate filtered report exports
@@ -70,6 +74,8 @@ jobs:
         run: |
           npm install --no-save playwright@1.56.1
           npx playwright install chromium --with-deps
+      - name: Verify Checking.html warehouse overview and report navigation
+        run: node tests/warehouse_readability_browser.cjs
       - name: Verify shared header, search history and request interactions
         run: node tests/checking_activity_browser.cjs
       - name: Check dashboard interactions
