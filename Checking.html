@@ -7041,6 +7041,7 @@
     function capNhatPhanTrangBangKho(kind,total){
       const state=dashboardTableState[kind],prefix=bangKhoPrefix(kind);
       if(!state||!prefix)return {start:0,end:0,total:0};
+      document.getElementById(prefix+"-pager").hidden=total===0;
       const maxPage=Math.max(1,Math.ceil(total/state.size));
       state.page=Math.max(1,Math.min(maxPage,state.page));
       const start=(state.page-1)*state.size,end=Math.min(total,start+state.size);
@@ -7157,7 +7158,7 @@
       if (!root) return;
       xoaChiSoBaoCaoKho("out");
       capNhatSoMaBaoCaoKho("out", null);
-      capNhatPhanTrangBangKho("out", 0);
+      document.getElementById("dashboard-out-pager").hidden = true;
       if (note) note.textContent = "";
 
       if (!historyLoaded) {

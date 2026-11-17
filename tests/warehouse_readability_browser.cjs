@@ -58,6 +58,16 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
     await page.locator('#analytics-report-kind').selectOption('out');
     assert.equal(await visibleReports().getAttribute('data-warehouse-report'),'out');
     assert.equal(await page.locator('#dashboard-range-mode').isVisible(),true);
+    await page.locator('#dashboard-hall').selectOption('all');
+    await page.locator('#dashboard-out-size').selectOption('custom');
+    await page.locator('#dashboard-out-custom').fill('1');
+    await page.locator('#dashboard-out-custom').dispatchEvent('change');
+    const firstSap=await page.locator('#dashboard-top-out tbody tr').first().getAttribute('data-sap');
+    await page.locator('#dashboard-out-next').click();
+    assert.equal(await page.locator('#dashboard-out-page').inputValue(),'2','changing pages must survive rendering');
+    assert.notEqual(await page.locator('#dashboard-top-out tbody tr').first().getAttribute('data-sap'),firstSap);
+    await page.locator('#dashboard-out-size').selectOption('25');
+    await page.locator('#dashboard-hall').selectOption('hall1');
     await page.locator('#dashboard-top-out button[data-history-sap="A"]').click();
     assert.equal(await page.locator('#material-history-dialog').evaluate(node=>node.open),true);
     assert.equal(await page.locator('#material-history-from').inputValue(),'2026-11-01');
