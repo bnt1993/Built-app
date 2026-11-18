@@ -2181,7 +2181,7 @@
       font-size: 12px;
       font-weight: 650;
     }
-    :is(#view-dashboard, #view-analytics) #dashboard-hall-status {
+    :is(#view-dashboard, #view-analytics) :is(#dashboard-hall-status,#dashboard-source-summary) {
       flex: 1 1 100%;
       margin: 2px 0 0;
       font-size: 11px;
@@ -2991,6 +2991,7 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 <input id="dashboard-range-to" onchange="doiKyPhanTichKho()" type="date"/>
 </label>
 <p aria-live="polite" class="dashboard-hall-status insight-note" id="dashboard-hall-status" role="status"></p>
+<p aria-live="polite" class="dashboard-hall-status insight-note" id="dashboard-source-summary" role="status"></p>
 </section>
 <section class="warehouse-kpi-grid" data-i18n-aria="warehouseOverview">
 <div class="warehouse-kpi-group">
@@ -3000,7 +3001,7 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 </div>
 <div class="warehouse-kpi-cards">
 <article class="warehouse-kpi" data-tone="ratio">
-<h3>Tỷ lệ xuất / nhập trong kỳ</h3>
+<h3 data-i18n="warehousePeriodRatio">Tỷ lệ xuất / nhập trong kỳ</h3>
 <strong id="warehouse-period-inventory">—</strong>
 <small id="warehouse-period-inventory-date"></small>
 </article>
@@ -3030,7 +3031,7 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 </div>
 <div class="warehouse-kpi-cards">
 <article class="warehouse-kpi" data-tone="ratio">
-<h3>Tỷ lệ xuất / nhập tuần cuối</h3>
+<h3 data-i18n="warehouseWeekRatio">Tỷ lệ xuất / nhập tuần cuối</h3>
 <strong id="warehouse-week-inventory">—</strong>
 <small id="warehouse-week-inventory-date"></small>
 </article>
@@ -3147,20 +3148,36 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 </div>
 </section>
 
+<section class="warehouse-compare-panel" id="warehouse-compare-panel" aria-labelledby="warehouse-compare-title">
+  <div class="warehouse-risk-header"><div>
+    <p class="warehouse-overline" data-i18n="upgradeCompareEyebrow">SO SÁNH ĐỘC LẬP</p>
+    <h2 id="warehouse-compare-title" data-i18n="upgradeCompareTitle">Đối chiếu hai khoảng thời gian tùy chọn</h2>
+    <p class="insight-note" data-i18n="upgradeCompareHelp">So sánh giá trị nhập, xuất và chênh lệch từ History.js; áp dụng Hall đang chọn, độc lập với kỳ Dashboard.</p>
+  </div><button type="button" class="btn btn-secondary" id="warehouse-compare-swap" data-i18n="upgradeCompareSwap">Đổi hai kỳ</button></div>
+  <div class="warehouse-compare-filters">
+    <fieldset><legend data-i18n="upgradeCompareCurrent">Kỳ A (cần đánh giá)</legend>
+      <label><span data-i18n="dashboardTimeFrom">Từ ngày</span><input type="date" id="warehouse-compare-a-from" /></label>
+      <label><span data-i18n="dashboardTimeTo">Đến ngày</span><input type="date" id="warehouse-compare-a-to" /></label>
+    </fieldset>
+    <fieldset><legend data-i18n="upgradeComparePrior">Kỳ B (đối chiếu)</legend>
+      <label><span data-i18n="dashboardTimeFrom">Từ ngày</span><input type="date" id="warehouse-compare-b-from" /></label>
+      <label><span data-i18n="dashboardTimeTo">Đến ngày</span><input type="date" id="warehouse-compare-b-to" /></label>
+    </fieldset>
+  </div>
+  <div class="warehouse-compare-metrics" id="warehouse-compare-results" role="status" aria-live="polite"></div>
+  <p class="insight-note" id="warehouse-compare-note" role="status"></p>
+</section>
+
 <section class="warehouse-risk-panel" id="risk-upgrade-dashboard" aria-labelledby="risk-dashboard-title">
   <div class="warehouse-risk-header"><div>
     <p class="warehouse-overline" data-i18n="upgradeRiskEyebrow">ƯU TIÊN XỬ LÝ</p>
     <h2 id="risk-dashboard-title" data-i18n="upgradeRiskTitle">Vật tư có nguy cơ hết hàng</h2>
     <p class="insight-note" data-i18n="upgradeRiskMethod">Dựa trên lượng xuất 12 tháng và tồn kho Hall 1; số ngày còn sử dụng là ước tính, không phải ngày giao hàng.</p>
   </div><div class="warehouse-risk-controls">
-    <label><span data-i18n="upgradeRiskFilter">Mức ưu tiên</span>
-    <select id="risk-dashboard-filter" aria-label="Lọc nguy cơ hết hàng"><option value="urgent" data-i18n="upgradeUrgent">Dưới 30 ngày / Hết hàng</option><option value="attention" data-i18n="upgradeAttention">Dưới 90 ngày / Hết hàng</option><option value="all" data-i18n="upgradeAllValid">Tất cả có số liệu</option></select></label>
-    <button class="btn btn-secondary" type="button" id="risk-dashboard-export" data-i18n="upgradeExportXlsx">Xuất Excel</button>
+    <button class="btn btn-secondary" data-i18n="upgradeRiskView" onclick="moDanhSachUuTien()" type="button">Xem danh sách ưu tiên</button>
   </div></div>
   <div class="warehouse-risk-metrics" id="risk-dashboard-metrics" aria-live="polite"></div>
-  <div class="warehouse-risk-scroll" role="region" tabindex="0" aria-label="Danh sách vật tư có nguy cơ hết hàng"><div id="risk-dashboard-table" aria-live="polite" class="warehouse-risk-content"></div></div>
-  <div class="warehouse-risk-bottom"><span id="risk-dashboard-note" class="insight-note" role="status"></span>
-    <div class="warehouse-risk-pager"><button class="btn btn-secondary" id="risk-dashboard-prev" type="button" aria-label="Trang trước">‹</button><span id="risk-dashboard-pages">—</span><button class="btn btn-secondary" id="risk-dashboard-next" type="button" aria-label="Trang sau">›</button></div></div>
+  <p class="insight-note" id="risk-dashboard-note" role="status"></p>
 </section>
 <div class="warehouse-support-grid">
 <section aria-label="Cảnh báo kho" class="dashboard-alert-panel" data-i18n-aria="dashAlertHeading">
@@ -3210,7 +3227,7 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 <div class="pane-heading">
 <div>
 <h1 data-i18n="dashboardHeading">Phân tích kho chuyên sâu</h1>
-<p data-i18n="warehouseAnalyticsDesc">Phân loại Pareto ABC, thống kê tiêu thụ 1–2–3 năm &amp; số ngày Cover, xếp hạng xuất nhiều và tồn lâu.</p>
+<p data-i18n="warehouseAnalyticsDesc">Thống kê tiêu thụ 1–2–3 năm, số ngày đủ dùng, vật tư xuất nhiều và tồn lâu.</p>
 </div>
 <button class="btn btn-primary" onclick="xuatNhanhBaoCaoKho('all')" type="button">↓ <span data-i18n="dashboardExportAll">Xuất tất cả báo cáo (.xlsx)</span></button>
 </div>
@@ -3243,25 +3260,7 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
   <p class="insight-note" id="quality-scope" role="status"></p>
 </section>
 
-<section class="warehouse-compare-panel" id="warehouse-compare-panel" aria-labelledby="warehouse-compare-title">
-  <div class="warehouse-risk-header"><div>
-    <p class="warehouse-overline" data-i18n="upgradeCompareEyebrow">SO SÁNH ĐỘC LẬP</p>
-    <h2 id="warehouse-compare-title" data-i18n="upgradeCompareTitle">Đối chiếu hai khoảng thời gian tùy chọn</h2>
-    <p class="insight-note" data-i18n="upgradeCompareHelp">So sánh giá trị nhập, xuất và chênh lệch từ History.js; áp dụng Hall đang chọn, độc lập với kỳ Dashboard.</p>
-  </div><button type="button" class="btn btn-secondary" id="warehouse-compare-swap" data-i18n="upgradeCompareSwap">Đổi hai kỳ</button></div>
-  <div class="warehouse-compare-filters">
-    <fieldset><legend data-i18n="upgradeCompareCurrent">Kỳ A (cần đánh giá)</legend>
-      <label><span data-i18n="dashboardTimeFrom">Từ ngày</span><input type="date" id="warehouse-compare-a-from" /></label>
-      <label><span data-i18n="dashboardTimeTo">Đến ngày</span><input type="date" id="warehouse-compare-a-to" /></label>
-    </fieldset>
-    <fieldset><legend data-i18n="upgradeComparePrior">Kỳ B (đối chiếu)</legend>
-      <label><span data-i18n="dashboardTimeFrom">Từ ngày</span><input type="date" id="warehouse-compare-b-from" /></label>
-      <label><span data-i18n="dashboardTimeTo">Đến ngày</span><input type="date" id="warehouse-compare-b-to" /></label>
-    </fieldset>
-  </div>
-  <div class="warehouse-compare-metrics" id="warehouse-compare-results" role="status" aria-live="polite"></div>
-  <p class="insight-note" id="warehouse-compare-note" role="status"></p>
-</section>
+
 <section class="warehouse-risk-panel warehouse-risk-analytics" id="risk-upgrade-analytics" aria-labelledby="risk-analytics-title">
   <div class="warehouse-risk-header"><div>
     <p class="warehouse-overline" data-i18n="upgradeRiskEyebrow">ƯU TIÊN XỬ LÝ</p><h2 id="risk-analytics-title" data-i18n="upgradeRiskAnalytics">Danh sách ưu tiên bổ sung vật tư</h2>
@@ -3285,21 +3284,26 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 <section class="analytics-tables" data-i18n-aria="warehouseTables">
 <div class="insight-box dashboard-chart dashboard-top-card analytics-table-card">
 <div class="dashboard-chart-heading">
-<h3 data-i18n="dashTopValue">Phân tích ABC &amp; Vật tư có giá trị tồn cao nhất</h3>
+<h3 data-i18n="dashTopValue">Vật tư có giá trị tồn cao nhất</h3>
 <div class="dashboard-chart-filters">
 <label class="dashboard-top-filter"><span data-i18n="dashRankLimit">Hiển thị</span>
-<select id="dashboard-limit" onchange="capNhatThongKeNangCao()">
+<select id="dashboard-limit" onchange="doiGioiHanGiaTriTon()">
 <option data-i18n="rankTop10" value="10">Top 10</option>
 <option data-i18n="rankTop20" selected="" value="20">Top 20</option>
 <option data-i18n="rankTop50" value="50">Top 50</option>
-<option data-i18n="searchAll" value="5000">Tất cả</option>
+<option data-i18n="searchAll" value="all">Tất cả</option>
 </select>
 </label>
 <button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('value')" type="button">↓ Excel</button>
 </div>
 </div>
-<p class="insight-note" data-i18n="dashValueNote">Phân loại Pareto ABC dựa trên giá trị tồn kho tích lũy (Nhóm A ≤ 80%, Nhóm B ≤ 95%, Nhóm C &gt; 95%).</p>
+<p class="insight-note" data-i18n="dashValueNote">Giá trị tồn = số lượng × đơn giá, gộp theo mã SAP.</p>
 <div class="dashboard-chart-body" data-i18n-aria="dashTopValue" id="insight-top" role="region" tabindex="0"></div>
+<div class="warehouse-risk-pager" id="dashboard-value-pager" hidden>
+  <button type="button" class="btn btn-secondary" id="dashboard-value-prev" data-i18n="prev" onclick="doiTrangGiaTriTon(-1)">Trước</button>
+  <span id="dashboard-value-pages" aria-live="polite"></span>
+  <button type="button" class="btn btn-secondary" id="dashboard-value-next" data-i18n="next" onclick="doiTrangGiaTriTon(1)">Sau</button>
+</div>
 </div>
 <div class="insight-box dashboard-chart dashboard-table-chart analytics-table-card">
 <div class="dashboard-chart-heading">
@@ -3404,12 +3408,13 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 <option data-i18n="consStatusSafe" value="safe">An toàn (&gt; 90 ngày)</option>
 <option data-i18n="consStatusZero" value="zero">Hết hàng (= 0 ngày)</option>
 <option data-i18n="consStatusIdle" value="idle">Không phát sinh xuất (∞)</option>
+<option data-i18n="consInsufficient" value="unknown">Không đủ dữ liệu để tính</option>
 </select>
 </label>
 <button class="btn btn-soft card-export-btn" onclick="xuatExcelConsumption()" type="button">↓ Excel</button>
 </div>
 </div>
-<p class="insight-note" data-i18n="consCardNote">Chỉ Hall 1 · 12/24/36 tháng gần nhất tính đến hôm nay, độc lập với bộ chọn kỳ chung. TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày sử dụng dự kiến = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.</p>
+<p class="insight-note" data-i18n="consCardNote">Chỉ Hall 1 · 12/24/36 tháng gần nhất tính đến ngày hạch toán mới nhất, độc lập với bộ chọn kỳ chung. TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày sử dụng dự kiến = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.</p>
 <div aria-live="polite" class="cons-summary-strip" id="analytics-cons-summary" role="status"></div>
 <div class="dashboard-chart-body" data-i18n-aria="consCardTitle" id="analytics-cons-body" role="region" tabindex="0"></div>
 <div class="dashboard-mini-pager" id="analytics-cons-pager">
@@ -3442,7 +3447,7 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 <label data-i18n="dashboardExportSelect" for="dashboard-export-kind" id="dashboard-export-label">Chọn báo cáo xuất</label>
 <select aria-label="Chọn báo cáo xuất" data-i18n-aria="dashboardExportSelect" id="dashboard-export-kind">
 <option data-i18n="dashboardExportStock" value="stock">Tra cứu tồn kho (bộ lọc Tra cứu)</option>
-<option data-i18n="dashboardExportTopValue" value="value">Phân tích ABC &amp; Vật tư giá trị tồn cao</option>
+<option data-i18n="dashboardExportTopValue" value="value">Vật tư có giá trị tồn cao</option>
 <option data-i18n="dashboardExportTopOut" value="out">Vật tư xuất nhiều nhất</option>
 <option data-i18n="dashboardExportDormant" value="dormant">Vật tư tồn lâu (Dead-stock)</option>
 <option data-i18n="consCardTitle" value="consumption">Thống kê tiêu thụ 1–2–3 năm &amp; Số ngày Cover</option>
@@ -3585,6 +3590,21 @@ const CHECKING_SPLIT_MODE="report";
         warehouseSnapshotDate:"Bản ghi ngày {date}",
         warehouseNoSnapshot:"Chưa có bản ghi tồn trong kỳ.",
         warehouseInventoryDetail:"Xu hướng giá trị tồn kho",
+        warehousePeriodRatio:"Tỷ lệ xuất / nhập trong kỳ",
+        warehouseWeekRatio:"Tỷ lệ xuất / nhập tuần cuối",
+        warehouseRatioMethod:"Giá trị xuất ÷ giá trị nhập",
+        dashboardHistoryCoverage:"Lịch sử ghi nhận từ {from} đến {to}",
+        dashboardHistoryPartial:"Kỳ thiếu dữ liệu hoặc có giao dịch bị loại",
+        dashboardValuationSingle:"Có 1 mốc định giá. Cần ít nhất 2 mốc để so sánh.",
+        dashboardAlertIncomplete:"Chưa đủ dữ liệu để kiểm tra toàn bộ cảnh báo",
+        dashboardAlertNormal:"Kho đang ổn định",
+        dashboardAlertNeedsData:"Cần dữ liệu",
+        dashboardAlertNormalBadge:"Bình thường",
+        dashboardStockMissing:"Cần đặt data.js đúng định dạng cạnh file HTML",
+        dashboardStockHall2:"Hall 2 chỉ có dữ liệu xuất nhập",
+        consInsufficient:"Không đủ dữ liệu để tính",
+        upgradeKpiUnknown:"Chưa đủ dữ liệu",
+        upgradeRiskView:"Xem danh sách ưu tiên",
         warehouseMovementDetail:"Chi tiết giá trị nhập / xuất",
         warehouseLineNote:"Lấy giá trị ghi nhận cuối mỗi kỳ; giữ khoảng trống nếu chưa có dữ liệu.",
         warehouseCurrentStock:"Tổng quan tồn kho hiện tại",
@@ -3932,6 +3952,21 @@ const CHECKING_SPLIT_MODE="report";
         warehouseSnapshotDate:"Recorded on {date}",
         warehouseNoSnapshot:"No inventory record in this period.",
         warehouseInventoryDetail:"Inventory value trend",
+        warehousePeriodRatio:"Outbound / inbound ratio",
+        warehouseWeekRatio:"Last-week outbound / inbound ratio",
+        warehouseRatioMethod:"Outbound value ÷ inbound value",
+        dashboardHistoryCoverage:"Recorded history from {from} to {to}",
+        dashboardHistoryPartial:"A period is incompletely covered or contains excluded transactions",
+        dashboardValuationSingle:"One valuation snapshot available. At least two are needed for comparison.",
+        dashboardAlertIncomplete:"Insufficient data to evaluate all alerts",
+        dashboardAlertNormal:"Warehouse status normal",
+        dashboardAlertNeedsData:"Data needed",
+        dashboardAlertNormalBadge:"Normal",
+        dashboardStockMissing:"A compatible data.js is needed beside the HTML file",
+        dashboardStockHall2:"Only movement data is available for Hall 2",
+        consInsufficient:"Insufficient data",
+        upgradeKpiUnknown:"Insufficient data",
+        upgradeRiskView:"View replenishment priorities",
         warehouseMovementDetail:"Inbound / outbound detail",
         warehouseLineNote:"Last recorded value per period; missing periods remain gaps.",
         warehouseCurrentStock:"Current inventory overview",
@@ -4529,7 +4564,8 @@ const CHECKING_SPLIT_MODE="report";
         // One filter bar keeps Hall/date scope identical in both workspaces.
         document.querySelector("#view-"+tab+" .pane-heading").after(
           document.getElementById("warehouse-filters"));
-        if(analyticsReady)capNhatThongKeNangCao();
+        capNhatThongKeNangCao();
+        veTrangThaiNguon();
         if(!historyLoaded&&!historyLoading&&!daThuTaiHistoryChoCard){
           daThuTaiHistoryChoCard=true;
           taiHistory(false);
@@ -5557,12 +5593,25 @@ const CHECKING_SPLIT_MODE="report";
           (entry.updated?" · "+tuDien("dashSourceUpdated",{time:entry.updated}):"");
         node.replaceChildren(title,desc);
       }
+      const summary=document.getElementById("dashboard-source-summary");
+      if(!summary)return;
+      const summaryItems=["stock","history","amount"].map(id=>{
+        const {status}=trangThaiNguon[id];
+        if(hallDangLoc()==="hall2"&&id!=="history")return "";
+        const snapshotCount=id==="amount"?layGiaTriKhoTuAmount().length:0;
+        const note=id==="stock"&&status==="error"?" · "+tuDien("dashboardStockMissing"):
+          id==="amount"&&snapshotCount===1?" · "+tuDien("dashboardValuationSingle"):"";
+        return tuDien(nhanNguon[id])+" — "+tuDien(nhanTinhTrangNguon[status])+note;
+      }).filter(Boolean);
+      if(hallDangLoc()==="hall2")summaryItems.unshift(tuDien("dashboardStockHall2"));
+      summary.textContent=summaryItems.join(" · ");
     }
     function ghiNhanNguon(id,status,details={}){
       const entry=trangThaiNguon[id];if(!entry)return;
       Object.assign(entry,details,{status,at:new Date().toLocaleTimeString(
         ngonNguHienTai==="en"?"en-US":"vi-VN")});
       veTrangThaiNguon();
+      if(id!=="images")capNhatCanhBaoKho();
     }
     function phanTramBienDongKho(current,previous){
       if(!Number.isFinite(current)||!Number.isFinite(previous)||previous===0)return null;
@@ -5847,7 +5896,7 @@ const CHECKING_SPLIT_MODE="report";
 
     function tinhPhanTichDashboard(rows,headers) {
       const priceCol=cotHistoryTheoTen(headers,["Price","Unit Price","Đơn giá","Giá"]);
-      const unitCol=cotHistoryTheoTen(headers,["Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
+      const unitCol=cotHistoryTheoTen(headers,["Base Unit of Measure","BUn","BUn.","Unit","UOM","Đơn vị","Đơn vị tính"]);
       const descCol=cotHistoryTheoTen(headers,["Material Description","Description","Mô tả","Mô tả vật tư"]);
       const valueBySap=new Map(),detailsBySap=new Map();
       let total=0,missingPrice=0,inStock=0,attention=0;
@@ -5893,7 +5942,7 @@ const CHECKING_SPLIT_MODE="report";
       out:{column:"value",direction:-1},
       dormant:{column:"last",direction:1}
     };
-    let dashboardTopValueCache=[];
+    let dashboardValuePage=1;
     function giaTriSapXepKho(rec,column){
       switch(column){
         case "material":return rec.name??rec.sap??"";
@@ -5944,8 +5993,8 @@ const CHECKING_SPLIT_MODE="report";
         state.direction=["quantity","stock","price","value"].includes(column)?-1:1;
       }
       if(kind==="value"){
-        const limit=Number(document.getElementById("dashboard-limit").value)||10;
-        veBangTopGiaTriVatTu(dashboardTopValueCache,limit);
+        dashboardValuePage=1;
+        veBangTopGiaTriVatTu();
       }else if(kind==="out"){
         dashboardTableState.out.page=1;veTopVatTuXuatKho();
       }else if(kind==="dormant"){
@@ -5976,42 +6025,44 @@ const CHECKING_SPLIT_MODE="report";
       root.innerHTML='<table class="dashboard-top-table">'+header+'<tbody>'+body+'</tbody></table>';
     }
 
+    let dashboardStockStatsCache=null;
+    function thongKeTonDashboard(){
+      if(dashboardStockStatsCache?.rows!==duLieuTimKiem||dashboardStockStatsCache.headers!==tieuDeCot){
+        dashboardStockStatsCache={rows:duLieuTimKiem,headers:tieuDeCot,
+          stats:tinhPhanTichDashboard(duLieuTimKiem,tieuDeCot)};
+      }
+      return dashboardStockStatsCache.stats;
+    }
+
     function capNhatThongKeNangCao() {
-      if(!analyticsReady)return;
-      const limit=Number(document.getElementById("dashboard-limit").value)||10;
-      const filteredStock=hallDangLoc()==="hall2"?null:duLieuTimKiem;
-      const stats=filteredStock===null?null:tinhPhanTichDashboard(filteredStock,tieuDeCot);
-      if(stats===null){
-        for(const id of ["metric-total","metric-instock","metric-attention"])
-          document.getElementById(id).textContent="—";
-      }else{
-        for(const [id,value] of [["metric-total",stats.count],["metric-instock",stats.inStock],["metric-attention",stats.attention]])
-          document.getElementById(id).textContent=dinhDangSoLuong.format(value);
-      }
-      // These stock reports use the same source for All areas and Hall 1.
-      if(hallDangLoc()==="hall2"){
-        document.getElementById("insight-stock-distribution").textContent=tuDien("dashboardHall2NoStockReport");
-        dashboardTopValueCache=[];
-        document.getElementById("insight-top").textContent=tuDien("dashboardHall2NoStockReport");
-      }else{
-        const stockStats=filteredStock===duLieuTimKiem?stats:
-          tinhPhanTichDashboard(duLieuTimKiem,tieuDeCot);
-        vePhanBoTrangThai(duLieuTimKiem);
-        dashboardTopValueCache=stockStats.values;
-        veBangTopGiaTriVatTu(stockStats.values,limit);
-      }
+      const stockAvailable=analyticsReady&&hallDangLoc()!=="hall2";
+      const unavailable=tuDien(hallDangLoc()==="hall2"?"dashboardHall2NoStockReport":"dashboardStockMissing");
       capNhatTrangThaiHall();
-      veBieuDoSuDungKho();
-      veBieuDoGiaTriKho();
-      veSoSanhNhapXuatKho();
-      veTopVatTuXuatKho();
-      veVatTuTonLau();
-      veLichSuKho();
-      capNhatCanhBaoKho();
+      if(tabHienTai==="dashboard"){
+        const stats=stockAvailable?thongKeTonDashboard():null;
+        for(const [id,key] of [["metric-total","count"],["metric-instock","inStock"],["metric-attention","attention"]])
+          document.getElementById(id).textContent=stats?dinhDangSoLuong.format(stats[key]):"—";
+        if(stats)vePhanBoTrangThai(duLieuTimKiem);
+        else document.getElementById("insight-stock-distribution").textContent=unavailable;
+        veBieuDoSuDungKho();
+        veBieuDoGiaTriKho();
+        veSoSanhNhapXuatKho();
+        veLichSuKho();
+        capNhatCanhBaoKho();
+      }else if(tabHienTai==="analytics"){
+        if(stockAvailable)veBangTopGiaTriVatTu();
+        else {
+          document.getElementById("insight-top").textContent=unavailable;
+          document.getElementById("dashboard-value-pager").hidden=true;
+        }
+        veTopVatTuXuatKho();
+        veVatTuTonLau();
+      }
       kiemTraNhacBaoCao();
     }
 
     function veLichSuKho() {
+      if(tabHienTai!=="dashboard")return;
       const snapshots=layGiaTriKhoTuAmount();
       const node=document.getElementById("insight-history");
       if(hallDangLoc()==="hall2"){
@@ -6293,6 +6344,7 @@ const CHECKING_SPLIT_MODE="report";
       veTopVatTuXuatKho();
       veBieuDoSuDungKho();
       veBieuDoGiaTriKho();
+      capNhatCanhBaoKho();
     }
 
     // Storage Location is resolved by header, never by position: History.js may
@@ -6318,19 +6370,22 @@ const CHECKING_SPLIT_MODE="report";
     }
     let historyHallCache=null;
     let stockHallCache=null;
+    const historyDateCoverageCache=new WeakMap();
     function lichSuTheoHall(hall=hallDangLoc()){
       if(hall==="all")return historyAll;
       const index=cotStorageLocation(historyColumns);
       if(index<0)return null;
-      if(historyHallCache&&historyHallCache.records===historyAll&&
-        historyHallCache.index===index&&historyHallCache.hall===hall)
-        return historyHallCache.unrecognized?null:historyHallCache.rows;
-      const rows=historyAll.filter(rec=>hallTuStorageLocation(rec.cells[index])===hall);
-      const unknownCount=historyAll.reduce((count,rec)=>
-        count+(!hallTuStorageLocation(rec.cells[index])?1:0),0);
-      const hasKnown=historyAll.length>unknownCount;
-      historyHallCache={records:historyAll,index,hall,rows,unknownCount,unrecognized:!hasKnown};
-      return hasKnown?rows:null;
+      if(historyHallCache?.records!==historyAll||historyHallCache.index!==index){
+        const groups={hall1:[],hall2:[]};
+        let unknownCount=0;
+        for(const rec of historyAll){
+          const name=hallTuStorageLocation(rec.cells[index]);
+          if(name)groups[name].push(rec);
+          else unknownCount++;
+        }
+        historyHallCache={records:historyAll,index,groups,unknownCount};
+      }
+      return historyHallCache.unknownCount===historyAll.length?null:historyHallCache.groups[hall];
     }
     function tonKhoTheoHall(hall=hallDangLoc()){
       if(hall==="all")return duLieuTimKiem;
@@ -6385,16 +6440,13 @@ const CHECKING_SPLIT_MODE="report";
       note.textContent=alerts.join(" · ")||tuDien("dashboardQuantitySource");
     }
     function doiLocHallPhanTich(){
-      historyHallCache=null;stockHallCache=null;
       dashboardOutCache=null;dashboardDormantCache=null;
+      dashboardValuePage=1;
       dashboardTableState.out.page=1;dashboardTableState.dormant.page=1;
       document.getElementById("dashboard-out-min").value="0";
-      capNhatTrangThaiHall();
-      if(analyticsReady)capNhatThongKeNangCao();
-      else {
-        veSoSanhNhapXuatKho();veTopVatTuXuatKho();
-        veVatTuTonLau();veBieuDoSuDungKho();veBieuDoGiaTriKho();
-      }
+      capNhatThongKeNangCao();
+      veTrangThaiNguon();
+      if(typeof showDataScope==="function")showDataScope(tabHienTai);
     }
 
     function locGiaoDichKho(range,types=["in","out"]){
@@ -6428,17 +6480,49 @@ const CHECKING_SPLIT_MODE="report";
       }
       return sum;
     }
-    // Inventory is the last recorded valuation INSIDE the selected interval.
-    // No balances are extrapolated from movements or borrowed across periods.
+    function phamViNgayLichSuKho(rows=lichSuTheoHall()){
+      if(!historyLoaded||!rows)return null;
+      if(historyDateCoverageCache.has(rows))return historyDateCoverageCache.get(rows);
+      let from="",to="",invalid=0,unknownMovement=0;
+      for(const record of rows){
+        const validDate=ngayHistoryHopLe(record.date);
+        if(record.type==="in"||record.type==="out"){
+          if(!validDate)invalid++;
+        }else if(historyTypeColumn>=0&&!String(record.cells[historyTypeColumn]??"").trim()){
+          unknownMovement++;
+        }
+        if(!validDate)continue;
+        if(!from||record.date<from)from=record.date;
+        if(record.date>to)to=record.date;
+      }
+      const coverage=from?{from,to,invalid,unknownMovement}:null;
+      historyDateCoverageCache.set(rows,coverage);
+      return coverage;
+    }
+
+    function danhGiaGiaTriKyKho(range){
+      const coverage=phamViNgayLichSuKho(),col=cotGiaTriLichSuKho();
+      if(!range||!coverage||col<0||historyTypeColumn<0)return null;
+      if(range.to<coverage.from||range.from>coverage.to)return null;
+      const totals=tongNhapXuatTrongKhoang(range,col);
+      const hallIncomplete=hallDangLoc()!=="all"&&historyHallCache?.unknownCount;
+      const complete=range.from>=coverage.from&&range.to<=coverage.to
+        &&!totals.invalid&&!coverage.invalid&&!coverage.unknownMovement&&!hallIncomplete;
+      return {...totals,complete,in:complete||totals.in!==0?totals.in:null,
+        out:complete||totals.out!==0?totals.out:null};
+    }
+
+    function ghiChuPhamViLichSu(rows){
+      const coverage=phamViNgayLichSuKho(rows);
+      return coverage?tuDien("dashboardHistoryCoverage",{from:coverage.from,to:coverage.to}):"";
+    }
+
     function thongKeTongQuanKho(range){
       if(!range)return null;
-      const amountCol=cotGiaTriLichSuKho();
-      const totals=historyLoaded&&amountCol>=0&&lichSuTheoHall()!==null?
-        tongNhapXuatTrongKhoang(range,amountCol):null;
-      const inventory=hallDangLoc()==="hall2"?null:layGiaTriKhoTuAmount()
-        .filter(rec=>rec.date>=range.from&&rec.date<=range.to).slice(-1)[0]||null;
-      return {inventory,incoming:totals?.in??null,outgoing:totals?.out??null,
-        net:totals?totals.in-totals.out:null,invalid:totals?.invalid||0};
+      const totals=danhGiaGiaTriKyKho(range);
+      return {incoming:totals?.in??null,outgoing:totals?.out??null,
+        net:totals?.complete?totals.in-totals.out:null,
+        complete:totals?.complete??false};
     }
 
     function khoangTuanCuoiDashboard(range){
@@ -6448,6 +6532,7 @@ const CHECKING_SPLIT_MODE="report";
     }
 
     function veTongQuanDashboard(){
+      if(tabHienTai!=="dashboard")return;
       const range=layKyPhanTichKho();
       const week=khoangTuanCuoiDashboard(range);
       const periodStats=thongKeTongQuanKho(range),weekStats=thongKeTongQuanKho(week);
@@ -6455,35 +6540,43 @@ const CHECKING_SPLIT_MODE="report";
       document.getElementById("warehouse-period-label").textContent=label(range);
       document.getElementById("warehouse-week-label").textContent=label(week);
       for(const [prefix,stats] of [["warehouse-period",periodStats],["warehouse-week",weekStats]]){
-        const values={inventory:stats?.inventory?.value??null,net:stats?.net??null};
+        const values={net:stats?.net??null};
         if(prefix==="warehouse-week")Object.assign(values,{in:stats?.incoming??null,out:stats?.outgoing??null});
         for(const [key,value] of Object.entries(values)){
           const node=document.getElementById(prefix+"-"+key);
           node.textContent=Number.isFinite(value)?dinhDangRutGonKho(value)+" ₫":"—";
           node.title=Number.isFinite(value)?dinhDangGiaTriKho(value):"";
         }
-        document.getElementById(prefix+"-inventory-date").textContent=stats?.inventory?
-          tuDien("warehouseSnapshotDate",{date:dinhDangNgayXuat(stats.inventory.date)}):
-          tuDien(hallDangLoc()==="hall2"?"dashboardHall2NoSnapshots":"warehouseNoSnapshot");
+        const ratio=document.getElementById(prefix+"-inventory");
+        const incoming=stats?.incoming,outgoing=stats?.outgoing;
+        ratio.textContent=!stats?.complete?"—":incoming>0?
+          chuoiPhanTramKho(outgoing/incoming*100).replace(/^\+/,""):outgoing>0?"∞":chuoiPhanTramKho(0);
+        ratio.title="";
+        document.getElementById(prefix+"-inventory-date").textContent=tuDien("warehouseRatioMethod");
       }
       let note=tuDien("warehouseNetNote");
       if(!range)note=tuDien("dashboardTimeInvalid");
       else if(!historyLoaded)note+=" · "+tuDien(historyLoading?"dashboardHistoryLoading":"dashboardCompareNoHistory");
       else if(lichSuTheoHall()===null)note+=" · "+tuDien(loiCotHall("history"));
       else if(cotGiaTriLichSuKho()<0)note+=" · "+tuDien("dashUsageNoQty");
-      else if(periodStats?.invalid)note+=" · "+tuDien("dashboardCompareInvalid",{count:periodStats.invalid});
+      else {
+        if(!periodStats?.complete)note+=" · "+tuDien("dashboardHistoryPartial");
+        const coverageNote=ghiChuPhamViLichSu();
+        if(coverageNote)note+=" · "+coverageNote;
+      }
       if(historyLoaded&&["historyInvalid","historyNoSource"].includes(historyStatusKey))
         note+=" · "+tuDien("materialHistoryStale");
       document.getElementById("warehouse-summary-note").textContent=note;
     }
 
-    function hienThiThayDoiKho(type,current,previous){
+    function hienThiThayDoiKho(type,current,previous,complete){
       const amount=document.getElementById("dashboard-compare-"+type+"-current");
       const change=document.getElementById("dashboard-compare-"+type+"-change");
       const prior=document.getElementById("dashboard-compare-"+type+"-prior");
-      amount.textContent=dinhDangGiaTriKho(current);
-      prior.textContent=tuDien("dashboardComparePrevious")+": "+dinhDangGiaTriKho(previous);
+      amount.textContent=current===null?"—":dinhDangGiaTriKho(current);
+      prior.textContent=tuDien("dashboardComparePrevious")+": "+(previous===null?"—":dinhDangGiaTriKho(previous));
       change.dataset.change="none";
+      if(!complete){change.title=tuDien("dashboardHistoryPartial");return;}
       if(previous===0){
         change.textContent=current>0?tuDien("dashboardCompareNew"):"—";
         change.title=tuDien("dashboardCompareNoPrevious");
@@ -6497,6 +6590,7 @@ const CHECKING_SPLIT_MODE="report";
       }
     }
     function veSoSanhNhapXuatKho(){
+      if(tabHienTai!=="dashboard")return;
       veTongQuanDashboard();
       // Clear figures when a source or date scope becomes unavailable.
       for(const type of ["in","out"]){
@@ -6534,13 +6628,12 @@ const CHECKING_SPLIT_MODE="report";
       }
       const amountCol=cotGiaTriLichSuKho();
       if(amountCol<0){root.textContent=tuDien("dashUsageNoQty");return;}
-      const now=tongNhapXuatTrongKhoang(range,amountCol);
-      const before=tongNhapXuatTrongKhoang({from:range.prevFrom,to:range.prevTo},amountCol);
-      hienThiThayDoiKho("in",now.in,before.in);
-      hienThiThayDoiKho("out",now.out,before.out);
-      root.textContent=tuDien("dashboardCompareNote")+
-        (now.invalid+before.invalid?" · "+
-        tuDien("dashboardCompareInvalid",{count:now.invalid+before.invalid}):"");
+      const now=danhGiaGiaTriKyKho(range);
+      const before=danhGiaGiaTriKyKho({from:range.prevFrom,to:range.prevTo});
+      const complete=!!(now?.complete&&before?.complete);
+      for(const type of ["in","out"])hienThiThayDoiKho(type,now?.[type]??null,before?.[type]??null,complete);
+      root.textContent=[tuDien(complete?"dashboardCompareNote":"dashboardHistoryPartial"),
+        ghiChuPhamViLichSu()].filter(Boolean).join(" · ");
     }
 
     function maKhoTrongHTML(rec){
@@ -6998,7 +7091,7 @@ const CHECKING_SPLIT_MODE="report";
     let giaoDichKyKho=[];
     let trangGiaoDichKy=1;
     const DONG_MOI_TRANG_KY=50;
-    function khoangKyDuocChon(key,mode){
+    function khoangKyDuocChon(key,mode,selected=layKyPhanTichKho()){
       let from=key,to=key;
       if(mode==="week")to=congNgayKho(key,6);
       else if(mode==="month"){
@@ -7008,7 +7101,6 @@ const CHECKING_SPLIT_MODE="report";
       }else if(mode==="year"){from=key+"-01-01";to=key+"-12-31";}
       else if(mode!=="day")return null;
       if(!ngayHistoryHopLe(from)||!ngayHistoryHopLe(to))return null;
-      const selected=layKyPhanTichKho();
       if(!selected)return null;
       from=from>selected.from?from:selected.from;
       to=to<selected.to?to:selected.to;
@@ -9480,14 +9572,16 @@ const CHECKING_SPLIT_MODE="report";
       const history=()=>{if(!historyLoaded||historyLoading)fail()};
       if(kind==="value"){
         stock();
-        const limit=Number(document.getElementById("dashboard-limit").value)||10;
-        const rows=sapXepBangPhanTich(dashboardTopValueCache.slice(0,limit),"value");
+        const limit=document.getElementById("dashboard-limit").value;
+        const rows=locVatTuGiaTriTon();
         return make("dashboardExportTopValue","Top ton",
           ["dashboardExportSap","dashboardExportDescription","dashTopQuantity",
            "dashboardExportUnit","dashboardExportValue"],
           rows.map(r=>[r.name,r.description||"",r.unit&&!r.inconsistent?r.quantity:null,
             r.mixed?tr("dashTopMixedUnits"):r.missing?"":r.unit,r.value]),[4],
-          [extra("dashboardExportTopN",limit),extra("dashboardExportSort",order("value"))]);
+          [extra("dashboardExportTopN",limit==="all"?tr("searchAll"):limit),
+           extra("search",document.getElementById("analytics-search").value.trim()||"—"),
+           extra("dashboardExportSort",order("value"))]);
       }
       if(kind==="out"){
         history();
@@ -9531,13 +9625,13 @@ const CHECKING_SPLIT_MODE="report";
         stock();history();
         const horizon=Number(document.getElementById("analytics-cons-horizon")?.value)||12;
         const hKey=horizon===36?"m36":horizon===24?"m24":"m12";
-        const rows=consTableState.filteredRows.length?consTableState.filteredRows:tinhDuLieuConsumption123("hall1");
+        const rows=locBangConsumption(hKey);
         return make("consCardTitle","Consumption "+horizon+"M",
           ["dashboardExportSap","dashboardExportDescription","consColStock",
            "dashboardExportUnit","consCol1Y","consCol2Y","consCol3Y","consColAvgMonth","consColCoverDays"],
           rows.map(r=>{
             const m=r[hKey];
-            const coverVal=Number.isFinite(m.coverDays)?Math.round(m.coverDays*10)/10:dinhDangSoNgayCover(m.coverDays);
+            const coverVal=Number.isFinite(m.coverDays)?Math.round(m.coverDays*10)/10:dinhDangSoNgayCover(m.coverDays,m.tier);
             return [r.sap,r.description||"",r.stock,r.unit||"",r.qty1Y,r.qty2Y,r.qty3Y,
               Number.isFinite(m.avgMonth)?Math.round(m.avgMonth*100)/100:null,coverVal];
           }),[],
@@ -9559,8 +9653,7 @@ const CHECKING_SPLIT_MODE="report";
           [],[extra("dashboardExportSource","data.js")]);
       }
       if(kind==="valueTrend"){
-        stock();
-        if(!period)fail();
+        if(hall==="hall2"||!period||!layGiaTriKhoTuAmount().length)fail();
         const mode=document.getElementById("dashboard-value-period").value;
         const buckets=nhomKyTrongKhoangKho(mode,period);
         const keys=new Set(buckets.map(p=>p.key)),last=new Map();
@@ -9585,13 +9678,13 @@ const CHECKING_SPLIT_MODE="report";
         const buckets=nhomKyTrongKhoangKho(mode,period);
         const scope=lichSuTheoHall();
         if(!scope)fail();
-        const stats=tinhGiaTriNhapXuat(scope.filter(r=>r.date>=period.from&&r.date<=period.to),
-          historyColumns,mode,buckets);
-        if(stats.missing)fail();
+        if(cotGiaTriLichSuKho()<0||historyTypeColumn<0)fail();
         return make("dashboardExportMovement","Nhap xuat",
           ["dashboardExportPeriodName","dashboardExportIn","dashboardExportOut"],
-          buckets.map(p=>[p.label,stats.values.get(p.key)?.in??0,
-            stats.values.get(p.key)?.out??0]),[1,2],
+          buckets.map(bucket=>{
+            const totals=danhGiaGiaTriKyKho(khoangKyDuocChon(bucket.key,mode,period));
+            return [bucket.label,totals?.in??null,totals?.out??null];
+          }),[1,2],
           [extra("dashboardExportPeriod",tr({week:"dashWeek",
             month:"dashMonth",year:"dashYear"}[mode])),
            extra("dashboardExportSource","History.js")]);
@@ -9601,16 +9694,19 @@ const CHECKING_SPLIT_MODE="report";
         if(!period||hall!=="all"&&lichSuTheoHall()===null)fail();
         const col=cotGiaTriLichSuKho();
         if(col<0)fail();
-        const now=tongNhapXuatTrongKhoang(period,col);
-        const before=tongNhapXuatTrongKhoang({from:period.prevFrom,to:period.prevTo},col);
+        const now=danhGiaGiaTriKyKho(period);
+        const before=danhGiaGiaTriKyKho({from:period.prevFrom,to:period.prevTo});
+        const comparable=now?.complete&&before?.complete;
         return make("dashboardExportCompare","So sanh",
           ["dashboardExportStatus","dashboardExportCurrent","dashboardExportPrevious",
            "dashboardExportChange"],
           ["in","out"].map(key=>[tr(key==="in"?"historyInShort":"historyOutShort"),
-            now[key],before[key],before[key]===0?null:
+            now?.[key]??null,before?.[key]??null,!comparable||before[key]===0?null:
               Math.round((now[key]-before[key])/before[key]*10000)/100]),[1,2],
           [extra("dashboardExportRange",rangeLabel({from:period.prevFrom,to:period.prevTo})),
-           extra("dashboardExportSource","History.js")]);
+           extra("dashboardExportSource","History.js"),
+           extra("dashboardExportRange",ghiChuPhamViLichSu()||"—"),
+           ...(!comparable?[extra("dashboardCompareNote",tr("dashboardHistoryPartial"))]:[])]);
       }
       fail();
     }
@@ -10480,15 +10576,10 @@ const CHECKING_SPLIT_MODE="report";
 <script>
     // ================= NÂNG CẤP DASHBOARD, PHÂN TÍCH ABC & CONSUMPTION 1-2-3 NĂM =================
     Object.assign(NGON_NGU.vi, {
-      analyticsKpiAbcTitle: "Nhóm A (80% giá trị tồn)",
       analyticsKpiDormantTitle: "Giá trị vật tư tồn lâu",
       analyticsKpiOutTitle: "Tổng giá trị xuất trong kỳ",
       analyticsKpiSlowRateTitle: "Tỷ lệ mã chậm luân chuyển",
       analyticsSearchPlaceholder: "Lọc nhanh mã SAP hoặc mô tả vật tư trong tất cả bảng...",
-      analyticsAbcFilter: "Phân loại ABC:",
-      dashAbcClass: "Nhóm ABC",
-      dashSharePercent: "Tỷ trọng",
-      dashCumPercent: "Tích lũy",
       dashNetFlow: "Thuần (Nhập − Xuất)",
       dashHoverHint: "Di chuột hoặc chọn cột/điểm để xem số liệu chi tiết",
       consCardTitle: "Tiêu thụ 1–2–3 năm và thời gian sử dụng dự kiến",
@@ -10503,7 +10594,7 @@ const CHECKING_SPLIT_MODE="report";
       consStatusSafe: "An toàn (> 90 ngày)",
       consStatusZero: "Hết hàng (= 0 ngày)",
       consStatusIdle: "Không phát sinh xuất (∞)",
-      consCardNote: "Chỉ Hall 1 · 12/24/36 tháng gần nhất tính đến hôm nay, độc lập với bộ chọn kỳ chung. TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày sử dụng dự kiến = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.",
+      consCardNote: "Chỉ Hall 1 · 12/24/36 tháng gần nhất tính đến ngày hạch toán mới nhất, độc lập với bộ chọn kỳ chung. TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày sử dụng dự kiến = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.",
       consColStock: "Tồn hiện tại",
       consCol1Y: "Tiêu thụ 1 năm",
       consCol2Y: "Tiêu thụ 2 năm",
@@ -10521,15 +10612,10 @@ const CHECKING_SPLIT_MODE="report";
     });
 
     Object.assign(NGON_NGU.en, {
-      analyticsKpiAbcTitle: "Class A (80% stock value)",
       analyticsKpiDormantTitle: "Slow-moving capital",
       analyticsKpiOutTitle: "Total outbound value",
       analyticsKpiSlowRateTitle: "Slow-moving SKU ratio",
       analyticsSearchPlaceholder: "Quick filter SAP code or description across all tables...",
-      analyticsAbcFilter: "ABC Class:",
-      dashAbcClass: "ABC",
-      dashSharePercent: "Share",
-      dashCumPercent: "Cum. %",
       dashNetFlow: "Net (In − Out)",
       dashHoverHint: "Hover or focus a point/bar to inspect exact figures",
       consCardTitle: "1–2–3 Year Consumption & Stock Coverage (Days)",
@@ -10544,7 +10630,7 @@ const CHECKING_SPLIT_MODE="report";
       consStatusSafe: "Healthy (> 90 days)",
       consStatusZero: "Out of stock (0 days)",
       consStatusIdle: "No outbound (∞)",
-      consCardNote: "Hall 1 only · rolling 12/24/36 months through today, independent of the shared date range. Monthly Avg = Period Consumption ÷ Months (12/24/36). Coverage Days = (Current Stock ÷ Monthly Avg) × 30. Double-click a row for history.",
+      consCardNote: "Hall 1 only · rolling 12/24/36 months through the latest posting date, independent of the shared date range. Monthly Avg = Period Consumption ÷ Months (12/24/36). Coverage Days = (Current Stock ÷ Monthly Avg) × 30. Double-click a row for history.",
       consColStock: "Current Stock",
       consCol1Y: "1Y Consumption",
       consCol2Y: "2Y Consumption",
@@ -10561,22 +10647,12 @@ const CHECKING_SPLIT_MODE="report";
       consSummaryAvgCover: "Median coverage: <b>{days}</b> days"
     });
 
-    let analyticsAbcFilter = "all";
     let analyticsSearchQuery = "";
-
-    function chonNhomAbc(nhom) {
-      analyticsAbcFilter = nhom;
-      document.querySelectorAll(".abc-pill").forEach(btn =>
-        btn.setAttribute("aria-pressed", String(btn.dataset.abc === nhom))
-      );
-      const limit = Number(document.getElementById("dashboard-limit").value) || 20;
-      veBangTopGiaTriVatTu(dashboardTopValueCache, limit);
-    }
 
     function locNhanhPhanTichKho() {
       analyticsSearchQuery = chuanHoaTimKiem(document.getElementById("analytics-search")?.value || "").trim();
-      const limit = Number(document.getElementById("dashboard-limit").value) || 20;
-      veBangTopGiaTriVatTu(dashboardTopValueCache, limit);
+      dashboardValuePage=1;
+      veBangTopGiaTriVatTu();
       dashboardTableState.out.page = 1;
       dashboardTableState.dormant.page = 1;
       consTableState.page = 1;
@@ -10589,7 +10665,6 @@ const CHECKING_SPLIT_MODE="report";
       const input = document.getElementById("analytics-search");
       if (input) input.value = "";
       analyticsSearchQuery = "";
-      chonNhomAbc("all");
       locNhanhPhanTichKho();
     }
 
@@ -10599,70 +10674,63 @@ const CHECKING_SPLIT_MODE="report";
       if (typeof xuatBaoCaoThongKe === "function") xuatBaoCaoThongKe();
     }
 
-    function tinhPhanTichABC(values) {
-      const totalValue = values.reduce((sum, item) => sum + (Number.isFinite(item.value) ? item.value : 0), 0);
-      let cumulative = 0;
-      return values.map(item => {
-        const share = totalValue > 0 ? (item.value / totalValue) * 100 : 0;
-        const prevCum = cumulative;
-        cumulative += share;
-        const abc = totalValue <= 0 ? "C" : prevCum < 80 ? "A" : prevCum < 95 ? "B" : "C";
-        return { ...item, share, cumulative: Math.min(100, cumulative), abc };
-      });
+    function locVatTuGiaTriTon(){
+      const limit=document.getElementById("dashboard-limit").value;
+      const values=thongKeTonDashboard().values;
+      const matching=analyticsSearchQuery?values.filter(rec=>
+        chuanHoaTimKiem(rec.name+" "+(rec.description||"")).includes(analyticsSearchQuery)):values;
+      const ranked=limit==="all"?matching:matching.slice(0,Number(limit)||20);
+      return sapXepBangPhanTich(ranked,"value");
     }
 
-    veBangTopGiaTriVatTu = function(values, limit) {
+    function doiGioiHanGiaTriTon(){
+      dashboardValuePage=1;
+      veBangTopGiaTriVatTu();
+    }
+
+    function doiTrangGiaTriTon(delta){
+      dashboardValuePage+=delta;
+      veBangTopGiaTriVatTu();
+      document.getElementById("insight-top").scrollTop=0;
+    }
+
+    veBangTopGiaTriVatTu = function() {
       if(tabHienTai!=="analytics")return;
-      const root = document.getElementById("insight-top");
-      if (!values.length) { root.textContent = tuDien("dashNoValue"); return; }
-
-      const abcList = tinhPhanTichABC(values);
-      const classA = abcList.filter(x => x.abc === "A");
-      const classAValue = classA.reduce((s, x) => s + x.value, 0);
-      const totalVal = abcList.reduce((s, x) => s + x.value, 0);
-      const kpiAbcVal = document.getElementById("analytics-kpi-abc-value");
-      const kpiAbcNote = document.getElementById("analytics-kpi-abc-note");
-      if (kpiAbcVal && kpiAbcNote) {
-        kpiAbcVal.textContent = dinhDangRutGonKho(classAValue) + " ₫";
-        kpiAbcVal.title = dinhDangGiaTriKho(classAValue);
-        kpiAbcNote.textContent = `${classA.length} / ${abcList.length} mã SAP (${totalVal > 0 ? ((classAValue / totalVal) * 100).toFixed(1) : 0}% tổng giá trị)`;
+      const root=document.getElementById("insight-top");
+      const pager=document.getElementById("dashboard-value-pager");
+      if(!analyticsReady||hallDangLoc()==="hall2"){
+        root.textContent=tuDien(hallDangLoc()==="hall2"?"dashboardHall2NoStockReport":"dashboardStockMissing");
+        pager.hidden=true;
+        return;
       }
-
-      const filtered = abcList.filter(rec => {
-        if (analyticsAbcFilter !== "all" && rec.abc !== analyticsAbcFilter) return false;
-        if (analyticsSearchQuery) {
-          const hay = chuanHoaTimKiem(rec.name + " " + (rec.description || ""));
-          if (!hay.includes(analyticsSearchQuery)) return false;
-        }
-        return true;
-      });
-
-      if (!filtered.length) { root.textContent = tuDien("noResults"); return; }
-
-      const header = "<thead><tr>" +
-        tieuDeSapXepPhanTich("value", "material", "dashTopMaterial") +
-        tieuDeSapXepPhanTich("value", "quantity", "dashTopQuantity") +
-        tieuDeSapXepPhanTich("value", "unit", "dashTopUnit") +
-        tieuDeSapXepPhanTich("value", "value", "dashTopValueColumn") +
-        "<th>" + thoatHTML(tuDien("dashSharePercent")) + "</th>" +
-        "<th>" + thoatHTML(tuDien("dashCumPercent")) + "</th>" +
-        "</tr></thead>";
-
-      const body = sapXepBangPhanTich(filtered.slice(0, limit), "value").map(rec => {
-        const valid = rec.unit && !rec.inconsistent && Number.isFinite(rec.quantity);
-        const quantity = valid ? dinhDangSoLuong.format(rec.quantity) : "—";
-        const unit = rec.mixed ? tuDien("dashTopMixedUnits") : (rec.missing || !rec.unit ? "—" : rec.unit);
-        return `<tr data-sap="${thoatHTML(rec.name)}" ondblclick="moLichSuDashboardTheoSap('${thoatHTML(rec.name)}')" title="${thoatHTML(tuDien("dashboardTopDoubleClick"))}">
-          <td><span class="top-sap">${thoatHTML(rec.name)}</span><span class="top-name">${thoatHTML(rec.description || "—")}</span></td>
-          <td>${thoatHTML(quantity)}</td>
-          <td>${thoatHTML(unit)}</td>
-          <td><strong>${thoatHTML(dinhDangGiaTriKho(rec.value))}</strong></td>
-          <td>${rec.share.toFixed(1)}%</td>
-          <td>${rec.cumulative.toFixed(1)}%</td>
-        </tr>`;
+      const rows=locVatTuGiaTriTon(),pageSize=50;
+      const pages=Math.max(1,Math.ceil(rows.length/pageSize));
+      dashboardValuePage=Math.min(pages,Math.max(1,dashboardValuePage));
+      const start=(dashboardValuePage-1)*pageSize;
+      pager.hidden=pages===1;
+      document.getElementById("dashboard-value-pages").textContent=dashboardValuePage+" / "+pages;
+      document.getElementById("dashboard-value-prev").disabled=dashboardValuePage===1;
+      document.getElementById("dashboard-value-next").disabled=dashboardValuePage===pages;
+      if(!rows.length){root.textContent=tuDien("noResults");return;}
+      const header="<thead><tr>"+
+        tieuDeSapXepPhanTich("value","material","dashTopMaterial")+
+        tieuDeSapXepPhanTich("value","quantity","dashTopQuantity")+
+        tieuDeSapXepPhanTich("value","unit","dashTopUnit")+
+        tieuDeSapXepPhanTich("value","value","dashTopValueColumn")+"</tr></thead>";
+      const body=rows.slice(start,start+pageSize).map(rec=>{
+        const valid=rec.unit&&!rec.inconsistent&&Number.isFinite(rec.quantity);
+        const quantity=valid?dinhDangSoLuong.format(rec.quantity):"—";
+        const unit=rec.mixed?tuDien("dashTopMixedUnits"):(rec.missing||!rec.unit?"—":rec.unit);
+        return `<tr data-sap="${thoatHTML(rec.name)}" tabindex="0" title="${thoatHTML(tuDien("dashboardTopDoubleClick"))}">
+          <td><span class="top-sap">${thoatHTML(rec.name)}</span><span class="top-name">${thoatHTML(rec.description||"—")}</span></td>
+          <td>${thoatHTML(quantity)}</td><td>${thoatHTML(unit)}</td>
+          <td><strong>${thoatHTML(dinhDangGiaTriKho(rec.value))}</strong></td></tr>`;
       }).join("");
-
-      root.innerHTML = `<table class="dashboard-top-table">${header}<tbody>${body}</tbody></table>`;
+      root.innerHTML=`<table class="dashboard-top-table">${header}<tbody>${body}</tbody></table>`;
+      for(const row of root.querySelectorAll("tr[data-sap]")){
+        row.addEventListener("dblclick",()=>moLichSuDashboardTheoSap(row.dataset.sap));
+        row.addEventListener("keydown",bamPhimLichSuBangDashboard);
+      }
     };
 
     vePhanBoTrangThai = function(rows = duLieuTimKiem) {
@@ -10838,9 +10906,10 @@ const CHECKING_SPLIT_MODE="report";
         return;
       }
 
-      const series = buckets.map(b => {
-        const v = stats.values.get(b.key) || { in: 0, out: 0 };
-        return { ...b, in: v.in, out: v.out, net: v.in - v.out };
+      const series=buckets.map(bucket=>{
+        const totals=danhGiaGiaTriKyKho(khoangKyDuocChon(bucket.key,mode,range));
+        return {...bucket,in:totals?.in??null,out:totals?.out??null,
+          net:totals?.complete?totals.in-totals.out:null};
       });
       const maxVal = Math.max(1, ...series.flatMap(s => [s.in, s.out]));
 
@@ -10866,15 +10935,16 @@ const CHECKING_SPLIT_MODE="report";
         const hOut = (s.out / maxVal) * plotH;
         const yIn = padT + plotH - hIn;
         const yOut = padT + plotH - hOut;
-        const tip = `${s.title} · Nhập: ${dinhDangGiaTriKho(s.in)} · Xuất: ${dinhDangGiaTriKho(s.out)} · Thuần: ${dinhDangGiaTriKho(s.net)}`;
+        const money=value=>value===null?"—":dinhDangGiaTriKho(value);
+        const tip=`${s.title} · ${tuDien("historyInShort")}: ${money(s.in)} · ${tuDien("historyOutShort")}: ${money(s.out)} · ${tuDien("upgradeCompareNet")}: ${money(s.net)}`;
         const showLbl = i === series.length - 1 || (i % labelStep === 0 && series.length - 1 - i >= labelStep);
         return `<g class="trend-column" data-period-key="${thoatHTML(s.key)}" data-period-mode="${mode}" tabindex="0" role="button"
             aria-label="${thoatHTML(tuDien("dashDrillHint", { period: s.title }))}"
             onmouseenter="this.closest('.svg-chart-wrap').querySelector('.chart-hover-banner').textContent='${thoatHTML(tip)}'"
             onfocus="this.closest('.svg-chart-wrap').querySelector('.chart-hover-banner').textContent='${thoatHTML(tip)}'">
           <title>${thoatHTML(tip)}</title>
-          <rect class="svg-bar-in" x="${(cx - barW - 1).toFixed(1)}" y="${yIn.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1, hIn).toFixed(1)}"/>
-          <rect class="svg-bar-out" x="${(cx + 1).toFixed(1)}" y="${yOut.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1, hOut).toFixed(1)}"/>
+          ${s.in===null?"":`<rect class="svg-bar-in" x="${(cx-barW-1).toFixed(1)}" y="${yIn.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1,hIn).toFixed(1)}"/>`}
+          ${s.out===null?"":`<rect class="svg-bar-out" x="${(cx+1).toFixed(1)}" y="${yOut.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1,hOut).toFixed(1)}"/>`}
           ${showLbl ? `<text class="svg-axis" x="${cx.toFixed(1)}" y="${H - 10}" text-anchor="middle">${thoatHTML(s.label)}</text>` : ""}
         </g>`;
       }).join("");
@@ -10893,12 +10963,13 @@ const CHECKING_SPLIT_MODE="report";
       </div>`;
 
       if (summary) {
-        summary.textContent = tuDien("dashUsageSummary", {
-          count: dinhDangSoLuong.format(stats.count),
-          incoming: dinhDangGiaTriKho(stats.incoming),
-          outgoing: dinhDangGiaTriKho(stats.outgoing),
-          period: `${range.from} – ${range.to}`
-        });
+        const totals=danhGiaGiaTriKyKho(range);
+        const money=value=>value==null?"—":dinhDangGiaTriKho(value);
+        summary.textContent=[tuDien("dashUsageSummary",{
+          count:dinhDangSoLuong.format(stats.count),
+          incoming:money(totals?.in),outgoing:money(totals?.out),
+          period:range.from+" – "+range.to
+        }),totals?.complete?"":tuDien("dashboardHistoryPartial")].filter(Boolean).join(" · ");
       }
     }
 
@@ -11136,135 +11207,104 @@ const CHECKING_SPLIT_MODE="report";
       return `${targetYear}-${String(m).padStart(2, "0")}-${String(Math.min(d, maxDay)).padStart(2, "0")}`;
     }
 
-    function tinhDuLieuConsumption123(hall = "hall1") {
-      hall = "hall1"; // Consumption 1-2-3 years and stock coverage are Hall 1 only.
-      const todayIso = ngayDiaPhuongISO(new Date());
-      const cached=tinhDuLieuConsumption123.cache;
+    function tinhDuLieuConsumption123() {
+      const today=ngayDiaPhuongISO(),cached=tinhDuLieuConsumption123.cache;
       if(cached&&cached.stock===duLieuTimKiem&&cached.history===historyAll&&
         cached.stockHeaders===tieuDeCot&&cached.historyHeaders===historyColumns&&
-        cached.loaded===historyLoaded&&cached.day===todayIso)return cached.rows;
-      const cut1Y = congNamKho(todayIso, -1);
-      const cut2Y = congNamKho(todayIso, -2);
-      const cut3Y = congNamKho(todayIso, -3);
+        cached.stockReady===analyticsReady&&cached.loaded===historyLoaded&&cached.day===today)return cached.rows;
 
-      const stockRows = (hall === "hall2" ? [] : (tonKhoTheoHall(hall) || duLieuTimKiem)) || [];
-      const unitColStock = cotHistoryTheoTen(tieuDeCot, ["Base Unit of Measure", "Unit", "UOM", "Đơn vị", "Đơn vị tính"]);
-      const sapMap = new Map();
-
-      for (const item of stockRows) {
-        const sap = chuanHoaMaSap(item.dong[0]);
-        if (!sap) continue;
-        const key = sap.toLowerCase();
-        const qty = Number.isFinite(item.soLuong) ? item.soLuong : 0;
-        const unit = unitColStock >= 0 ? String(item.dong[unitColStock] ?? "").trim().toUpperCase() : "";
-        let rec = sapMap.get(key);
-        if (!rec) {
-          rec = {
-            sap,
-            description: String(item.dong[1] ?? "").trim(),
-            stock: 0,
-            stockUnit: unit,
-            stockUnitMixed: false,
-            qty1Y: 0,
-            qty2Y: 0,
-            qty3Y: 0,
-            histUnit: "",
-            histUnitMixed: false
-          };
-          sapMap.set(key, rec);
-        }
-        rec.stock += qty;
-        if (unit) {
-          if (rec.stockUnit && rec.stockUnit !== unit) rec.stockUnitMixed = true;
-          else rec.stockUnit = unit;
-        }
-      }
-
-      const histRows = historyLoaded ? (lichSuTheoHall(hall) || []) : [];
-      const sapColHist = cotMaSapLichSuKho();
-      const qtyColHist = cotSoLuongHistoryDungCot();
-      const unitColHist = cotHistoryTheoTen(historyColumns, ["Unit of Entry", "Base Unit of Measure", "Unit", "UOM", "Đơn vị", "Đơn vị tính"]);
-      const descColHist = cotHistoryTheoTen(historyColumns, ["Material Description", "Description", "Mô tả", "Mô tả vật tư"]);
-
-      if (sapColHist >= 0 && qtyColHist >= 0) {
-        for (const h of histRows) {
-          if (h.type !== "out" || !ngayHistoryHopLe(h.date) || h.date < cut3Y || h.date > todayIso) continue;
-          const sap = chuanHoaMaSap(h.cells[sapColHist]);
-          const rawQty = chuyenThanhSo(h.cells[qtyColHist]);
-          if (!sap || !Number.isFinite(rawQty)) continue;
-
-          const key = sap.toLowerCase();
-          const unit = unitColHist >= 0 ? String(h.cells[unitColHist] ?? "").trim().toUpperCase() : "";
-          let rec = sapMap.get(key);
-          if (!rec) {
-            rec = {
-              sap,
-              description: descColHist >= 0 ? String(h.cells[descColHist] ?? "").trim() : "",
-              stock: 0,
-              stockUnit: unit,
-              stockUnitMixed: false,
-              qty1Y: 0,
-              qty2Y: 0,
-              qty3Y: 0,
-              histUnit: unit,
-              histUnitMixed: false
-            };
-            sapMap.set(key, rec);
-          }
-
-          if (unit) {
-            if (rec.histUnit && rec.histUnit !== unit) rec.histUnitMixed = true;
-            else rec.histUnit = unit;
-          }
-
-          const absQty = Math.abs(rawQty);
-          rec.qty3Y += absQty;
-          if (h.date >= cut2Y) rec.qty2Y += absQty;
-          if (h.date >= cut1Y) rec.qty1Y += absQty;
-        }
-      }
-
-      const calcHorizon = (rec, months) => {
-        const totalQty = months === 12 ? rec.qty1Y : months === 24 ? rec.qty2Y : rec.qty3Y;
-        const unitMismatch = rec.stockUnitMixed || rec.histUnitMixed ||
-          (rec.stockUnit && rec.histUnit && rec.stockUnit !== rec.histUnit);
-        if (unitMismatch) {
-          return { totalQty, avgMonth: null, coverDays: null, tier: "mismatch" };
-        }
-        const avgMonth = totalQty / months;
-        if (rec.stock <= 0) {
-          return { totalQty, avgMonth, coverDays: 0, tier: "zero" };
-        }
-        if (avgMonth <= 0) {
-          return { totalQty, avgMonth: 0, coverDays: Infinity, tier: "idle" };
-        }
-        const coverDays = (rec.stock / avgMonth) * 30;
-        const tier = coverDays < 30 ? "critical" : coverDays <= 90 ? "warn" : "safe";
-        return { totalQty, avgMonth, coverDays, tier };
+      const stockRows=analyticsReady?tonKhoHall1TonLau():null;
+      const histRows=historyLoaded?lichSuTheoHall("hall1"):null;
+      const coverage=phamViNgayLichSuKho(histRows);
+      const asOf=coverage&&coverage.to<today?coverage.to:today;
+      const sapCol=cotMaSapLichSuKho(),qtyCol=cotSoLuongHistoryDungCot();
+      const unitColStock=cotHistoryTheoTen(tieuDeCot,["Base Unit of Measure","BUn","BUn.","Unit","UOM","Đơn vị","Đơn vị tính"]);
+      const unitColHist=cotHistoryTheoTen(historyColumns,["Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
+      const descCol=cotHistoryTheoTen(historyColumns,["Material Description","Description","Mô tả","Mô tả vật tư"]);
+      const starts=[1,2,3].map(years=>congNamKho(asOf,-years));
+      const historyReady=!!(coverage&&histRows&&historyTypeColumn>=0&&sapCol>=0&&qtyCol>=0
+        &&!coverage.unknownMovement&&!historyHallCache?.unknownCount);
+      let unattributed=false;
+      const bySap=new Map();
+      const get=(sap,description)=>{
+        const key=sap.toLowerCase();
+        if(!bySap.has(key))bySap.set(key,{sap,description,stock:0,hasStock:false,
+          invalidStock:false,missingStockUnit:false,stockUnits:new Set(),
+          windows:starts.map(()=>({qty:0,invalid:false,missingUnit:false,units:new Set()}))});
+        return bySap.get(key);
       };
+      for(const item of stockRows||[]){
+        const sap=chuanHoaMaSap(item.dong[0]);
+        if(!sap)continue;
+        const rec=get(sap,String(item.dong[1]??"").trim());
+        rec.hasStock=true;
+        if(!Number.isFinite(item.soLuong)||item.soLuong<0)rec.invalidStock=true;
+        else rec.stock+=item.soLuong;
+        const unit=String(item.dong[unitColStock]??"").trim().toUpperCase();
+        if(unit)rec.stockUnits.add(unit);
+        else rec.missingStockUnit=true;
+      }
+      if(historyReady)for(const row of histRows){
+        if(row.type!=="out")continue;
+        const validDate=ngayHistoryHopLe(row.date);
+        if(validDate&&(row.date<starts[2]||row.date>asOf))continue;
+        const sap=chuanHoaMaSap(row.cells[sapCol]);
+        if(!sap){unattributed=true;continue;}
+        const rec=get(sap,String(row.cells[descCol]??"").trim());
+        const quantity=chuyenThanhSo(row.cells[qtyCol]);
+        const unit=String(row.cells[unitColHist]??"").trim().toUpperCase();
+        for(const [index,window] of rec.windows.entries()){
+          if(validDate&&row.date<starts[index])continue;
+          if(!validDate||!Number.isFinite(quantity)){window.invalid=true;continue;}
+          window.qty+=Math.abs(quantity);
+          if(quantity){
+            if(unit)window.units.add(unit);
+            else window.missingUnit=true;
+          }
+        }
+      }
 
-      const results = [];
-      for (const rec of sapMap.values()) {
-        if (rec.stock <= 0 && rec.qty3Y <= 0) continue;
-        results.push({
-          ...rec,
-          unit: rec.stockUnit || rec.histUnit || "",
-          m12: calcHorizon(rec, 12),
-          m24: calcHorizon(rec, 24),
-          m36: calcHorizon(rec, 36)
+      const rows=[];
+      for(const rec of bySap.values()){
+        if(rec.hasStock&&!rec.invalidStock&&rec.stock===0&&rec.windows.every(w=>!w.qty&&!w.invalid))continue;
+        const stock=rec.hasStock&&!rec.invalidStock?rec.stock:null;
+        const stockUnit=[...rec.stockUnits][0]||"";
+        const histUnits=new Set(rec.windows.flatMap(w=>[...w.units]));
+        const histUnit=[...histUnits][0]||"";
+        const metrics=rec.windows.map((window,index)=>{
+          const amountKnown=historyReady&&!unattributed&&coverage.from<=starts[index]&&!window.invalid;
+          const unitsMatch=rec.stockUnits.size<=1&&window.units.size<=1&&
+            (!stockUnit||!window.units.size||window.units.has(stockUnit));
+          const totalQty=amountKnown&&window.units.size<=1&&!window.missingUnit?window.qty:null;
+          if(amountKnown&&!unitsMatch)return {totalQty,avgMonth:null,coverDays:null,tier:"mismatch"};
+          const unknown=totalQty===null||stock===null
+            ||(totalQty>0&&(rec.missingStockUnit||!stockUnit));
+          if(unknown)return {totalQty,avgMonth:null,coverDays:null,tier:"unknown"};
+          const avgMonth=totalQty/((index+1)*12);
+          if(stock===0)return {totalQty,avgMonth,coverDays:0,tier:"zero"};
+          if(avgMonth===0)return {totalQty,avgMonth,coverDays:Infinity,tier:"idle"};
+          const coverDays=stock/avgMonth*30;
+          return {totalQty,avgMonth,coverDays,tier:coverDays<30?"critical":coverDays<=90?"warn":"safe"};
         });
+        const [m12,m24,m36]=metrics;
+        rows.push({sap:rec.sap,description:rec.description,stock,stockUnit,histUnit,unit:stockUnit||histUnit,
+          qty1Y:m12.totalQty,qty2Y:m24.totalQty,qty3Y:m36.totalQty,m12,m24,m36});
       }
       tinhDuLieuConsumption123.cache={stock:duLieuTimKiem,history:historyAll,
-        stockHeaders:tieuDeCot,historyHeaders:historyColumns,loaded:historyLoaded,
-        day:todayIso,rows:results,bySap:new Map(results.map(r=>[r.sap.toLowerCase(),r]))};
-      return results;
+        stockHeaders:tieuDeCot,historyHeaders:historyColumns,stockReady:analyticsReady,loaded:historyLoaded,
+        day:today,rows,bySap:new Map(rows.map(r=>[r.sap.toLowerCase(),r]))};
+      return rows;
     }
 
-    function dinhDangSoNgayCover(days) {
-      if (days === null || Number.isNaN(days)) return tuDien("consUnitMismatch");
-      if (days === Infinity) return tuDien("consNoUsage");
-      const rounded = days >= 10 ? Math.round(days) : Math.round(days * 10) / 10;
-      return tuDien("consDaysUnit", { days: dinhDangSoLuong.format(rounded) });
+    function dinhDangSoNgayCover(days,tier){
+      if(days===null||Number.isNaN(days))return tuDien(tier==="mismatch"?"consUnitMismatch":"consInsufficient");
+      if(days===Infinity)return tuDien("consNoUsage");
+      const rounded=days>=10?Math.round(days):Math.round(days*10)/10;
+      return tuDien("consDaysUnit",{days:dinhDangSoLuong.format(rounded)});
+    }
+
+    function dinhDangLuongTieuThu(value){
+      return Number.isFinite(value)?dinhDangSoLuong.format(value):"—";
     }
 
     function dinhDangThapPhan(val) {
@@ -11315,6 +11355,22 @@ const CHECKING_SPLIT_MODE="report";
       document.getElementById("analytics-cons-body").scrollTop = 0;
     }
 
+    function locBangConsumption(hKey){
+      const status=document.getElementById("analytics-cons-status")?.value||"all";
+      return tinhDuLieuConsumption123().filter(item=>(status==="all"||item[hKey].tier===status)&&
+        (!analyticsSearchQuery||chuanHoaTimKiem(item.sap+" "+item.description).includes(analyticsSearchQuery)))
+        .sort((a,b)=>{
+          const col=consTableState.sortCol,dir=consTableState.sortDir;
+          if(col==="sap")return a.sap.localeCompare(b.sap)*dir;
+          const get=item=>({stock:item.stock,c1:item.qty1Y,c2:item.qty2Y,c3:item.qty3Y,
+            avg:item[hKey].avgMonth,cover:item[hKey].coverDays})[col];
+          const left=get(a),right=get(b);
+          if(left===right)return a.sap.localeCompare(b.sap);
+          if(left===null||right===null)return left===null?1:-1;
+          return (left-right)*dir;
+        });
+    }
+
     function veBangConsumption123() {
       if(tabHienTai!=="analytics")return;
       const root = document.getElementById("analytics-cons-body");
@@ -11330,25 +11386,14 @@ const CHECKING_SPLIT_MODE="report";
       }
       if (!analyticsReady || !historyLoaded) {
         consTableState.filteredRows=[];
-        root.textContent = tuDien(historyLoading ? "dashboardHistoryLoading" : "dashboardDormantNoHistory");
+        root.textContent = tuDien(!analyticsReady?"dashboardStockMissing":historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory");
         if (summaryEl) summaryEl.innerHTML = "";
         return;
       }
 
       const horizon = Number(document.getElementById("analytics-cons-horizon")?.value) || 12;
-      const statusFilter = document.getElementById("analytics-cons-status")?.value || "all";
-      const hKey = horizon === 36 ? "m36" : horizon === 24 ? "m24" : "m12";
-
-      const allData = tinhDuLieuConsumption123("hall1");
-      const filtered = allData.filter(item => {
-        const metric = item[hKey];
-        if (statusFilter !== "all" && metric.tier !== statusFilter) return false;
-        if (analyticsSearchQuery) {
-          const hay = chuanHoaTimKiem(item.sap + " " + item.description);
-          if (!hay.includes(analyticsSearchQuery)) return false;
-        }
-        return true;
-      });
+      const hKey=horizon===36?"m36":horizon===24?"m24":"m12";
+      const filtered=locBangConsumption(hKey);
 
       let criticalCount = 0, warnCount = 0;
       const finiteCovers = [];
@@ -11372,24 +11417,7 @@ const CHECKING_SPLIT_MODE="report";
         `;
       }
 
-      const col = consTableState.sortCol;
-      const dir = consTableState.sortDir;
-      const sorted = filtered.slice().sort((a, b) => {
-        const ma = a[hKey], mb = b[hKey];
-        let va, vb;
-        if (col === "sap") return a.sap.localeCompare(b.sap) * dir;
-        if (col === "stock") { va = a.stock; vb = b.stock; }
-        else if (col === "c1") { va = a.qty1Y; vb = b.qty1Y; }
-        else if (col === "c2") { va = a.qty2Y; vb = b.qty2Y; }
-        else if (col === "c3") { va = a.qty3Y; vb = b.qty3Y; }
-        else if (col === "avg") { va = ma.avgMonth ?? -1; vb = mb.avgMonth ?? -1; }
-        else {
-          va = ma.coverDays === null ? 1e12 : ma.coverDays === Infinity ? 1e11 : ma.coverDays;
-          vb = mb.coverDays === null ? 1e12 : mb.coverDays === Infinity ? 1e11 : mb.coverDays;
-        }
-        return (va - vb) * dir || a.sap.localeCompare(b.sap);
-      });
-
+      const sorted=filtered;
       consTableState.filteredRows = sorted;
 
       const maxPage = Math.max(1, Math.ceil(sorted.length / consTableState.size));
@@ -11432,13 +11460,13 @@ const CHECKING_SPLIT_MODE="report";
           m.tier === "warn" ? "cover-warn" :
           m.tier === "safe" ? "cover-safe" :
           m.tier === "mismatch" ? "cover-mismatch" : "cover-idle";
-        const coverText = dinhDangSoNgayCover(m.coverDays);
+        const coverText = dinhDangSoNgayCover(m.coverDays,m.tier);
         return `<tr data-sap="${thoatHTML(r.sap)}" tabindex="0" ondblclick="moLichSuDashboardTheoSap('${thoatHTML(r.sap)}')" onkeydown="bamPhimLichSuBangDashboard(event)">
           <td><span class="material-sap">${thoatHTML(r.sap)}</span><span class="material-name">${thoatHTML(r.description || "—")}</span></td>
-          <td><strong>${dinhDangSoLuong.format(r.stock)}</strong> <small style="color:var(--muted)">${thoatHTML(r.unit)}</small></td>
-          <td>${dinhDangSoLuong.format(r.qty1Y)}</td>
-          <td>${dinhDangSoLuong.format(r.qty2Y)}</td>
-          <td>${dinhDangSoLuong.format(r.qty3Y)}</td>
+          <td><strong>${dinhDangLuongTieuThu(r.stock)}</strong> <small style="color:var(--muted)">${thoatHTML(r.unit)}</small></td>
+          <td>${dinhDangLuongTieuThu(r.qty1Y)}</td>
+          <td>${dinhDangLuongTieuThu(r.qty2Y)}</td>
+          <td>${dinhDangLuongTieuThu(r.qty3Y)}</td>
           <td><strong>${dinhDangThapPhan(m.avgMonth)}</strong> <small style="color:var(--muted)">${thoatHTML(r.unit)}/th</small></td>
           <td><span class="cover-badge ${badgeCls}">${thoatHTML(coverText)}</span></td>
         </tr>`;
@@ -11446,7 +11474,8 @@ const CHECKING_SPLIT_MODE="report";
 
       root.innerHTML = `<table id="analytics-cons-table" class="dashboard-detail-table">${thead}<tbody>${tbody}</tbody></table>`;
       if (noteEl) {
-        noteEl.textContent = tuDien("dashboardDormantMore", { count: slice.length, total: sorted.length });
+        noteEl.textContent = [tuDien("dashboardDormantMore",{count:slice.length,total:sorted.length}),
+          ghiChuPhamViLichSu(lichSuTheoHall("hall1"))].filter(Boolean).join(" · ");
       }
     }
 
@@ -11459,7 +11488,7 @@ const CHECKING_SPLIT_MODE="report";
       }
       const hall = typeof materialHistoryHall === "string" ? materialHistoryHall : "all";
       if(hall==="hall2"){strip.innerHTML="";return;}
-      tinhDuLieuConsumption123("hall1");
+      tinhDuLieuConsumption123();
       const found = tinhDuLieuConsumption123.cache.bySap.get(String(sapCode).trim().toLowerCase());
       if (!found) {
         strip.innerHTML = "";
@@ -11478,10 +11507,10 @@ const CHECKING_SPLIT_MODE="report";
         return `<div class="history-cons-card">
           <div class="history-cons-card-head">
             <span>${thoatHTML(title)}</span>
-            <span class="cover-badge ${badgeCls}" style="min-width:auto;padding:1px 6px;font-size:10px">${thoatHTML(dinhDangSoNgayCover(data.coverDays))}</span>
+            <span class="cover-badge ${badgeCls}" style="min-width:auto;padding:1px 6px;font-size:10px">${thoatHTML(dinhDangSoNgayCover(data.coverDays,data.tier))}</span>
           </div>
           <div class="history-cons-card-body">
-            <span>Tổng xuất: <strong>${dinhDangSoLuong.format(data.totalQty)}</strong> ${thoatHTML(found.unit)}</span>
+            <span>Tổng xuất: <strong>${dinhDangLuongTieuThu(data.totalQty)}</strong> ${thoatHTML(found.unit)}</span>
             <span>TB/tháng: <strong>${dinhDangThapPhan(data.avgMonth)}</strong></span>
           </div>
         </div>`;
@@ -11527,7 +11556,7 @@ const CHECKING_SPLIT_MODE="report";
       rows.forEach((r, idx) => {
         const rNum = idx + 2;
         const m = r[hKey];
-        const coverVal = Number.isFinite(m.coverDays) ? Math.round(m.coverDays * 10) / 10 : dinhDangSoNgayCover(m.coverDays);
+        const coverVal = Number.isFinite(m.coverDays) ? Math.round(m.coverDays * 10) / 10 : dinhDangSoNgayCover(m.coverDays,m.tier);
         const cells = [
           cellXML(r.sap, 0, rNum, false),
           cellXML(r.description, 1, rNum, false),
@@ -11667,11 +11696,8 @@ const CHECKING_SPLIT_MODE="report";
       const previous=tinhGiaTriNhapXuat(rows,headers,period,
         nhomKyTrongKhoangKho(period,previousRange),previousRange);
       // Totals cover the full range even if the visual bucket list is capped.
-      const sum=r=>{const t={in:0,out:0};
-        for(const [date,day] of tongHopGiaoDichTheoNgay(rows,headers).days)
-          if(date>=r.from&&date<=r.to){t.in+=day.in;t.out+=day.out;}
-        return t;};
-      return {current:sum(range),previous:sum(previousRange),missing:current.missing||previous.missing,
+      return {current:danhGiaGiaTriKyKho(range),previous:danhGiaGiaTriKyKho(previousRange),
+        missing:current.missing||previous.missing,
         averageDays:khoangNgayKho(range.from,range.to),previousDays:khoangNgayKho(previousRange.from,previousRange.to),
         series:buckets.slice(-12).map(b=>({...b,...current.values.get(b.key)}))};
     }
@@ -11688,10 +11714,14 @@ const CHECKING_SPLIT_MODE="report";
       const period=document.getElementById("dashboard-usage-detail-period")?.value||"month";
       const data=duLieuDieuHanhTheoKy(rows,historyColumns,period,range);
       if(data.missing){root.textContent=tuDien("dashUsageUnavailable");return;}
-      const cur=data.current,prev=data.previous,v=data.series;
+      if(!data.current?.complete){
+        root.textContent=[tuDien("dashboardHistoryPartial"),ghiChuPhamViLichSu()].filter(Boolean).join(" · ");
+        return;
+      }
+      const cur=data.current,prev=data.previous?.complete?data.previous:{in:null,out:null},v=data.series;
       const pct=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b!==0?(a-b)/Math.abs(b)*100:null;
       const ratio=x=>x.in>0?x.out/x.in*100:null;
-      const average=cur.out/data.averageDays*30.4375,priorAverage=prev.out/data.previousDays*30.4375;
+      const average=cur.out/data.averageDays*30.4375,priorAverage=prev.out===null?null:prev.out/data.previousDays*30.4375;
       const nf=new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",{maximumFractionDigits:1});
       const delta=x=>{const c=x===null||Math.abs(x)<.05?"flat":x>0?"up":"down";
         return `<span class="executive-delta ${c}" title="${thoatHTML(x===null?tuDien("executiveNoComparison"):tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo}))}">${c==="up"?"▲":c==="down"?"▼":"•"} ${x===null?"—":nf.format(Math.abs(x))+"%"}</span>`;};
@@ -11703,7 +11733,7 @@ const CHECKING_SPLIT_MODE="report";
         ["executiveRatio",ratio(cur)===null?"—":nf.format(ratio(cur))+"%",pct(ratio(cur),ratio(prev)),v.map(x=>ratio(x)??0),"executiveRatioHelp"],
         ["executiveAverage",money(average),pct(average,priorAverage),v.map(x=>x.out),"executiveAverageHelp"],
         ["executiveIncoming",money(cur.in),pct(cur.in,prev.in),v.map(x=>x.in),"executiveIncomingHelp"],
-        ["executiveNet",money(cur.in-cur.out),pct(cur.in-cur.out,prev.in-prev.out),v.map(x=>x.in-x.out),"executiveNetHelp"]
+        ["executiveNet",money(cur.in-cur.out),pct(cur.in-cur.out,prev.in===null?null:prev.in-prev.out),v.map(x=>x.in-x.out),"executiveNetHelp"]
       ];
       root.innerHTML=cards.map(c=>`<article class="executive-stat"><small>${thoatHTML(tuDien(c[0]))}</small><div class="executive-stat-head"><strong>${c[1]}</strong>${delta(c[2])}</div>${spark(c[3])}<details class="executive-help"><summary>${ngonNguHienTai==="en"?"Calculation":"Cách tính"}</summary>${thoatHTML(tuDien(c[4]))}</details></article>`).join("");
       if(note)note.textContent=tuDien("executiveScope",{from:range.from,to:range.to,count:v.length})+" · "+tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo});
@@ -11714,30 +11744,33 @@ const CHECKING_SPLIT_MODE="report";
       veTongQuanDieuHanhCoChuThich();
     };
 
-    function capNhatHaiCardTiLe(){try{const r=layKyPhanTichKho(),w=khoangTuanCuoiDashboard(r),c=cotGiaTriLichSuKho(),ok=historyLoaded&&c>=0,ratio=t=>!t?"—":t.in>0?new Intl.NumberFormat("vi-VN",{maximumFractionDigits:1}).format(t.out/t.in*100)+"%":t.out>0?"∞":"0,0%",a=ok&&r?tongNhapXuatTrongKhoang(r,c):null,b=ok&&w?tongNhapXuatTrongKhoang(w,c):null,x=document.getElementById("warehouse-period-inventory"),y=document.getElementById("warehouse-week-inventory");if(x)x.textContent=ratio(a);if(y)y.textContent=ratio(b);const xn=document.getElementById("warehouse-period-inventory-date"),yn=document.getElementById("warehouse-week-inventory-date");if(xn)xn.textContent="Giá trị xuất ÷ giá trị nhập";if(yn)yn.textContent="Giá trị xuất ÷ giá trị nhập"}catch(e){}}
-    if(typeof veTongQuanDashboard==="function"){const originalDashboard=veTongQuanDashboard;veTongQuanDashboard=function(){originalDashboard.apply(this,arguments);capNhatHaiCardTiLe()}}
-    setTimeout(()=>{veTongQuanDieuHanhCoChuThich();vePhanBoTrangThaiNangCap();capNhatHaiCardTiLe()},0);
 
+    setTimeout(veTongQuanDieuHanhCoChuThich,0);
 
     function capNhatCanhBaoKhoNangCap(){
+      if(tabHienTai!=="dashboard")return;
       const node=document.getElementById("dashboard-alert-list");if(!node)return;
       const panel=node.closest(".dashboard-alert-panel"),hall=hallDangLoc(),value=tinhBienDongAmount(),range=layKyPhanTichKho();
-      let attention=0,growth=null,spikes=[];const alerts=[];
-      if(hall!=="hall2"&&value.percent!==null&&Math.abs(value.percent)>=10){
+      const ready=id=>["ready","unchanged"].includes(trangThaiNguon[id].status);
+      const stockReady=analyticsReady&&ready("stock");
+      const amountReady=value.percent!==null&&ready("amount");
+      const present=range?danhGiaGiaTriKyKho(range):null;
+      const past=range?danhGiaGiaTriKyKho({from:range.prevFrom,to:range.prevTo}):null;
+      const historyReady=ready("history")&&present?.complete&&past?.complete;
+      const complete=historyReady&&(hall==="hall2"||stockReady&&amountReady);
+      let attention=0,spikes=[];const alerts=[];
+      if(hall!=="hall2"&&amountReady&&Math.abs(value.percent)>=10){
         alerts.push({level:"warning",icon:"↕",title:"Biến động giá trị tồn",badge:"Theo dõi",text:tuDien("dashAlertValue",{percent:chuoiPhanTramKho(value.percent),date:value.previous.date})});
       }
-      if(hall!=="hall2"&&analyticsReady){
+      if(hall!=="hall2"&&stockReady){
         attention=new Set(duLieuTimKiem.filter(r=>["zero","at","below"].includes(r.trangThaiTon)).map(r=>chuanHoaMaSap(r.dong[0]).toLowerCase()).filter(Boolean)).size;
         if(attention)alerts.push({level:"danger",icon:"!",title:ngonNguHienTai==="en"?"Low stock risk":"Nguy cơ thiếu hàng",badge:ngonNguHienTai==="en"?"High priority":"Ưu tiên cao",text:tuDien("dashAlertReorder",{count:dinhDangSoLuong.format(attention)}),filter:"attention"});
       }
-      if(historyLoaded&&range&&lichSuTheoHall()){
-        const col=cotGiaTriLichSuKho();if(col>=0){
-          const present=tongNhapXuatTrongKhoang(range,col),past=tongNhapXuatTrongKhoang({from:range.prevFrom,to:range.prevTo},col);
-          growth=phanTramBienDongKho(present.out,past.out);
+      if(historyReady){
+          const growth=phanTramBienDongKho(present.out,past.out);
           if(growth!==null&&growth>100)alerts.push({level:"warning",icon:"↑",title:"Giá trị xuất tăng mạnh",badge:"Bất thường",text:tuDien("dashAlertOut",{percent:chuoiPhanTramKho(growth)})});
           spikes=vatTuXuatDotBienTrongKy(range);
           if(spikes.length)alerts.push({level:"warning",icon:"⚡",title:"Vật tư xuất đột biến",badge:`${dinhDangSoLuong.format(spikes.length)} mã`,text:`${dinhDangSoLuong.format(spikes.length)} mã có giá trị xuất tăng trên 100% so với kỳ trước.`,codes:spikes.map(r=>r.sap)});
-        }
       }
       let summary=panel?.querySelector(".alert-summary-strip");
       if(!summary&&panel){summary=document.createElement("div");summary.className="alert-summary-strip";node.before(summary)}
@@ -11746,13 +11779,17 @@ const CHECKING_SPLIT_MODE="report";
         const summaryItems=[
           ["danger","!",danger,"Cảnh báo ưu tiên cao"],
           ["warning","⚡",warning,"Cảnh báo cần theo dõi"],
-          ["info","▦",attention,"Mã chạm/ngang ROP"],
-          [alerts.length?"info":"ok",alerts.length?"↗":"✓",spikes.length,"Mã xuất tăng đột biến"]
+          ["info","▦",hall!=="hall2"&&stockReady?attention:null,"Mã chạm/ngang ROP"],
+          [complete&&!alerts.length?"ok":"info",complete&&!alerts.length?"✓":"↗",historyReady?spikes.length:null,"Mã xuất tăng đột biến"]
         ];
-        summary.innerHTML=summaryItems.map(x=>`<div class="alert-summary-item" data-tone="${x[0]}"><span class="alert-summary-icon">${x[1]}</span><div><strong>${dinhDangSoLuong.format(x[2])}</strong><span>${x[3]}</span></div></div>`).join("");
+        summary.innerHTML=summaryItems.map(x=>`<div class="alert-summary-item" data-tone="${x[0]}"><span class="alert-summary-icon">${x[1]}</span><div><strong>${x[2]===null?"—":dinhDangSoLuong.format(x[2])}</strong><span>${x[3]}</span></div></div>`).join("");
       }
       node.replaceChildren();
-      const list=alerts.length?alerts:[{level:"ok",icon:"✓",title:"Kho đang ổn định",badge:"Bình thường",text:tuDien("dashAlertAllClear")}];
+      if(!complete)alerts.push({level:"info",icon:"•",title:tuDien("dashboardAlertIncomplete"),
+        badge:tuDien("dashboardAlertNeedsData"),text:document.getElementById("dashboard-source-summary")?.textContent||""});
+      else if(!alerts.length)alerts.push({level:"ok",icon:"✓",title:tuDien("dashboardAlertNormal"),
+        badge:tuDien("dashboardAlertNormalBadge"),text:tuDien("dashAlertAllClear")});
+      const list=alerts;
       for(const a of list){
         const part=document.createElement("article");part.className="dashboard-alert";part.dataset.level=a.level;
         part.innerHTML=`<span class="dashboard-alert-icon">${a.icon}</span><div class="dashboard-alert-content"><div class="dashboard-alert-title">${a.title}</div><div class="dashboard-alert-text">${thoatHTML(a.text)}</div>${a.codes?.length?`<div class="alert-code-list">${a.codes.slice(0,8).map(c=>`<span class="alert-code">${thoatHTML(c)}</span>`).join("")}</div>`:""}</div><span class="dashboard-alert-badge">${a.badge}</span>`;
@@ -11801,12 +11838,16 @@ const CHECKING_SPLIT_MODE="report";
           const el=document.getElementById(id);
           if(!el||!pane.contains(el)||["file","password"].includes(el.type))continue;
           if(el.type==="checkbox")el.checked=value===true;
+          else if(id==="dashboard-limit"&&value==="5000")el.value="all";
           else if(typeof value==="string"&&el.tagName==="SELECT"&&![...el.options].some(o=>o.value===value))continue;
           else if(typeof value==="string")el.value=value;
         }
       }
       workspaceRestoring=false;
       if(chiMucSanSang)locDuLieu();
+      analyticsSearchQuery=chuanHoaTimKiem(document.getElementById("analytics-search").value).trim();
+      doiKyPhanTichKho();
+      capNhatThongKeNangCao();
       requestAnimationFrame(()=>restoreScroll(tabHienTai));
     }
     document.addEventListener("change",e=>{if(e.target.closest?.(".view-pane")){clearTimeout(workspaceTimer);workspaceTimer=setTimeout(()=>saveWorkspace(tabHienTai),250);}},true);
@@ -12086,7 +12127,7 @@ const CHECKING_SPLIT_MODE="report";
 
 
 const $upgrade = id => document.getElementById(id);
-const upgradeState={dashboard:{page:1,filter:"urgent",size:8},analytics:{page:1,filter:"urgent",size:25}};
+const upgradeRiskState={page:1,filter:"urgent",size:25};
 let upgradeRiskCache=null,upgradeQualityCache=null,upgradeQualityChosen=null,upgradePaintScheduled=false;
 const upgradeLabels={zero:"upgradeRiskZero",critical:"upgradeRiskCritical",warn:"upgradeRiskWarn",safe:"upgradeRiskSafe",idle:"upgradeRiskIdle",mismatch:"upgradeRiskMismatch"};
 
@@ -12122,11 +12163,11 @@ function upgradeRiskRows(){
   if(hallDangLoc()==="hall2"||!analyticsReady||!historyLoaded)return null;
   const day=ngayDiaPhuongISO(),cached=upgradeRiskCache;
   if(cached&&cached.stock===duLieuTimKiem&&cached.history===historyAll&&cached.day===day&&cached.loaded===historyLoaded)return cached.data;
-  const source=tinhDuLieuConsumption123("hall1"),rows=[];const metrics={zero:0,critical:0,warn:0,mismatch:0,safe:0,idle:0};
+  const source=tinhDuLieuConsumption123(),rows=[];
+  const metrics={zero:0,critical:0,warn:0,mismatch:0,unknown:0,safe:0,idle:0};
   for(const rec of source){
     const metric=rec.m12;
-    if(metric.tier==="mismatch"||(rec.qty1Y>0&&(!rec.stockUnit||!rec.histUnit))){metrics.mismatch++;continue;}
-    if(metric.tier==="idle"){metrics.idle++;continue;}
+    if(["unknown","mismatch","idle"].includes(metric.tier)){metrics[metric.tier]++;continue;}
     if(metric.tier==="zero"&&!rec.qty1Y)continue; // Zero stock with no consumption is not proven demand.
     metrics[metric.tier]=(metrics[metric.tier]||0)+1;
     rows.push({...rec,cover:metric.coverDays,avgMonth:metric.avgMonth,tier:metric.tier});
@@ -12135,24 +12176,38 @@ function upgradeRiskRows(){
   rows.sort((a,b)=>order[a.tier]-order[b.tier]||a.cover-b.cover||a.sap.localeCompare(b.sap));
   const data={rows,metrics};upgradeRiskCache={stock:duLieuTimKiem,history:historyAll,day,loaded:historyLoaded,data};return data;
 }
-function upgradeFilterRows(section){
+function upgradeFilterRows(){
   const raw=upgradeRiskRows();if(!raw)return [];
-  const filter=upgradeState[section].filter;
-  let rows=filter==="all"?raw.rows:raw.rows.filter(r=>filter==="urgent"?["zero","critical"].includes(r.tier):["zero","critical","warn"].includes(r.tier));
-  // The analytics search only applies to its own table, not to the Dashboard.
-  if(section==="analytics"&&analyticsSearchQuery)rows=rows.filter(r=>chuanHoaTimKiem(r.sap+" "+r.description).includes(analyticsSearchQuery));
-  return rows;
+  const filter=upgradeRiskState.filter;
+  const rows=filter==="all"?raw.rows:raw.rows.filter(r=>filter==="urgent"?["zero","critical"].includes(r.tier):["zero","critical","warn"].includes(r.tier));
+  return analyticsSearchQuery?rows.filter(r=>chuanHoaTimKiem(r.sap+" "+r.description).includes(analyticsSearchQuery)):rows;
+}
+
+function moDanhSachUuTien(){
+  chuyenTab("analytics");
+  requestAnimationFrame(()=>$upgrade("risk-upgrade-analytics").scrollIntoView({block:"start"}));
 }
 function upgradeRenderRisk(section){
   const root=$upgrade(`risk-${section}-table`),note=$upgrade(`risk-${section}-note`),metricsEl=$upgrade(`risk-${section}-metrics`);
-  if(!root||!note||!metricsEl)return;
-  const raw=upgradeRiskRows(),state=upgradeState[section],noHall=hallDangLoc()==="hall2";
-  if(!raw){root.innerHTML=`<p class="warehouse-risk-empty">${thoatHTML(tuDien(noHall?"upgradeNoHall2":"upgradeNeedsHistory"))}</p>`;metricsEl.replaceChildren();note.textContent="";return;}
+  if(!note||!metricsEl)return;
+  const raw=upgradeRiskRows(),state=upgradeRiskState,noHall=hallDangLoc()==="hall2";
+  if(!raw){
+    const message=tuDien(noHall?"upgradeNoHall2":!analyticsReady?"dashboardStockMissing":"upgradeNeedsHistory");
+    if(root){
+      root.textContent=message;
+      for(const suffix of ["prev","next","export"])$upgrade(`risk-${section}-${suffix}`).disabled=true;
+      $upgrade(`risk-${section}-pages`).textContent="—";
+    }
+    metricsEl.replaceChildren();note.textContent=root?"":message;return;
+  }
   const summary=[
     ["zero",raw.metrics.zero,"upgradeKpiZero"],["critical",raw.metrics.critical,"upgradeKpiCritical"],
-    ["warning",raw.metrics.warn,"upgradeKpiWarn"],["normal",raw.metrics.mismatch,"upgradeKpiMismatch"]];
+    ["warning",raw.metrics.warn,"upgradeKpiWarn"],["normal",raw.metrics.mismatch,"upgradeKpiMismatch"],
+    ["normal",raw.metrics.unknown,"upgradeKpiUnknown"]];
   metricsEl.innerHTML=summary.map(([tone,count,key])=>`<div class="warehouse-risk-kpi" data-tone="${tone}"><strong>${dinhDangSoLuong.format(count)}</strong><span>${thoatHTML(tuDien(key))}</span></div>`).join("");
-  const rows=upgradeFilterRows(section),pages=Math.max(1,Math.ceil(rows.length/state.size));
+  if(!root){note.textContent=ghiChuPhamViLichSu(lichSuTheoHall("hall1"));return;}
+  const rows=upgradeFilterRows(),pages=Math.max(1,Math.ceil(rows.length/state.size));
+  $upgrade(`risk-${section}-export`).disabled=!rows.length;
   state.page=Math.max(1,Math.min(pages,state.page));
   const shown=rows.slice((state.page-1)*state.size,state.page*state.size);
   if(!shown.length)root.innerHTML=`<p class="warehouse-risk-empty">${thoatHTML(tuDien("upgradeRiskEmpty"))}</p>`;
@@ -12172,8 +12227,11 @@ function upgradeRenderRisk(section){
   $upgrade(`risk-${section}-prev`).disabled=state.page===1;
   $upgrade(`risk-${section}-next`).disabled=state.page===pages;
 }
-function upgradeRiskFilter(section,value){upgradeState[section].filter=value;upgradeState[section].page=1;ghiTuyChon("warehouse-risk-"+section,value);upgradeRenderRisk(section);}
-function upgradeRiskPage(section,delta){upgradeState[section].page+=delta;upgradeRenderRisk(section);$upgrade(`risk-${section}-table`)?.closest(".warehouse-risk-scroll")?.scrollTo(0,0);}
+function upgradeRiskPage(delta){
+  upgradeRiskState.page+=delta;
+  upgradeRenderRisk("analytics");
+  $upgrade("risk-analytics-table").closest(".warehouse-risk-scroll").scrollTo(0,0);
+}
 function upgradeIssue(key,titleKey,detail,severity="warning"){return {key,titleKey,detail,severity,rows:[]};}
 function upgradeQualityData(){
   const today=ngayDiaPhuongISO(),hall=hallDangLoc(),cached=upgradeQualityCache;
@@ -12208,7 +12266,7 @@ function upgradeQualityData(){
     }
   }
   if(stockReady&&histReady){
-    for(const r of tinhDuLieuConsumption123("hall1"))if(r.m12.tier==="mismatch"||(r.qty1Y>0&&(!r.stockUnit||!r.histUnit)))
+    for(const r of tinhDuLieuConsumption123())if(r.m12.tier==="mismatch"||(r.qty1Y>0&&(!r.stockUnit||!r.histUnit)))
       byKey.unit.rows.push({sap:r.sap,info:`${r.stockUnit||"—"} / ${r.histUnit||"—"}`});
   }
   const data={issues,stockReady,histReady,stockRows:stockReady?duLieuTimKiem.length:null,historyRows:histReady?histRows.length:null};
@@ -12237,18 +12295,27 @@ function upgradeOpenQuality(key){
   $upgrade("quality-details-rows").innerHTML=issue.rows.slice(0,100).map(item=>`<tr><td>${thoatHTML(item.sap)}</td><td>${thoatHTML(item.info)}</td></tr>`).join("")||`<tr><td colspan="2">${thoatHTML(tuDien("upgradeRiskEmpty"))}</td></tr>`;
   const dialog=$upgrade("quality-details-dialog");if(!dialog.open)dialog.showModal();
 }
-function upgradeRender(){upgradeRenderRisk("dashboard");upgradeRenderRisk("analytics");upgradeRenderQuality();}
+function upgradeRender(){
+  if(tabHienTai==="dashboard")upgradeRenderRisk("dashboard");
+  if(tabHienTai==="analytics"){
+    upgradeRenderRisk("analytics");
+    upgradeRenderQuality();
+  }
+}
 function upgradeSchedule(){if(upgradePaintScheduled)return;upgradePaintScheduled=true;requestAnimationFrame(()=>{upgradePaintScheduled=false;try{upgradeRender();}catch(e){console.warn("Dashboard enhancement:",e);for(const id of ["risk-dashboard-table","risk-analytics-table","quality-scope"])if($upgrade(id))$upgrade(id).textContent=tuDien("upgradeQualityInvestigate");}});}
 
 // Native, offline XLSX export: two sheets and safe cell encoding.
 function upgradeExportWorkbook(kind){
-  const risk=upgradeFilterRows(kind==="quality"?"analytics":kind==="dashboard"?"dashboard":"analytics");
-  const quality=upgradeQualityData();
   const sheets=[];
   if(kind!=="quality"){
+    const risk=upgradeFilterRows();
+    if(!risk.length)return;
     const records=risk.map(r=>[r.sap,r.description,r.stock,r.unit,r.avgMonth,r.cover===Infinity?"∞":r.cover,tuDien(upgradeLabels[r.tier])]);
-    sheets.push({name:"Priorities",headers:["SAP","Description","Stock","Unit","Monthly outbound","Coverage days","Priority"],rows:records});
+    sheets.push({name:ngonNguHienTai==="vi"?"Ưu tiên bổ sung":"Priorities",
+      headers:["upgradeRiskCode","dashboardExportDescription","upgradeRiskStock","dashboardExportUnit",
+        "upgradeRiskMonth","upgradeRiskCover","upgradeRiskTier"].map(key=>tuDien(key)),rows:records});
   }else{
+    const quality=upgradeQualityData();
     sheets.push({name:"Review_summary",headers:["Check","Count","Scope"],rows:quality.issues.map(issue=>[tuDien(issue.titleKey),((issue.key==="unit")?quality.stockReady&&quality.histReady:["noSap","badQty","negative","price","duplicate"].includes(issue.key)?quality.stockReady:quality.histReady)?issue.rows.length:"N/A",tuDien(issue.detail||"upgradeQualityInvestigate")])});
     sheets.push({name:"Review_details",headers:["Check","SAP / Row","Detail"],rows:quality.issues.flatMap(issue=>issue.rows.map(row=>[tuDien(issue.titleKey),row.sap,row.info]))});
   }
@@ -12267,43 +12334,45 @@ function upgradeExportWorkbook(kind){
   link.href=url;link.download=`${tuDien(kind==="quality"?"upgradeQualityXlsx":"upgradeRiskXlsx")}_${ngayDiaPhuongISO()}.xlsx`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);
 }
 // Patch only the shared calculation and refresh pathways; do not duplicate the main data sources.
-for(const name of ["capNhatThongKeNangCao","doiKyPhanTichKho","doiLocHallPhanTich","locNhanhPhanTichKho","chuyenTab","doiNgonNgu"]){
-  const current=({capNhatThongKeNangCao,doiKyPhanTichKho,doiLocHallPhanTich,locNhanhPhanTichKho,chuyenTab,doiNgonNgu})[name];
-  const wrapped=function(...args){const result=current.apply(this,args);upgradeSchedule();return result;};
-  if(name==="capNhatThongKeNangCao")capNhatThongKeNangCao=wrapped;
-  else if(name==="doiKyPhanTichKho")doiKyPhanTichKho=wrapped;
-  else if(name==="doiLocHallPhanTich")doiLocHallPhanTich=wrapped;
-  else if(name==="locNhanhPhanTichKho")locNhanhPhanTichKho=wrapped;
-  else if(name==="chuyenTab")chuyenTab=wrapped;
-  else if(name==="doiNgonNgu")doiNgonNgu=wrapped;
-}
-const _upgradeOriginalHistoryLoader=taiHistory;
-taiHistory=async function(...args){try{return await _upgradeOriginalHistoryLoader.apply(this,args)}finally{upgradeSchedule()}};
+const _upgradeOriginalSourceStatus=ghiNhanNguon;
+ghiNhanNguon=function(id,...args){
+  _upgradeOriginalSourceStatus(id,...args);
+  if(id!=="images")upgradeSchedule();
+};
+const _upgradeOriginalChangeTab=chuyenTab;
+chuyenTab=function(...args){_upgradeOriginalChangeTab(...args);upgradeSchedule();};
+const _upgradeOriginalSetPeriod=doiKyPhanTichKho;
+doiKyPhanTichKho=function(...args){_upgradeOriginalSetPeriod(...args);upgradeSchedule();};
+const _upgradeOriginalSetHall=doiLocHallPhanTich;
+doiLocHallPhanTich=function(...args){
+  _upgradeOriginalSetHall(...args);
+  upgradeRiskState.page=1;
+  upgradeSchedule();
+};
+const _upgradeOriginalQuickSearch=locNhanhPhanTichKho;
+locNhanhPhanTichKho=function(...args){
+  _upgradeOriginalQuickSearch(...args);
+  upgradeRiskState.page=1;
+  upgradeSchedule();
+};
 function upgradeInit(){
-  for(const section of ["dashboard","analytics"]){
-    const filter=$upgrade(`risk-${section}-filter`),size=$upgrade(`risk-${section}-size`);
-    const previous=docTuyChon("warehouse-risk-"+section);
-    if(["urgent","attention","all"].includes(previous)){upgradeState[section].filter=previous;filter.value=previous;}
-    filter.addEventListener("change",()=>upgradeRiskFilter(section,filter.value));
-    if(size)size.addEventListener("change",()=>{upgradeState[section].size=Number(size.value)||25;upgradeState[section].page=1;upgradeRenderRisk(section)});
-    $upgrade(`risk-${section}-prev`).addEventListener("click",()=>upgradeRiskPage(section,-1));
-    $upgrade(`risk-${section}-next`).addEventListener("click",()=>upgradeRiskPage(section,1));
-    $upgrade(`risk-${section}-export`).addEventListener("click",()=>upgradeExportWorkbook(section));
-  }
+  const filter=$upgrade("risk-analytics-filter"),size=$upgrade("risk-analytics-size");
+  const previous=docTuyChon("warehouse-risk-analytics");
+  if(["urgent","attention","all"].includes(previous)){upgradeRiskState.filter=previous;filter.value=previous;}
+  filter.addEventListener("change",()=>{
+    upgradeRiskState.filter=filter.value;upgradeRiskState.page=1;
+    ghiTuyChon("warehouse-risk-analytics",filter.value);upgradeRenderRisk("analytics");
+  });
+  size.addEventListener("change",()=>{
+    upgradeRiskState.size=Number(size.value)||25;upgradeRiskState.page=1;upgradeRenderRisk("analytics");
+  });
+  $upgrade("risk-analytics-prev").addEventListener("click",()=>upgradeRiskPage(-1));
+  $upgrade("risk-analytics-next").addEventListener("click",()=>upgradeRiskPage(1));
+  $upgrade("risk-analytics-export").addEventListener("click",()=>upgradeExportWorkbook("analytics"));
   $upgrade("quality-export").addEventListener("click",()=>upgradeExportWorkbook("quality"));
   $upgrade("quality-details-export").addEventListener("click",()=>upgradeExportWorkbook("quality"));
   $upgrade("quality-details-close").addEventListener("click",()=>{$upgrade("quality-details-dialog").close()});
-  // The source probes can resolve after the original initialization. A read-only
-  // interval checks identity changes without touching SAP data or network.
-  let lastStock=duLieuTimKiem,lastHistory=historyAll,lastReady=analyticsReady,lastHall=hallDangLoc();
-  const observer=()=>{
-    const hall=hallDangLoc();if(lastStock!==duLieuTimKiem||lastHistory!==historyAll||lastReady!==analyticsReady||lastHall!==hall){
-      lastStock=duLieuTimKiem;lastHistory=historyAll;lastReady=analyticsReady;lastHall=hall;upgradeSchedule();
-    }
-  };
-  // No timers while the browser page is not visible; UI is refreshed on return.
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)upgradeSchedule()});
-  setInterval(()=>{if(!document.hidden)observer()},2500);
   upgradeSchedule();
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",upgradeInit,{once:true});else upgradeInit();
@@ -12324,6 +12393,7 @@ function upgradeCompareRanges(){
   return [{from:af,to:at},{from:bf,to:bt}];
 }
 function upgradeRenderCompare(){
+  if(tabHienTai!=="dashboard")return;
   const results=$upgrade("warehouse-compare-results"),note=$upgrade("warehouse-compare-note");
   if(!results||!note)return;
   const ranges=upgradeCompareRanges();
@@ -12331,18 +12401,23 @@ function upgradeRenderCompare(){
   if(!historyLoaded||cotGiaTriLichSuKho()<0||!lichSuTheoHall()){
     results.replaceChildren();note.textContent=tuDien("upgradeCompareNoHistory");return;
   }
-  const [a,b]=ranges.map(r=>tongNhapXuatTrongKhoang(r,cotGiaTriLichSuKho()));
+  const [a,b]=ranges.map(danhGiaGiaTriKyKho);
+  const comparable=a?.complete&&b?.complete;
   const nums=[
-    ["upgradeCompareIn",a.in,b.in],["upgradeCompareOut",a.out,b.out],
-    ["upgradeCompareNet",a.in-a.out,b.in-b.out]
+    ["upgradeCompareIn",a?.in??null,b?.in??null],["upgradeCompareOut",a?.out??null,b?.out??null],
+    ["upgradeCompareNet",a?.complete?a.in-a.out:null,b?.complete?b.in-b.out:null]
   ];
+  const money=value=>value===null?"—":dinhDangGiaTriKho(value);
   results.innerHTML=nums.map(([label,x,y])=>{
-    const delta=x-y,pct=y!==0?delta/Math.abs(y)*100:null;
-    const sign=delta>0?"+":"",display=sign+dinhDangGiaTriKho(delta);
+    const delta=comparable?x-y:null;
+    const pct=comparable&&y!==0?delta/Math.abs(y)*100:null;
+    const display=delta===null?"—":(delta>0?"+":"")+dinhDangGiaTriKho(delta);
     const change=pct===null?tuDien("upgradeCompareDelta",{value:display}):tuDien("upgradeComparePct",{value:chuoiPhanTramKho(pct)});
-    return `<article class="warehouse-compare-item"><h3>${thoatHTML(tuDien(label))}</h3><div class="warehouse-compare-numbers"><span>A</span><strong>${thoatHTML(dinhDangGiaTriKho(x))}</strong></div><div class="warehouse-compare-numbers"><span>B</span><strong>${thoatHTML(dinhDangGiaTriKho(y))}</strong></div><span class="warehouse-compare-change" data-direction="${delta>0?"up":delta<0?"down":"flat"}" title="${thoatHTML(tuDien("upgradeCompareDelta",{value:display}))}">${thoatHTML(change)}</span></article>`;
+    return `<article class="warehouse-compare-item"><h3>${thoatHTML(tuDien(label))}</h3><div class="warehouse-compare-numbers"><span>A</span><strong>${thoatHTML(money(x))}</strong></div><div class="warehouse-compare-numbers"><span>B</span><strong>${thoatHTML(money(y))}</strong></div><span class="warehouse-compare-change" data-direction="${delta>0?"up":delta<0?"down":"flat"}" title="${thoatHTML(tuDien("upgradeCompareDelta",{value:display}))}">${thoatHTML(change)}</span></article>`;
   }).join("");
-  note.textContent=tuDien("upgradeCompareNote",{a:ranges[0].from+" – "+ranges[0].to,b:ranges[1].from+" – "+ranges[1].to,invalid:dinhDangSoLuong.format(a.invalid+b.invalid)});
+  note.textContent=[tuDien("upgradeCompareNote",{a:ranges[0].from+" – "+ranges[0].to,
+    b:ranges[1].from+" – "+ranges[1].to,invalid:dinhDangSoLuong.format((a?.invalid||0)+(b?.invalid||0))}),
+    comparable?"":tuDien("dashboardHistoryPartial"),ghiChuPhamViLichSu()].filter(Boolean).join(" · ");
 }
 function upgradeInitCompare(){
   const today=ngayDiaPhuongISO(),aFrom=congNgayKho(today,-29),bTo=congNgayKho(aFrom,-1),bFrom=congNgayKho(bTo,-29);

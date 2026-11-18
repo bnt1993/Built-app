@@ -5,6 +5,7 @@ on:
     paths:
       - Checking
       - Checking.html
+      - 'Checking_Dashboard_Analysis (1).html'
       - Amount.js
       - HistoryWorker.js
       - History.js
@@ -17,6 +18,7 @@ on:
     paths:
       - Checking
       - Checking.html
+      - 'Checking_Dashboard_Analysis (1).html'
       - Amount.js
       - HistoryWorker.js
       - History.js
@@ -43,6 +45,8 @@ jobs:
           node tests/checking-audit.test.cjs
       - name: Validate Checking.html warehouse scope, availability and exports
         run: node tests/warehouse_readability_logic.cjs
+      - name: Validate the standalone Dashboard and Analysis
+        run: node --test tests/checking_split_dashboard_logic.cjs
       - name: Validate Amount.js reader and refresh
         run: node tests/amount_logic.cjs
       - name: Validate filtered report exports
