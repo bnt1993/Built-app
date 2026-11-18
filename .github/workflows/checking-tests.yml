@@ -5,6 +5,7 @@ on:
     paths:
       - Checking
       - Checking.html
+      - 'Checking_Dashboard_Analysis (1).html'
       - Amount.js
       - HistoryWorker.js
       - History.js
@@ -17,6 +18,7 @@ on:
     paths:
       - Checking
       - Checking.html
+      - 'Checking_Dashboard_Analysis (1).html'
       - Amount.js
       - HistoryWorker.js
       - History.js
@@ -29,6 +31,15 @@ permissions:
   contents: read
 
 jobs:
+  standalone-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate the standalone Dashboard and Analysis
+        run: node --test tests/checking_split_dashboard_logic.cjs
   dashboard-logic:
     runs-on: ubuntu-latest
     steps:
