@@ -1,27 +1,792 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spare Parts Launchpad</title>
 <style>
-:root{--b:#0a6ed1;--b2:#0854a0;--bg:#f3f6f9;--card:#fff;--text:#1d2d3e;--mut:#66788a;--bd:#d9e2ea;--ok:#188918;--bad:#bb0000}*{box-sizing:border-box}body{margin:0;font:14px Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}body.dark{--bg:#101820;--card:#18232d;--text:#eef5fb;--mut:#a9bac8;--bd:#314352}.top{height:64px;padding:0 20px;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--b2),var(--b));color:#fff;box-shadow:0 2px 10px #0002}.brand{font-size:20px;font-weight:700}.sub{opacity:.85;font-size:12px}.right{margin-left:auto;display:flex;gap:8px}.btn,.toolbtn,.select{border:1px solid var(--bd);border-radius:9px;padding:8px 11px;background:var(--card);color:var(--text);cursor:pointer}.top .btn{border-color:#ffffff45;background:#ffffff18;color:#fff}.layout{max-width:1440px;margin:auto;display:grid;grid-template-columns:205px 1fr;gap:18px;padding:20px}.sidebar{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;height:max-content;position:sticky;top:12px}.sidebtn{width:100%;display:flex;gap:9px;align-items:center;border:0;background:transparent;color:var(--text);padding:10px;border-radius:9px;cursor:pointer;text-align:left}.sidebtn.active,.sidebtn:hover{background:#e7f2fc;color:#07599e}body.dark .sidebtn.active,body.dark .sidebtn:hover{background:#173d5f;color:#9bd1ff}.main{min-width:0}.hero{display:flex;align-items:center;gap:15px;margin-bottom:13px}.hero>div{flex:1}.hero h1{margin:0 0 4px;font-size:25px}.search{width:min(390px,45vw);padding:11px 13px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--text)}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.stat,.tile{background:var(--card);border:1px solid var(--bd);border-radius:14px}.stat{padding:13px}.stat b{display:block;font-size:20px;color:var(--b)}.stat span{color:var(--mut);font-size:12px}.section{margin:20px 0 9px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:12px}.tile{padding:16px;position:relative;box-shadow:0 3px 14px #0000000c}.tile:hover{box-shadow:0 7px 20px #0002}.tile h3{margin:9px 55px 5px 0}.tile p{color:var(--mut);min-height:34px;margin:0 0 10px}.app-icon{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#e8f2fc;color:#07599e;font-size:24px}.fav,.pin{position:absolute;top:11px;border:0;background:none;font-size:19px;color:#899baa;cursor:pointer}.fav{right:12px}.pin{right:43px}.fav.on{color:#f5a623}.pin.on{color:var(--b)}.tags{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}.tag{font-size:10px;padding:3px 7px;border-radius:99px;background:#edf3f8;color:#52687b}.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button,.primary,.soft,.danger{border:0;border-radius:8px;padding:8px 10px;cursor:pointer}.primary{background:var(--b);color:#fff}.soft{background:#e8f2fc;color:#07599e}.danger{background:#d13438;color:#fff}.badge{margin-top:10px;font-size:11px;color:var(--mut)}.empty{display:none;text-align:center;padding:22px;color:var(--mut)}.compact .tile{padding:11px}.compact .tile p{display:none}.large .tile{padding:22px}.large .app-icon{width:54px;height:54px;font-size:30px}.modal,.overlay{position:fixed;inset:0;background:#0008;display:none;padding:3vh;z-index:20}.modal.on,.overlay.on{display:block}.viewer,.dialog{background:var(--card);border-radius:14px;box-shadow:0 15px 50px #0005}.viewer{height:94vh;display:flex;flex-direction:column;overflow:hidden}.viewerbar{padding:10px 12px;border-bottom:1px solid var(--bd);display:flex;gap:8px;align-items:center}.viewerbar b{flex:1}.viewer-toast{position:absolute;left:50%;top:74px;transform:translateX(-50%) translateY(-8px);background:#102a43;color:#fff;padding:9px 16px;border-radius:10px;box-shadow:0 8px 24px #0005;opacity:0;pointer-events:none;transition:.2s;z-index:40;font-weight:600}.viewer-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}.viewer iframe{flex:1;width:100%;border:0;background:white}.dialog{max-width:570px;margin:2vh auto;padding:18px;max-height:90vh;overflow:auto}.dialog h3{margin-top:0}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:8px 0}.field label{display:block;margin-bottom:5px;color:var(--mut)}.field input,.field select,.field textarea{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--text)}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.iconpicker{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.iconpick{border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:8px;cursor:pointer;font-size:20px}.iconpick.on{outline:2px solid var(--b)}.msg{min-height:18px;font-size:12px;color:var(--ok);margin-top:7px}.history-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:9px;border-bottom:1px solid var(--bd)}.cmd{max-width:650px;margin:10vh auto;padding:14px}.cmd input{width:100%;padding:14px;font-size:17px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--text)}.cmdresult{padding:10px;border-radius:9px;margin-top:7px;cursor:pointer}.cmdresult.sel,.cmdresult:hover{background:#e7f2fc;color:#07599e}.settings-panel{position:fixed;right:18px;top:76px;width:min(390px,calc(100vw - 36px));background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:17px;box-shadow:0 12px 36px #0004;z-index:30;display:none}.settings-panel.on{display:block}.settings-actions{display:flex;gap:8px;margin-top:14px}.settings-actions button{flex:1}.hidden{display:none!important}@media(max-width:1050px){.layout{grid-template-columns:1fr}.sidebar{position:static;display:flex;overflow:auto}.sidebtn{width:auto;white-space:nowrap}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.layout{padding:12px}.hero{display:block}.search{width:100%;margin-top:10px}.stats,.grid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.sub{display:none}}
+:root{--b:#0a6ed1;--b2:#0854a0;--bg:#f3f6f9;--card:#fff;--text:#1d2d3e;--mut:#66788a;--bd:#d9e2ea;--ok:#188918;--bad:#bb0000}*{box-sizing:border-box}body{margin:0;font:14px Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}body.dark{--bg:#101820;--card:#18232d;--text:#eef5fb;--mut:#a9bac8;--bd:#314352}.top{height:64px;padding:0 20px;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--b2),var(--b));color:#fff;box-shadow:0 2px 10px #0002}.brand{font-size:20px;font-weight:700}.sub{opacity:.85;font-size:12px}.right{margin-left:auto;display:flex;gap:8px}.btn,.toolbtn,.select{border:1px solid var(--bd);border-radius:9px;padding:8px 11px;background:var(--card);color:var(--text);cursor:pointer}.top .btn{border-color:#ffffff45;background:#ffffff18;color:#fff}.layout{max-width:1440px;margin:auto;display:grid;grid-template-columns:205px 1fr;gap:18px;padding:20px}.sidebar{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;height:max-content;position:sticky;top:12px}.sidebtn{width:100%;display:flex;gap:9px;align-items:center;border:0;background:transparent;color:var(--text);padding:10px;border-radius:9px;cursor:pointer;text-align:left}.sidebtn.active,.sidebtn:hover{background:#e7f2fc;color:#07599e}body.dark .sidebtn.active,body.dark .sidebtn:hover{background:#173d5f;color:#9bd1ff}.main{min-width:0}.hero{display:flex;align-items:center;gap:15px;margin-bottom:13px}.hero>div{flex:1}.hero h1{margin:0 0 4px;font-size:25px}.search{width:min(390px,45vw);padding:11px 13px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--text)}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.stat,.tile{background:var(--card);border:1px solid var(--bd);border-radius:14px}.stat{padding:13px}.stat b{display:block;font-size:20px;color:var(--b)}.stat span{color:var(--mut);font-size:12px}.section{margin:20px 0 9px;font-weight:700}.grid{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:12px}.tile{padding:16px;position:relative;box-shadow:0 3px 14px #0000000c}.tile:hover{box-shadow:0 7px 20px #0002}.tile h3{margin:9px 55px 5px 0}.tile p{color:var(--mut);min-height:34px;margin:0 0 10px}.app-icon{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#e8f2fc;color:#07599e;font-size:24px}.fav,.pin{position:absolute;top:11px;border:0;background:none;font-size:19px;color:#899baa;cursor:pointer}.fav{right:12px}.pin{right:43px}.fav.on{color:#f5a623}.pin.on{color:var(--b)}.tags{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}.tag{font-size:10px;padding:3px 7px;border-radius:99px;background:#edf3f8;color:#52687b}.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button,.primary,.soft,.danger{border:0;border-radius:8px;padding:8px 10px;cursor:pointer}.primary{background:var(--b);color:#fff}.soft{background:#e8f2fc;color:#07599e}.danger{background:#d13438;color:#fff}.badge{margin-top:10px;font-size:11px;color:var(--mut)}.empty{display:none;text-align:center;padding:22px;color:var(--mut)}.compact .tile{padding:11px}.compact .tile p{display:none}.large .tile{padding:22px}.large .app-icon{width:54px;height:54px;font-size:30px}.modal,.overlay{position:fixed;inset:0;background:#0008;display:none;padding:3vh;z-index:20}.modal.on,.overlay.on{display:block}.viewer,.dialog{background:var(--card);border-radius:14px;box-shadow:0 15px 50px #0005}.viewer{height:94vh;display:flex;flex-direction:column;overflow:hidden}.viewerbar{padding:10px 12px;border-bottom:1px solid var(--bd);display:flex;gap:8px;align-items:center}.viewerbar b{flex:1}.viewer iframe{flex:1;width:100%;border:0;background:white}.dialog{max-width:570px;margin:2vh auto;padding:18px;max-height:90vh;overflow:auto}.dialog h3{margin-top:0}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:8px 0}.field label{display:block;margin-bottom:5px;color:var(--mut)}.field input,.field select,.field textarea{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--text)}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.iconpicker{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.iconpick{border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:8px;cursor:pointer;font-size:20px}.iconpick.on{outline:2px solid var(--b)}.msg{min-height:18px;font-size:12px;color:var(--ok);margin-top:7px}.history-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:9px;border-bottom:1px solid var(--bd)}.cmd{max-width:650px;margin:10vh auto;padding:14px}.cmd input{width:100%;padding:14px;font-size:17px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--text)}.cmdresult{padding:10px;border-radius:9px;margin-top:7px;cursor:pointer}.cmdresult.sel,.cmdresult:hover{background:#e7f2fc;color:#07599e}.settings-panel{position:fixed;right:18px;top:76px;width:min(390px,calc(100vw - 36px));background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:17px;box-shadow:0 12px 36px #0004;z-index:30;display:none}.settings-panel.on{display:block}.settings-actions{display:flex;gap:8px;margin-top:14px}.settings-actions button{flex:1}.hidden{display:none!important}@media(max-width:1050px){.layout{grid-template-columns:1fr}.sidebar{position:static;display:flex;overflow:auto}.sidebtn{width:auto;white-space:nowrap}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.layout{padding:12px}.hero{display:block}.search{width:100%;margin-top:10px}.stats,.grid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.sub{display:none}}
+
+[hidden]{display:none!important}
+:where(button,input,select,textarea,summary):focus-visible{outline:2px solid var(--b);outline-offset:2px}
+button:disabled{cursor:default;opacity:.55}
+.portal-note{margin:0 0 12px;color:var(--mut);font-size:13px;overflow-wrap:anywhere}
+.portal-note[data-error="true"],.msg[data-error="true"]{color:var(--bad)}
+body.dark{--bad:#ff9b9b;--ok:#84d891}
+.empty:not([hidden]){display:block}
+.actions{align-items:center}
+.tile h3{overflow-wrap:anywhere;margin-right:0}
+.pin,.fav{min-width:36px;min-height:36px}
+.pin{right:48px}
+.tile-menu>summary{list-style:none;cursor:pointer;padding:6px 12px;text-align:center;font-weight:bold}
+.tile-menu>summary::-webkit-details-marker{display:none}
+.tile-menu>div{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tile-menu[open]{flex-basis:100%}
+.tile-menu[open]>summary{width:max-content}
+.settings-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.settings-panel{max-height:calc(100dvh - 92px);overflow:auto}
+dialog.modal,dialog.overlay{width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;color:var(--text);background:transparent}
+dialog[open].modal,dialog[open].overlay{display:block}
+dialog::backdrop{background:#0008}
+.viewer{height:94dvh;min-height:0}
+.viewerbar{justify-content:space-between;flex-wrap:wrap}
+.viewer-title,.viewer-controls{display:flex;align-items:center;gap:8px;min-width:0}
+.viewer-title{flex-wrap:wrap}
+.viewer-title strong{overflow-wrap:anywhere}
+.viewer-title .badge{margin:0}
+.viewer-controls{flex-wrap:wrap}
+.viewer-status{margin:0;padding:8px 12px}
+.viewer-recovery{padding:0 12px 8px}
+.viewer iframe{min-height:0}
+.cmdresult{display:block;width:100%;text-align:left;color:var(--text);background:transparent;border:0}
+.iconpicker{grid-template-columns:repeat(auto-fit,minmax(42px,1fr))}
+@media(max-width:650px){
+  .top{height:auto;min-height:58px;padding:8px 12px;gap:8px}
+  .brand{font-size:15px}
+  .right{gap:4px}
+  .top .btn{padding:8px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat b{overflow-wrap:anywhere}
+  dialog.modal{padding:0}
+  .viewer{height:100dvh;border-radius:0}
+  .viewerbar{align-items:flex-start;flex-direction:column;padding:8px}
+  .viewer-controls{width:100%}
+  .viewer-controls button,.tile-menu>summary,.actions .primary{min-height:40px}
+  #homeApp{margin-left:auto}
+}
 </style></head><body>
-<header class="top"><div><div class="brand">📦 Spare Parts Launchpad</div><div class="sub">SAP ECC · Spare Parts Applications</div></div><div class="right"><button class="btn" id="addBtn">＋ App</button><button class="btn" id="historyBtn">🕘</button><button class="btn" id="theme">◐</button></div></header>
-<div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="main"><section class="hero"><div><h1>Ứng dụng kho vật tư</h1><div style="color:var(--mut)">Quản lý tập trung các ứng dụng HTML.</div></div><input id="q" class="search" placeholder="Tìm ứng dụng · Ctrl+K" aria-label="Tìm ứng dụng"></section><div class="toolbar"><select id="sort" class="select"><option value="default">Mặc định</option><option value="recent">Mở gần đây</option><option value="used">Dùng nhiều nhất</option><option value="name">Tên A-Z</option></select><button id="settings" class="toolbtn">⚙ Cài đặt</button><button id="exportApps" class="toolbtn">⬇ Export apps.js</button></div><section class="stats" id="stats"><div class="stat"><b id="napps">0</b><span>Ứng dụng</span></div><div class="stat"><b id="opens">0</b><span>Lượt mở</span></div><div class="stat"><b id="favs">0</b><span>Yêu thích</span></div><div class="stat"><b id="last">—</b><span>Mở gần nhất</span></div></section><section id="recentSec"><div class="section">🕘 Mở gần đây</div><div class="grid" id="recentGrid"></div></section><div class="section" id="sectionTitle">Tất cả ứng dụng</div><div class="grid" id="grid"></div><div id="empty" class="empty">Không tìm thấy ứng dụng phù hợp.</div></main></div>
-<div class="modal" id="modal"><div class="viewer"><div class="viewerbar"><button class="soft" id="homeApp" title="Về Home (Alt+H)">⌂ Home</button><button class="soft" id="prevApp" title="App trước (Alt+←)">‹ Back</button><button class="soft" id="nextApp" title="App tiếp theo (Alt+→)">Next ›</button><b id="viewerTitle"></b><span id="viewerPos" class="badge"></span><button class="soft" id="pop">Tab mới</button><button class="danger" id="esc">ESC · Thoát</button></div><div class="viewer-toast" id="viewerToast" aria-live="polite"></div><iframe id="frame" title="Application viewer"></iframe></div></div>
-<div class="overlay" id="addOverlay"><div class="dialog"><h3>＋ Thêm ứng dụng</h3><div id="configWarn" class="msg"></div><div class="formgrid"><div class="field"><label>Tên ứng dụng</label><input id="aName"></div><div class="field"><label>ID duy nhất</label><input id="aId"></div><div class="field"><label>Đường dẫn HTML</label><input id="aPath" placeholder="Folder/App.html"></div><div class="field"><label>Nhóm</label><input id="aGroup" placeholder="Inventory"></div></div><div class="field"><label>Mô tả</label><textarea id="aDesc" rows="2"></textarea></div><div class="field"><label>Tags, cách nhau bằng dấu phẩy</label><input id="aTags" placeholder="SAP, Inventory, Report"></div><div class="field"><label>Version</label><input id="aVersion" placeholder="1.0"></div><div class="field"><label>Updated</label><input id="aUpdated" type="date"></div><div class="field"><label>Icon</label><div class="iconpicker" id="iconPicker"></div></div><div class="section">Preview</div><div class="grid" id="previewGrid"></div><div class="dialog-actions"><button class="soft closeAdd">Hủy</button><button class="primary" id="stageApp">Thêm vào Portal</button></div><div class="msg" id="addMsg"></div></div></div>
-<div class="overlay" id="histOverlay"><div class="dialog"><h3>🕘 Lịch sử sử dụng</h3><div id="historyList"></div><div class="dialog-actions"><button class="danger" id="clearHistory">Xóa lịch sử</button><button class="primary closeHist">Đóng</button></div></div></div>
-<div class="overlay" id="cmdOverlay"><div class="dialog cmd"><input id="cmdInput" placeholder="Tìm và Enter để mở..."><div id="cmdList"></div></div></div>
-<div class="settings-panel" id="settingsPanel"><b>⚙ Cài đặt Portal</b><div class="field"><label>Giao diện card</label><select id="viewMode"><option value="normal">Normal</option><option value="compact">Compact</option><option value="large">Large</option></select></div><div class="field"><label>Số cột</label><select id="columns"><option value="auto">Auto</option><option>2</option><option>3</option><option>4</option></select></div><div class="field"><label>Cách mở mặc định</label><select id="openMode"><option value="portal">Trong Portal</option><option value="tab">Tab mới</option></select></div><div class="field"><label>Ứng dụng khởi động</label><select id="startup"><option value="">Không tự mở</option></select></div><label><input type="checkbox" id="showRecent"> Hiện Mở gần đây</label><br><label><input type="checkbox" id="showStats"> Hiện thống kê</label><div class="settings-actions"><button class="soft" id="importSettings">Import</button><button class="soft" id="exportSettings">Export</button></div><div class="settings-actions"><button class="soft" id="settingsReset">↺ Reset</button><button class="primary" id="settingsSave">✓ Lưu</button></div><input type="file" id="settingsFile" accept="application/json" hidden><div class="msg" id="settingsMsg"></div></div>
-<script src="apps.js"></script><script>
-(()=>{const base=Array.isArray(window.PORTAL_APPS)?window.PORTAL_APPS:[],icons=window.PORTAL_ICONS||{},$=s=>document.querySelector(s),jget=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch{return d}},custom=jget('portalCustomApps',[]),draftApps=jget('portalAppsDraft',null);let apps=Array.isArray(draftApps)?draftApps:[...base,...custom],filter='all',pickedIcon=Object.keys(icons)[0]||'apps',cmdIndex=0;const state={fav:jget('portalFav',[]),pin:jget('portalPin',[]),counts:jget('portalCounts',{}),recent:jget('portalRecent',[]),history:jget('portalHistory',[]),last:localStorage.getItem('portalLast')||'',current:null};const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function valid(a){return a&&a.id&&a.name&&a.path}function tags(a){let t=a.tags||a.keywords||[];return typeof t==='string'?t.split(',').map(x=>x.trim()).filter(Boolean):t}function card(a){let f=state.fav.includes(a.id),p=state.pin.includes(a.id);return `<article class="tile" data-id="${esc(a.id)}"><button class="pin ${p?'on':''}">${p?'📌':'📍'}</button><button class="fav ${f?'on':''}">${f?'★':'☆'}</button><span class="app-icon">${esc(icons[a.icon]||a.icon||'▦')}</span><h3>${esc(a.name)}</h3><p>${esc(a.desc)}</p><div class="tags">${tags(a).slice(0,4).map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div><div class="actions"><button class="primary open">Mở</button><button class="soft new">Tab mới</button><button class="soft edit">✎ Sửa</button><button class="danger delete">🗑 Xóa</button></div><div class="badge">${esc(a.group||'Ứng dụng')} · ${esc(a.version?'v'+a.version:'')} ${a.updated?'· '+esc(a.updated):''} · ${state.counts[a.id]||0} lượt</div></article>`}
-function side(){let groups=[...new Set(apps.filter(valid).map(a=>a.group).filter(Boolean))];$('#sidebar').innerHTML=[['all','▦','Tất cả'],['fav','★','Yêu thích'],['pin','📌','Đã ghim'],...groups.map(g=>['g:'+g,'📁',g])].map(x=>`<button class="sidebtn ${filter===x[0]?'active':''}" data-filter="${esc(x[0])}">${x[1]} ${esc(x[2])}</button>`).join('')}
-function listed(){let q=$('#q').value.toLowerCase().trim(),l=apps.filter(valid).filter(a=>`${a.name} ${a.desc||''} ${a.group||''} ${tags(a).join(' ')}`.toLowerCase().includes(q));if(filter==='fav')l=l.filter(a=>state.fav.includes(a.id));else if(filter==='pin')l=l.filter(a=>state.pin.includes(a.id));else if(filter.startsWith('g:'))l=l.filter(a=>a.group===filter.slice(2));let s=$('#sort').value;if(s==='name')l.sort((a,b)=>a.name.localeCompare(b.name));if(s==='used')l.sort((a,b)=>(state.counts[b.id]||0)-(state.counts[a.id]||0));if(s==='recent')l.sort((a,b)=>(state.recent.indexOf(a.id)+99*(state.recent.indexOf(a.id)<0))-(state.recent.indexOf(b.id)+99*(state.recent.indexOf(b.id)<0)));return [...l.filter(a=>state.pin.includes(a.id)),...l.filter(a=>!state.pin.includes(a.id))]}
-function render(){side();let l=listed();$('#grid').innerHTML=l.map(card).join('');$('#empty').style.display=l.length?'none':'block';let r=state.recent.map(id=>apps.find(a=>a.id===id)).filter(valid).slice(0,3);$('#recentGrid').innerHTML=r.map(card).join('');$('#napps').textContent=apps.filter(valid).length;$('#opens').textContent=Object.values(state.counts).reduce((a,b)=>a+(+b||0),0);$('#favs').textContent=state.fav.length;$('#last').textContent=(apps.find(a=>a.id===state.last)||{}).name||'—';$('#recentSec').style.display=(localStorage.getItem('portalShowRecent')??'true')==='true'&&r.length?'block':'none';$('#stats').style.display=(localStorage.getItem('portalShowStats')??'true')==='true'?'grid':'none'}
-let toastTimer;function showAppName(a){let t=$('#viewerToast');t.textContent=a.name;t.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),1200)}function navApps(){return apps.filter(valid)}function updateViewerNav(){let l=navApps(),i=l.findIndex(a=>state.current&&a.id===state.current.id);$('#viewerPos').textContent=i>=0?`${i+1} / ${l.length}`:'';$('#prevApp').disabled=l.length<2;$('#nextApp').disabled=l.length<2}function switchApp(step){let l=navApps();if(!l.length)return;let i=l.findIndex(a=>state.current&&a.id===state.current.id);if(i<0)i=0;let a=l[(i+step+l.length)%l.length];track(a);state.current=a;$('#viewerTitle').textContent=a.name;$('#frame').src=a.path;updateViewerNav();showAppName(a);render()}function track(a){state.counts[a.id]=(state.counts[a.id]||0)+1;state.recent=[a.id,...state.recent.filter(x=>x!==a.id)].slice(0,10);state.history.unshift({id:a.id,name:a.name,time:new Date().toLocaleString('vi-VN')});state.history=state.history.slice(0,100);state.last=a.id;localStorage.setItem('portalCounts',JSON.stringify(state.counts));localStorage.setItem('portalRecent',JSON.stringify(state.recent));localStorage.setItem('portalHistory',JSON.stringify(state.history));localStorage.setItem('portalLast',a.id)}function openApp(a,tab=false){track(a);state.current=a;if(tab||localStorage.getItem('portalOpenMode')==='tab')window.open(a.path,'_blank');else{$('#viewerTitle').textContent=a.name;$('#frame').src=a.path;$('#modal').classList.add('on');updateViewerNav();showAppName(a)}render()}function closeApp(){$('#modal').classList.remove('on');$('#frame').src='about:blank';state.current=null}
-document.addEventListener('click',e=>{let sb=e.target.closest('.sidebtn');if(sb){filter=sb.dataset.filter;render();return}let t=e.target.closest('.tile');if(!t)return;let a=apps.find(x=>x.id===t.dataset.id);if(!a)return;if(e.target.closest('.fav')){state.fav=state.fav.includes(a.id)?state.fav.filter(x=>x!==a.id):[...state.fav,a.id];localStorage.setItem('portalFav',JSON.stringify(state.fav));render()}else if(e.target.closest('.pin')){state.pin=state.pin.includes(a.id)?state.pin.filter(x=>x!==a.id):[...state.pin,a.id];localStorage.setItem('portalPin',JSON.stringify(state.pin));render()}else if(e.target.closest('.new'))openApp(a,true);else if(e.target.closest('.edit'))editApp(a);else if(e.target.closest('.delete'))deleteApp(a);else if(e.target.closest('.open'))openApp(a,false)});$('#q').oninput=render;$('#sort').onchange=render;$('#esc').onclick=closeApp;$('#homeApp').onclick=closeApp;$('#prevApp').onclick=()=>switchApp(-1);$('#nextApp').onclick=()=>switchApp(1);$('#pop').onclick=()=>state.current&&openApp(state.current,true);$('#theme').onclick=()=>{document.body.classList.toggle('dark');localStorage.setItem('portalTheme',document.body.classList.contains('dark')?'dark':'light')};
-function saveAppsDraft(){localStorage.setItem('portalAppsDraft',JSON.stringify(apps.filter(valid)))}function editApp(a){if(!a)return;$('#aId').dataset.editing=a.id;$('#aId').readOnly=true;$('#aName').value=a.name||'';$('#aId').value=a.id||'';$('#aPath').value=a.path||'';$('#aGroup').value=a.group||'';$('#aDesc').value=a.desc||'';$('#aTags').value=tags(a).join(', ');$('#aVersion').value=a.version||'';$('#aUpdated').value=a.updated||'';pickedIcon=a.icon||pickedIcon;$('#stageApp').textContent='Lưu thay đổi';$('#addMsg').textContent='';document.querySelectorAll('.iconpick').forEach(x=>x.classList.toggle('on',x.dataset.icon===pickedIcon));dlg('addOverlay');preview()}function deleteApp(a){if(!a||!confirm(`Xóa ứng dụng “${a.name}” khỏi Portal?\n\nDanh sách tạm sẽ được lưu trong trình duyệt để Export apps.js sau.`))return;apps=apps.filter(x=>x.id!==a.id);custom=custom.filter(x=>x.id!==a.id);state.fav=state.fav.filter(x=>x!==a.id);state.pin=state.pin.filter(x=>x!==a.id);state.recent=state.recent.filter(x=>x!==a.id);delete state.counts[a.id];if(state.last===a.id)state.last='';localStorage.setItem('portalCustomApps',JSON.stringify(custom));localStorage.setItem('portalFav',JSON.stringify(state.fav));localStorage.setItem('portalPin',JSON.stringify(state.pin));localStorage.setItem('portalRecent',JSON.stringify(state.recent));localStorage.setItem('portalCounts',JSON.stringify(state.counts));localStorage.setItem('portalLast',state.last);saveAppsDraft();render()}function dlg(id,on=true){$('#'+id).classList.toggle('on',on)}$('#addBtn').onclick=()=>{delete $('#aId').dataset.editing;$('#aId').readOnly=false;['aName','aId','aPath','aGroup','aDesc','aTags','aVersion','aUpdated'].forEach(id=>$('#'+id).value='');$('#stageApp').textContent='Thêm vào Portal';$('#addMsg').textContent='';ensureNewAppId();dlg('addOverlay');preview();};document.querySelectorAll('.closeAdd').forEach(x=>x.onclick=()=>dlg('addOverlay',false));Object.entries(icons).forEach(([k,v])=>$('#iconPicker').insertAdjacentHTML('beforeend',`<button class="iconpick" data-icon="${esc(k)}" title="${esc(k)}">${esc(v)}</button>`));$('#iconPicker').onclick=e=>{let b=e.target.closest('.iconpick');if(!b)return;pickedIcon=b.dataset.icon;document.querySelectorAll('.iconpick').forEach(x=>x.classList.toggle('on',x===b));preview()};function makeAppId(){let id='';do{id='app-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6)}while(apps.some(a=>a.id===id));return id}function ensureNewAppId(){if(!$('#aId').dataset.editing){$('#aId').value=makeAppId();$('#aId').readOnly=true}}function draft(){return{id:$('#aId').value.trim(),name:$('#aName').value.trim()||'Ứng dụng mới',path:$('#aPath').value.trim(),group:$('#aGroup').value.trim(),desc:$('#aDesc').value.trim(),tags:$('#aTags').value.split(',').map(x=>x.trim()).filter(Boolean),version:$('#aVersion').value.trim(),updated:$('#aUpdated').value,icon:pickedIcon}}function preview(){$('#previewGrid').innerHTML=card(draft())}['aName','aId','aPath','aGroup','aDesc','aTags','aVersion','aUpdated'].forEach(id=>$('#'+id).oninput=preview);$('#stageApp').onclick=()=>{let editing=$('#aId').dataset.editing;if(!editing&&apps.some(x=>x.id===$('#aId').value))ensureNewAppId();let a=draft();a.path=String(a.path||'').replace(/\\/g,'/');if(!a.id||!a.name||!a.path){$('#addMsg').textContent='Cần có ID, tên và đường dẫn HTML.';return}if(editing){let i=apps.findIndex(x=>x.id===editing);if(i>=0)apps[i]=a;else apps.push(a);custom=custom.filter(x=>x.id!==editing);custom.push(a);localStorage.setItem('portalCustomApps',JSON.stringify(custom));saveAppsDraft();render();dlg('addOverlay',false);return}if(apps.some(x=>x.id===a.id)){ensureNewAppId();a=draft()}custom.push(a);apps.push(a);localStorage.setItem('portalCustomApps',JSON.stringify(custom));saveAppsDraft();$('#addMsg').textContent='Đã thêm vào Portal. Export apps.js để tải cấu hình.';render()};
-function exportFile(name,text,type='text/plain'){let u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}$('#exportApps').onclick=()=>{let all=apps.filter(valid).map(a=>({...a,path:String(a.path||'').replace(/\\/g,'/')}));saveAppsDraft();exportFile('apps.js',`window.PORTAL_ICONS = ${JSON.stringify(icons,null,2)};\n\nwindow.PORTAL_APPS = ${JSON.stringify(all,null,2)};\n`,'text/javascript')};
-$('#historyBtn').onclick=()=>{let counts={};state.history.forEach(h=>counts[h.id]=(counts[h.id]||0)+1);$('#historyList').innerHTML=state.history.length?state.history.map(h=>`<div class="history-row"><span>${esc(h.name)}</span><span>${esc(h.time)}</span><b>${counts[h.id]||1}×</b></div>`).join(''):'<div class="empty" style="display:block">Chưa có lịch sử.</div>';dlg('histOverlay')};$('.closeHist').onclick=()=>dlg('histOverlay',false);$('#clearHistory').onclick=()=>{state.history=[];state.recent=[];localStorage.removeItem('portalHistory');localStorage.removeItem('portalRecent');$('#historyList').innerHTML='Đã xóa lịch sử.';render()};
-function cmdRender(){let q=$('#cmdInput').value.toLowerCase(),l=apps.filter(valid).filter(a=>`${a.name} ${tags(a).join(' ')}`.toLowerCase().includes(q)).slice(0,7);cmdIndex=Math.min(cmdIndex,Math.max(0,l.length-1));$('#cmdList').innerHTML=l.map((a,i)=>`<div class="cmdresult ${i===cmdIndex?'sel':''}" data-id="${esc(a.id)}">${esc(icons[a.icon]||'▦')} &nbsp; <b>${esc(a.name)}</b> <small>${esc(a.group||'')}</small></div>`).join('');return l}$('#cmdInput').oninput=()=>{cmdIndex=0;cmdRender()};$('#cmdInput').onkeydown=e=>{let l=cmdRender();if(e.key==='ArrowDown'){e.preventDefault();cmdIndex=Math.min(cmdIndex+1,l.length-1);cmdRender()}if(e.key==='ArrowUp'){e.preventDefault();cmdIndex=Math.max(cmdIndex-1,0);cmdRender()}if(e.key==='Enter'&&l[cmdIndex]){dlg('cmdOverlay',false);openApp(l[cmdIndex],false)}};$('#cmdList').onclick=e=>{let r=e.target.closest('.cmdresult');if(r){dlg('cmdOverlay',false);openApp(apps.find(a=>a.id===r.dataset.id),false)}};
-document.addEventListener('keydown',e=>{if($('#modal').classList.contains('on')&&e.altKey&&e.key.toLowerCase()==='h'){e.preventDefault();closeApp();return}if($('#modal').classList.contains('on')&&e.altKey&&e.key==='ArrowLeft'){e.preventDefault();switchApp(-1);return}if($('#modal').classList.contains('on')&&e.altKey&&e.key==='ArrowRight'){e.preventDefault();switchApp(1);return}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();dlg('cmdOverlay');$('#cmdInput').value='';cmdIndex=0;cmdRender();setTimeout(()=>$('#cmdInput').focus(),0)}else if(e.key==='Escape'){if($('#modal').classList.contains('on'))closeApp();else['cmdOverlay','addOverlay','histOverlay'].forEach(id=>dlg(id,false));$('#settingsPanel').classList.remove('on')}});
-$('#settings').onclick=()=>$('#settingsPanel').classList.toggle('on');apps.filter(valid).forEach(a=>$('#startup').add(new Option(a.name,a.id)));function applySettings(v,o,start,recent,stats,cols){document.body.classList.remove('compact','large');if(v!=='normal')document.body.classList.add(v);document.documentElement.style.setProperty('--cols',cols==='auto'?'3':cols);$('#recentSec').style.display=recent?'block':'none';$('#stats').style.display=stats?'grid':'none'}function loadSettings(){let v=localStorage.getItem('portalView')||'normal',o=localStorage.getItem('portalOpenMode')||'portal',st=localStorage.getItem('portalStartup')||'',r=(localStorage.getItem('portalShowRecent')??'true')==='true',ss=(localStorage.getItem('portalShowStats')??'true')==='true',c=localStorage.getItem('portalColumns')||'auto';Object.assign($('#viewMode'),{value:v});Object.assign($('#openMode'),{value:o});Object.assign($('#startup'),{value:st});$('#showRecent').checked=r;$('#showStats').checked=ss;$('#columns').value=c;applySettings(v,o,st,r,ss,c)}$('#settingsSave').onclick=()=>{localStorage.setItem('portalView',$('#viewMode').value);localStorage.setItem('portalOpenMode',$('#openMode').value);localStorage.setItem('portalStartup',$('#startup').value);localStorage.setItem('portalShowRecent',$('#showRecent').checked);localStorage.setItem('portalShowStats',$('#showStats').checked);localStorage.setItem('portalColumns',$('#columns').value);loadSettings();render();$('#settingsMsg').textContent='Đã lưu cài đặt.'};$('#settingsReset').onclick=()=>{['portalView','portalOpenMode','portalStartup','portalShowRecent','portalShowStats','portalColumns'].forEach(k=>localStorage.removeItem(k));loadSettings();render();$('#settingsMsg').textContent='Đã reset về mặc định.'};$('#exportSettings').onclick=()=>exportFile('portal-settings.json',JSON.stringify({view:$('#viewMode').value,openMode:$('#openMode').value,startup:$('#startup').value,showRecent:$('#showRecent').checked,showStats:$('#showStats').checked,columns:$('#columns').value,fav:state.fav,pin:state.pin},null,2),'application/json');$('#importSettings').onclick=()=>$('#settingsFile').click();$('#settingsFile').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader;r.onload=()=>{try{let x=JSON.parse(r.result);if(x.view)localStorage.setItem('portalView',x.view);if(x.openMode)localStorage.setItem('portalOpenMode',x.openMode);localStorage.setItem('portalStartup',x.startup||'');localStorage.setItem('portalShowRecent',x.showRecent!==false);localStorage.setItem('portalShowStats',x.showStats!==false);localStorage.setItem('portalColumns',x.columns||'auto');if(Array.isArray(x.fav)){state.fav=x.fav;localStorage.setItem('portalFav',JSON.stringify(x.fav))}if(Array.isArray(x.pin)){state.pin=x.pin;localStorage.setItem('portalPin',JSON.stringify(x.pin))}loadSettings();render();$('#settingsMsg').textContent='Import thành công.'}catch{$('#settingsMsg').textContent='File JSON không hợp lệ.'}};r.readAsText(f)};
-let bad=apps.filter(a=>!valid(a));if(bad.length)$('#configWarn').textContent=`⚠ Có ${bad.length} cấu hình app thiếu id/name/path và đã được bỏ qua.`;if(localStorage.getItem('portalTheme')==='dark')document.body.classList.add('dark');loadSettings();render();let start=apps.find(a=>a.id===localStorage.getItem('portalStartup'));if(start)setTimeout(()=>openApp(start,false),120);
-})();</script></body></html>
+<header class="top"><div><div class="brand">📦 Spare Parts Launchpad</div><div class="sub">SAP ECC · Spare Parts Applications</div></div><div class="right"><button class="btn" id="addBtn">＋ Thêm</button><button class="btn" id="historyBtn" aria-label="Lịch sử sử dụng">🕘</button><button class="btn" id="theme" aria-label="Đổi giao diện sáng tối" aria-pressed="false">◐</button></div></header>
+<div class="layout"><aside class="sidebar" id="sidebar" aria-label="Nhóm ứng dụng"></aside><main class="main"><section class="hero"><div><h1>Ứng dụng kho vật tư</h1><div style="color:var(--mut)">Quản lý tập trung các ứng dụng HTML.</div></div><input id="q" class="search" type="search" placeholder="Tìm ứng dụng · Ctrl+K" aria-label="Tìm ứng dụng"></section><div class="toolbar"><select id="sort" class="select" aria-label="Sắp xếp ứng dụng"><option value="default">Mặc định</option><option value="recent">Mở gần đây</option><option value="used">Dùng nhiều nhất</option><option value="name">Tên A-Z</option></select><button id="settings" class="toolbtn" aria-controls="settingsPanel" aria-expanded="false">⚙ Cài đặt</button><button id="exportApps" class="toolbtn">⬇ Xuất apps.js</button></div><p class="portal-note" id="configStatus"></p><p class="portal-note" id="portalStatus" role="status" hidden></p><section class="stats" id="stats"><div class="stat"><b id="napps">0</b><span>Ứng dụng</span></div><div class="stat"><b id="opens">0</b><span>Lượt mở</span></div><div class="stat"><b id="favs">0</b><span>Yêu thích</span></div><div class="stat"><b id="last">—</b><span>Mở gần nhất</span></div></section><section id="recentSec"><div class="section">🕘 Mở gần đây</div><div class="grid" id="recentGrid"></div></section><div class="section" id="sectionTitle">Tất cả ứng dụng</div><div class="grid" id="grid"></div><p id="empty" class="empty" role="status" hidden></p></main></div>
+<dialog class="modal" id="modal" aria-labelledby="viewerTitle">
+  <div class="viewer">
+    <div class="viewerbar">
+      <div class="viewer-title"><strong id="viewerTitle"></strong><span id="viewerPos" class="badge"></span></div>
+      <div class="viewer-controls" aria-label="Điều hướng ứng dụng">
+        <button class="soft" id="prevApp" title="Ứng dụng trước (Alt+←)" aria-label="Ứng dụng trước">‹</button>
+        <button class="soft" id="nextApp" title="Ứng dụng sau (Alt+→)" aria-label="Ứng dụng sau">›</button>
+        <button class="soft" id="pop">Tab mới</button>
+        <button class="soft" id="homeApp" title="Về Portal (Alt+H)">Về Portal</button>
+      </div>
+    </div>
+    <p class="portal-note viewer-status" id="viewerStatus" role="status" hidden></p>
+    <div class="viewer-recovery" id="viewerRecovery" hidden>
+      <button class="soft" id="viewerRetry">Thử lại</button>
+    </div>
+    <iframe id="frame" title="Ứng dụng"></iframe>
+  </div>
+</dialog>
+<dialog class="overlay" id="addOverlay" aria-labelledby="appEditorTitle"><div class="dialog"><h3 id="appEditorTitle">Thêm ứng dụng</h3><div class="formgrid"><div class="field"><label for="aName">Tên ứng dụng</label><input id="aName"></div><div class="field"><label for="aId">ID duy nhất</label><input id="aId"></div><div class="field"><label for="aPath">Đường dẫn HTML</label><input id="aPath" placeholder="Folder/App.html hoặc https://…"></div><div class="field"><label for="aGroup">Nhóm</label><input id="aGroup" placeholder="Báo cáo"></div></div><div class="field"><label for="aDesc">Mô tả</label><textarea id="aDesc" rows="2"></textarea></div><div class="field"><label for="aTags">Từ khóa, cách nhau bằng dấu phẩy</label><input id="aTags" placeholder="SAP, Inventory, Report"></div><div class="field"><label for="aVersion">Phiên bản</label><input id="aVersion" placeholder="1.0"></div><div class="field"><label for="aUpdated">Ngày cập nhật</label><input id="aUpdated" type="date"></div><div class="field"><label>Biểu tượng</label><div class="iconpicker" id="iconPicker"></div></div><div class="section">Xem trước</div><div class="grid" id="previewGrid"></div><div class="dialog-actions"><button class="soft closeAdd">Hủy</button><button class="primary" id="stageApp">Thêm vào Portal</button></div><div class="msg" id="addMsg" role="status"></div></div></dialog>
+<dialog class="overlay" id="histOverlay" aria-labelledby="historyTitle"><div class="dialog"><h3 id="historyTitle">Lịch sử sử dụng</h3><div id="historyList"></div><div class="dialog-actions"><button class="danger" id="clearHistory">Xóa lịch sử</button><button class="primary closeHist">Đóng</button></div></div></dialog>
+<dialog class="overlay" id="cmdOverlay" aria-labelledby="cmdInput"><div class="dialog cmd"><input id="cmdInput" type="search" aria-label="Tìm nhanh ứng dụng" placeholder="Tìm và Enter để mở..."><div id="cmdList"></div></div></dialog>
+<div class="settings-panel" id="settingsPanel" aria-labelledby="settingsTitle"><div class="settings-title"><b id="settingsTitle">Cài đặt Portal</b><button class="soft" id="settingsClose" aria-label="Đóng cài đặt">×</button></div><div class="field"><label for="viewMode">Giao diện card</label><select id="viewMode"><option value="normal">Tiêu chuẩn</option><option value="compact">Thu gọn</option><option value="large">Rộng</option></select></div><div class="field"><label for="columns">Số cột</label><select id="columns"><option value="auto">Tự động</option><option>2</option><option>3</option><option>4</option></select></div><div class="field"><label for="openMode">Cách mở mặc định</label><select id="openMode"><option value="portal">Trong Portal</option><option value="tab">Tab mới</option></select></div><div class="field"><label for="startup">Ứng dụng khởi động</label><select id="startup"><option value="">Không tự mở</option></select></div><label><input type="checkbox" id="showRecent"> Hiện Mở gần đây</label><br><label><input type="checkbox" id="showStats"> Hiện thống kê</label><div class="settings-actions"><button class="soft" id="importSettings">Khôi phục JSON</button><button class="soft" id="exportSettings">Sao lưu JSON</button></div><div class="settings-actions"><button class="soft" id="settingsReset">Về mặc định</button><button class="primary" id="settingsSave">✓ Lưu</button></div><input type="file" id="settingsFile" accept="application/json" hidden><div class="msg" id="settingsMsg" role="status"></div></div>
+<script src="apps.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  const defaults = [
+    {id:"stock",name:"Tra cứu tồn kho",path:"Checking.html",group:"Tra cứu",desc:"Tìm mã SAP, kiểm tra tồn kho và lịch sử vật tư.",tags:["SAP","vật tư"],icon:"stock"},
+    {id:"dashboard",name:"Dashboard & Phân tích kho",path:"Checking_Dashboard_Analysis (1).html",group:"Báo cáo",desc:"Theo dõi xuất, nhập, tồn và vật tư cần chú ý.",tags:["tồn kho","thống kê"],icon:"chart"},
+    {id:"po-gr",name:"Theo dõi PO/GR",path:"Report.html",group:"Báo cáo",desc:"Theo dõi đơn mua, nhập kho và yêu cầu vật tư.",tags:["đơn mua","PO","GR"],icon:"orders"},
+    {id:"mb5b",name:"Phân tích MB5B theo tuần",path:"MB5B_Weekly_Analysis.html",group:"Báo cáo",desc:"Phân tích dữ liệu SAP MB5B theo tuần.",tags:["SAP","MB5B"],icon:"chart"},
+    {id:"layout",name:"Sơ đồ kho",path:"Layout WH.html",group:"Công cụ",desc:"Xem vị trí lưu kho trên sơ đồ 3D.",tags:["LX02","vị trí"],icon:"layout"}
+  ];
+  const preferencesDefault = {
+    view:"normal", columns:"auto", openMode:"portal", startup:"",
+    showRecent:true, showStats:true, theme:"light"
+  };
+  const key = "portalStateV2";
+  const $ = id => document.getElementById(id);
+  const text = value => typeof value === "string" ? value.trim() : "";
+  const object = value => !!value && typeof value === "object" && !Array.isArray(value);
+  const escape = value => String(value ?? "").replace(/[&<>"']/g,
+    char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[char]);
+  const normalize = value => text(value).toLocaleLowerCase("vi").normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d");
+  const identifiers = values => Array.isArray(values) ? [...new Set(values.map(text).filter(Boolean))] : [];
+  const icons = new Map(Object.entries({apps:"▦",stock:"📦",chart:"📊",orders:"🧾",layout:"📍"}));
+  const localRoot = new URL(".", document.baseURI);
+  let storageAvailable = true;
+
+  if (object(window.PORTAL_ICONS)) {
+    for (const [id, glyph] of Object.entries(window.PORTAL_ICONS)) {
+      if (text(glyph)) icons.set(id, glyph);
+    }
+  }
+
+  function resolvePath(value) {
+    const path = text(value).replace(/\\/g,"/");
+    if (!path || /[\u0000-\u001f\u007f]/.test(path)) return null;
+    try {
+      const external = /^https:\/\//i.test(path);
+      if (!external) {
+        if (/^(?:\/|\?|#|[a-z][a-z\d+.-]*:)/i.test(path)) return null;
+        const file = decodeURIComponent(path.split(/[?#]/,1)[0]);
+        if (!/\.html?$/i.test(file) || file.split("/").includes("..") || file.includes("\\")) return null;
+      }
+      const url = new URL(path, localRoot);
+      if (external) return url.protocol === "https:" && !url.username && !url.password ?
+        {path:url.href,url,external:true} : null;
+      if (!["file:","http:","https:"].includes(url.protocol) || url.origin !== localRoot.origin ||
+          !decodeURIComponent(url.pathname).startsWith(decodeURIComponent(localRoot.pathname))) return null;
+      return {path,url,external:false};
+    } catch {
+      return null;
+    }
+  }
+
+  function cleanApp(value) {
+    if (!object(value)) return null;
+    const id = text(value.id), name = text(value.name), target = resolvePath(value.path);
+    if (!id || !name || !target) return null;
+    const words = value.tags ?? value.keywords;
+    return {id,name,path:target.path,group:text(value.group),desc:text(value.desc),
+      tags:identifiers(typeof words === "string" ? words.split(",") : words),
+      version:text(value.version),updated:text(value.updated),icon:text(value.icon) || "apps"};
+  }
+
+  function cleanApps(values) {
+    return new Map((Array.isArray(values) ? values : []).map(cleanApp).filter(Boolean)
+      .map(app => [app.id,app]));
+  }
+
+  const configured = cleanApps(window.PORTAL_APPS);
+  const configuredPaths = new Set([...configured.values()].map(app => resolvePath(app.path).url.href));
+  const configuredHidden = new Set(identifiers(window.PORTAL_HIDDEN_APPS));
+  const defaultApps = defaults.filter(app => !configuredHidden.has(app.id) &&
+    !configuredPaths.has(resolvePath(app.path).url.href));
+  const base = new Map([...cleanApps(defaultApps), ...configured]);
+
+  function read(key) {
+    try { return localStorage.getItem(key); }
+    catch { storageAvailable=false; return null; }
+  }
+
+  function readJson(key) {
+    try { return JSON.parse(read(key)); }
+    catch { return null; }
+  }
+
+  function cleanPreferences(value) {
+    const prefs = object(value) ? value : {};
+    return {
+      view:["normal","compact","large"].includes(prefs.view) ? prefs.view : preferencesDefault.view,
+      columns:["auto","2","3","4"].includes(prefs.columns) ? prefs.columns : preferencesDefault.columns,
+      openMode:prefs.openMode === "tab" ? "tab" : preferencesDefault.openMode,
+      startup:text(prefs.startup),
+      showRecent:prefs.showRecent !== false,showStats:prefs.showStats !== false,
+      theme:prefs.theme === "dark" ? "dark" : preferencesDefault.theme
+    };
+  }
+
+  function cleanActivity(value) {
+    const source = object(value) ? value : {};
+    const counts = new Map(object(source.counts) ? Object.entries(source.counts)
+      .filter(([, count]) => Number.isSafeInteger(count) && count > 0) : []);
+    const history = (Array.isArray(source.history) ? source.history : [])
+      .filter(entry => object(entry) && text(entry.id) && text(entry.name) && text(entry.time))
+      .map(entry => ({id:text(entry.id), name:text(entry.name), time:text(entry.time)})).slice(0,100);
+    return {counts,history,favorites:identifiers(source.favorites),pins:identifiers(source.pins),
+      recent:identifiers(source.recent).slice(0,10),last:text(source.last)};
+  }
+
+  function loadState() {
+    const current = readJson(key);
+    if (object(current) && current.version === 2) return {
+      overrides:cleanApps(current.overrides),removed:new Set(identifiers(current.removed)),
+      preferences:cleanPreferences(current.preferences),activity:cleanActivity(current.activity)
+    };
+    const overrides = cleanApps(readJson("portalCustomApps"));
+    const knownPaths = new Set([...base.values(),...overrides.values()].map(app => resolvePath(app.path).url.href));
+    for (const [id, app] of cleanApps(readJson("portalAppsDraft"))) {
+      const href = resolvePath(app.path).url.href;
+      if (base.has(id) || overrides.has(id) || knownPaths.has(href)) continue;
+      overrides.set(id,app);
+      knownPaths.add(href);
+    }
+    return {
+      overrides,removed:new Set(),
+      preferences:cleanPreferences({view:read("portalView"),columns:read("portalColumns"),
+        openMode:read("portalOpenMode"),startup:read("portalStartup"),theme:read("portalTheme"),
+        showRecent:read("portalShowRecent")!=="false",showStats:read("portalShowStats")!=="false"}),
+      activity:cleanActivity({favorites:readJson("portalFav"),pins:readJson("portalPin"),
+        counts:readJson("portalCounts"),recent:readJson("portalRecent"),
+        history:readJson("portalHistory"),last:read("portalLast")})
+    };
+  }
+
+  const state = loadState();
+  let catalog = new Map();
+  let filter = "all", selectedIcon = "apps", editingId = "", commandIndex = 0;
+  let viewerApp = null, viewerSequence = 0, viewerTimer, viewerCheck;
+  const editorFields = {aId:"id",aName:"name",aPath:"path",aGroup:"group",aDesc:"desc",
+    aTags:"tags",aVersion:"version",aUpdated:"updated"};
+
+  function updateSourceStatus() {
+    const note = [];
+    if (!configured.size) note.push("Đang dùng danh mục mặc định. Bạn có thể thêm ứng dụng hoặc khôi phục cấu hình JSON.");
+    if (!storageAvailable) note.push("Trình duyệt chưa lưu được cấu hình. Hãy sao lưu JSON trước khi đóng trang.");
+    $("configStatus").textContent = note.join(" ");
+    $("configStatus").hidden = !note.length;
+  }
+
+  function save() {
+    try {
+      const activity = {...state.activity,counts:Object.fromEntries(state.activity.counts)};
+      localStorage.setItem(key,JSON.stringify({version:2,overrides:[...state.overrides.values()],
+        removed:[...state.removed],preferences:state.preferences,activity}));
+      storageAvailable = true;
+    } catch {
+      storageAvailable = false;
+    }
+    updateSourceStatus();
+    return storageAvailable;
+  }
+
+  function notice(id, message = "", error = false) {
+    const node = $(id);
+    node.textContent = message;
+    node.hidden = !message;
+    node.dataset.error = String(error);
+  }
+
+  function refreshCatalog() {
+    catalog = new Map([...base,...state.overrides]);
+    for (const id of state.removed) catalog.delete(id);
+    const selected = $("startup").value;
+    $("startup").replaceChildren(new Option("Không tự mở",""),
+      ...[...catalog.values()].map(app => new Option(app.name,app.id)));
+    const startup = selected || state.preferences.startup;
+    $("startup").value = catalog.has(startup) ? startup : "";
+    if (filter.startsWith("g:") && ![...catalog.values()].some(app => app.group === filter.slice(2))) filter = "all";
+  }
+
+  function displayIcon(app) {
+    return icons.get(app.icon) || app.icon || icons.get("apps");
+  }
+
+  function card(app, preview = false) {
+    const {favorites,pins,counts} = state.activity;
+    const favorite = favorites.includes(app.id), pinned = pins.includes(app.id);
+    const id = escape(app.id), name = escape(app.name);
+    const actions = preview ? "" :
+      '<button class="pin" data-action="pin" aria-pressed="'+pinned+'" aria-label="Ghim '+name+'">'+(pinned?"📌":"📍")+'</button>'+
+      '<button class="fav" data-action="favorite" aria-pressed="'+favorite+'" aria-label="Yêu thích '+name+'">'+(favorite?"★":"☆")+'</button>';
+    const menu = preview ? "" : '<div class="actions">'+
+      '<button class="primary" data-action="open" aria-label="Mở '+name+'">Mở</button>'+
+      '<details class="tile-menu"><summary class="soft" aria-label="Tùy chọn cho '+name+'">⋯</summary>'+
+      '<div><button class="soft" data-action="tab">Tab mới</button><button class="soft" data-action="edit">Sửa</button>'+
+      '<button class="danger" data-action="delete">Xóa</button></div></details></div>';
+    const details = [app.group || "Ứng dụng", app.version && "v"+app.version, app.updated,
+      !preview && (counts.get(app.id)||0)+" lượt"].filter(Boolean);
+    const tags = app.tags.slice(0,4).map(tag => '<span class="tag">'+escape(tag)+'</span>').join("");
+    return '<article class="tile" data-id="'+id+'">'+actions+
+      '<span class="app-icon" aria-hidden="true">'+escape(displayIcon(app))+'</span>'+
+      '<h3>'+name+'</h3>'+(app.desc?'<p>'+escape(app.desc)+'</p>':'')+
+      (tags?'<div class="tags">'+tags+'</div>':'')+menu+
+      '<div class="badge">'+details.map(escape).join(" · ")+'</div></article>';
+  }
+
+  function searchApps(query) {
+    const words = normalize(query).split(/\s+/).filter(Boolean);
+    return [...catalog.values()].filter(app => {
+      const fields = normalize([app.name,app.desc,app.group,...app.tags].join(" "));
+      return words.every(word => fields.includes(word));
+    });
+  }
+
+  function listed() {
+    const {favorites,pins,recent,counts} = state.activity;
+    let visible = searchApps($("q").value);
+    if (filter === "fav") visible = visible.filter(app => favorites.includes(app.id));
+    if (filter === "pin") visible = visible.filter(app => pins.includes(app.id));
+    if (filter.startsWith("g:")) visible = visible.filter(app => app.group === filter.slice(2));
+    const rank = new Map(recent.map((id,index) => [id,index]));
+    const sort = $("sort").value;
+    if (sort === "name") visible.sort((a,b) => a.name.localeCompare(b.name,"vi"));
+    if (sort === "used") visible.sort((a,b) => (counts.get(b.id)||0)-(counts.get(a.id)||0));
+    if (sort === "recent") visible.sort((a,b) => (rank.get(a.id)??Infinity)-(rank.get(b.id)??Infinity));
+    return visible.sort((a,b) => Number(pins.includes(b.id))-Number(pins.includes(a.id)));
+  }
+
+  function render(focus = null) {
+    const groups = [...new Set([...catalog.values()].map(app => app.group).filter(Boolean))];
+    const filters = [["all","Tất cả ứng dụng"],["fav","Yêu thích"],["pin","Đã ghim"],
+      ...groups.map(group => ["g:"+group,group])];
+    $("sidebar").innerHTML = filters.map(([id,label]) =>
+      '<button class="sidebtn'+(filter===id?' active':'')+'" data-filter="'+escape(id)+
+      '" aria-pressed="'+(filter===id)+'">'+escape(label)+'</button>').join("");
+    $("sectionTitle").textContent = filters.find(([id]) => id === filter)?.[1] || "Ứng dụng";
+    const visible = listed();
+    $("grid").innerHTML = visible.map(app => card(app)).join("");
+    $("empty").hidden = !!visible.length;
+    $("empty").textContent = !catalog.size ? "Danh mục trống. Chọn Thêm để tạo ứng dụng."
+      : "Không tìm thấy ứng dụng phù hợp.";
+    const {recent,last,counts,favorites} = state.activity;
+    const recentApps = recent.map(id => catalog.get(id)).filter(Boolean).slice(0,3);
+    $("recentGrid").innerHTML = recentApps.map(app => card(app)).join("");
+    $("recentSec").hidden = !state.preferences.showRecent || !recentApps.length;
+    $("stats").hidden = !state.preferences.showStats;
+    $("napps").textContent = catalog.size;
+    $("opens").textContent = [...counts.values()].reduce((sum,value) => sum+value,0);
+    $("favs").textContent = favorites.filter(id => catalog.has(id)).length;
+    $("last").textContent = catalog.get(last)?.name || "—";
+    if (focus?.filter) [...$("sidebar").querySelectorAll("button")].find(button =>
+      button.dataset.filter === focus.filter)?.focus();
+    if (focus?.id) {
+      const grid = $(focus.grid);
+      const tile = [...grid.querySelectorAll(".tile")].find(node => node.dataset.id === focus.id);
+      const button = tile?.querySelector('[data-action="'+focus.action+'"]');
+      (button || $("q")).focus();
+    }
+  }
+
+  function track(app) {
+    const activity = state.activity;
+    activity.counts.set(app.id, (activity.counts.get(app.id)||0)+1);
+    activity.recent = [app.id,...activity.recent.filter(id => id !== app.id)].slice(0,10);
+    activity.history = [{id:app.id,name:app.name,time:new Date().toLocaleString("vi-VN")},
+      ...activity.history].slice(0,100);
+    activity.last = app.id;
+    save();
+    render();
+  }
+
+  function openTab(app, target, fromViewer = false) {
+    const status = fromViewer ? viewerStatus : message => notice("portalStatus",message,!!message);
+    let tab;
+    try {
+      tab = window.open("about:blank","_blank");
+      if (!tab) {
+        status("Trình duyệt đã chặn tab mới. Cho phép mở cửa sổ rồi thử lại.",true);
+        return;
+      }
+      tab.opener = null;
+      tab.location.replace(target.url.href);
+    } catch {
+      tab?.close();
+      status("Không mở được đường dẫn. Kiểm tra cấu hình rồi thử lại.",true);
+      return;
+    }
+    status("");
+    track(app);
+  }
+
+  function viewerStatus(message, error = false) {
+    notice("viewerStatus",message,error);
+    $("viewerRecovery").hidden = !error;
+  }
+
+  function updateViewerNav() {
+    const apps = [...catalog.values()].filter(app => !resolvePath(app.path).external);
+    const index = apps.findIndex(app => app.id === viewerApp?.id);
+    $("viewerPos").textContent = index >= 0 ? (index+1)+" / "+apps.length : "";
+    $("prevApp").disabled = $("nextApp").disabled = apps.length < 2;
+    return {apps,index};
+  }
+
+  function cancelViewerLoad() {
+    clearTimeout(viewerTimer);
+    viewerCheck?.abort();
+    viewerCheck = null;
+    return ++viewerSequence;
+  }
+
+  async function viewApp(app, target) {
+    const sequence = cancelViewerLoad();
+    viewerApp = app;
+    $("viewerTitle").textContent = app.name;
+    updateViewerNav();
+    if (!$("modal").open) $("modal").showModal();
+    viewerStatus("Đang mở ứng dụng…");
+
+    const placeholder = document.createElement("iframe");
+    placeholder.id = "frame";
+    placeholder.title = app.name;
+    $("frame").replaceWith(placeholder);
+    if (location.protocol !== "file:" && typeof fetch === "function") {
+      viewerCheck = new AbortController();
+      const controller = viewerCheck;
+      const timeout = setTimeout(() => controller.abort(),2000);
+      try {
+        const result = await fetch(target.url.href,{method:"HEAD",redirect:"manual",signal:controller.signal});
+        if (sequence !== viewerSequence) return;
+        if (result.type === "opaqueredirect" || (result.status >= 300 && result.status < 400)) {
+          viewerStatus("Đường dẫn chuyển tiếp. Chọn Tab mới để mở.",true);
+          return;
+        }
+        if (!result.ok && ![405,501].includes(result.status)) {
+          viewerStatus(result.status === 404 || result.status === 410
+            ? "Không tìm thấy file. Kiểm tra tên và thư mục hoặc chọn Tab mới."
+            : "Máy chủ chưa trả được ứng dụng. Kiểm tra đường dẫn rồi thử lại.",true);
+          return;
+        }
+      } catch {
+        // Some local servers only answer navigation requests.
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+    if (sequence !== viewerSequence) return;
+    const frame = document.createElement("iframe");
+    frame.id = "frame";
+    frame.title = app.name;
+    let loaded = false;
+    viewerTimer = setTimeout(() => {
+      if (sequence === viewerSequence && !loaded) viewerStatus("Ứng dụng chưa phản hồi. Thử lại hoặc chọn Tab mới.",true);
+    },12000);
+    frame.addEventListener("load",() => {
+      if (sequence !== viewerSequence || loaded) return;
+      loaded = true;
+      clearTimeout(viewerTimer);
+      viewerStatus(location.protocol === "file:" ? "Nếu khung trống, kiểm tra đường dẫn hoặc chọn Tab mới." : "");
+      track(app);
+    },{once:true});
+    frame.addEventListener("error",() => {
+      if (sequence !== viewerSequence) return;
+      clearTimeout(viewerTimer);
+      viewerStatus("Không tải được ứng dụng. Kiểm tra đường dẫn hoặc chọn Tab mới.",true);
+    },{once:true});
+    frame.src = target.url.href;
+    placeholder.replaceWith(frame);
+  }
+
+  function openApp(app, {tab = false, fromViewer = false, embedded = false} = {}) {
+    if (!app) return;
+    const target = resolvePath(app.path);
+    if (!target) {
+      notice("portalStatus","Đường dẫn ứng dụng không hợp lệ.",true);
+      return;
+    }
+    notice("portalStatus");
+    if (tab || target.external || (!embedded && state.preferences.openMode === "tab")) {
+      openTab(app,target,fromViewer);
+    } else {
+      void viewApp(app,target);
+    }
+  }
+
+  function closeViewer() {
+    cancelViewerLoad();
+    $("frame").removeAttribute("src");
+    viewerApp = null;
+    if ($("modal").open) $("modal").close();
+  }
+
+  function switchApp(step) {
+    const {apps,index} = updateViewerNav();
+    if (index >= 0 && apps.length > 1) openApp(apps[(index+step+apps.length)%apps.length],{embedded:true});
+  }
+
+  function editorValues() {
+    const values = Object.fromEntries(Object.entries(editorFields).map(([id,field]) => [field,$(id).value]));
+    return {...values,icon:selectedIcon,tags:identifiers(values.tags.split(","))};
+  }
+
+  function preview() {
+    const values = editorValues();
+    $("previewGrid").innerHTML = card({...values,name:text(values.name)||"Ứng dụng mới"},true);
+    for (const button of $("iconPicker").querySelectorAll("button")) {
+      button.setAttribute("aria-pressed",String(button.dataset.icon === selectedIcon));
+      button.classList.toggle("on",button.dataset.icon === selectedIcon);
+    }
+  }
+
+  function edit(app) {
+    editingId = app?.id || "";
+    selectedIcon = app?.icon || "apps";
+    for (const [id,field] of Object.entries(editorFields)) {
+      $(id).value = field === "tags" ? (app?.tags || []).join(", ") : app?.[field] || "";
+    }
+    $("aId").value = editingId || "app-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);
+    $("aId").readOnly = true;
+    $("appEditorTitle").textContent = editingId ? "Sửa ứng dụng" : "Thêm ứng dụng";
+    $("stageApp").textContent = editingId ? "Lưu thay đổi" : "Thêm vào Portal";
+    notice("addMsg");
+    preview();
+    $("addOverlay").showModal();
+    $("aName").focus();
+  }
+
+  function saveApp() {
+    const values = editorValues();
+    if (!text(values.name)) {
+      notice("addMsg","Nhập tên ứng dụng.",true);
+      $("aName").focus();
+      return;
+    }
+    const app = cleanApp(values);
+    if (!app) {
+      notice("addMsg","Nhập đường dẫn HTML tương đối hoặc địa chỉ HTTPS hợp lệ.",true);
+      $("aPath").focus();
+      return;
+    }
+    if (!editingId && catalog.has(app.id)) {
+      notice("addMsg","ID này đã dùng. Mở lại cửa sổ thêm ứng dụng rồi thử lại.",true);
+      return;
+    }
+    state.overrides.set(app.id,app);
+    state.removed.delete(app.id);
+    save();
+    refreshCatalog();
+    render();
+    $("addOverlay").close();
+    notice("portalStatus", editingId ? "Đã cập nhật "+app.name+"." : "Đã thêm "+app.name+".");
+  }
+
+  function deleteApp(app) {
+    if (!confirm("Xóa “"+app.name+"” khỏi Portal? File HTML gốc vẫn còn.")) return;
+    state.overrides.delete(app.id);
+    if (base.has(app.id)) state.removed.add(app.id);
+    for (const list of ["favorites","pins","recent"]) {
+      state.activity[list] = state.activity[list].filter(id => id !== app.id);
+    }
+    if (state.preferences.startup === app.id) state.preferences.startup = "";
+    if (state.activity.last === app.id) state.activity.last = "";
+    save();
+    refreshCatalog();
+    render();
+    $("q").focus();
+    notice("portalStatus","Đã xóa "+app.name+" khỏi Portal.");
+  }
+
+  function handleCard(event) {
+    const button = event.target.closest("[data-action]");
+    const tile = button?.closest(".tile");
+    const app = tile && catalog.get(tile.dataset.id);
+    if (!app) return;
+    const action = button.dataset.action;
+    if (action === "open" || action === "tab") openApp(app,{tab:action === "tab"});
+    if (action === "edit") edit(app);
+    if (action === "delete") deleteApp(app);
+    if (action === "favorite" || action === "pin") {
+      const name = action === "favorite" ? "favorites" : "pins";
+      const ids = state.activity[name];
+      state.activity[name] = ids.includes(app.id) ? ids.filter(id => id !== app.id) : [...ids,app.id];
+      save();
+      render({id:app.id,grid:event.currentTarget.id,action});
+    }
+  }
+
+  function renderHistory() {
+    const {history} = state.activity;
+    $("historyList").innerHTML = history.length ? history.map(entry =>
+      '<div class="history-row"><span>'+escape(entry.name)+'</span><span>'+escape(entry.time)+'</span></div>'
+    ).join("") : "<p>Chưa có lịch sử.</p>";
+  }
+
+  function clearHistory() {
+    if (!confirm("Xóa lịch sử, danh sách mở gần đây và thống kê lượt mở trên thiết bị này?")) return;
+    Object.assign(state.activity,{history:[],recent:[],counts:new Map(),last:""});
+    save();
+    renderHistory();
+    render();
+  }
+
+  function renderCommand() {
+    const matches = searchApps($("cmdInput").value).slice(0,7);
+    commandIndex = Math.min(commandIndex,Math.max(0,matches.length-1));
+    $("cmdList").innerHTML = matches.map((app,index) =>
+      '<button class="cmdresult'+(index===commandIndex?' sel':'')+'" data-id="'+escape(app.id)+'">'+
+      escape(displayIcon(app))+' &nbsp; <strong>'+escape(app.name)+'</strong> <small>'+
+      escape(app.group)+'</small></button>').join("") || "<p>Không tìm thấy ứng dụng.</p>";
+    return matches;
+  }
+
+  function openCommand() {
+    $("cmdInput").value = "";
+    commandIndex = 0;
+    renderCommand();
+    $("cmdOverlay").showModal();
+    $("cmdInput").focus();
+  }
+
+  function applyPreferences() {
+    const prefs = state.preferences;
+    document.body.classList.toggle("compact",prefs.view==="compact");
+    document.body.classList.toggle("large",prefs.view==="large");
+    document.body.classList.toggle("dark",prefs.theme==="dark");
+    $("theme").setAttribute("aria-pressed",String(prefs.theme==="dark"));
+    document.documentElement.style.setProperty("--cols",prefs.columns==="auto"?"3":prefs.columns);
+  }
+
+  function fillPreferences() {
+    const prefs = state.preferences;
+    for (const [id, name] of Object.entries({viewMode:"view",columns:"columns",openMode:"openMode",startup:"startup"})) {
+      $(id).value = name === "startup" && !catalog.has(prefs.startup) ? "" : prefs[name];
+    }
+    $("showRecent").checked = prefs.showRecent;
+    $("showStats").checked = prefs.showStats;
+  }
+
+  function preferencesFromForm() {
+    return cleanPreferences({view:$("viewMode").value,columns:$("columns").value,openMode:$("openMode").value,
+      startup:$("startup").value,showRecent:$("showRecent").checked,showStats:$("showStats").checked,
+      theme:state.preferences.theme});
+  }
+
+  function showSettings(open) {
+    if (open) fillPreferences();
+    $("settingsPanel").classList.toggle("on",open);
+    $("settings").setAttribute("aria-expanded",String(open));
+    if (open) $("viewMode").focus();
+  }
+
+  function exportFile(name, content, type) {
+    const url = URL.createObjectURL(new Blob([content],{type}));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url),1000);
+  }
+
+  function hiddenAppsForExport() {
+    return [...new Set([...configuredHidden,...state.removed])].filter(id => !catalog.has(id));
+  }
+
+  function backup() {
+    return {version:2,apps:[...catalog.values()],overrides:[...state.overrides.values()],
+      removed:hiddenAppsForExport(),preferences:preferencesFromForm(),
+      fav:state.activity.favorites,pin:state.activity.pins};
+  }
+
+  function restoreBackup(data) {
+    if (!object(data) || (Object.hasOwn(data,"version") && data.version !== 2)) throw Error("invalid backup");
+    if (data.version === 2) {
+      if (!Array.isArray(data.apps) || !Array.isArray(data.overrides) ||
+          !Array.isArray(data.removed) || !object(data.preferences) ||
+          [...data.apps,...data.overrides].some(app => !cleanApp(app))) throw Error("invalid backup");
+      const overrides = cleanApps(data.overrides);
+      for (const [id,app] of cleanApps(data.apps)) if (!base.has(id) && !overrides.has(id)) overrides.set(id,app);
+      state.overrides = overrides;
+      state.removed = new Set(identifiers(data.removed));
+      state.preferences = cleanPreferences(data.preferences);
+    } else {
+      const keys = Object.keys(preferencesDefault).concat("fav","pin");
+      if (!keys.some(id => Object.hasOwn(data,id))) throw Error("invalid backup");
+      state.preferences = cleanPreferences({...state.preferences,...data});
+    }
+    if (Array.isArray(data.fav)) state.activity.favorites = identifiers(data.fav);
+    if (Array.isArray(data.pin)) state.activity.pins = identifiers(data.pin);
+    refreshCatalog();
+    applyPreferences();
+    fillPreferences();
+    render();
+    return save();
+  }
+
+  $("sidebar").addEventListener("click",event => {
+    const button = event.target.closest("[data-filter]");
+    if (!button) return;
+    filter = button.dataset.filter;
+    render({filter});
+  });
+  for (const grid of ["grid","recentGrid"]) $(grid).addEventListener("click",handleCard);
+  $("q").oninput = () => render();
+  $("sort").onchange = () => render();
+  $("theme").onclick = () => {
+    state.preferences.theme = state.preferences.theme === "dark" ? "light" : "dark";
+    applyPreferences();
+    save();
+  };
+  $("homeApp").onclick = closeViewer;
+  $("modal").addEventListener("cancel",event => { event.preventDefault(); closeViewer(); });
+  $("prevApp").onclick = () => switchApp(-1);
+  $("nextApp").onclick = () => switchApp(1);
+  $("pop").onclick = () => openApp(viewerApp,{tab:true,fromViewer:true});
+  $("viewerRetry").onclick = () => openApp(viewerApp,{embedded:true});
+  $("addBtn").onclick = () => edit();
+  document.querySelector(".closeAdd").onclick = () => $("addOverlay").close();
+  $("stageApp").onclick = saveApp;
+  for (const id of Object.keys(editorFields)) $(id).oninput = preview;
+  $("iconPicker").innerHTML = [...icons].map(([id,glyph]) =>
+    '<button class="iconpick" data-icon="'+escape(id)+'" aria-label="Biểu tượng '+escape(id)+'">'+escape(glyph)+'</button>'
+  ).join("");
+  $("iconPicker").onclick = event => {
+    const button = event.target.closest("[data-icon]");
+    if (button) { selectedIcon=button.dataset.icon; preview(); }
+  };
+  $("historyBtn").onclick = () => { renderHistory(); $("histOverlay").showModal(); };
+  document.querySelector(".closeHist").onclick = () => $("histOverlay").close();
+  $("clearHistory").onclick = clearHistory;
+  $("cmdInput").oninput = () => { commandIndex=0; renderCommand(); };
+  $("cmdInput").onkeydown = event => {
+    if (["ArrowDown","ArrowUp"].includes(event.key)) {
+      event.preventDefault();
+      commandIndex = Math.max(0,commandIndex+(event.key==="ArrowDown"?1:-1));
+      renderCommand();
+    }
+    if (event.key === "Enter") {
+      const app = renderCommand()[commandIndex];
+      if (app) { $("cmdOverlay").close(); openApp(app); }
+    }
+  };
+  $("cmdList").onclick = event => {
+    const button = event.target.closest("[data-id]");
+    if (!button) return;
+    $("cmdOverlay").close();
+    openApp(catalog.get(button.dataset.id));
+  };
+  document.addEventListener("keydown",event => {
+    if ($("modal").open && event.altKey) {
+      if (event.key.toLowerCase() === "h") { event.preventDefault(); closeViewer(); }
+      if (event.key === "ArrowLeft") { event.preventDefault(); switchApp(-1); }
+      if (event.key === "ArrowRight") { event.preventDefault(); switchApp(1); }
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k" &&
+        !document.querySelector("dialog[open]")) {
+      event.preventDefault();
+      openCommand();
+    }
+    if (event.key === "Escape" && !document.querySelector("dialog[open]")) showSettings(false);
+  });
+  $("settings").onclick = () => showSettings(!$("settingsPanel").classList.contains("on"));
+  $("settingsClose").onclick = () => { showSettings(false); $("settings").focus(); };
+  $("settingsSave").onclick = () => {
+    state.preferences = preferencesFromForm();
+    applyPreferences();
+    render();
+    const saved = save();
+    notice("settingsMsg",saved ? "Đã lưu cài đặt." : "Đã áp dụng cho phiên này. Hãy sao lưu JSON.",!saved);
+  };
+  $("settingsReset").onclick = () => {
+    state.preferences = {...preferencesDefault};
+    applyPreferences();
+    fillPreferences();
+    render();
+    const saved = save();
+    notice("settingsMsg",saved ? "Đã về cài đặt mặc định." : "Đã áp dụng cho phiên này. Hãy sao lưu JSON.",!saved);
+  };
+  $("exportApps").onclick = () => exportFile("apps.js",
+    "window.PORTAL_ICONS = "+JSON.stringify(Object.fromEntries(icons),null,2)+";\n\n"+
+    "window.PORTAL_HIDDEN_APPS = "+JSON.stringify(hiddenAppsForExport())+";\n"+
+    "window.PORTAL_APPS = "+JSON.stringify([...catalog.values()],null,2)+";\n","text/javascript");
+  $("exportSettings").onclick = () => exportFile("portal-settings.json",
+    JSON.stringify(backup(),null,2),"application/json");
+  $("importSettings").onclick = () => $("settingsFile").click();
+  $("settingsFile").onchange = async event => {
+    const file = event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const saved = restoreBackup(JSON.parse(await file.text()));
+      notice("settingsMsg",saved ? "Đã khôi phục cấu hình." : "Đã khôi phục cho phiên này. Hãy sao lưu JSON.",!saved);
+    } catch {
+      notice("settingsMsg","File JSON cấu hình không hợp lệ.",true);
+    }
+  };
+
+  refreshCatalog();
+  updateSourceStatus();
+  applyPreferences();
+  fillPreferences();
+  render();
+
+  const startup = catalog.get(state.preferences.startup);
+  if (startup) {
+    if (state.preferences.openMode === "tab" || resolvePath(startup.path).external) {
+      notice("portalStatus","Ứng dụng khởi động: "+startup.name+". Chọn Mở để mở trên tab mới.");
+    } else {
+      openApp(startup,{embedded:true});
+    }
+  }
+})();
+</script>
+</body></html>
