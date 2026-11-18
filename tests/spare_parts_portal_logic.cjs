@@ -155,6 +155,15 @@ test("missing local HTTP page shows a retry without recording a visit",async()=>
   assert.equal(get("opens").textContent,0);
 });
 
+test("a redirected route remains outside the embedded viewer",async()=>{
+  const {get,click}=fixture({fetchResult:{type:"opaqueredirect",status:0,ok:false}});
+  click("stock","open");
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.match(get("viewerStatus").textContent,/chuyển tiếp/);
+  assert.equal(get("frame").src,undefined);
+  assert.equal(get("opens").textContent,0);
+});
+
 test("a reversible backup includes catalog and preferences and accepts older settings",async()=>{
   const first=fixture({catalog:[existingApp]});
   first.click("stock","delete");
