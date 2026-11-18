@@ -2847,6 +2847,20 @@ html[data-theme="dark"] #view-dashboard .dashboard-alert-panel{background:linear
 html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b4c5!important}
 @media(max-width:900px){#catalog-detail-dialog .detail-section{grid-template-areas:"title" "image" "thumbs" "kpis" "details" "bm"!important}}
 @media(max-width:620px){#catalog-detail-dialog .detail-kpi-grid{grid-template-columns:1fr!important}#catalog-detail-dialog .detail-kpi-card{min-height:82px!important}}
+
+/* Executive overview: resilient empty/partial-data state */
+#view-dashboard .executive-data-state{display:grid;grid-template-columns:minmax(280px,.9fr) minmax(0,1.5fr);gap:18px;align-items:stretch;min-height:265px;padding:14px 2px 2px}
+#view-dashboard .executive-state-card{display:flex;flex-direction:column;justify-content:center;gap:9px;padding:22px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,var(--app-panel),var(--app-field));box-shadow:0 7px 20px rgba(15,23,42,.05)}
+#view-dashboard .executive-state-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:#fff7e8;color:#b76a0b;font-size:21px;font-weight:900;border:1px solid #f4ddb2}
+#view-dashboard .executive-state-title{font-weight:850;font-size:15px;color:var(--ink)}
+#view-dashboard .executive-state-text{font-size:12px;line-height:1.55;color:var(--muted);max-width:54ch}
+#view-dashboard .executive-state-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:3px}
+#view-dashboard .executive-coverage{display:flex;flex-direction:column;justify-content:center;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:var(--app-field)}
+#view-dashboard .executive-coverage-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.executive-coverage-head strong{font-size:13px}.executive-coverage-head span{font-size:11px;color:var(--muted)}
+#view-dashboard .executive-coverage-track{height:12px;border-radius:999px;background:var(--line);overflow:hidden}.executive-coverage-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#f59e0b,#22c55e)}
+#view-dashboard .executive-coverage-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}.executive-coverage-meta div{padding:10px 11px;border-radius:10px;background:var(--app-panel);border:1px solid var(--line)}.executive-coverage-meta small{display:block;color:var(--muted);font-size:10px;margin-bottom:3px}.executive-coverage-meta b{font-size:12px;color:var(--ink)}
+html[data-theme="dark"] #view-dashboard .executive-state-icon{background:#4a3718;color:#ffd28a;border-color:#69522b}
+@media(max-width:760px){#view-dashboard .executive-data-state{grid-template-columns:1fr}.dashboard-executive-card{height:auto!important}}
 </style>
 <style>[data-support-pane="true"]{display:none!important}</style><style id="warehouse-upgrade-style">
 /* Dashboard & Analytics: independent, accessible operations panels (v2026.11). */
@@ -5552,13 +5566,15 @@ const CHECKING_SPLIT_MODE="report";
         capNhatTrangThaiAmount();
         veBieuDoGiaTriKho();
         veLichSuKho();
+        if(typeof veTongQuanDieuHanhCoChuThich==='function')veTongQuanDieuHanhCoChuThich();
         capNhatCanhBaoKho();
       }
       script.onload=()=>{
-        const changed=window.amountData!==previous;
+        // A reload is successful when Amount.js exposes a structurally valid dataset.
+        // Do not require a new Array object: local scripts may reuse/mutate window.amountData.
         const valid=Array.isArray(window.amountData)&&
           (!window.amountData.length||layGiaTriKhoTuAmount().length>0);
-        finish(changed&&valid,"dashAmountInvalid");
+        finish(valid,"dashAmountInvalid");
       };
       script.onerror=()=>finish(false,"dashAmountLoadError");
       script.src="Amount.js?t="+Date.now();
@@ -10787,7 +10803,8 @@ const CHECKING_SPLIT_MODE="report";
 
       const snapshots = layGiaTriKhoTuAmount();
       if (!snapshots.length) {
-        container.textContent = tuDien("dashValueTrendEmpty");
+        damBaoNguonDashboard();
+        container.textContent = tuDien(dangTaiAmount?"dashAmountLoading":"dashValueTrendEmpty");
         if (summary) summary.textContent = "";
         return;
       }
@@ -11702,22 +11719,52 @@ const CHECKING_SPLIT_MODE="report";
         series:buckets.slice(-12).map(b=>({...b,...current.values.get(b.key)}))};
     }
 
+    // Self-healing data guards for Dashboard cards/charts.
+    let _dashboardAmountRetryAt=0,_dashboardHistoryRetryAt=0;
+    function damBaoNguonDashboard(){
+      const now=Date.now();
+      if(!layGiaTriKhoTuAmount().length&&!dangTaiAmount&&now-_dashboardAmountRetryAt>5000){
+        _dashboardAmountRetryAt=now;taiLaiAmount();
+      }
+      if(!historyLoaded&&!historyLoading&&now-_dashboardHistoryRetryAt>5000){
+        _dashboardHistoryRetryAt=now;
+        if(typeof taiLaiHistory==='function')taiLaiHistory();
+        else if(typeof taiHistory==='function')taiHistory();
+      }
+    }
+
+    function hienThiTrangThaiDieuHanh(root,note,range){
+      const coverage=phamViNgayLichSuKho(historyAll||[]);
+      const totalDays=range?khoangNgayKho(range.from,range.to):0;
+      let coveredDays=0;
+      if(coverage&&range){
+        const from=coverage.from>range.from?coverage.from:range.from,to=coverage.to<range.to?coverage.to:range.to;
+        if(from<=to)coveredDays=khoangNgayKho(from,to);
+      }
+      const percent=totalDays?Math.max(0,Math.min(100,coveredDays/totalDays*100)):0;
+      const hasHistory=Array.isArray(historyAll)&&historyAll.length>0;
+      const title=ngonNguHienTai==='en'?'Insufficient data for the selected period':'Chưa đủ dữ liệu cho kỳ đã chọn';
+      const text=historyLoading?(ngonNguHienTai==='en'?'History.js is being loaded. The overview will refresh automatically.':'Đang nạp History.js. Tổng quan sẽ tự cập nhật khi dữ liệu sẵn sàng.'):
+        (ngonNguHienTai==='en'?'The selected range contains missing dates or excluded transactions. Available history is shown below so the cause is visible.':'Khoảng thời gian đã chọn có ngày thiếu dữ liệu hoặc giao dịch bị loại. Phạm vi dữ liệu hiện có được hiển thị để dễ kiểm tra.');
+      root.innerHTML=`<div class="executive-data-state"><section class="executive-state-card"><div class="executive-state-icon">!</div><div class="executive-state-title">${thoatHTML(title)}</div><div class="executive-state-text">${thoatHTML(text)}</div><div class="executive-state-actions"><button class="btn btn-soft" id="executive-retry-history" type="button">${ngonNguHienTai==='en'?'Reload History':'Nạp lại History'}</button></div></section><section class="executive-coverage"><div class="executive-coverage-head"><strong>${ngonNguHienTai==='en'?'History coverage':'Phạm vi History'}</strong><span>${nfExec(percent)}%</span></div><div class="executive-coverage-track"><div class="executive-coverage-fill" style="width:${percent}%"></div></div><div class="executive-coverage-meta"><div><small>${ngonNguHienTai==='en'?'Selected period':'Kỳ đã chọn'}</small><b>${thoatHTML(range?range.from+' → '+range.to:'—')}</b></div><div><small>${ngonNguHienTai==='en'?'Available history':'History hiện có'}</small><b>${thoatHTML(coverage?coverage.from+' → '+coverage.to:'—')}</b></div><div><small>${ngonNguHienTai==='en'?'History rows':'Dòng History'}</small><b>${dinhDangSoLuong.format(hasHistory?historyAll.length:0)}</b></div><div><small>${ngonNguHienTai==='en'?'Coverage':'Độ phủ kỳ'}</small><b>${nfExec(percent)}%</b></div></div></section></div>`;
+      const btn=document.getElementById('executive-retry-history');if(btn)btn.onclick=()=>{damBaoNguonDashboard();if(typeof taiLaiHistory==='function')taiLaiHistory();};
+      if(note)note.textContent=coverage?(ngonNguHienTai==='en'?`Recorded history: ${coverage.from} to ${coverage.to}`:`Lịch sử ghi nhận từ ${coverage.from} đến ${coverage.to}`):'';
+    }
+    function nfExec(v){return new Intl.NumberFormat(ngonNguHienTai==='en'?'en-US':'vi-VN',{maximumFractionDigits:1}).format(Number.isFinite(v)?v:0)}
+
     function veTongQuanDieuHanhCoChuThich(){
       if(tabHienTai!=="dashboard")return;
       const root=document.getElementById("insight-usage-detail"),note=document.getElementById("dashboard-usage-detail-summary");
       if(!root)return;
       if(note)note.textContent="";
-      if(!historyLoaded){root.textContent=tuDien(historyLoading?"dashUsageLoading":"dashUsageUnavailable");return;}
+      if(!historyLoaded){damBaoNguonDashboard();hienThiTrangThaiDieuHanh(root,note,layKyPhanTichKho());return;}
       const range=layKyPhanTichKho(),rows=lichSuTheoHall();
       if(!range){root.textContent=tuDien("dashboardTimeInvalid");return;}
       if(!rows){root.textContent=tuDien(loiCotHall("history"));return;}
       const period=document.getElementById("dashboard-usage-detail-period")?.value||"month";
       const data=duLieuDieuHanhTheoKy(rows,historyColumns,period,range);
-      if(data.missing){root.textContent=tuDien("dashUsageUnavailable");return;}
-      if(!data.current?.complete){
-        root.textContent=[tuDien("dashboardHistoryPartial"),ghiChuPhamViLichSu()].filter(Boolean).join(" · ");
-        return;
-      }
+      if(data.missing){hienThiTrangThaiDieuHanh(root,note,range);return;}
+      if(!data.current?.complete){hienThiTrangThaiDieuHanh(root,note,range);return;}
       const cur=data.current,prev=data.previous?.complete?data.previous:{in:null,out:null},v=data.series;
       const pct=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b!==0?(a-b)/Math.abs(b)*100:null;
       const ratio=x=>x.in>0?x.out/x.in*100:null;
