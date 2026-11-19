@@ -11777,12 +11777,30 @@ const CHECKING_SPLIT_MODE="report";
       if(!rows){root.textContent=tuDien(loiCotHall("history"));return;}
       const period=document.getElementById("dashboard-usage-detail-period")?.value||"month";
       const data=duLieuDieuHanhTheoKy(rows,historyColumns,period,range);
-      if(data.missing){hienThiTrangThaiDieuHanh(root,note,range);return;}
-      if(!data.current?.complete){hienThiTrangThaiDieuHanh(root,note,range);return;}
-      const cur=data.current,prev=data.previous?.complete?data.previous:{in:null,out:null},v=data.series;
+      // Chỉ biểu diễn các ngày History thực sự bao phủ; ngày chưa đồng bộ không được xem là 0.
+      const coverage=phamViNgayLichSuKho(historyAll||[]);
+      const valueCol=cotGiaTriLichSuKho();
+      if(data.missing||!coverage||valueCol<0||historyTypeColumn<0){
+        hienThiTrangThaiDieuHanh(root,note,range);return;
+      }
+      const coveredRange=target=>{
+        const from=target.from>coverage.from?target.from:coverage.from;
+        const to=target.to<coverage.to?target.to:coverage.to;
+        return from<=to?{from,to}:null;
+      };
+      const currentRange=coveredRange(range);
+      const previousRange=coveredRange({from:range.prevFrom,to:range.prevTo});
+      if(!currentRange){hienThiTrangThaiDieuHanh(root,note,range);return;}
+      const currentTotals=tongNhapXuatTrongKhoang(currentRange,valueCol);
+      const previousTotals=previousRange?tongNhapXuatTrongKhoang(previousRange,valueCol):null;
+      // Không suy diễn tổng bằng 0 khi nguồn chứa giao dịch không hợp lệ.
+      if(currentTotals.invalid||!Number.isFinite(currentTotals.in)||!Number.isFinite(currentTotals.out)){
+        hienThiTrangThaiDieuHanh(root,note,range);return;
+      }
+      const cur=currentTotals,prev=previousTotals&&!previousTotals.invalid?previousTotals:{in:null,out:null},v=data.series;
       const pct=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b!==0?(a-b)/Math.abs(b)*100:null;
       const ratio=x=>x.in>0?x.out/x.in*100:null;
-      const average=cur.out/data.averageDays*30.4375,priorAverage=prev.out===null?null:prev.out/data.previousDays*30.4375;
+      const average=cur.out/khoangNgayKho(currentRange.from,currentRange.to)*30.4375,priorAverage=prev.out===null?null:prev.out/khoangNgayKho(previousRange.from,previousRange.to)*30.4375;
       const nf=new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",{maximumFractionDigits:1});
       const delta=x=>{const c=x===null||Math.abs(x)<.05?"flat":x>0?"up":"down";
         return `<span class="executive-delta ${c}" title="${thoatHTML(x===null?tuDien("executiveNoComparison"):tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo}))}">${c==="up"?"▲":c==="down"?"▼":"•"} ${x===null?"—":nf.format(Math.abs(x))+"%"}</span>`;};
@@ -11809,7 +11827,14 @@ const CHECKING_SPLIT_MODE="report";
         }).join("");
         return `<section class="executive-visual-chart" aria-label="${thoatHTML(tuDien(key))}"><div class="executive-visual-heading"><strong>${thoatHTML(tuDien(key))}</strong>${delta(pct(current,previous))}</div><div class="executive-visual-bars">${graph}</div><details class="executive-help"><summary>${ngonNguHienTai==="en"?"Calculation":"Cách tính"}</summary>${thoatHTML(tuDien(help))}</details></section>`;
       }).join("");
-      if(note)note.textContent=tuDien("executiveScope",{from:range.from,to:range.to,count:v.length})+" · "+tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo});
+      if(note){
+        const partial=currentRange.from!==range.from||currentRange.to!==range.to;
+        const coverageNote=partial?(ngonNguHienTai==="en"?"Partial History: ":"History chưa đồng bộ đủ kỳ: ")+currentRange.from+" – "+currentRange.to:"";
+        note.textContent=tuDien("executiveScope",{from:currentRange.from,to:currentRange.to,count:v.length})+
+          " · "+tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo})+
+          (coverageNote?" · "+coverageNote:"")+
+          (!previousRange?" · "+(ngonNguHienTai==="en"?"No previous-period data":"Không có dữ liệu kỳ trước"):"");
+      }
     }
     veBieuDoSuDungKho=function(){
       if(tabHienTai!=="dashboard")return;
