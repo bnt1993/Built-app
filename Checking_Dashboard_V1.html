@@ -3173,7 +3173,22 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
 </select>
 </label>
 </div>
-<div aria-label="Tổng quan điều hành" class="executive-stat-grid" id="insight-usage-detail" role="region" tabindex="0"></div>
+<style id="executive-visual-upgrade">
+#view-dashboard .executive-visual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-content:stretch}
+#view-dashboard .executive-visual-chart{min-width:0;border:1px solid var(--border,#dbe3ed);border-radius:14px;padding:14px;background:var(--card,#fff);display:flex;flex-direction:column;gap:13px}
+#view-dashboard .executive-visual-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#view-dashboard .executive-visual-heading strong{font-size:13px;line-height:1.4}
+#view-dashboard .executive-visual-bars{display:grid;gap:12px;flex:1;align-content:center}
+#view-dashboard .executive-visual-row{display:grid;grid-template-columns:75px minmax(0,1fr) 95px;align-items:center;gap:8px;font-size:11px}
+#view-dashboard .executive-visual-row b{text-align:right;font-size:11px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#view-dashboard .executive-visual-track{height:18px;border-radius:6px;background:rgba(148,163,184,.15);overflow:hidden}
+#view-dashboard .executive-visual-bar{height:100%;border-radius:6px;min-width:0}
+#view-dashboard .executive-visual-bar.current{background:linear-gradient(90deg,#0284c7,#38bdf8)}
+#view-dashboard .executive-visual-bar.previous{background:linear-gradient(90deg,#94a3b8,#cbd5e1)}
+#view-dashboard .executive-visual-chart .executive-help{margin-top:auto}
+@media(max-width:700px){#view-dashboard .executive-visual-grid{grid-template-columns:1fr}#view-dashboard .executive-visual-row{grid-template-columns:65px minmax(0,1fr) 85px}}
+</style>
+<div aria-label="Tổng quan điều hành" class="executive-stat-grid executive-visual-grid" id="insight-usage-detail" role="region" tabindex="0"></div>
 <p class="insight-note" id="dashboard-usage-detail-summary" role="status"></p>
 </div>
 </div>
@@ -11133,21 +11148,27 @@ const CHECKING_SPLIT_MODE="report";
       }
 
       // Tính KPI Dead-stock & Tỷ lệ chậm luân chuyển
-      const dormantCapital = dormantAll.reduce((s, r) => s + (r.quantityValid && r.priceValid ? r.quantity * r.price : 0), 0);
+      // KPI độc lập với ngưỡng lọc của bảng: tồn lâu ≥ 3 năm, chậm luân chuyển > 1 năm.
+      const dormantThreeYears = thongKeVatTuTonLau(1095);
+      const slowOverOneYear = thongKeVatTuTonLau(366);
+      const dormantCapital = Array.isArray(dormantThreeYears)
+        ? dormantThreeYears.reduce((s, r) => s + (r.quantityValid && r.priceValid ? r.quantity * r.price : 0), 0)
+        : null;
       const positiveSkus = new Set((tonKhoHall1TonLau() || []).filter(x => Number.isFinite(x.soLuong) && x.soLuong > 0).map(x => chuanHoaMaSap(x.dong[0]).toLowerCase())).size;
       const kpiDormVal = document.getElementById("analytics-kpi-dormant-value");
       const kpiDormNote = document.getElementById("analytics-kpi-dormant-note");
       const kpiSlowRate = document.getElementById("analytics-kpi-slow-rate");
       const kpiSlowNote = document.getElementById("analytics-kpi-slow-note");
       if (kpiDormVal && kpiDormNote) {
-        kpiDormVal.textContent = dinhDangRutGonKho(dormantCapital) + " ₫";
-        kpiDormVal.title = dinhDangGiaTriKho(dormantCapital);
-        kpiDormNote.textContent = `${dinhDangSoLuong.format(dormantAll.length)} mã chưa xuất ≥ ${days} ngày`;
+        kpiDormVal.textContent = dormantCapital === null ? "—" : dinhDangRutGonKho(dormantCapital) + " ₫";
+        kpiDormVal.title = dormantCapital === null ? "" : dinhDangGiaTriKho(dormantCapital);
+        kpiDormNote.textContent = Array.isArray(dormantThreeYears) ? `${dinhDangSoLuong.format(dormantThreeYears.length)} mã chưa xuất ≥ 3 năm (1.095 ngày)` : "Chưa đủ dữ liệu";
       }
       if (kpiSlowRate && kpiSlowNote) {
-        const rate = positiveSkus > 0 ? ((dormantAll.length / positiveSkus) * 100).toFixed(1) : "0.0";
-        kpiSlowRate.textContent = `${rate}%`;
-        kpiSlowNote.textContent = `${dormantAll.length} / ${positiveSkus} mã đang có tồn`;
+        const slowCount = Array.isArray(slowOverOneYear) ? new Set(slowOverOneYear.map(r => String(r.sap).toLowerCase())).size : null;
+        const rate = slowCount === null ? null : positiveSkus > 0 ? ((slowCount / positiveSkus) * 100).toFixed(1) : "0.0";
+        kpiSlowRate.textContent = rate === null ? "—" : `${rate}%`;
+        kpiSlowNote.textContent = slowCount === null ? "Chưa đủ dữ liệu" : `${slowCount} / ${positiveSkus} mã có tồn · chưa xuất > 1 năm`;
       }
 
       const filtered = dormantAll.filter(r => {
@@ -11769,13 +11790,25 @@ const CHECKING_SPLIT_MODE="report";
         const pts=a.map((x,i)=>`${a.length===1?90:i*W/(a.length-1)},${H-3-(x-min)/sp*(H-8)}`);
         return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><polyline class="executive-line" points="${pts.join(' ')}"/></svg>`;};
       const money=x=>dinhDangRutGonKho(x)+" ₫";
-      const cards=[
-        ["executiveRatio",ratio(cur)===null?"—":nf.format(ratio(cur))+"%",pct(ratio(cur),ratio(prev)),v.map(x=>ratio(x)??0),"executiveRatioHelp"],
-        ["executiveAverage",money(average),pct(average,priorAverage),v.map(x=>x.out),"executiveAverageHelp"],
-        ["executiveIncoming",money(cur.in),pct(cur.in,prev.in),v.map(x=>x.in),"executiveIncomingHelp"],
-        ["executiveNet",money(cur.in-cur.out),pct(cur.in-cur.out,prev.in===null?null:prev.in-prev.out),v.map(x=>x.in-x.out),"executiveNetHelp"]
+      // Biểu đồ thanh so sánh kỳ hiện tại với kỳ trước, thay thế các thẻ KPI.
+      const metrics=[
+        ["executiveRatio",ratio(cur),ratio(prev),"%", "executiveRatioHelp"],
+        ["executiveAverage",average,priorAverage,"money","executiveAverageHelp"],
+        ["executiveIncoming",cur.in,prev.in,"money","executiveIncomingHelp"],
+        ["executiveNet",cur.in-cur.out,prev.in===null?null:prev.in-prev.out,"money","executiveNetHelp"]
       ];
-      root.innerHTML=cards.map(c=>`<article class="executive-stat"><small>${thoatHTML(tuDien(c[0]))}</small><div class="executive-stat-head"><strong>${c[1]}</strong>${delta(c[2])}</div>${spark(c[3])}<details class="executive-help"><summary>${ngonNguHienTai==="en"?"Calculation":"Cách tính"}</summary>${thoatHTML(tuDien(c[4]))}</details></article>`).join("");
+      const format=(value,unit)=>!Number.isFinite(value)?"—":unit==="%"?nf.format(value)+"%":money(value);
+      root.classList.add("executive-visual-grid");
+      root.innerHTML=metrics.map(([key,current,previous,unit,help])=>{
+        const scale=Math.max(Math.abs(current||0),Math.abs(previous||0),1);
+        const bars=[{value:current,label:ngonNguHienTai==="en"?"Selected period":"Kỳ hiện tại",cls:"current"},
+                    {value:previous,label:ngonNguHienTai==="en"?"Previous period":"Kỳ trước",cls:"previous"}];
+        const graph=bars.map(item=>{
+          const width=Number.isFinite(item.value)?Math.max(0,Math.abs(item.value)/scale*100):0;
+          return `<div class="executive-visual-row"><span>${thoatHTML(item.label)}</span><div class="executive-visual-track"><div class="executive-visual-bar ${item.cls}" style="width:${width.toFixed(2)}%" title="${thoatHTML(format(item.value,unit))}"></div></div><b>${thoatHTML(format(item.value,unit))}</b></div>`;
+        }).join("");
+        return `<section class="executive-visual-chart" aria-label="${thoatHTML(tuDien(key))}"><div class="executive-visual-heading"><strong>${thoatHTML(tuDien(key))}</strong>${delta(pct(current,previous))}</div><div class="executive-visual-bars">${graph}</div><details class="executive-help"><summary>${ngonNguHienTai==="en"?"Calculation":"Cách tính"}</summary>${thoatHTML(tuDien(help))}</details></section>`;
+      }).join("");
       if(note)note.textContent=tuDien("executiveScope",{from:range.from,to:range.to,count:v.length})+" · "+tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo});
     }
     veBieuDoSuDungKho=function(){
