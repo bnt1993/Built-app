@@ -2863,6 +2863,28 @@ html[data-theme="dark"] #view-dashboard .executive-state-icon{background:#4a3718
 @media(max-width:760px){#view-dashboard .executive-data-state{grid-template-columns:1fr}.dashboard-executive-card{height:auto!important}}
 .warehouse-period-preset{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--app-field)}.warehouse-period-preset label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px;font-weight:800}.warehouse-period-preset select{height:38px;border:1px solid var(--line);border-radius:8px;background:var(--app-panel);color:var(--ink);padding:6px 10px;font:inherit;font-weight:750}.warehouse-period-preset>span{flex:1 1 360px;color:var(--muted);font-size:11px}.warehouse-compare-item{border-top:3px solid var(--blue)}.warehouse-compare-item:nth-child(2){border-top-color:var(--red)}.warehouse-compare-item:nth-child(3){border-top-color:#8b5cf6}.warehouse-compare-numbers span{font-weight:850;color:var(--blue)}</style>
 <style>[data-support-pane="true"]{display:none!important}</style><style id="warehouse-upgrade-style">
+/* Display stock-out risk and inventory alerts on the same dashboard row. */
+#view-dashboard .warehouse-risk-alert-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+#view-dashboard .warehouse-risk-alert-grid > .warehouse-risk-panel,
+#view-dashboard .warehouse-risk-alert-grid > .dashboard-alert-panel {
+  min-width: 0;
+  margin: 0;
+}
+#view-dashboard .warehouse-risk-alert-grid .warehouse-risk-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#view-dashboard .warehouse-risk-alert-grid .dashboard-alert-list {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+@media (max-width: 1150px) {
+  #view-dashboard .warehouse-risk-alert-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Dashboard & Analytics: independent, accessible operations panels (v2026.11). */
 .warehouse-risk-panel,.warehouse-quality-panel{min-width:0;background:var(--app-panel);border:1px solid var(--line);border-radius:16px;padding:17px 19px;margin:13px 0;box-shadow:var(--shadow)}
 .warehouse-risk-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:12px}
@@ -3183,6 +3205,7 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
   <p class="insight-note" id="warehouse-compare-note" role="status"></p>
 </section>
 
+<div class="warehouse-risk-alert-grid">
 <section class="warehouse-risk-panel" id="risk-upgrade-dashboard" aria-labelledby="risk-dashboard-title">
   <div class="warehouse-risk-header"><div>
     <p class="warehouse-overline" data-i18n="upgradeRiskEyebrow">ƯU TIÊN XỬ LÝ</p>
@@ -3195,47 +3218,12 @@ html[data-theme=dark] .warehouse-risk-pill[data-tier=warn]{background:#4a361c;co
   <div class="warehouse-risk-metrics" id="risk-dashboard-metrics" aria-live="polite"></div>
   <p class="insight-note" id="risk-dashboard-note" role="status"></p>
 </section>
-<div class="warehouse-support-grid">
 <section aria-label="Cảnh báo kho" class="dashboard-alert-panel" data-i18n-aria="dashAlertHeading">
 <div class="dashboard-alert-header">
 <h2 data-i18n="dashAlertHeading">Cảnh báo kho thông minh</h2>
 <small data-i18n="dashAlertRule">Giá trị ±10% · xuất tăng &gt;100% · chạm định mức ROP</small>
 </div>
 <div aria-live="polite" class="dashboard-alert-list" id="dashboard-alert-list" role="status"></div>
-</section>
-<div class="insight-box">
-<h3 data-i18n="inventoryHistory" style="margin:0 0 4px;font-size:14px">Lịch sử định giá kho (Amount.js)</h3>
-<p class="insight-note" data-i18n="dashSnapshotNote" style="margin:0 0 8px">Các bản ghi gần nhất từ Amount.js.</p>
-<div class="history-grid" id="insight-history"></div>
-</div>
-</div>
-<div class="dashboard-utilities">
-<section aria-label="Trạng thái nguồn dữ liệu" class="dashboard-source-panel" data-i18n-aria="dashSourceHeading">
-<div class="dashboard-source-heading">
-<h3 data-i18n="dashSourceHeading">Trạng thái nguồn dữ liệu</h3>
-<button class="btn btn-soft" data-i18n="dashSourceRefresh" onclick="lamMoiToanBoNguon()" type="button">Kiểm tra cập nhật</button>
-</div>
-<div class="dashboard-source-grid">
-<div class="dashboard-source-item" id="dashboard-source-stock">data.js</div>
-<div class="dashboard-source-item" id="dashboard-source-history">History.js</div>
-<div class="dashboard-source-item" id="dashboard-source-amount">Amount.js</div>
-<div class="dashboard-source-item" id="dashboard-source-images">Material</div>
-</div>
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-<p class="insight-note" data-i18n="dashSourcePrivacy" style="margin:0">Bộ nhớ đệm lịch sử trên thiết bị này có thể chứa dữ liệu SAP nội bộ.</p>
-<button class="btn btn-soft" data-i18n="dashSourceClear" onclick="xoaCacheHistory()" type="button">Xóa bộ nhớ đệm lịch sử</button>
-</div>
-</section>
-<section class="warehouse-reminder insight-box">
-<h3 data-i18n="scheduleTitle" style="margin:0 0 8px">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
-<div class="advanced-controls dashboard-export-controls" style="padding-top:0">
-<select data-i18n-aria="scheduleTitle" id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()">
-<option data-i18n="scheduleOff" value="off">Tắt</option>
-<option data-i18n="scheduleDaily" value="daily">Mỗi ngày sau 9:00</option>
-<option data-i18n="scheduleWeekly" value="weekly">Thứ Hai sau 9:00</option>
-</select>
-</div>
-<div class="insight-note" id="bao-cao-nhac-tin" role="status" style="margin-top:8px"></div>
 </section>
 </div>
 </section>
@@ -6081,7 +6069,7 @@ const CHECKING_SPLIT_MODE="report";
     }
 
     function veLichSuKho() {
-      if(tabHienTai!=="dashboard")return;
+      if(tabHienTai!=="dashboard" || !document.getElementById("insight-history"))return;
       const snapshots=layGiaTriKhoTuAmount();
       const node=document.getElementById("insight-history");
       if(hallDangLoc()==="hall2"){
@@ -8169,8 +8157,10 @@ const CHECKING_SPLIT_MODE="report";
     }
 
     function khoiTaoLichNhacBaoCao() {
+      const picker=document.getElementById("bao-cao-nhac-lich");
+      if(!picker)return;
       const mode=docTuyChon("checking-report-reminder");
-      document.getElementById("bao-cao-nhac-lich").value=
+      picker.value=
         mode==="daily" || mode==="weekly" ? mode : "off";
       kiemTraNhacBaoCao();
     }
