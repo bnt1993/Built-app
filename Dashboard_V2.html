@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Quản lý kho SAP · Dashboard &amp; Phân tích kho</title>
+<title>Quản lý kho SAP · Tổng quan và Phân tích kho</title>
 <style>
 
     :root {
@@ -3028,30 +3028,6 @@ html[data-theme="dark"] #view-dashboard .aging-value-title strong,html[data-them
 </style>
 
 
-<style id="aging-chart-visibility-fix">
-/* The warehouse cards were globally locked to 335px with overflow hidden. */
-#view-dashboard .warehouse-charts .dashboard-chart:has(#insight-stock-distribution){
-  height:auto!important;
-  min-height:790px!important;
-  overflow:visible!important;
-  align-self:start;
-}
-#view-dashboard .warehouse-charts .dashboard-chart:has(#insight-stock-distribution) > .dashboard-chart-body{
-  flex:0 0 auto!important;
-  min-height:240px!important;
-  overflow:visible!important;
-}
-#view-dashboard .warehouse-charts .dashboard-chart:has(#insight-stock-distribution) .aging-value-chart{
-  display:block!important;
-  visibility:visible!important;
-  opacity:1!important;
-  position:relative!important;
-  z-index:2;
-}
-@media(max-width:760px){#view-dashboard .warehouse-charts .dashboard-chart:has(#insight-stock-distribution){min-height:0!important}}
-</style>
-
-
 <style id="analysis-period-sync-style">
 /* Stock-distribution annotations aligned with the other dashboard charts. */
 #view-dashboard .stock-status-name{font-size:12px!important;line-height:1.35!important}
@@ -3158,7 +3134,6 @@ html[data-theme="dark"] #view-analytics .warehouse-risk-stats-row[data-active="t
 
 
 <style id="department-outbound-chart-style">
-#view-dashboard .dashboard-executive-card{height:auto!important;min-height:690px!important}
 #view-dashboard .department-outbound-chart{margin:8px 0 14px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--app-field)}
 #view-dashboard .department-outbound-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
 #view-dashboard .department-outbound-head strong{display:block;font-size:12px;color:var(--ink)}
@@ -3177,6 +3152,66 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 @media(max-width:800px){#view-dashboard .department-donut-layout{grid-template-columns:1fr}.department-donut-list{grid-template-columns:1fr 1fr}.department-outbound-head,.department-outbound-foot{flex-direction:column}}
 </style>
 
+<style id="warehouse-chart-layout">
+#view-dashboard .warehouse-charts { align-items: stretch; }
+#view-dashboard .warehouse-charts .warehouse-detail-chart {
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+  align-self: stretch;
+}
+#view-dashboard .warehouse-detail-chart .dashboard-chart-body { flex: initial; min-width: 0; }
+#view-dashboard .warehouse-detail-chart .modern-stock-status { min-height: 0; }
+#view-dashboard .warehouse-detail-chart .stock-coverage-chart,
+#view-dashboard .warehouse-detail-chart .aging-value-chart,
+#view-dashboard .warehouse-detail-chart .department-outbound-chart { margin: 8px 0 0; }
+#view-dashboard #insight-usage-detail { overflow: visible; }
+#view-dashboard .pareto-material-chart { min-height: 0; }
+#view-dashboard .pareto-row, #view-dashboard .pareto-head {
+  grid-template-columns: 26px minmax(76px, 1fr) minmax(48px, 2fr) minmax(64px, auto) minmax(55px, auto);
+  gap: 6px;
+  font-size: 11px;
+}
+#view-dashboard .department-outbound-chart { container-type: inline-size; }
+#view-dashboard .department-donut-layout { grid-template-columns: minmax(145px, .8fr) minmax(0, 1.2fr); gap: 14px; }
+#view-dashboard .department-donut-wrap svg { width: min(100%, 220px); height: auto; }
+#view-dashboard .department-donut-list { grid-template-columns: minmax(0, 1fr); }
+#view-dashboard .department-donut-row { grid-template-columns: 10px minmax(0, 1fr) auto; font-size: 11px; }
+#view-dashboard .department-donut-row b { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+#view-dashboard .department-donut-row small, #view-dashboard .department-outbound-foot,
+#view-dashboard .department-outbound-head span, #view-dashboard .aging-value-head span,
+#view-dashboard .stock-coverage-foot, #view-dashboard .stock-cover-label { font-size: 11px; }
+#view-dashboard .aging-bar-value { font-size: 9px; }
+.warehouse-stock-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.warehouse-stock-actions [hidden] { display:none !important; }
+#view-analytics .warehouse-risk-controls label { font-size: 11px !important; }
+#view-analytics .warehouse-risk-controls label > span { display: block !important; }
+#view-analytics .warehouse-risk-metrics { display:grid !important; grid-template-columns: repeat(5,minmax(0,1fr)); overflow:visible; }
+#view-analytics .warehouse-risk-kpi { min-width:0 !important; text-align:start; color:var(--ink); }
+#view-analytics .warehouse-risk-kpi span { white-space:normal; font-size:11px !important; }
+#view-analytics .warehouse-risk-stats-table button { font:inherit; text-align:start; }
+dialog.priority-detail-modal { padding:0; color:var(--ink); }
+dialog.priority-detail-modal:not([open]) { display:none; }
+dialog.priority-detail-modal::backdrop { background:rgba(15,23,42,.48); }
+.priority-detail-table-wrap { min-height:0; }
+.priority-detail-table button { font:inherit; }
+@container (max-width: 440px) {
+  #view-dashboard .department-donut-layout { grid-template-columns: minmax(0, 1fr); }
+  #view-dashboard .department-donut-wrap { min-height: 0; }
+}
+@media (max-width: 760px) {
+  #view-analytics .warehouse-risk-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .priority-detail-modal { overflow:auto; }
+  .priority-detail-table-wrap { min-height:160px; }
+}
+@media (max-width: 540px) {
+  #view-dashboard .pareto-row { grid-template-columns: 24px minmax(65px, 1fr) auto auto; }
+  #view-dashboard .pareto-track { grid-column:2/-1; grid-row:2; }
+  #view-dashboard .aging-bar-value { display:none; }
+  #view-dashboard .aging-value-label { white-space:normal; text-align:center; }
+}
+</style>
+
 </head>
 <body>
 <div class="app-shell">
@@ -3187,14 +3222,14 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 </div>
 <div class="header-actions">
 <div aria-label="Giao diện" class="preference-group" data-i18n-aria="themeSettings" role="group"><button aria-label="Chuyển sang giao diện tối" aria-pressed="false" id="theme-toggle" onclick="doiGiaoDien()" title="Chuyển sang giao diện tối" type="button">☾</button></div>
-<div aria-label="Language / Ngôn ngữ" class="preference-group" role="group"><button aria-pressed="true" id="lang-vi" onclick="doiNgonNgu('vi')" type="button">VI</button><button aria-pressed="false" id="lang-en" onclick="doiNgonNgu('en')" type="button">EN</button></div>
+<div aria-label="Ngôn ngữ" data-i18n-aria="dashboardLanguage" class="preference-group" role="group"><button aria-pressed="true" id="lang-vi" onclick="doiNgonNgu('vi')" type="button">VI</button><button aria-pressed="false" id="lang-en" onclick="doiNgonNgu('en')" type="button">EN</button></div>
 <span class="online-pill loading" data-status="connecting" id="tinh-trang-du-lieu" role="status">Đang kết nối</span>
 <button class="btn btn-secondary" data-i18n-title="refreshTitle" onclick="lamMoiToanBoNguon()" title="Đồng bộ dữ liệu từ nguồn" type="button">↻ <span data-i18n="refresh">Đồng bộ</span></button>
 </div>
 </header>
 <main class="workspace">
 <div class="breadcrumbs"><span data-i18n="workspaceName">Không gian làm việc</span><span>/</span><span class="active" data-i18n="breadcrumb">Tổng quan vật tư</span></div>
-<nav aria-label="Các màn hình quản lý kho" class="view-tabs" data-i18n-aria="tabsAria" role="tablist"><button aria-controls="view-dashboard" aria-selected="true" class="view-tab active" id="tab-dashboard" onclick="chuyenTab('dashboard')" role="tab" tabindex="0" type="button"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Dashboard</span></button>
+<nav aria-label="Các màn hình quản lý kho" class="view-tabs" data-i18n-aria="tabsAria" role="tablist"><button aria-controls="view-dashboard" aria-selected="true" class="view-tab active" id="tab-dashboard" onclick="chuyenTab('dashboard')" role="tab" tabindex="0" type="button"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Tổng quan</span></button>
 <button aria-controls="view-analytics" aria-selected="false" class="view-tab" id="tab-analytics" onclick="chuyenTab('analytics')" role="tab" tabindex="-1" type="button"><span aria-hidden="true">◫</span><span data-i18n="tabAnalytics">Phân tích kho</span></button></nav>
 <section aria-hidden="true" aria-labelledby="tab-search-history" class="view-pane activity-pane" data-support-pane="true" hidden="" id="view-search-history" inert="" role="tabpanel"><div class="pane-heading activity-heading"><span class="record-count" id="search-history-count" role="status"></span></div><div class="activity-filterbar"><label class="activity-field activity-search"><span data-i18n="searchHistoryFilter"></span><input autocomplete="off" data-i18n-placeholder="searchHistoryPlaceholder" id="search-history-filter" oninput="locBangHoatDong('search-history')" type="search"/></label><label class="activity-field"><span data-i18n="searchHistoryScope"></span><select id="search-history-scope" onchange="locBangHoatDong('search-history')"><option data-i18n="requestAll" value=""></option><option data-i18n="searchAll" value="all"></option><option data-i18n="searchSap" value="sap"></option><option data-i18n="searchDesc" value="desc"></option><option data-i18n="searchPart" value="part"></option><option data-i18n="searchBm" value="bmno"></option><option data-i18n="favoriteFilter" value="favorites"></option></select></label><label class="activity-field"><span data-i18n="requestFrom"></span><input id="search-history-from" onchange="locBangHoatDong('search-history')" type="date"/></label><label class="activity-field"><span data-i18n="requestTo"></span><input id="search-history-to" onchange="locBangHoatDong('search-history')" type="date"/></label><button class="btn btn-secondary" data-i18n="requestClear" onclick="xoaLocLichSuTimKiem()" type="button"></button><button class="btn btn-secondary" data-i18n="searchHistoryClear" id="search-history-clear" onclick="xoaLichSuTimKiem()" type="button"></button></div><p class="activity-filter-message" hidden="" id="search-history-filter-message" role="status"></p><div class="activity-panel search-history-panel"><div class="activity-bulkbar" data-i18n-aria="activitySelectionActions" role="group"><span id="search-history-selection-count" role="status"></span><button class="btn btn-soft" id="search-history-select-all" onclick="chonTatCaHoatDong('search-history')" type="button"></button><button class="btn btn-secondary" data-i18n="activityUnselect" id="search-history-unselect" onclick="boChonHoatDong('search-history')" type="button"></button><button class="btn activity-delete" data-i18n="activityDeleteSelected" id="search-history-delete-selected" onclick="xoaDongDaChonHoatDong('search-history')" type="button"></button></div><div class="activity-feedback" hidden="" id="search-history-feedback" role="status"><span></span><button class="btn btn-soft" data-i18n="activityUndo" id="search-history-undo" onclick="hoanTacHoatDong('search-history')" type="button"></button></div><div class="table-wrapper activity-scroll" tabindex="0"><table class="activity-table" data-i18n-aria="searchHistoryTab" id="search-history-table"><colgroup><col style="width:40px"/><col style="width:142px"/><col style="width:350px"/><col style="width:116px"/><col style="width:170px"/></colgroup><thead><tr><th class="activity-check-cell" scope="col"><label><input class="activity-check" data-i18n-aria="activitySelectPage" id="search-history-select-page" onchange="chonTrangHoatDong('search-history',this.checked)" type="checkbox"/></label></th><th aria-sort="descending" data-activity-sort="time" scope="col"><button onclick="doiSapXepHoatDong('search-history','time')" type="button"><span data-i18n="searchHistoryTime"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th aria-sort="none" data-activity-sort="query" scope="col"><button onclick="doiSapXepHoatDong('search-history','query')" type="button"><span data-i18n="searchHistoryQuery"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th aria-sort="none" data-activity-sort="scope" scope="col"><button onclick="doiSapXepHoatDong('search-history','scope')" type="button"><span data-i18n="searchHistoryScope"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th scope="col"><span data-i18n="searchHistoryAction"></span></th></tr></thead><tbody id="search-history-rows"></tbody></table></div><div class="activity-pagination" data-i18n-aria="activityPagination" role="group"><label><span data-i18n="catalogPageSize"></span><select id="search-history-page-size" onchange="doiSoDongHoatDong('search-history',this.value)"><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></label><button class="btn btn-secondary" data-i18n-aria="firstPage" id="search-history-first" onclick="denTrangHoatDong('search-history',1)" type="button"></button><button class="btn btn-secondary" data-i18n-aria="prev" id="search-history-prev" onclick="denTrangHoatDong('search-history',trangThaiHoatDong['search-history'].page-1)" type="button"></button><span aria-live="polite" id="search-history-page-label"></span><button class="btn btn-secondary" data-i18n-aria="next" id="search-history-next" onclick="denTrangHoatDong('search-history',trangThaiHoatDong['search-history'].page+1)" type="button"></button><button class="btn btn-secondary" data-i18n-aria="lastPage" id="search-history-last" onclick="denTrangHoatDong('search-history',Infinity)" type="button"></button></div></div></section>
 <section aria-hidden="true" aria-labelledby="tab-requests" class="view-pane activity-pane" data-support-pane="true" hidden="" id="view-requests" inert="" role="tabpanel"><div class="pane-heading activity-heading"><span class="record-count" id="request-count" role="status"></span></div><div class="activity-filterbar"><label class="activity-field activity-search"><span data-i18n="requestSearch"></span><input autocomplete="off" data-i18n-placeholder="requestSearchPlaceholder" id="request-search" oninput="locBangHoatDong('requests')" type="search"/></label><label class="activity-field"><span data-i18n="requestFrom"></span><input id="request-from" onchange="locBangHoatDong('requests')" type="date"/></label><label class="activity-field"><span data-i18n="requestTo"></span><input id="request-to" onchange="locBangHoatDong('requests')" type="date"/></label><label class="activity-field"><span data-i18n="requestUnitFilter"></span><select id="request-unit-filter" onchange="locBangHoatDong('requests')"><option data-i18n="requestAll" value=""></option></select></label><label class="activity-field"><span data-i18n="requestBin"></span><select id="request-bin-filter" onchange="locBangHoatDong('requests')"><option data-i18n="requestAll" value=""></option></select></label><button class="btn btn-secondary" data-i18n="requestClear" onclick="xoaLocYeuCau()" type="button"></button><button class="btn btn-soft" id="request-export" onclick="xuatExcelYeuCau()" type="button"><span data-i18n="requestExport"></span></button></div><p class="activity-filter-message" hidden="" id="request-filter-message" role="status"></p><div class="activity-panel request-panel"><div class="activity-bulkbar" data-i18n-aria="activitySelectionActions" role="group"><span id="request-selection-count" role="status"></span><button class="btn btn-soft" id="request-select-all" onclick="chonTatCaHoatDong('requests')" type="button"></button><button class="btn btn-secondary" data-i18n="activityUnselect" id="request-unselect" onclick="boChonHoatDong('requests')" type="button"></button><button class="btn activity-delete" data-i18n="activityDeleteSelected" id="request-delete-selected" onclick="xoaDongDaChonHoatDong('requests')" type="button"></button></div><div class="activity-feedback" hidden="" id="request-feedback" role="status"><span></span><button class="btn btn-soft" data-i18n="activityUndo" id="request-undo" onclick="hoanTacHoatDong('requests')" type="button"></button></div><div class="table-wrapper activity-scroll" tabindex="0"><table class="activity-table" data-i18n-aria="requestTab" id="request-table"><colgroup><col style="width:40px"/><col style="width:142px"/><col style="width:100px"/><col style="width:226px"/><col style="width:76px"/><col style="width:100px"/><col style="width:58px"/><col style="width:116px"/><col style="width:80px"/></colgroup><thead><tr><th class="activity-check-cell" scope="col"><label><input class="activity-check" data-i18n-aria="activitySelectPage" id="request-select-page" onchange="chonTrangHoatDong('requests',this.checked)" type="checkbox"/></label></th><th aria-sort="descending" data-activity-sort="time" scope="col"><button onclick="doiSapXepHoatDong('requests','time')" type="button"><span data-i18n="requestTime"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th aria-sort="none" data-activity-sort="sap" scope="col"><button onclick="doiSapXepHoatDong('requests','sap')" type="button"><span data-i18n="colSap"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th aria-sort="none" data-activity-sort="name" scope="col"><button onclick="doiSapXepHoatDong('requests','name')" type="button"><span data-i18n="requestName"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th aria-sort="none" data-activity-sort="stock" scope="col"><button onclick="doiSapXepHoatDong('requests','stock')" type="button"><span data-i18n="requestStock"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th aria-sort="none" data-activity-sort="bin" scope="col"><button onclick="doiSapXepHoatDong('requests','bin')" type="button"><span data-i18n="requestBin"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th aria-sort="none" data-activity-sort="unit" scope="col"><button onclick="doiSapXepHoatDong('requests','unit')" type="button"><span data-i18n="requestUnit"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th aria-sort="none" data-activity-sort="qty" scope="col"><button onclick="doiSapXepHoatDong('requests','qty')" type="button"><span data-i18n="requestQty"></span><span aria-hidden="true" data-sort-arrow=""></span></button></th><th scope="col"><span data-i18n="searchHistoryAction"></span></th></tr></thead><tbody id="request-rows"></tbody></table></div><div class="activity-pagination" data-i18n-aria="activityPagination" role="group"><label><span data-i18n="catalogPageSize"></span><select id="request-page-size" onchange="doiSoDongHoatDong('requests',this.value)"><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></label><button class="btn btn-secondary" data-i18n-aria="firstPage" id="request-first" onclick="denTrangHoatDong('requests',1)" type="button"></button><button class="btn btn-secondary" data-i18n-aria="prev" id="request-prev" onclick="denTrangHoatDong('requests',trangThaiHoatDong['requests'].page-1)" type="button"></button><span aria-live="polite" id="request-page-label"></span><button class="btn btn-secondary" data-i18n-aria="next" id="request-next" onclick="denTrangHoatDong('requests',trangThaiHoatDong['requests'].page+1)" type="button"></button><button class="btn btn-secondary" data-i18n-aria="lastPage" id="request-last" onclick="denTrangHoatDong('requests',Infinity)" type="button"></button></div></div></section>
@@ -3202,7 +3237,7 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <section aria-labelledby="tab-dashboard" class="view-pane" id="view-dashboard" role="tabpanel">
 <div class="pane-heading">
 <div>
-<h1 data-i18n="warehouseDashboardHeading">Dashboard kho</h1>
+<h1 data-i18n="warehouseDashboardHeading">Tổng quan kho</h1>
 <p data-i18n="warehouseDashboardDesc">Theo dõi tổng quan giá trị xuất, nhập, tồn kho và cảnh báo vận hành theo thời gian thực.</p>
 </div>
 <span class="record-count" id="warehouse-summary-note" role="status"></span>
@@ -3245,6 +3280,12 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 </label>
 <p aria-live="polite" class="dashboard-hall-status insight-note" id="dashboard-hall-status" role="status"></p>
 <p aria-live="polite" class="dashboard-hall-status insight-note" id="dashboard-source-summary" role="status"></p>
+<div class="warehouse-stock-actions">
+  <input hidden id="warehouse-stock-file" type="file" accept=".js,.json" onchange="chonTepTonKho(this)"/>
+  <button id="warehouse-stock-pick" class="btn btn-soft" type="button" data-i18n="stockFilePick" onclick="document.getElementById('warehouse-stock-file').click()">Chọn tệp tồn kho</button>
+  <button hidden id="warehouse-stock-auto" class="btn btn-soft" type="button" data-i18n="stockFileAutomatic" onclick="dungNguonTonKhoTuDong()">Dùng nguồn tự động</button>
+  <span class="insight-note" id="warehouse-stock-file-status" role="status"></span>
+</div>
 </section>
 <section class="warehouse-kpi-grid" data-i18n-aria="warehouseOverview">
 <div class="warehouse-kpi-group">
@@ -3332,7 +3373,7 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 </div>
 </section>
 </section>
-<section aria-labelledby="dashboard-charts-heading" class="insights-panel" id="insights-panel">
+<section data-i18n-aria="warehouseOverview" class="insights-panel" id="insights-panel">
 <div class="insight-grid warehouse-charts">
 <div class="insight-box dashboard-chart dashboard-time-chart">
 <div class="dashboard-chart-heading">
@@ -3372,42 +3413,27 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <div class="dashboard-chart-body" data-i18n-aria="dashUsageTitle" id="insight-usage" role="region" tabindex="0"></div>
 <p class="insight-note" id="dashboard-usage-summary" role="status"></p>
 </div>
-<div class="insight-box dashboard-chart">
-<div class="dashboard-chart-heading">
-<h3 data-i18n="stockDistribution">Phân bố trạng thái định mức tồn kho</h3>
-</div>
-<p class="insight-note" data-i18n="dashCoverageNote">Đối chiếu tồn kho thực tế với Reorder Point trong SAP.</p>
-<div class="stock-distribution dashboard-chart-body" id="insight-stock-distribution"></div>
-</div>
-<div class="insight-box dashboard-chart dashboard-executive-card">
-<div class="dashboard-chart-heading">
-<h3>Pareto giá trị xuất theo mã vật tư</h3>
-<label><span>Phạm vi</span>
-<select id="dashboard-usage-detail-period" onchange="veParetoVatTuXuat()">
-<option value="week">Tuần · 7 ngày</option>
-<option selected="" value="month">Tháng hiện tại</option>
-<option value="year">Năm hiện tại</option>
-</select>
-</label>
-</div>
-<style id="executive-visual-upgrade">
-#view-dashboard .executive-visual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-content:stretch}
-#view-dashboard .executive-visual-chart{min-width:0;border:1px solid var(--border,#dbe3ed);border-radius:14px;padding:14px;background:var(--card,#fff);display:flex;flex-direction:column;gap:13px}
-#view-dashboard .executive-visual-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
-#view-dashboard .executive-visual-heading strong{font-size:13px;line-height:1.4}
-#view-dashboard .executive-visual-bars{display:grid;gap:12px;flex:1;align-content:center}
-#view-dashboard .executive-visual-row{display:grid;grid-template-columns:75px minmax(0,1fr) 95px;align-items:center;gap:8px;font-size:11px}
-#view-dashboard .executive-visual-row b{text-align:right;font-size:11px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-#view-dashboard .executive-visual-track{height:18px;border-radius:6px;background:rgba(148,163,184,.15);overflow:hidden}
-#view-dashboard .executive-visual-bar{height:100%;border-radius:6px;min-width:0}
-#view-dashboard .executive-visual-bar.current{background:linear-gradient(90deg,#0284c7,#38bdf8)}
-#view-dashboard .executive-visual-bar.previous{background:linear-gradient(90deg,#94a3b8,#cbd5e1)}
-#view-dashboard .executive-visual-chart .executive-help{margin-top:auto}
-@media(max-width:700px){#view-dashboard .executive-visual-grid{grid-template-columns:1fr}#view-dashboard .executive-visual-row{grid-template-columns:65px minmax(0,1fr) 85px}}
-</style>
-<p class="insight-note" id="pareto-material-help">Xếp hạng mã vật tư theo giá trị xuất và tỷ lệ lũy kế trong kỳ để nhận diện nhóm vật tư chi phối chi phí.</p><div aria-label="Pareto giá trị xuất theo mã vật tư" class="pareto-material-chart" id="insight-usage-detail" role="region" tabindex="0"></div>
-<p class="insight-note" id="dashboard-usage-detail-summary" role="status"></p>
-</div>
+<section class="insight-box dashboard-chart warehouse-detail-chart">
+  <div class="dashboard-chart-heading"><h3 data-i18n="stockDistribution">Phân bố trạng thái tồn kho</h3></div>
+  <p class="insight-note" data-i18n="dashCoverageNote">Đối chiếu tồn kho với điểm đặt hàng lại.</p>
+  <div class="stock-distribution dashboard-chart-body" id="insight-stock-distribution"></div>
+  <div class="stock-coverage-chart" id="warehouse-stock-coverage"></div>
+</section>
+<section class="insight-box dashboard-chart warehouse-detail-chart">
+  <div class="dashboard-chart-heading"><h3 data-i18n="agingChartTitle">Giá trị tồn lâu, chậm luân chuyển và xuất</h3></div>
+  <div class="aging-value-chart" id="warehouse-aging-chart"></div>
+</section>
+<section class="insight-box dashboard-chart warehouse-detail-chart">
+  <div class="dashboard-chart-heading"><h3 data-i18n="dashboardParetoTitle">Pareto giá trị xuất theo mã vật tư</h3></div>
+  <p class="insight-note" data-i18n="dashboardParetoHelp" id="pareto-material-help"></p>
+  <div class="pareto-material-chart dashboard-chart-body" id="insight-usage-detail" data-i18n-aria="dashboardParetoTitle" role="region"></div>
+  <p class="insight-note" id="dashboard-usage-detail-summary" role="status"></p>
+</section>
+<section class="insight-box dashboard-chart warehouse-detail-chart">
+  <div class="dashboard-chart-heading"><h3 data-i18n="dashboardDepartmentTitle">Phân bố giá trị xuất theo bộ phận</h3></div>
+  <p class="insight-note" data-i18n="dashboardDepartmentHelp"></p>
+  <div class="department-outbound-chart" id="warehouse-department-chart" data-i18n-aria="dashboardDepartmentTitle" role="region"></div>
+</section>
 </div>
 <div hidden="">
 <select id="dashboard-value-detail-period"><option selected="" value="week">week</option></select>
@@ -3419,9 +3445,9 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <div class="warehouse-risk-header"><div>
 <p class="warehouse-overline" data-i18n="upgradeCompareEyebrow">SO SÁNH ĐỘC LẬP</p>
 <h2 data-i18n="upgradeCompareTitle" id="warehouse-compare-title">Đối chiếu hai khoảng thời gian tùy chọn</h2>
-<p class="insight-note" data-i18n="upgradeCompareHelp">So sánh giá trị nhập, xuất và chênh lệch từ History.js; áp dụng Hall đang chọn, độc lập với kỳ Dashboard.</p>
+<p class="insight-note" data-i18n="upgradeCompareHelp">So sánh giá trị nhập, xuất và chênh lệch từ History.js; áp dụng khu vực kho đang chọn, độc lập với kỳ của Tổng quan.</p>
 </div><button class="btn btn-secondary" data-i18n="upgradeCompareSwap" id="warehouse-compare-swap" type="button">Đổi hai kỳ</button></div>
-<div class="warehouse-period-preset"><label><span>Kỳ đánh giá</span><select id="warehouse-compare-period"><option value="week">Tuần · 7 ngày</option><option selected="" value="month">Tháng hiện tại</option><option value="year">Năm hiện tại</option><option value="custom">Tùy chọn</option></select></label><span id="warehouse-compare-period-help">Tháng hiện tại so với cùng số ngày tháng trước.</span></div>
+<div class="warehouse-period-preset"><label><span data-i18n="riskPeriodLabel">Kỳ đánh giá</span><select id="warehouse-compare-period"><option value="week" data-i18n="dashboardTimeWeek">7 ngày gần đây</option><option selected="" value="month" data-i18n="dashboardTimeMonth">Tháng hiện tại</option><option value="year" data-i18n="compareYear">Năm hiện tại</option><option value="custom" data-i18n="dashboardTimeCustom">Tùy chọn ngày</option></select></label><span id="warehouse-compare-period-help" data-i18n="compareMonthHelp">Tháng hiện tại so với cùng số ngày tháng trước.</span></div>
 <div class="warehouse-compare-filters">
 <fieldset><legend data-i18n="upgradeCompareCurrent">Kỳ A (cần đánh giá)</legend>
 <label><span data-i18n="dashboardTimeFrom">Từ ngày</span><input id="warehouse-compare-a-from" type="date"/></label>
@@ -3445,21 +3471,21 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 </div>
 <button class="btn btn-primary" onclick="xuatNhanhBaoCaoKho('all')" type="button">↓ <span data-i18n="dashboardExportAll">Xuất tất cả báo cáo (.xlsx)</span></button>
 </div>
-<section aria-label="Chỉ số phân tích kho" class="analytics-kpi-strip">
+<section data-i18n-aria="tabAnalytics" class="analytics-kpi-strip">
 <article class="analytics-kpi-card" data-accent="amber">
 <span data-i18n="analyticsKpiDormantTitle">Giá trị vật tư tồn lâu</span>
 <strong id="analytics-kpi-dormant-value">—</strong>
-<small id="analytics-kpi-dormant-note">Theo ngưỡng ngày đang chọn</small>
+<small id="analytics-kpi-dormant-note"></small>
 </article>
 <article class="analytics-kpi-card" data-accent="red">
 <span data-i18n="analyticsKpiOutTitle">Tổng giá trị xuất trong kỳ</span>
 <strong id="analytics-kpi-out-value">—</strong>
-<small id="analytics-kpi-out-note">Theo bộ lọc vật tư xuất</small>
+<small id="analytics-kpi-out-note"></small>
 </article>
 <article class="analytics-kpi-card" data-accent="green">
 <span data-i18n="analyticsKpiSlowRateTitle">Tỷ lệ mã chậm luân chuyển</span>
 <strong id="analytics-kpi-slow-rate">—</strong>
-<small id="analytics-kpi-slow-note">Mã tồn lâu / Tổng mã có tồn</small>
+<small id="analytics-kpi-slow-note"></small>
 </article>
 </section>
 <section aria-labelledby="quality-panel-title" class="warehouse-quality-panel" id="quality-upgrade-analytics">
@@ -3477,13 +3503,37 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <p class="warehouse-overline" data-i18n="upgradeRiskEyebrow">ƯU TIÊN XỬ LÝ</p><h2 data-i18n="upgradeRiskAnalytics" id="risk-analytics-title">Danh sách ưu tiên bổ sung vật tư</h2>
 <p class="insight-note" data-i18n="upgradeRiskMethod">Dựa trên lượng xuất 12 tháng và tồn kho Hall 1; số ngày còn sử dụng là ước tính, không phải ngày giao hàng.</p>
 </div><div class="warehouse-risk-controls">
-<label><span>Kỳ đánh giá</span><select id="risk-analytics-period" onchange="upgradeRiskPeriodChanged(this.value)"><option value="week">Tuần · 7 ngày</option><option value="month">Tháng · 30 ngày</option><option selected="" value="year">Năm · 12 tháng</option></select></label>
-<label><span data-i18n="upgradePageSize">Dòng / trang</span><select id="risk-analytics-size"><option>10</option><option selected="">25</option><option>50</option></select></label>
+<label><span data-i18n="riskPeriodLabel">Kỳ đánh giá</span><select id="risk-analytics-period" onchange="upgradeRiskPeriodChanged(this.value)">
+  <option value="week" data-i18n="riskWeek"></option><option value="month" data-i18n="riskMonth"></option>
+  <option selected value="year" data-i18n="riskYear"></option></select></label>
+<label><span data-i18n="upgradePageSize">Dòng / trang</span><select id="risk-analytics-size"><option>10</option><option selected>25</option><option>50</option></select></label>
+<button class="btn btn-secondary" data-i18n="riskDetails" id="risk-analytics-details" type="button" disabled></button>
 <button class="btn btn-secondary" data-i18n="upgradeExportXlsx" id="risk-analytics-export" type="button">Xuất Excel</button>
 </div></div>
 <div aria-live="polite" class="warehouse-risk-metrics" id="risk-analytics-metrics"></div>
-<div aria-label="Danh sách vật tư cần bổ sung" class="warehouse-risk-scroll" role="region" tabindex="0"><div aria-live="polite" class="warehouse-risk-content" id="risk-analytics-table"></div></div>
-<div class="warehouse-risk-bottom"><span class="insight-note" id="risk-analytics-note" role="status"></span><div class="warehouse-risk-pager"><button aria-label="Trang trước" class="btn btn-secondary" id="risk-analytics-prev" type="button">‹</button><span id="risk-analytics-pages">—</span><button aria-label="Trang sau" class="btn btn-secondary" id="risk-analytics-next" type="button">›</button></div></div>
+<div class="warehouse-risk-two-column">
+  <div class="warehouse-risk-list-pane">
+    <div data-i18n-aria="upgradeRiskAnalytics" class="warehouse-risk-scroll" role="region" tabindex="0">
+      <div aria-live="polite" class="warehouse-risk-content" id="risk-analytics-table"></div>
+    </div>
+    <div class="warehouse-risk-bottom"><span class="insight-note" id="risk-analytics-note" role="status"></span>
+      <div class="warehouse-risk-pager">
+        <button data-i18n-aria="prev" class="btn btn-secondary" id="risk-analytics-prev" type="button">‹</button>
+        <span id="risk-analytics-pages">—</span>
+        <button data-i18n-aria="next" class="btn btn-secondary" id="risk-analytics-next" type="button">›</button>
+      </div>
+    </div>
+  </div>
+  <section class="warehouse-risk-stats-pane" data-i18n-aria="riskStatsTitle">
+    <div class="warehouse-risk-stats-head"><div><h3 data-i18n="riskStatsTitle"></h3><p data-i18n="riskStatsHelp"></p></div></div>
+    <div class="warehouse-risk-stats-scroll"><table class="warehouse-risk-stats-table">
+      <thead><tr><th data-i18n="upgradeRiskTier"></th><th data-i18n="riskMaterialCount"></th>
+        <th data-i18n="riskTotalStock"></th><th data-i18n="riskTotalReorder"></th>
+        <th data-i18n="upgradeRiskMonth"></th><th data-i18n="riskAverageCoverage"></th></tr></thead>
+      <tbody id="risk-stats-body"></tbody>
+    </table></div>
+  </section>
+</div>
 </section>
 <div class="analytics-quickbar analytics-quickbar-search-only">
 <div class="analytics-quick-search">
@@ -3504,7 +3554,7 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <option data-i18n="searchAll" value="all">Tất cả</option>
 </select>
 </label>
-<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('value')" type="button">↓ Excel</button>
+<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('value')" type="button">↓ <span data-i18n="dashboardExportExcel">Xuất Excel</span></button>
 </div>
 </div>
 <p class="insight-note" data-i18n="dashValueNote">Giá trị tồn = số lượng × đơn giá, gộp theo mã SAP.</p>
@@ -3527,7 +3577,7 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <option data-i18n="dashYear" value="year">Hằng năm</option>
 </select>
 </label>
-<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('out')" type="button">↓ Excel</button>
+<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('out')" type="button">↓ <span data-i18n="dashboardExportExcel">Xuất Excel</span></button>
 </div>
 </div>
 <p class="insight-note" data-i18n="dashboardTopOutNote">Nhấn đúp dòng vật tư để mở lịch sử nhập/xuất chi tiết.</p>
@@ -3572,7 +3622,7 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <option data-i18n="dashboardDormant1095" value="1095">3 năm</option>
 </select>
 </label>
-<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('dormant')" type="button">↓ Excel</button>
+<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('dormant')" type="button">↓ <span data-i18n="dashboardExportExcel">Xuất Excel</span></button>
 </div>
 </div>
 <p class="insight-note" data-i18n="dashboardDormantNote">Chỉ Hall 1: vật tư còn tồn nhưng chưa phát sinh xuất trong khoảng chọn.</p>
@@ -3601,9 +3651,9 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 </div>
 <div class="insight-box dashboard-chart dashboard-table-chart analytics-table-card" id="analytics-consumption-card">
 <div class="dashboard-chart-heading">
-<h3 data-i18n="consCardTitle">Thống kê tiêu thụ (Consumption) 1–2–3 năm &amp; Số ngày Cover tồn kho</h3>
+<h3 data-i18n="consCardTitle">Thống kê tiêu thụ 1–2–3 năm và số ngày đủ dùng</h3>
 <div class="dashboard-chart-filters">
-<label><span data-i18n="consHorizonLabel">Mốc tính TB &amp; Cover</span>
+<label><span data-i18n="consHorizonLabel">Kỳ tính bình quân và số ngày đủ dùng</span>
 <select id="analytics-cons-horizon" onchange="doiLocConsumption()">
 <option data-i18n="consHorizon1Y" selected="" value="12">1 năm (12 tháng)</option>
 <option data-i18n="consHorizon2Y" value="24">2 năm (24 tháng)</option>
@@ -3621,7 +3671,7 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <option data-i18n="consInsufficient" value="unknown">Không đủ dữ liệu để tính</option>
 </select>
 </label>
-<button class="btn btn-soft card-export-btn" onclick="xuatExcelConsumption()" type="button">↓ Excel</button>
+<button class="btn btn-soft card-export-btn" onclick="xuatExcelConsumption()" type="button">↓ <span data-i18n="dashboardExportExcel">Xuất Excel</span></button>
 </div>
 </div>
 <p class="insight-note" data-i18n="consCardNote">Chỉ Hall 1 · 12/24/36 tháng gần nhất tính đến ngày hạch toán mới nhất, độc lập với bộ chọn kỳ chung. TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày sử dụng dự kiến = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.</p>
@@ -3660,7 +3710,7 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <option data-i18n="dashboardExportTopValue" value="value">Vật tư có giá trị tồn cao</option>
 <option data-i18n="dashboardExportTopOut" value="out">Vật tư xuất nhiều nhất</option>
 <option data-i18n="dashboardExportDormant" value="dormant">Vật tư tồn lâu (Dead-stock)</option>
-<option data-i18n="consCardTitle" value="consumption">Thống kê tiêu thụ 1–2–3 năm &amp; Số ngày Cover</option>
+<option data-i18n="consCardTitle" value="consumption">Thống kê tiêu thụ 1–2–3 năm và số ngày đủ dùng</option>
 <option data-i18n="dashboardExportDistribution" value="distribution">Phân bố trạng thái tồn kho</option>
 <option data-i18n="dashboardExportValueTrend" value="valueTrend">Giá trị kho theo thời gian</option>
 <option data-i18n="dashboardExportMovement" value="movement">Giá trị nhập / xuất theo thời gian</option>
@@ -3749,7 +3799,7 @@ html[data-theme="dark"] #view-dashboard .department-donut-center strong{color:#f
 <div class="material-history-stat monthly"><span data-i18n="materialHistoryMonthly">TB sử dụng/tháng</span><strong id="material-history-monthly">—</strong><small id="material-history-monthly-note"></small></div>
 <div class="material-history-stat coverage"><span data-i18n="materialHistoryCoverage">Thời gian sử dụng ước tính</span><strong id="material-history-coverage">—</strong><small id="material-history-coverage-note"></small></div>
 </div>
-<div aria-label="Thống kê tiêu thụ 1 năm, 2 năm, 3 năm" class="history-cons-strip" id="material-history-consumption-strip"></div>
+<div data-i18n-aria="consCardTitle" class="history-cons-strip" id="material-history-consumption-strip"></div>
 <div class="material-history-controls">
 <label class="history-filter-field"><span data-i18n="historyType">Loại giao dịch</span><select id="material-history-kind" onchange="locLichSuVatTu()">
 <option data-i18n="historyAny" value="all">Tất cả</option>
@@ -3787,9 +3837,98 @@ const CHECKING_SPLIT_MODE="report";
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
       vi: {
-        warehouseDashboardHeading:"Dashboard kho",
+        stockFilePick:"Chọn tệp tồn kho",
+        stockFileAutomatic:"Dùng nguồn tự động",
+        stockFileInvalid:"Tệp tồn kho không đúng định dạng. Chọn data.js có dữ liệu duLieuCongTy, hoặc tệp JSON có dòng tiêu đề.",
+        stockFileReading:"Đang đọc tệp tồn kho…",
+        stockFileActive:"Tệp đang dùng: {file}",
+        dashboardRangeLabel:"Kỳ đã chọn: {from} – {to}",
+        dashboardHistoryEnds:"Lịch sử có dữ liệu đến {date}.",
+        dashboardNoOutbound:"Kỳ đã chọn không có giao dịch xuất hợp lệ.",
+        dashboardOutboundSourceMissing:"Thiếu cột ngày, loại giao dịch hoặc giá trị xuất trong lịch sử.",
+        dashboardParetoTitle:"Pareto giá trị xuất theo mã vật tư",
+        dashboardParetoHelp:"10 mã có giá trị xuất cao nhất và tỷ lệ lũy kế trên toàn bộ mã đã xuất trong kỳ.",
+        dashboardParetoNoCode:"Không có giao dịch xuất hợp lệ gắn với mã vật tư trong kỳ.",
+        dashboardParetoTopShare:"Tỷ trọng 10 mã hàng đầu",
+        dashboardParetoGroupShare:"Nhóm A trong kỳ",
+        dashboardParetoClass:"Nhóm {group} · Lũy kế {percent}",
+        dashboardCumulative:"Lũy kế",
+        dashboardRelativeValue:"Giá trị tương đối",
+        dashboardRank:"Hạng",
+        dashboardSkuCount:"{count} mã",
+        dashboardDepartmentTitle:"Phân bố giá trị xuất theo bộ phận",
+        dashboardDepartmentHelp:"Tổng hợp theo trung tâm chi phí trong kỳ và khu vực kho đang chọn.",
+        dashboardDepartmentMissing:"Thiếu cột trung tâm chi phí trong lịch sử.",
+        dashboardDepartmentCount:"{count} nhóm",
+        analyticsKpiDormantNote:"{count} mã chưa xuất ≥ 3 năm (tính theo ngày)",
+        analyticsKpiSlowNote:"{count} / {total} mã có tồn · chưa xuất > 1 năm",
+        analyticsKpiOutNote:"{count} mã SAP có phát sinh xuất",
+        analyticsNoPositiveStock:"Không có mã có số lượng tồn dương.",
+        analyticsNoValuedStock:"Thiếu đơn giá hoặc số lượng hợp lệ để tính giá trị.",
+        analyticsPartialValuation:"{count} mã thiếu dữ liệu định giá.",
+        riskPeriodLabel:"Kỳ đánh giá",
+        riskWeek:"Tuần · 7 ngày",
+        riskMonth:"Tháng · 30 ngày",
+        riskYear:"Năm · 12 tháng",
+        riskWindow:"{period} · {from} – {to}",
+        riskStatsTitle:"Thống kê nhu cầu bổ sung",
+        riskStatsHelp:"Tổng hợp theo kỳ đánh giá và bộ lọc tìm kiếm.",
+        riskDetails:"Xem chi tiết",
+        riskDetailsFilter:"Nhấn để lọc theo trạng thái.",
+        riskDetailsClear:"Nhấn để bỏ lọc trạng thái.",
+        riskTotalStock:"Tổng tồn",
+        riskTotalReorder:"Tổng điểm đặt hàng lại",
+        riskAverageCoverage:"Số ngày đủ dùng trung bình",
+        riskMedianCoverage:"Số ngày đủ dùng trung vị",
+        riskAnyUsage:"Tình trạng tiêu thụ",
+        riskHasUsage:"Có tiêu thụ",
+        riskNoUsage:"Không tiêu thụ",
+        riskAnyUnit:"Đơn vị tính",
+        riskUnitValid:"Đơn vị hợp lệ",
+        riskDaysFrom:"Số ngày từ",
+        riskDaysTo:"Số ngày đến",
+        riskPage:"{count} mã · Trang {page}/{pages}",
+        qualityScope:"Phạm vi",
+        qualityCheck:"Mục kiểm tra",
+        qualitySummarySheet:"Tổng hợp rà soát",
+        qualityDetailsSheet:"Chi tiết rà soát",
+        qualityMissingPriceColumn:"Thiếu cột đơn giá",
+        qualityRowsCount:"{count} dòng",
+        compareYear:"Năm hiện tại",
+        compareWeekHelp:"So sánh 7 ngày gần nhất với 7 ngày liền trước.",
+        compareMonthHelp:"So sánh từ đầu tháng với cùng số ngày tháng trước.",
+        compareYearHelp:"So sánh từ đầu năm với cùng kỳ năm trước.",
+        compareCustomHelp:"Nhập ngày bắt đầu và kết thúc cho từng kỳ.",
+        coverageTitle:"Độ phủ tồn kho theo số ngày sử dụng",
+        coverageBasis:"Bình quân xuất trong {months} tháng",
+        coverageEvaluated:"{count} mã tính được độ phủ.",
+        coverageExcluded:"{count} mã chưa tính được độ phủ.",
+        coverageSafe:"Trên 90 ngày",
+        agingChartTitle:"Giá trị tồn lâu, chậm luân chuyển và xuất",
+        agingRecentMonth:"Tháng có dữ liệu gần nhất",
+        agingYears:"{count} năm",
+        agingSelected:"Kỳ tính tại tab Phân tích kho: {years}",
+        agingDormant:"Tồn lâu",
+        agingSlow:"Chậm luân chuyển",
+        agingIssue:"Xuất trong kỳ",
+        agingSelectHint:"{period}. Nhấn đúp hoặc nhấn Enter để mở bảng phân tích.",
+        agingFooter:"Tháng gần nhất: {dormant} tồn lâu · {slow} chậm luân chuyển · {issue} giá trị xuất.",
+        dashboardExportExcel:"Xuất Excel",
+        dashboardLanguage:"Ngôn ngữ",
+        dashboardMainTitle:"Quản lý kho SAP · Tổng quan và Phân tích kho",
+        dashboardDepartmentNone:"Kỳ đã chọn không có giao dịch xuất thuộc các bộ phận đã cấu hình.",
+        dashboardDepartmentScope:"{mapped} / {total} giao dịch thuộc bộ phận đã cấu hình.",
+        riskUnitMany:"Nhiều đơn vị tính trong lịch sử xuất",
+        riskUnitMismatch:"Đơn vị tồn kho và đơn vị xuất không khớp",
+        riskQuantityInvalid:"Số lượng xuất không hợp lệ",
+        riskStockMissing:"Thiếu số lượng tồn",
+        riskReset:"Đặt lại",
+        riskMaterialCount:"Số mã",
+        stockAutoUnavailable:"Chưa tải được nguồn tự động. Vẫn dùng tệp đã chọn.",
+        leadTimeComparison:"Còn {cover} ngày · Thời gian giao hàng {lead} ngày",
+        warehouseDashboardHeading:"Tổng quan kho",
         warehouseDashboardDesc:"Theo dõi giá trị xuất, nhập, tồn theo tuần, tháng và năm.",
-        warehouseAnalyticsDesc:"Tra cứu các bảng vật tư giá trị cao, xuất nhiều và tồn lâu. Dùng chung bộ lọc Hall và thời gian với Dashboard.",
+        warehouseAnalyticsDesc:"Tra cứu vật tư có giá trị cao, xuất nhiều và tồn lâu. Dùng chung bộ lọc khu vực kho và thời gian với tab Tổng quan.",
         warehouseOverview:"Tổng quan giá trị xuất nhập tồn",
         warehouseSelectedPeriod:"Tổng giá trị trong kỳ đã chọn",
         warehouseLastWeek:"Tuần cuối trong kỳ đã chọn",
@@ -3810,7 +3949,7 @@ const CHECKING_SPLIT_MODE="report";
         dashboardAlertNormal:"Kho đang ổn định",
         dashboardAlertNeedsData:"Cần dữ liệu",
         dashboardAlertNormalBadge:"Bình thường",
-        dashboardStockMissing:"Cần đặt data.js đúng định dạng cạnh file HTML",
+        dashboardStockMissing:"Chọn tệp tồn kho hoặc đặt data.js cùng thư mục với trang.",
         dashboardStockHall2:"Hall 2 chỉ có dữ liệu xuất nhập",
         consInsufficient:"Không đủ dữ liệu để tính",
         upgradeKpiUnknown:"Chưa đủ dữ liệu",
@@ -3854,7 +3993,7 @@ const CHECKING_SPLIT_MODE="report";
         dashSourceRefresh:"Kiểm tra cập nhật",
         dashSourceClear:"Xóa bộ nhớ đệm lịch sử",
         dashSourcePrivacy:"Bộ nhớ đệm History.js trên thiết bị có thể chứa dữ liệu SAP nội bộ; hãy xóa khi dùng máy chung.",
-        dashSourceStock:"Tồn kho · data.js",
+        dashSourceStock:"Tồn kho",
         dashSourceHistory:"Giao dịch · History.js",
         dashSourceAmount:"Giá trị kho · Amount.js",
         dashSourceImages:"Ảnh vật tư · Material",
@@ -3999,7 +4138,7 @@ const CHECKING_SPLIT_MODE="report";
         dashValueTrendEmpty:"Chưa có dữ liệu giá trị kho hợp lệ trong Amount.js.",
         dashValueTrendNote:"Giá trị từ Amount.js, lấy bản ghi cuối mỗi kỳ (không cộng dồn).",
         dashValueTrendNoPeriod:"Không có bản ghi Amount.js trong giai đoạn đã chọn.",
-        dashAmountRefresh:"Làm mới Amount",
+        dashAmountRefresh:"Làm mới dữ liệu định giá",
         dashAmountStale:"Không đọc được bản Amount.js mới; vẫn hiển thị dữ liệu đã tải trước đó.",
         dashAmountLoadError:"Không tải được Amount.js cùng thư mục với trang HTML.",
         dashAmountInvalid:"Amount.js không có dòng dữ liệu ngày và giá trị hợp lệ.",
@@ -4070,7 +4209,7 @@ const CHECKING_SPLIT_MODE="report";
         rankTop5:"5 mã",
         rankTop10:"10 vật tư",
         rankTop20:"20 vật tư",
-        tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu tồn kho",tabAnalytics:"Phân tích kho",tabDashboard:"Dashboard",tabHistory:"Lịch sử nhập/xuất",
+        tabsAria:"Các màn hình quản lý kho",tabStock:"Tra cứu tồn kho",tabAnalytics:"Phân tích kho",tabDashboard:"Tổng quan",tabHistory:"Lịch sử nhập/xuất",
         materialHistoryTitle:"Lịch sử sử dụng vật tư",materialHistoryClose:"Đóng",materialHistoryPrev:"Thu gọn",materialHistoryNext:"Tải thêm",materialHistoryCount:"{count} giao dịch",materialHistoryInCount:"Số lượng nhập",materialHistoryOutCount:"Số lượng xuất",materialHistoryOtherCount:"Số lượng khác",materialHistoryStock:"Tồn kho hiện tại",materialHistoryFrom:"Ngày hạch toán từ",materialHistoryTo:"Ngày hạch toán đến",materialHistoryCostCenter:"Trung tâm chi phí",materialHistoryMissingCost:"Không có trung tâm chi phí",materialHistoryLoadedRows:"Đã xem {shown}/{total} dòng",materialHistoryQuantityMissing:"Không có cột số lượng",materialHistoryQuantityInvalid:"Có số lượng không hợp lệ",materialHistoryQuantityMixed:"Nhiều đơn vị tính, không thể cộng",materialHistoryQuantityUnit:"Chưa rõ đơn vị tính",materialHistoryMonthly:"Sử dụng trung bình / tháng",materialHistoryCoverage:"Thời gian sử dụng ước tính",
         consumptionAll:"Tất cả giao dịch xuất · {unit}",consumptionRecent:"12 tháng trọn vẹn · {period}",consumptionStock:"Tồn kho: {amount} {unit}",consumptionMonths:"{count} tháng",consumptionNoHistory:"Chưa có dữ liệu lịch sử.",consumptionMissingQty:"Không có cột số lượng trong dữ liệu lịch sử.",consumptionMixedUnits:"Nhiều đơn vị tính, không thể cộng chung.",consumptionUnitUnknown:"Chưa xác định đơn vị tính.",consumptionPartial:"{count} dòng xuất bị loại do thiếu hoặc sai đơn vị/số lượng.",consumptionNoDates:"Thiếu ngày hợp lệ để tính trung bình tháng.",consumptionNoAverage:"Không có lượng xuất trong 12 tháng trọn vẹn gần nhất.",consumptionNoStock:"Tồn kho không hợp lệ hoặc chưa được tải.",consumptionUnitMismatch:"Đơn vị tồn kho không khớp đơn vị giao dịch; không thể ước tính.",consumptionIncomplete:"Dữ liệu xuất không hợp lệ hoặc có nhiều đơn vị; chưa thể ước tính.",
         materialHistoryMissing:"Không tìm thấy cột mã SAP trong dữ liệu lịch sử.",materialHistoryStale:"Đang hiển thị dữ liệu lần tải trước.",historyExactSap:"Lịch sử đúng mã SAP: {code}",issuedTitle:"Số lượng xuất",issuedScope:"Toàn bộ lịch sử · theo mã SAP · tổng xuất, chưa trừ hoàn nhập",issuedMissing:"Không đủ cột mã SAP / số lượng",issuedPartial:"Có giao dịch thiếu số lượng hợp lệ",issuedUnitUnknown:"Chưa rõ đơn vị",issuedStale:"Dữ liệu lần tải trước; tải lại thất bại",attentionTitle:"Vật tư cần chú ý",attentionNote:"Hết hàng, dưới hoặc bằng điểm đặt hàng lại",allInventoryNote:"Số liệu tồn kho theo nguồn SAP; nhập / xuất từ History.js và tổng giá trị tồn theo thời gian từ Amount.js.",rowsLabel:"dòng",dashFilters:"Bộ lọc phân tích kho",dashSearch:"Tìm vật tư",dashSearchPlaceholder:"Mã SAP, mô tả, mã phụ tùng...",dashRankLimit:"Số vật tư",dashTotalRows:"Tổng dòng vật tư",dashKpiNote:"Toàn bộ dữ liệu kho",dashFilteredValue:"Tổng giá trị tồn kho",dashCoverage:"Mức tồn so với điểm đặt hàng lại",dashCoverageNote:"Tỷ lệ tồn kho / điểm đặt hàng lại; chỉ tính điểm đặt hàng lại dương và tồn kho không âm.",dashTopValue:"Vật tư có giá trị tồn cao nhất",dashValueNote:"Giá trị tồn = số lượng × đơn giá, gộp theo mã SAP.",dashSnapshotNote:"Giá trị từ Amount.js, dùng chung Tất cả/Hall 1; Hall 2 không có dữ liệu.",dashStockExport:"Xuất kết quả tra cứu tồn kho",dashMatch:"{count} / {total} dòng",dashCoverageUnknown:"Không đủ dữ liệu tính tỷ lệ",dashCoverageZero:"Hết hàng (0%)",dashCoverageLow:"Trên 0% đến dưới 50%",dashCoverageMid:"Từ 50% đến dưới 100%",dashCoverageAt:"Đúng 100%",dashCoverageHigh:"Trên 100%",dashNoValue:"Không có giá trị dương trong phạm vi lọc.",dashboardHeading:"Phân tích kho",dashboardDesc:"Phân tích giá trị nhập / xuất, giá trị tồn kho và các vật tư có giá trị cao.",
@@ -4149,6 +4288,95 @@ const CHECKING_SPLIT_MODE="report";
         colQuantity:"Số lượng", colPrice:"Giá", colBm:"Mã BM", colUnit:"Đơn vị", colGroup:"Nhóm"
       },
       en: {
+        stockFilePick:"Choose stock file",
+        stockFileAutomatic:"Use automatic source",
+        stockFileInvalid:"Invalid stock file. Choose a data.js file containing duLieuCongTy, or a JSON file with a header row.",
+        stockFileReading:"Reading the stock file…",
+        stockFileActive:"Active file: {file}",
+        dashboardRangeLabel:"Selected period: {from} – {to}",
+        dashboardHistoryEnds:"History has records through {date}.",
+        dashboardNoOutbound:"No valid outbound transactions in the selected period.",
+        dashboardOutboundSourceMissing:"History is missing the date, movement type, or outbound value column.",
+        dashboardParetoTitle:"Pareto by material outbound value",
+        dashboardParetoHelp:"Top 10 materials by outbound value and their cumulative share across all issued materials.",
+        dashboardParetoNoCode:"No valid outbound transactions with a material code in this period.",
+        dashboardParetoTopShare:"Top 10 material share",
+        dashboardParetoGroupShare:"Group A in this period",
+        dashboardParetoClass:"Group {group} · Cumulative {percent}",
+        dashboardCumulative:"Cumulative",
+        dashboardRelativeValue:"Relative value",
+        dashboardRank:"Rank",
+        dashboardSkuCount:"{count} SKUs",
+        dashboardDepartmentTitle:"Outbound value by department",
+        dashboardDepartmentHelp:"Grouped by cost center for the selected period and warehouse area.",
+        dashboardDepartmentMissing:"The history source is missing the cost center column.",
+        dashboardDepartmentCount:"{count} groups",
+        analyticsKpiDormantNote:"{count} SKUs with no issues for ≥ 3 years (day-based)",
+        analyticsKpiSlowNote:"{count} / {total} in-stock SKUs · no issues for > 1 year",
+        analyticsKpiOutNote:"{count} SAP codes with issues",
+        analyticsNoPositiveStock:"No SKUs have positive stock.",
+        analyticsNoValuedStock:"Valid prices or quantities are missing for valuation.",
+        analyticsPartialValuation:"Valuation data is missing for {count} SKUs.",
+        riskPeriodLabel:"Evaluation period",
+        riskWeek:"Week · 7 days",
+        riskMonth:"Month · 30 days",
+        riskYear:"Year · 12 months",
+        riskWindow:"{period} · {from} – {to}",
+        riskStatsTitle:"Replenishment summary",
+        riskStatsHelp:"Aggregated by evaluation period and search filter.",
+        riskDetails:"View details",
+        riskDetailsFilter:"Select to filter by status.",
+        riskDetailsClear:"Select to clear the status filter.",
+        riskTotalStock:"Total stock",
+        riskTotalReorder:"Total reorder point",
+        riskAverageCoverage:"Average coverage days",
+        riskMedianCoverage:"Median coverage days",
+        riskAnyUsage:"Usage status",
+        riskHasUsage:"Has usage",
+        riskNoUsage:"No usage",
+        riskAnyUnit:"Units of measure",
+        riskUnitValid:"Valid unit",
+        riskDaysFrom:"Minimum days",
+        riskDaysTo:"Maximum days",
+        riskPage:"{count} SKUs · Page {page}/{pages}",
+        qualityScope:"Scope",
+        qualityCheck:"Check",
+        qualitySummarySheet:"Review summary",
+        qualityDetailsSheet:"Review details",
+        qualityMissingPriceColumn:"Missing unit price column",
+        qualityRowsCount:"{count} rows",
+        compareYear:"Current year",
+        compareWeekHelp:"Compare the last 7 days with the preceding 7 days.",
+        compareMonthHelp:"Compare month to date with the same number of days last month.",
+        compareYearHelp:"Compare year to date with the same period last year.",
+        compareCustomHelp:"Enter the start and end date for each period.",
+        coverageTitle:"Stock coverage by days of use",
+        coverageBasis:"Based on average outbound use over {months} months",
+        coverageEvaluated:"Coverage calculated for {count} SKUs.",
+        coverageExcluded:"Coverage unavailable for {count} SKUs.",
+        coverageSafe:"Over 90 days",
+        agingChartTitle:"Aged, slow-moving and outbound value",
+        agingRecentMonth:"Latest recorded month",
+        agingYears:"{count} year(s)",
+        agingSelected:"Analytics coverage period: {years}",
+        agingDormant:"Aged stock",
+        agingSlow:"Slow-moving stock",
+        agingIssue:"Outbound in period",
+        agingSelectHint:"{period}. Double-click or press Enter to open the analytics table.",
+        agingFooter:"Latest recorded month: {dormant} aged · {slow} slow-moving · {issue} outbound.",
+        dashboardExportExcel:"Export Excel",
+        dashboardLanguage:"Language",
+        dashboardMainTitle:"SAP Warehouse · Dashboard & Inventory Analytics",
+        dashboardDepartmentNone:"No outbound transactions matched the configured departments in this period.",
+        dashboardDepartmentScope:"{mapped} / {total} transactions matched a configured department.",
+        riskUnitMany:"Multiple units in outbound history",
+        riskUnitMismatch:"Stock and outbound units do not match",
+        riskQuantityInvalid:"Invalid outbound quantity",
+        riskStockMissing:"Missing stock quantity",
+        riskReset:"Reset",
+        riskMaterialCount:"Material count",
+        stockAutoUnavailable:"The automatic source is unavailable. The selected file remains active.",
+        leadTimeComparison:"{cover} days of stock · {lead} days of lead time",
         warehouseDashboardHeading:"Warehouse dashboard",
         warehouseDashboardDesc:"Track inbound, outbound and inventory value by week, month and year.",
         warehouseAnalyticsDesc:"High-value, top outbound and slow-moving material tables. Hall and date filters are shared with Dashboard.",
@@ -4172,7 +4400,7 @@ const CHECKING_SPLIT_MODE="report";
         dashboardAlertNormal:"Warehouse status normal",
         dashboardAlertNeedsData:"Data needed",
         dashboardAlertNormalBadge:"Normal",
-        dashboardStockMissing:"A compatible data.js is needed beside the HTML file",
+        dashboardStockMissing:"Choose a stock file or place data.js beside this page.",
         dashboardStockHall2:"Only movement data is available for Hall 2",
         consInsufficient:"Insufficient data",
         upgradeKpiUnknown:"Insufficient data",
@@ -4216,7 +4444,7 @@ const CHECKING_SPLIT_MODE="report";
         dashSourceRefresh:"Check for updates",
         dashSourceClear:"Clear History cache",
         dashSourcePrivacy:"The local History.js cache may contain confidential SAP data; clear it on shared devices.",
-        dashSourceStock:"Stock · data.js",
+        dashSourceStock:"Stock",
         dashSourceHistory:"Movements · History.js",
         dashSourceAmount:"Inventory value · Amount.js",
         dashSourceImages:"Material images",
@@ -4361,7 +4589,7 @@ const CHECKING_SPLIT_MODE="report";
         dashValueTrendEmpty:"No valid inventory-value records in Amount.js.",
         dashValueTrendNote:"Inventory values from Amount.js; last record in each period (not cumulative).",
         dashValueTrendNoPeriod:"No Amount.js values in the selected period.",
-        dashAmountRefresh:"Refresh Amount",
+        dashAmountRefresh:"Refresh valuation data",
         dashAmountStale:"Could not refresh Amount.js; showing previously loaded data.",
         dashAmountLoadError:"Cannot load Amount.js from the HTML page’s folder.",
         dashAmountInvalid:"Amount.js contains no valid date/value records.",
@@ -4677,7 +4905,7 @@ const CHECKING_SPLIT_MODE="report";
 
     function apDungNgonNgu() {
       document.documentElement.lang = ngonNguHienTai;
-      document.title=CHECKING_SPLIT_MODE==="report" ? (ngonNguHienTai==="en" ? "SAP Warehouse · Dashboard & Inventory Analytics" : "Quản lý kho SAP · Dashboard & Phân tích kho") : tuDien("pageTitle");
+      document.title=tuDien(CHECKING_SPLIT_MODE==="report" ? "dashboardMainTitle" : "pageTitle");
       document.querySelectorAll("[data-i18n]").forEach(el => {
         el.textContent = tuDien(el.dataset.i18n);
       });
@@ -4732,6 +4960,7 @@ const CHECKING_SPLIT_MODE="report";
       if (chiMucSanSang) {hienThiTongGiaTriKho();capNhatThongKeNangCao();}
       chuyenTab(tabHienTai,{persist:false,skipHistory:true});
       veTrangThaiNguon();capNhatCanhBaoKho();
+      veTrangThaiTepTonKho();
       capNhatNgonNguHistory();
       kiemTraNhacBaoCao();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
@@ -5487,6 +5716,7 @@ const CHECKING_SPLIT_MODE="report";
     }
 
     function kiemTraPhienBanStock(){
+      if(tenTepTonKho)return;
       if(location.protocol==="file:"&&phienBanFile.available!==false){
         kiemTraPhienBanCucBo();return;
       }
@@ -5517,8 +5747,94 @@ const CHECKING_SPLIT_MODE="report";
       return next;
     }
 
+    let tenTepTonKho = "";
+
+    function docTepTonKho(text) {
+      const source = text.trimStart();
+      const data = source.startsWith("[") ? JSON.parse(source) : docMangDatabaseTuText(source, "duLieuCongTy");
+      const stamp = source.match(/\bthoiGianCapNhat\s*=\s*["']([^"'\r\n]*)["']/)?.[1] || "";
+      if (!Array.isArray(data) || !Array.isArray(data[0]) || !data[0].length ||
+        !data.slice(1).every(Array.isArray) ||
+        cotHistoryTheoTen(data[0], ["Quantity","Qty","Stock","Stock Qty","On Hand","Số lượng","Tồn kho"]) < 0)
+        throw new Error("Invalid stock data");
+      return {data, stamp};
+    }
+
+    async function apDungDuLieuTonKho(data, stamp, force) {
+      if (!force && stamp && stamp === mocCapNhatCu && tatCaDuLieu.length) return true;
+      const sap = dongDangChonIndex > 0 ? chuanHoaMaSap(tatCaDuLieu[dongDangChonIndex]?.[0]) : "";
+      tatCaDuLieu = data;
+      tieuDeCot = data[0];
+      mocCapNhatCu = stamp;
+      dongDangChonIndex = sap ? data.findIndex((row, i) => i > 0 && Array.isArray(row) &&
+        chuanHoaMaSap(row[0]).toLowerCase() === sap.toLowerCase()) : -1;
+      chiMucSanSang = false;
+      soLanLocDuLieu++;
+      veTieuDe();
+      return (await taoChiMucTimKiem()) !== false;
+    }
+
+    async function chonTepTonKho(input) {
+      const file = input.files[0];
+      input.value = "";
+      if (!file) return;
+      const pick = document.getElementById("warehouse-stock-pick");
+      const auto = document.getElementById("warehouse-stock-auto");
+      const status = document.getElementById("warehouse-stock-file-status");
+      pick.disabled = auto.disabled = true;
+      status.dataset.message = "stockFileReading";
+      veTrangThaiTepTonKho();
+      try {
+        const {data, stamp} = docTepTonKho(await file.text());
+        const start = Date.now();
+        await thucThiScriptSap(async () => {
+          if (!await apDungDuLieuTonKho(data, stamp, true)) throw new Error("Stock index interrupted");
+          tenTepTonKho = file.name;
+          datTrangThaiDuLieu("statusOnline");
+          datThongBaoCapNhat("updated",{time:stamp || new Date().toLocaleString(ngonNguHienTai === "en" ? "en-US" : "vi-VN")});
+          ghiNhanNguon("stock","ready",{count:data.length-1,updated:stamp,ms:Date.now()-start});
+        });
+        delete status.dataset.message;
+      } catch (error) {
+        console.warn("Stock file:", error);
+        status.dataset.message = "stockFileInvalid";
+      } finally {
+        pick.disabled = auto.disabled = false;
+        veTrangThaiTepTonKho();
+      }
+    }
+
+    function veTrangThaiTepTonKho() {
+      const status = document.getElementById("warehouse-stock-file-status");
+      document.getElementById("warehouse-stock-auto").hidden = !tenTepTonKho;
+      status.textContent = [
+        status.dataset.message ? tuDien(status.dataset.message) : "",
+        tenTepTonKho ? tuDien("stockFileActive",{file:tenTepTonKho}) : ""
+      ].filter(Boolean).join(" · ");
+    }
+
+    async function dungNguonTonKhoTuDong() {
+      const auto = document.getElementById("warehouse-stock-auto");
+      const status = document.getElementById("warehouse-stock-file-status");
+      const previous = tenTepTonKho;
+      auto.disabled = document.getElementById("warehouse-stock-pick").disabled = true;
+      tenTepTonKho = "";
+      delete status.dataset.message;
+      try {
+        if (!await taiDuLieu(true)) {
+          tenTepTonKho = previous;
+          status.dataset.message = "stockAutoUnavailable";
+          datTrangThaiDuLieu("statusOnline");
+          ghiNhanNguon("stock","ready");
+        }
+      } finally {
+        auto.disabled = document.getElementById("warehouse-stock-pick").disabled = false;
+        veTrangThaiTepTonKho();
+      }
+    }
+
     function taiDuLieu(force=false) {
-      if(document.hidden||dangTaiScript)return;
+      if(tenTepTonKho||document.hidden||dangTaiScript)return;
       dangTaiScript=true;
       const batDauTai=Date.now();
       ghiNhanNguon("stock","loading");
@@ -5560,15 +5876,8 @@ const CHECKING_SPLIT_MODE="report";
           const stamp=time==null?"":String(time);
           const changedVersion=signature&&signature!==phienBanNguon.stock;
           try{
-            if(force||changedVersion||!stamp||stamp!==mocCapNhatCu||!tatCaDuLieu.length){
-              const sap=dongDangChonIndex>0?chuanHoaMaSap(tatCaDuLieu[dongDangChonIndex]?.[0]):"";
-              tatCaDuLieu=data;tieuDeCot=data[0];mocCapNhatCu=stamp;
-              dongDangChonIndex=sap?data.findIndex((row,i)=>i>0&&Array.isArray(row)&&
-                chuanHoaMaSap(row[0]).toLowerCase()===sap.toLowerCase()):-1;
-              chiMucSanSang=false;soLanLocDuLieu++;veTieuDe();
-              const indexed=await taoChiMucTimKiem();
-              if(finished)return;
-              if(indexed===false){finish(false,"statusBadData");return;}
+            if(!await apDungDuLieuTonKho(data,stamp,force||changedVersion)){
+              finish(false,"statusBadData");return;
             }
             if(finished)return;
             if(signature){phienBanNguon.stock=signature;
@@ -5762,7 +6071,6 @@ const CHECKING_SPLIT_MODE="report";
         capNhatTrangThaiAmount();
         veBieuDoGiaTriKho();
         veLichSuKho();
-        if(typeof veTongQuanDieuHanhCoChuThich==='function')veTongQuanDieuHanhCoChuThich();
         capNhatCanhBaoKho();
       }
       script.onload=()=>{
@@ -6340,8 +6648,8 @@ const CHECKING_SPLIT_MODE="report";
       const number=new Intl.NumberFormat(locale,{maximumFractionDigits:1});
       const a=Math.abs(n);
       if(a>=1e9)return number.format(n/1e9)+(ngonNguHienTai==="en"?"B":" tỷ");
-      if(a>=1e6)return number.format(n/1e6)+(ngonNguHienTai==="en"?"M":" tr");
-      if(a>=1e3)return number.format(n/1e3)+"k";
+      if(a>=1e6)return number.format(n/1e6)+(ngonNguHienTai==="en"?"M":" triệu");
+      if(a>=1e3)return number.format(n/1e3)+(ngonNguHienTai==="en"?"K":" nghìn");
       return number.format(n);
     }
 
@@ -7115,15 +7423,20 @@ const CHECKING_SPLIT_MODE="report";
       return coCotStockHall()?tonKhoTheoHall("hall1"):duLieuTimKiem;
     }
 
+    let stockDormancyCache;
     function thongKeVatTuTonLau(days,now=new Date()){
       if(hallDangLoc()==="hall2")return [];
-      if(!historyLoaded)return null;
+      if(!analyticsReady||!historyLoaded)return null;
+      const today=ngayDiaPhuongISO(now);
+      if(stockDormancyCache?.stock===duLieuTimKiem && stockDormancyCache.history===historyAll &&
+        stockDormancyCache.today===today)
+        return stockDormancyCache.rows.filter(row=>row.days===null||row.days>=days);
       const sapCol=cotMaSapLichSuKho();
       if(sapCol<0)return null;
-      const today=ngayDiaPhuongISO(now),stock=new Map();
+      const stock=new Map();
       // This report is available only for Hall 1, including the All areas view.
       const hallStock=tonKhoHall1TonLau(),hallHistory=lichSuTheoHall("hall1");
-      if(!hallStock||!hallHistory)return null;
+      if(!hallStock||!hallHistory||!phamViNgayLichSuKho(hallHistory))return null;
       const unitCol=cotHistoryTheoTen(tieuDeCot,[
         "Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
       const priceCol=cotHistoryTheoTen(tieuDeCot,["Price","Unit Price","Đơn giá","Giá"]);
@@ -7164,11 +7477,12 @@ const CHECKING_SPLIT_MODE="report";
       const report=[];
       for(const row of stock.values()){
         row.days=row.last?khoangNgayKho(row.last,today)-1:null;
-        if(row.days===null||row.days>=days)report.push(row);
+        report.push(row);
       }
-      return report.sort((a,b)=>
-        (b.days??Number.MAX_SAFE_INTEGER)-(a.days??Number.MAX_SAFE_INTEGER)||
+      report.sort((a,b)=>(b.days??Number.MAX_SAFE_INTEGER)-(a.days??Number.MAX_SAFE_INTEGER)||
         a.sap.localeCompare(b.sap));
+      stockDormancyCache={stock:duLieuTimKiem,history:historyAll,today,rows:report};
+      return report.filter(row=>row.days===null||row.days>=days);
     }
 
     function veVatTuTonLau(){
@@ -7241,8 +7555,7 @@ const CHECKING_SPLIT_MODE="report";
     function veBieuDoSuDungKho(){
       veNhapXuatTheoChuKy("insight-usage","dashboard-usage-summary",
         document.getElementById("dashboard-usage-period").value);
-      veNhapXuatTheoChuKy("insight-usage-detail","dashboard-usage-detail-summary",
-        document.getElementById("dashboard-usage-detail-period").value);
+      if(typeof lapLichBieuDoXuatKho==="function")lapLichBieuDoXuatKho();
     }
 
     function veNhapXuatTheoChuKy(id,summaryId,mode){
@@ -10624,7 +10937,7 @@ const CHECKING_SPLIT_MODE="report";
     });
     Object.assign(NGON_NGU.vi,{
       upgradeCompareEyebrow:"SO SÁNH ĐỘC LẬP",upgradeCompareTitle:"Đối chiếu hai khoảng thời gian tùy chọn",
-      upgradeCompareHelp:"So sánh giá trị nhập, xuất và chênh lệch từ History.js theo Hall đang chọn, độc lập với bộ lọc kỳ của Dashboard.",
+      upgradeCompareHelp:"So sánh giá trị nhập, xuất và chênh lệch từ History.js theo khu vực kho đang chọn, độc lập với bộ lọc kỳ của Tổng quan.",
       upgradeCompareSwap:"Đổi hai kỳ",upgradeCompareCurrent:"Kỳ A (cần đánh giá)",upgradeComparePrior:"Kỳ B (đối chiếu)",
       upgradeCompareIn:"Giá trị nhập",upgradeCompareOut:"Giá trị xuất",upgradeCompareNet:"Nhập − Xuất",
       upgradeCompareInvalid:"Khoảng ngày không hợp lệ. Hãy chọn từ ngày không vượt quá đến ngày và không vượt quá hôm nay.",
@@ -10752,7 +11065,7 @@ const CHECKING_SPLIT_MODE="report";
       node.addEventListener("dblclick",moLichSuBangDashboard);
       node.addEventListener("keydown",bamPhimLichSuBangDashboard);
     }
-    const giaoDichCharts=["insight-usage","insight-usage-detail"].map(id=>document.getElementById(id));
+    const chartGiaoDich=document.getElementById("insight-usage");
     function chonKyTrenBieuDo(event){
       const target=event.target.closest(".trend-column[data-period-key]");
       if(!target||!event.currentTarget.contains(target))return;
@@ -10760,10 +11073,8 @@ const CHECKING_SPLIT_MODE="report";
       event.preventDefault();
       moChiTietKyKho(target.dataset.periodKey,target.dataset.periodMode);
     }
-    for(const chart of giaoDichCharts){
-      chart.addEventListener("click",chonKyTrenBieuDo);
-      chart.addEventListener("keydown",chonKyTrenBieuDo);
-    }
+    chartGiaoDich.addEventListener("click",chonKyTrenBieuDo);
+    chartGiaoDich.addEventListener("keydown",chonKyTrenBieuDo);
     doiKyPhanTichKho();
     trangThaiAmount=!Array.isArray(window.amountData)?"dashAmountLoadError":
       window.amountData.length&&!layGiaTriKhoTuAmount().length?"dashAmountInvalid":null;
@@ -11195,22 +11506,27 @@ const CHECKING_SPLIT_MODE="report";
       const slider = document.getElementById("dashboard-out-min");
       const sliderOut = document.getElementById("dashboard-out-min-value");
       if (!root) return;
+      const unavailable=reason=>{
+        datKpiPhanTich("out-value","—",tuDien(reason));
+        root.textContent=tuDien(reason);
+        note.textContent="";
+        slider.disabled=true;
+        sliderOut.textContent="—";
+        capNhatSoMaBaoCaoKho("out",null);
+        capNhatPhanTrangBangKho("out",0);
+      };
 
       if (!historyLoaded) {
-        root.textContent = tuDien(historyLoading ? "dashboardHistoryLoading" : "dashboardCompareNoHistory");
-        capNhatSoMaBaoCaoKho("out", null);
-        slider.disabled = true;
+        unavailable(historyLoading ? "dashboardHistoryLoading" : "dashboardCompareNoHistory");
         return;
       }
       if (!lichSuTheoHall()) {
-        root.textContent = tuDien(loiCotHall("history"));
-        capNhatSoMaBaoCaoKho("out", null);
-        slider.disabled = true;
+        unavailable(loiCotHall("history"));
         return;
       }
 
       const range = phamViTopXuatKho();
-      if (!range) { root.textContent = tuDien("dashboardTimeInvalid"); return; }
+      if (!range) { unavailable("dashboardTimeInvalid"); return; }
 
       const key = range.from + "|" + range.to + "|" + hallDangLoc();
       if (!dashboardOutCache || dashboardOutCache.key !== key ||
@@ -11233,19 +11549,13 @@ const CHECKING_SPLIT_MODE="report";
 
       const allItems = dashboardOutCache.rows;
       if (!allItems) {
-        root.textContent = tuDien("dashboardTopOutMissing");
-        capNhatSoMaBaoCaoKho("out", null);
+        unavailable("dashboardTopOutMissing");
         return;
       }
 
       const totalOutAll = allItems.reduce((s, r) => s + r.value, 0);
-      const kpiOutVal = document.getElementById("analytics-kpi-out-value");
-      const kpiOutNote = document.getElementById("analytics-kpi-out-note");
-      if (kpiOutVal && kpiOutNote) {
-        kpiOutVal.textContent = dinhDangRutGonKho(totalOutAll) + " ₫";
-        kpiOutVal.title = dinhDangGiaTriKho(totalOutAll);
-        kpiOutNote.textContent = `${dinhDangSoLuong.format(allItems.length)} mã SAP có phát sinh xuất`;
-      }
+      datKpiPhanTich("out-value",dinhDangRutGonKho(totalOutAll)+" ₫",
+        tuDien("analyticsKpiOutNote",{count:dinhDangSoLuong.format(allItems.length)}),dinhDangGiaTriKho(totalOutAll));
 
       const minFilter = Math.max(0, Number(slider.value) || 0);
       sliderOut.textContent = dinhDangGiaTriKho(minFilter);
@@ -11298,6 +11608,13 @@ const CHECKING_SPLIT_MODE="report";
       }
     };
 
+    function datKpiPhanTich(id, text, note, title=""){
+      const value=document.getElementById("analytics-kpi-"+id);
+      value.textContent=text;
+      value.title=title;
+      document.getElementById("analytics-kpi-"+id.replace("-value","").replace("-rate","")+"-note").textContent=note;
+    }
+
     veVatTuTonLau = function() {
       if(tabHienTai!=="analytics")return;
       const root = document.getElementById("dashboard-dormant");
@@ -11307,15 +11624,24 @@ const CHECKING_SPLIT_MODE="report";
       const pager = document.getElementById("dashboard-dormant-pager");
       if (!root) return;
 
+      const clearKpis=reason=>{
+        datKpiPhanTich("dormant-value","—",tuDien(reason));
+        datKpiPhanTich("slow-rate","—",tuDien(reason));
+        note.textContent="";
+        capNhatSoMaBaoCaoKho("dormant",null);
+      };
       if (unavailable) {
+        clearKpis("dashboardDormantHall2Unavailable");
         dashboardDormantCache = null;
         root.textContent = tuDien("dashboardDormantHall2Unavailable");
         capNhatSoMaBaoCaoKho("dormant", null);
         pager.hidden = true;
         return;
       }
-      if (!historyLoaded) {
-        root.textContent = tuDien(historyLoading ? "dashboardHistoryLoading" : "dashboardDormantNoHistory");
+      if (!analyticsReady || !historyLoaded) {
+        const reason=!analyticsReady?"dashboardStockMissing":historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory";
+        clearKpis(reason);
+        root.textContent=tuDien(reason);
         pager.hidden = true;
         return;
       }
@@ -11332,34 +11658,31 @@ const CHECKING_SPLIT_MODE="report";
 
       const dormantAll = dashboardDormantCache.rows;
       if (dormantAll === null) {
-        root.textContent = tuDien(tonKhoHall1TonLau() === null ? loiCotHall("stock") : loiCotHall("history"));
+        const reason=tonKhoHall1TonLau()===null?loiCotHall("stock"):!lichSuTheoHall("hall1")?loiCotHall("history"):"dashboardDormantNoHistory";
+        clearKpis(reason);
+        root.textContent=tuDien(reason);
         pager.hidden = true;
         return;
       }
 
-      // Tính KPI Dead-stock & Tỷ lệ chậm luân chuyển
-      // KPI độc lập với ngưỡng lọc của bảng: tồn lâu ≥ 3 năm, chậm luân chuyển > 1 năm.
-      const dormantThreeYears = thongKeVatTuTonLau(1095);
-      const slowOverOneYear = thongKeVatTuTonLau(366);
-      const dormantCapital = Array.isArray(dormantThreeYears)
-        ? dormantThreeYears.reduce((s, r) => s + (r.quantityValid && r.priceValid ? r.quantity * r.price : 0), 0)
-        : null;
-      const positiveSkus = new Set((tonKhoHall1TonLau() || []).filter(x => Number.isFinite(x.soLuong) && x.soLuong > 0).map(x => chuanHoaMaSap(x.dong[0]).toLowerCase())).size;
-      const kpiDormVal = document.getElementById("analytics-kpi-dormant-value");
-      const kpiDormNote = document.getElementById("analytics-kpi-dormant-note");
-      const kpiSlowRate = document.getElementById("analytics-kpi-slow-rate");
-      const kpiSlowNote = document.getElementById("analytics-kpi-slow-note");
-      if (kpiDormVal && kpiDormNote) {
-        kpiDormVal.textContent = dormantCapital === null ? "—" : dinhDangRutGonKho(dormantCapital) + " ₫";
-        kpiDormVal.title = dormantCapital === null ? "" : dinhDangGiaTriKho(dormantCapital);
-        kpiDormNote.textContent = Array.isArray(dormantThreeYears) ? `${dinhDangSoLuong.format(dormantThreeYears.length)} mã chưa xuất ≥ 3 năm (1.095 ngày)` : "Chưa đủ dữ liệu";
-      }
-      if (kpiSlowRate && kpiSlowNote) {
-        const slowCount = Array.isArray(slowOverOneYear) ? new Set(slowOverOneYear.map(r => String(r.sap).toLowerCase())).size : null;
-        const rate = slowCount === null ? null : positiveSkus > 0 ? ((slowCount / positiveSkus) * 100).toFixed(1) : "0.0";
-        kpiSlowRate.textContent = rate === null ? "—" : `${rate}%`;
-        kpiSlowNote.textContent = slowCount === null ? "Chưa đủ dữ liệu" : `${slowCount} / ${positiveSkus} mã có tồn · chưa xuất > 1 năm`;
-      }
+      // The KPIs use fixed thresholds regardless of the table's days filter.
+      const dormantThreeYears=thongKeVatTuTonLau(1095);
+      const slowOverOneYear=thongKeVatTuTonLau(366);
+      const positiveSkus=stockDormancyCache.rows.length;
+      const valued=dormantThreeYears.filter(row=>row.quantityValid&&row.priceValid);
+      const capital=valued.reduce((sum,row)=>sum+row.quantity*row.price,0);
+      const missing=dormantThreeYears.length-valued.length;
+      const priceColumn=cotHistoryTheoTen(tieuDeCot,["Price","Unit Price","Đơn giá","Giá"]);
+      const canValue=priceColumn>=0&&(!dormantThreeYears.length||valued.length>0);
+      datKpiPhanTich("dormant-value",canValue?dinhDangRutGonKho(capital)+" ₫":"—",
+        canValue?[tuDien("analyticsKpiDormantNote",{count:dinhDangSoLuong.format(dormantThreeYears.length)}),
+          missing?tuDien("analyticsPartialValuation",{count:dinhDangSoLuong.format(missing)}):""].filter(Boolean).join(" · "):
+          tuDien("analyticsNoValuedStock"),canValue?dinhDangGiaTriKho(capital):"");
+      const rate=positiveSkus?new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",
+        {style:"percent",maximumFractionDigits:1}).format(slowOverOneYear.length/positiveSkus):"—";
+      datKpiPhanTich("slow-rate",rate,positiveSkus?tuDien("analyticsKpiSlowNote",{
+        count:dinhDangSoLuong.format(slowOverOneYear.length),total:dinhDangSoLuong.format(positiveSkus)
+      }):tuDien("analyticsNoPositiveStock"));
 
       const filtered = dormantAll.filter(r => {
         if (analyticsSearchQuery) {
@@ -11452,7 +11775,7 @@ const CHECKING_SPLIT_MODE="report";
       const get=(sap,description)=>{
         const key=sap.toLowerCase();
         if(!bySap.has(key))bySap.set(key,{sap,description,stock:0,hasStock:false,
-          invalidStock:false,missingStockUnit:false,stockUnits:new Set(),
+          invalidStock:false,missingStockUnit:false,stockUnits:new Set(),reorderPoints:new Set(),
           windows:starts.map(()=>({qty:0,invalid:false,missingUnit:false,units:new Set()}))});
         return bySap.get(key);
       };
@@ -11461,6 +11784,7 @@ const CHECKING_SPLIT_MODE="report";
         if(!sap)continue;
         const rec=get(sap,String(item.dong[1]??"").trim());
         rec.hasStock=true;
+        if(Number.isFinite(item.reorderPoint)&&item.reorderPoint>=0)rec.reorderPoints.add(item.reorderPoint);
         if(!Number.isFinite(item.soLuong)||item.soLuong<0)rec.invalidStock=true;
         else rec.stock+=item.soLuong;
         const unit=String(item.dong[unitColStock]??"").trim().toUpperCase();
@@ -11510,7 +11834,7 @@ const CHECKING_SPLIT_MODE="report";
           return {totalQty,avgMonth,coverDays,tier:coverDays<30?"critical":coverDays<=90?"warn":"safe"};
         });
         const [m12,m24,m36]=metrics;
-        rows.push({sap:rec.sap,description:rec.description,stock,stockUnit,histUnit,unit:stockUnit||histUnit,
+        rows.push({sap:rec.sap,description:rec.description,hasStock:rec.hasStock,stock,rop:rec.reorderPoints.size===1?[...rec.reorderPoints][0]:null,stockUnit,histUnit,unit:stockUnit||histUnit,
           qty1Y:m12.totalQty,qty2Y:m24.totalQty,qty3Y:m36.totalQty,m12,m24,m36});
       }
       tinhDuLieuConsumption123.cache={stock:duLieuTimKiem,history:historyAll,
@@ -11826,7 +12150,8 @@ const CHECKING_SPLIT_MODE="report";
     const _gocCapNhatThongKeNangCao = capNhatThongKeNangCao;
     capNhatThongKeNangCao = function () {
       _gocCapNhatThongKeNangCao.apply(this, arguments);
-      veBangConsumption123();
+      if(tabHienTai==="analytics")veBangConsumption123();
+      else veBieuDoTonKhoChiTiet();
     };
 
     const _gocLocLichSuVatTu = typeof locLichSuVatTu === "function" ? locLichSuVatTu : null;
@@ -11844,7 +12169,8 @@ const CHECKING_SPLIT_MODE="report";
     if (_gocTaiHistory) {
       taiHistory = async function () {
         const res = await _gocTaiHistory.apply(this, arguments);
-        veBangConsumption123();
+        if(tabHienTai==="analytics")veBangConsumption123();
+        else veBieuDoTonKhoChiTiet();
         if (typeof materialHistorySap === "string" && materialHistorySap) {
           capNhatStripConsumptionTrongModal(materialHistorySap);
         }
@@ -11873,109 +12199,118 @@ const CHECKING_SPLIT_MODE="report";
     apDungNhanPhanTichMoi();
   
 
-    function dinhDangGiaTriMotLe(value){
-      const n=Math.abs(Number(value)||0),sign=Number(value)<0?'-':'';
-      if(n>=1e9)return sign+(n/1e9).toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1})+' tỷ';
-      if(n>=1e6)return sign+(n/1e6).toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1})+' triệu';
-      if(n>=1e3)return sign+(n/1e3).toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1})+' nghìn';
-      return sign+n.toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1});
-    }
-
-    function veBieuDoGiaTriTonLau(target){
-      target.parentElement?.querySelector('.aging-value-chart')?.remove();
-      const chart=document.createElement('section');chart.className='aging-value-chart';
-      chart.setAttribute('aria-label','Giá trị tồn lâu, chậm luân chuyển và xuất theo kỳ');
-      if(hallDangLoc()==='hall2'){
-        chart.innerHTML='<div class="aging-value-empty">Hall 2 không có dữ liệu tồn hiện tại và đơn giá để tính giá trị tồn lâu.</div>';
-        target.insertAdjacentElement('afterend',chart);return;
+    function veBieuDoGiaTriTonLau(chart){
+      const unavailable=hallDangLoc()==="hall2"?"dashboardHall2NoStockReport":!analyticsReady?
+        "dashboardStockMissing":!historyLoaded?(historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory"):"";
+      const history=unavailable?null:lichSuTheoHall("hall1");
+      const coverage=history?phamViNgayLichSuKho(history):null;
+      const amountCol=cotGiaTriLichSuKho();
+      const today=ngayDiaPhuongISO();
+      if(unavailable || !coverage || amountCol<0){
+        chart.textContent=tuDien(unavailable || (!history?loiCotHall("history"):"dashboardOutboundSourceMissing"));
+        return;
       }
-      if(!historyLoaded||typeof thongKeVatTuTonLau!=='function'){
-        chart.innerHTML='<div class="aging-value-empty">Đang chờ Stock và History.js để tính biểu đồ giá trị.</div>';
-        target.insertAdjacentElement('afterend',chart);return;
-      }
-      const history=typeof lichSuTheoHall==='function'?lichSuTheoHall('hall1'):null;
-      const amountCol=typeof cotGiaTriLichSuKho==='function'?cotGiaTriLichSuKho():-1;
-      const dates=Array.isArray(history)?history.map(r=>r?.date).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)):[];
-      if(!dates.length||amountCol<0){chart.innerHTML='<div class="aging-value-empty">History.js thiếu ngày hoặc cột giá trị xuất.</div>';target.insertAdjacentElement('afterend',chart);return}
-      const end=dates.reduce((a,b)=>a>b?a:b),endDate=new Date(end+'T00:00:00');
-      const monthStart=end.slice(0,7)+'-01';
-      const diffDays=(a,b)=>Math.max(1,Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)+1);
-      const isoAgo=days=>{const d=new Date(endDate);d.setDate(d.getDate()-days+1);return d.toISOString().slice(0,10)};
-      const analysisMonths=Math.max(12,Math.min(36,Number(document.getElementById('analytics-cons-horizon')?.value)||12));
-      const selectedDays=Math.round(analysisMonths*30.4375);
-      const periods=[
-        {label:'Tháng hiện tại',days:diffDays(monthStart,end),from:monthStart,selected:false},
-        {label:'1 năm',days:365,from:isoAgo(365),selected:analysisMonths===12},
-        {label:'2 năm',days:730,from:isoAgo(730),selected:analysisMonths===24},
-        {label:'3 năm',days:1095,from:isoAgo(1095),selected:analysisMonths===36}
+      const end=coverage.to<today?coverage.to:today;
+      const monthStart=end.slice(0,7)+"-01";
+      const months=Number(document.getElementById("analytics-cons-horizon").value)||12;
+      const periodList=[
+        {label:tuDien("agingRecentMonth"),days:khoangNgayKho(monthStart,end),from:monthStart,months:0},
+        ...[1,2,3].map(years=>({label:tuDien("agingYears",{count:years}),
+          days:365*years,from:congNgayKho(end,1-365*years),months:12*years}))
       ];
-      const stockValue=rows=>Array.isArray(rows)?rows.reduce((t,r)=>t+(r.quantityValid&&r.priceValid&&!r.priceMixed?r.quantity*r.price:0),0):0;
-      const results=periods.map(p=>{
-        const dormantRows=thongKeVatTuTonLau(p.days)||[];
-        const halfRows=thongKeVatTuTonLau(Math.max(15,Math.round(p.days/2)))||[];
-        const dormantKeys=new Set(dormantRows.map(r=>String(r.sap).toLowerCase()));
-        const slowRows=halfRows.filter(r=>!dormantKeys.has(String(r.sap).toLowerCase()));
+      const stockValue=rows=>rows.reduce((sum,row)=>sum+(row.quantityValid&&row.priceValid?row.quantity*row.price:0),0);
+      const daily=tongHopGiaoDichTheoNgay(history,historyColumns).days;
+      const results=periodList.map(period=>{
+        const dormantRows=thongKeVatTuTonLau(period.days)||[];
+        const dormant=new Set(dormantRows.map(row=>row.sap.toLowerCase()));
+        const slowRows=(thongKeVatTuTonLau(Math.max(15,Math.round(period.days/2)))||[])
+          .filter(row=>!dormant.has(row.sap.toLowerCase()));
         let issue=0;
-        for(const rec of history){if(rec.type!=='out'||!rec.date||rec.date<p.from||rec.date>end)continue;const v=Math.abs(chuyenThanhSo(rec.cells?.[amountCol]));if(Number.isFinite(v))issue+=v}
-        return {...p,dormant:stockValue(dormantRows),slow:stockValue(slowRows),issue,dormantCount:dormantRows.length,slowCount:slowRows.length};
+        for(const [date,day] of daily)if(date>=period.from&&date<=end)issue+=day.out;
+        return {...period,dormant:stockValue(dormantRows),slow:stockValue(slowRows),issue};
       });
-      const max=Math.max(1,...results.flatMap(x=>[x.dormant,x.slow,x.issue]));
+      const max=Math.max(1,...results.flatMap(row=>[row.dormant,row.slow,row.issue]));
+      const money=value=>dinhDangRutGonKho(value)+" ₫";
+      const metrics=[["dormant","agingDormant","#dc2626"],["slow","agingSlow","#f59e0b"],["issue","agingIssue","#2563eb"]];
       const latest=results[0];
-      chart.innerHTML=`<div class="aging-value-head"><div class="aging-value-title"><strong>Giá trị tồn lâu, chậm luân chuyển và xuất trong kỳ <em class="analysis-period-chip">Kỳ Phân tích kho: ${analysisMonths/12} năm</em></strong><span>Đồng bộ với Mốc tính TB & Cover trong Phân tích kho · dữ liệu đến ${end}</span></div><div class="aging-value-legend"><span><i style="background:#dc2626"></i>Tồn lâu</span><span><i style="background:#f59e0b"></i>Chậm luân chuyển</span><span><i style="background:#2563eb"></i>Xuất trong kỳ</span></div></div><div class="aging-value-plot"><div class="aging-value-axis"><span>${thoatHTML(dinhDangRutGonKho(max))}</span><span>${thoatHTML(dinhDangRutGonKho(max/2))}</span><span>0</span></div>${results.map(x=>`<div class="aging-value-group" data-selected="${x.selected}" data-active="${x.selected}" data-months="${x.label==='2 năm'?24:x.label==='3 năm'?36:12}" tabindex="0" role="button" aria-label="${x.label}. Nhấn một lần để chọn; nhấn đúp để mở bảng Phân tích kho"><i class="aging-value-bar" data-kind="dormant" style="height:${Math.max(3,x.dormant/max*155)}px" title="${x.label} · Tồn lâu: ${dinhDangGiaTriKho(x.dormant)} · ${x.dormantCount} mã"><span class="aging-bar-value">${dinhDangGiaTriMotLe(x.dormant)}</span></i><i class="aging-value-bar" data-kind="slow" style="height:${Math.max(3,x.slow/max*165)}px" title="${x.label} · Chậm luân chuyển: ${dinhDangGiaTriKho(x.slow)} · ${x.slowCount} mã"><span class="aging-bar-value">${dinhDangGiaTriMotLe(x.slow)}</span></i><i class="aging-value-bar" data-kind="issue" style="height:${Math.max(3,x.issue/max*165)}px" title="${x.label} · Xuất: ${dinhDangGiaTriKho(x.issue)}"><span class="aging-bar-value">${dinhDangGiaTriMotLe(x.issue)}</span></i><span class="aging-value-label">${x.label}</span></div>`).join('')}</div><div class="aging-value-note"><b>Quy tắc:</b> Tồn lâu = không xuất trong toàn kỳ; chậm luân chuyển = lần xuất gần nhất nằm trong khoảng nửa kỳ đến hết kỳ. Giá trị tồn = tồn hiện tại × đơn giá; giá trị xuất lấy từ History.js. Di chuột vào cột để xem giá trị chi tiết.<span class="interaction-hint">Nhấp một lần để đánh dấu mốc; nhấp đúp để mở bảng Tiêu thụ 1–2–3 năm trong Phân tích kho.</span></div>`;
-      const coverage=target.parentElement?.querySelector('.stock-coverage-chart');
-      (coverage||target).insertAdjacentElement('afterend',chart);
-      ganSuKienMocGiaTriTon(chart);
-    }
-
-    function ganSuKienMocGiaTriTon(chart){
-      const groups=[...chart.querySelectorAll('.aging-value-group')];
-      const selectGroup=group=>{groups.forEach(x=>x.dataset.active=String(x===group));};
-      const openAnalytics=group=>{
-        const months=Number(group.dataset.months)||12;
-        selectGroup(group);
-        const horizon=document.getElementById('analytics-cons-horizon');
-        if(horizon){horizon.value=String(months);horizon.dispatchEvent(new Event('change',{bubbles:true}));}
-        if(typeof chuyenTab==='function')chuyenTab('analytics');
-        requestAnimationFrame(()=>requestAnimationFrame(()=>{
-          const card=document.getElementById('analytics-consumption-card');if(!card)return;
-          card.classList.remove('chart-jump-focus');void card.offsetWidth;card.classList.add('chart-jump-focus');
-          card.scrollIntoView({behavior:'smooth',block:'start'});
-          setTimeout(()=>card.classList.remove('chart-jump-focus'),1700);
-        }));
-      };
-      groups.forEach(group=>{
-        group.addEventListener('click',()=>selectGroup(group));
-        group.addEventListener('dblclick',e=>{e.preventDefault();openAnalytics(group)});
-        group.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();openAnalytics(group)}else if(e.key===' '){e.preventDefault();selectGroup(group)}});
-      });
+      chart.innerHTML=`<div class="aging-value-head"><div class="aging-value-title">
+        <strong>${thoatHTML(tuDien("agingSelected",{years:tuDien("agingYears",{count:months/12})}))}</strong>
+        <span>${thoatHTML(tuDien("dashboardHistoryEnds",{date:end}))}</span></div>
+        <div class="aging-value-legend">${metrics.map(([,label,color])=>
+          `<span><i style="background:${color}"></i>${thoatHTML(tuDien(label))}</span>`).join("")}</div></div>
+        <div class="aging-value-plot"><div class="aging-value-axis">
+          <span>${thoatHTML(dinhDangRutGonKho(max))}</span><span>${thoatHTML(dinhDangRutGonKho(max/2))}</span><span>0</span></div>
+          ${results.map(row=>`<div class="aging-value-group" data-selected="${row.months===months}"
+            data-active="${row.months===months}" data-months="${row.months||12}" tabindex="0" role="button"
+            aria-label="${thoatHTML(tuDien("agingSelectHint",{period:row.label}))}">
+            ${metrics.map(([key,label])=>`<i class="aging-value-bar" data-kind="${key}" style="height:${row[key]/max*155}px"
+              title="${thoatHTML(row.label+" · "+tuDien(label)+": "+dinhDangGiaTriKho(row[key]))}">
+              <span class="aging-bar-value">${thoatHTML(dinhDangRutGonKho(row[key]))}</span></i>`).join("")}
+            <span class="aging-value-label">${thoatHTML(row.label)}</span></div>`).join("")}
+        </div><p class="insight-note">${thoatHTML(tuDien("agingFooter",{
+          dormant:money(latest.dormant),slow:money(latest.slow),issue:money(latest.issue)}))}</p>`;
+      const groups=[...chart.querySelectorAll(".aging-value-group")];
+      const select=group=>groups.forEach(node=>node.dataset.active=String(node===group));
+      function openAnalytics(group){
+        const horizon=document.getElementById("analytics-cons-horizon");
+        horizon.value=group.dataset.months;
+        consTableState.page=1;
+        chuyenTab("analytics");
+        requestAnimationFrame(()=>document.getElementById("analytics-consumption-card").scrollIntoView({block:"start"}));
+      }
+      for(const group of groups){
+        group.addEventListener("click",()=>select(group));
+        group.addEventListener("dblclick",()=>openAnalytics(group));
+        group.addEventListener("keydown",event=>{
+          if(event.key==="Enter"){event.preventDefault();openAnalytics(group);}
+          if(event.key===" "){event.preventDefault();select(group);}
+        });
+      }
     }
 
     function veBieuDoDoPhuTonKho(target){
-      target.parentElement?.querySelector('.stock-coverage-chart')?.remove();
-      if(typeof upgradeRiskRows!=='function')return;
-      const horizonMonths=Math.max(12,Math.min(36,Number(document.getElementById('analytics-cons-horizon')?.value)||12));
-      const horizonDays=Math.round(horizonMonths*30.4375);
-      const oldRiskPeriod=typeof upgradeRiskPeriod==='function'?upgradeRiskPeriod:null;
-      let risk=upgradeRiskRows();
-      if(risk&&risk.days!==horizonDays&&typeof tinhConsumptionRows==='function'){
-        const calc=tinhConsumptionRows(horizonMonths);
-        if(calc?.rows){
-          const metrics={zero:0,critical:0,warn:0,safe:0};
-          for(const r of calc.rows){if(r.coverDays===0)metrics.zero++;else if(Number.isFinite(r.coverDays)&&r.coverDays<30)metrics.critical++;else if(Number.isFinite(r.coverDays)&&r.coverDays<=90)metrics.warn++;else if(Number.isFinite(r.coverDays)&&r.coverDays>90)metrics.safe++;}
-          risk={...risk,days:horizonDays,metrics};
-        }
+      const stockReady=analyticsReady && hallDangLoc()!=="hall2";
+      if(!stockReady || !historyLoaded){
+        target.textContent=tuDien(hallDangLoc()==="hall2"?"dashboardHall2NoStockReport":
+          !stockReady?"dashboardStockMissing":historyLoading?"dashboardHistoryLoading":"dashboardDormantNoHistory");
+        return;
       }
-      if(!risk)return;
+      const months=Number(document.getElementById("analytics-cons-horizon").value)||12;
+      const horizon=months===36?"m36":months===24?"m24":"m12";
       const groups=[
-        {key:'zero',label:'Hết hàng',value:risk.metrics.zero||0,color:'#e11d48'},
-        {key:'critical',label:'Dưới 30 ngày',value:risk.metrics.critical||0,color:'#f97316'},
-        {key:'warn',label:'30–90 ngày',value:risk.metrics.warn||0,color:'#eab308'},
-        {key:'safe',label:'Trên 90 ngày',value:risk.metrics.safe||0,color:'#16a34a'}
+        ["zero","stockZero","#e11d48"], ["critical","upgradeKpiCritical","#f97316"],
+        ["warn","upgradeKpiWarn","#eab308"], ["safe","coverageSafe","#16a34a"]
       ];
-      const max=Math.max(1,...groups.map(x=>x.value)),evaluated=groups.reduce((t,x)=>t+x.value,0);
-      const chart=document.createElement('section');chart.className='stock-coverage-chart';chart.setAttribute('aria-label','Phân bố độ phủ tồn kho theo số ngày sử dụng');
-      chart.innerHTML=`<div class="stock-coverage-heading"><strong>Độ phủ tồn kho theo số ngày sử dụng</strong><span>Đồng bộ Phân tích kho: TB ${horizonMonths} tháng (${risk.days} ngày)</span></div><div class="stock-coverage-bars">${groups.map(x=>`<div class="stock-cover-col" title="${x.label}: ${dinhDangSoLuong.format(x.value)} mã"><span class="stock-cover-value">${dinhDangSoLuong.format(x.value)}</span><i class="stock-cover-bar" style="height:${Math.max(4,x.value/max*105)}px;background:${x.color}"></i><span class="stock-cover-label">${x.label}</span></div>`).join('')}</div><div class="stock-coverage-foot"><span><b>${dinhDangSoLuong.format(evaluated)} mã</b> đã tính được độ phủ</span><span>Không gồm mã thiếu quy đổi hoặc không có dữ liệu xuất</span></div>`;
-      target.insertAdjacentElement('afterend',chart);
+      const rows=tinhDuLieuConsumption123().filter(row=>row.hasStock);
+      const counts={zero:0,critical:0,warn:0,safe:0};
+      for(const row of rows){
+        const metric=row[horizon];
+        if(Number.isFinite(metric?.coverDays) && Object.hasOwn(counts,metric.tier)) counts[metric.tier]++;
+      }
+      const max=Math.max(1,...Object.values(counts));
+      const evaluated=Object.values(counts).reduce((sum,count)=>sum+count,0);
+      target.innerHTML=`<div class="stock-coverage-heading"><strong>${thoatHTML(tuDien("coverageTitle"))}</strong>
+        <span>${thoatHTML(tuDien("coverageBasis",{months:dinhDangSoLuong.format(months)}))}</span></div>
+        <div class="stock-coverage-bars">${groups.map(([key,label,color])=>
+          `<div class="stock-cover-col"><span class="stock-cover-value">${dinhDangSoLuong.format(counts[key])}</span>
+          <i class="stock-cover-bar" style="height:${counts[key]/max*105}px;background:${color}"></i>
+          <span class="stock-cover-label">${thoatHTML(tuDien(label))}</span></div>`).join("")}</div>
+        <div class="stock-coverage-foot">
+          <span>${thoatHTML(tuDien("coverageEvaluated",{count:dinhDangSoLuong.format(evaluated)}))}</span>
+          <span>${thoatHTML(tuDien("coverageExcluded",{count:dinhDangSoLuong.format(rows.length-evaluated)}))}</span>
+        </div>`;
+    }
+
+    let warehouseCoverageRendered;
+    function veBieuDoTonKhoChiTiet(){
+      if(tabHienTai!=="dashboard")return;
+      const months=document.getElementById("analytics-cons-horizon").value;
+      const key=[hallDangLoc(),months,ngonNguHienTai,analyticsReady,historyLoaded,historyLoading,ngayDiaPhuongISO()].join("|");
+      if(warehouseCoverageRendered?.key===key && warehouseCoverageRendered.stock===duLieuTimKiem &&
+        warehouseCoverageRendered.history===historyAll)return;
+      warehouseCoverageRendered={key,stock:duLieuTimKiem,history:historyAll};
+      veBieuDoDoPhuTonKho(document.getElementById("warehouse-stock-coverage"));
+      veBieuDoGiaTriTonLau(document.getElementById("warehouse-aging-chart"));
     }
 
     function vePhanBoTrangThaiNangCap(rows=duLieuTimKiem){
@@ -11990,13 +12325,6 @@ const CHECKING_SPLIT_MODE="report";
       const bars=keys.map(k=>{const p=count[k]/total*100;return `<div class="stock-status-row"><span class="stock-status-name"><i class="stock-status-dot" style="background:${colors[k]}"></i>${thoatHTML(tuDien(names[k]))}</span><span class="stock-status-track"><i class="stock-status-fill" style="width:${p.toFixed(1)}%;background:${colors[k]}"></i></span><span class="stock-status-number"><strong>${dinhDangSoLuong.format(count[k])}</strong> · ${p.toFixed(1)}%</span></div>`}).join("");
       target.className="dashboard-chart-body modern-stock-status";
       target.innerHTML=`<div class="stock-status-gauge"><svg viewBox="0 0 200 200" role="img" aria-label="${thoatHTML(tuDien("stockDistribution"))}"><circle cx="100" cy="100" r="66" fill="none" stroke="rgba(148,163,184,.16)" stroke-width="23"/>${rings}</svg><div class="stock-status-center"><strong>${readyPct.toFixed(1)}%</strong><b>${thoatHTML(tuDien("executiveReady"))}</b><span>${thoatHTML(tuDien("executiveMaterials",{count:dinhDangSoLuong.format(total)}))}</span></div></div><div class="stock-status-bars">${bars}<div class="stock-status-foot">${thoatHTML(tuDien("executiveReadyHelp"))}</div></div>`;
-      try{veBieuDoDoPhuTonKho(target)}catch(error){console.error('Stock coverage chart:',error)}
-      try{veBieuDoGiaTriTonLau(target)}catch(error){
-        console.error('Aging value chart:',error);
-        const fallback=document.createElement('section');fallback.className='aging-value-chart aging-value-empty';
-        fallback.textContent='Không thể dựng biểu đồ giá trị. Hãy đồng bộ lại Stock và History.js.';
-        target.insertAdjacentElement('afterend',fallback);
-      }
     }
     vePhanBoTrangThai=vePhanBoTrangThaiNangCap;
 
@@ -12025,19 +12353,6 @@ const CHECKING_SPLIT_MODE="report";
       executiveMaterials:"{count} materials", executiveReadyHelp:"Ready = above or at reorder point. Bars show each status share."
     });
 
-    function duLieuDieuHanhTheoKy(rows,headers,period,range){
-      const buckets=nhomKyTrongKhoangKho(period,range);
-      const current=tinhGiaTriNhapXuat(rows,headers,period,buckets,range);
-      const previousRange={from:range.prevFrom,to:range.prevTo};
-      const previous=tinhGiaTriNhapXuat(rows,headers,period,
-        nhomKyTrongKhoangKho(period,previousRange),previousRange);
-      // Totals cover the full range even if the visual bucket list is capped.
-      return {current:danhGiaGiaTriKyKho(range),previous:danhGiaGiaTriKyKho(previousRange),
-        missing:current.missing||previous.missing,
-        averageDays:khoangNgayKho(range.from,range.to),previousDays:khoangNgayKho(previousRange.from,previousRange.to),
-        series:buckets.slice(-12).map(b=>({...b,...current.values.get(b.key)}))};
-    }
-
     // Self-healing data guards for Dashboard cards/charts.
     let _dashboardAmountRetryAt=0,_dashboardHistoryRetryAt=0;
     function damBaoNguonDashboard(){
@@ -12052,95 +12367,12 @@ const CHECKING_SPLIT_MODE="report";
       }
     }
 
-    function hienThiTrangThaiDieuHanh(root,note,range){
-      const coverage=phamViNgayLichSuKho(historyAll||[]);
-      const totalDays=range?khoangNgayKho(range.from,range.to):0;
-      let coveredDays=0;
-      if(coverage&&range){
-        const from=coverage.from>range.from?coverage.from:range.from,to=coverage.to<range.to?coverage.to:range.to;
-        if(from<=to)coveredDays=khoangNgayKho(from,to);
-      }
-      const percent=totalDays?Math.max(0,Math.min(100,coveredDays/totalDays*100)):0;
-      const hasHistory=Array.isArray(historyAll)&&historyAll.length>0;
-      const title=ngonNguHienTai==='en'?'Insufficient data for the selected period':'Chưa đủ dữ liệu cho kỳ đã chọn';
-      const text=historyLoading?(ngonNguHienTai==='en'?'History.js is being loaded. The overview will refresh automatically.':'Đang nạp History.js. Tổng quan sẽ tự cập nhật khi dữ liệu sẵn sàng.'):
-        (ngonNguHienTai==='en'?'The selected range contains missing dates or excluded transactions. Available history is shown below so the cause is visible.':'Khoảng thời gian đã chọn có ngày thiếu dữ liệu hoặc giao dịch bị loại. Phạm vi dữ liệu hiện có được hiển thị để dễ kiểm tra.');
-      root.innerHTML=`<div class="executive-data-state"><section class="executive-state-card"><div class="executive-state-icon">!</div><div class="executive-state-title">${thoatHTML(title)}</div><div class="executive-state-text">${thoatHTML(text)}</div><div class="executive-state-actions"><button class="btn btn-soft" id="executive-retry-history" type="button">${ngonNguHienTai==='en'?'Reload History':'Nạp lại History'}</button></div></section><section class="executive-coverage"><div class="executive-coverage-head"><strong>${ngonNguHienTai==='en'?'History coverage':'Phạm vi History'}</strong><span>${nfExec(percent)}%</span></div><div class="executive-coverage-track"><div class="executive-coverage-fill" style="width:${percent}%"></div></div><div class="executive-coverage-meta"><div><small>${ngonNguHienTai==='en'?'Selected period':'Kỳ đã chọn'}</small><b>${thoatHTML(range?range.from+' → '+range.to:'—')}</b></div><div><small>${ngonNguHienTai==='en'?'Available history':'History hiện có'}</small><b>${thoatHTML(coverage?coverage.from+' → '+coverage.to:'—')}</b></div><div><small>${ngonNguHienTai==='en'?'History rows':'Dòng History'}</small><b>${dinhDangSoLuong.format(hasHistory?historyAll.length:0)}</b></div><div><small>${ngonNguHienTai==='en'?'Coverage':'Độ phủ kỳ'}</small><b>${nfExec(percent)}%</b></div></div></section></div>`;
-      const btn=document.getElementById('executive-retry-history');if(btn)btn.onclick=()=>{damBaoNguonDashboard();if(typeof taiLaiHistory==='function')taiLaiHistory();};
-      if(note)note.textContent=coverage?(ngonNguHienTai==='en'?`Recorded history: ${coverage.from} to ${coverage.to}`:`Lịch sử ghi nhận từ ${coverage.from} đến ${coverage.to}`):'';
-    }
-    function nfExec(v){return new Intl.NumberFormat(ngonNguHienTai==='en'?'en-US':'vi-VN',{maximumFractionDigits:1}).format(Number.isFinite(v)?v:0)}
-
-    function veTongQuanDieuHanhGoc(){
-      if(tabHienTai!=="dashboard")return;
-      const root=document.getElementById("insight-usage-detail"),note=document.getElementById("dashboard-usage-detail-summary");
-      if(!root)return;
-      if(note)note.textContent="";
-      if(!historyLoaded){damBaoNguonDashboard();hienThiTrangThaiDieuHanh(root,note,layKyPhanTichKho());return;}
-      const range=layKyPhanTichKho(),rows=lichSuTheoHall();
-      if(!range){root.textContent=tuDien("dashboardTimeInvalid");return;}
-      if(!rows){root.textContent=tuDien(loiCotHall("history"));return;}
-      const period=document.getElementById("dashboard-usage-detail-period")?.value||"month";
-      const data=duLieuDieuHanhTheoKy(rows,historyColumns,period,range);
-      if(data.missing){hienThiTrangThaiDieuHanh(root,note,range);return;}
-      if(!data.current?.complete){hienThiTrangThaiDieuHanh(root,note,range);return;}
-      const cur=data.current,prev=data.previous?.complete?data.previous:{in:null,out:null},v=data.series;
-      const pct=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&b!==0?(a-b)/Math.abs(b)*100:null;
-      const ratio=x=>x.in>0?x.out/x.in*100:null;
-      const average=cur.out/data.averageDays*30.4375,priorAverage=prev.out===null?null:prev.out/data.previousDays*30.4375;
-      const nf=new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",{maximumFractionDigits:1});
-      const delta=x=>{const c=x===null||Math.abs(x)<.05?"flat":x>0?"up":"down";
-        return `<span class="executive-delta ${c}" title="${thoatHTML(x===null?tuDien("executiveNoComparison"):tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo}))}">${c==="up"?"▲":c==="down"?"▼":"•"} ${x===null?"—":nf.format(Math.abs(x))+"%"}</span>`;};
-      const spark=a=>{if(!a.length)return"";const W=180,H=36,min=Math.min(...a),sp=Math.max(...a)-min||1;
-        const pts=a.map((x,i)=>`${a.length===1?90:i*W/(a.length-1)},${H-3-(x-min)/sp*(H-8)}`);
-        return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><polyline class="executive-line" points="${pts.join(' ')}"/></svg>`;};
-      const money=x=>dinhDangRutGonKho(x)+" ₫";
-      // Biểu đồ thanh so sánh kỳ hiện tại với kỳ trước, thay thế các thẻ KPI.
-      const metrics=[
-        ["executiveRatio",ratio(cur),ratio(prev),"%", "executiveRatioHelp"],
-        ["executiveAverage",average,priorAverage,"money","executiveAverageHelp"],
-        ["executiveIncoming",cur.in,prev.in,"money","executiveIncomingHelp"],
-        ["executiveNet",cur.in-cur.out,prev.in===null?null:prev.in-prev.out,"money","executiveNetHelp"]
-      ];
-      const format=(value,unit)=>!Number.isFinite(value)?"—":unit==="%"?nf.format(value)+"%":money(value);
-      root.classList.add("executive-visual-grid");
-      root.innerHTML=metrics.map(([key,current,previous,unit,help])=>{
-        const scale=Math.max(Math.abs(current||0),Math.abs(previous||0),1);
-        const bars=[{value:current,label:ngonNguHienTai==="en"?"Selected period":"Kỳ hiện tại",cls:"current"},
-                    {value:previous,label:ngonNguHienTai==="en"?"Previous period":"Kỳ trước",cls:"previous"}];
-        const graph=bars.map(item=>{
-          const width=Number.isFinite(item.value)?Math.max(0,Math.abs(item.value)/scale*100):0;
-          return `<div class="executive-visual-row"><span>${thoatHTML(item.label)}</span><div class="executive-visual-track"><div class="executive-visual-bar ${item.cls}" style="width:${width.toFixed(2)}%" title="${thoatHTML(format(item.value,unit))}"></div></div><b>${thoatHTML(format(item.value,unit))}</b></div>`;
-        }).join("");
-        return `<section class="executive-visual-chart" aria-label="${thoatHTML(tuDien(key))}"><div class="executive-visual-heading"><strong>${thoatHTML(tuDien(key))}</strong>${delta(pct(current,previous))}</div><div class="executive-visual-bars">${graph}</div><details class="executive-help"><summary>${ngonNguHienTai==="en"?"Calculation":"Cách tính"}</summary>${thoatHTML(tuDien(help))}</details></section>`;
-      }).join("");
-      if(note)note.textContent=tuDien("executiveScope",{from:range.from,to:range.to,count:v.length})+" · "+tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo});
-    }
-    function veTongQuanDieuHanhCoChuThich(){
-      veTongQuanDieuHanhGoc();
-      if(tabHienTai!=="dashboard"||!historyLoaded)return;
-      const root=document.getElementById("insight-usage-detail"),note=document.getElementById("dashboard-usage-detail-summary"),range=layKyPhanTichKho(),rows=lichSuTheoHall();
-      if(!root||!range||!rows||root.querySelector('.executive-data-state'))return;
-      const period=document.getElementById("dashboard-usage-detail-period")?.value||"month",data=duLieuDieuHanhTheoKy(rows,historyColumns,period,range);
-      if(data.missing||!data.current?.complete)return;
-      const cur=data.current,series=data.series||[],total=cur.in+cur.out,nf=new Intl.NumberFormat(ngonNguHienTai==="en"?"en-US":"vi-VN",{maximumFractionDigits:1});
-      const inPct=total?cur.in/total*100:0,outPct=total?cur.out/total*100:0,net=cur.in-cur.out,max=Math.max(1,...series.map(x=>Math.max(x.in||0,x.out||0)));
-      const counts={healthy:0,at:0,below:0,zero:0,unknown:0};if(analyticsReady&&hallDangLoc()!=="hall2")for(const r of duLieuTimKiem)counts[r.trangThaiTon]=(counts[r.trangThaiTon]||0)+1;
-      const stockTotal=Math.max(1,Object.values(counts).reduce((a,b)=>a+b,0)),status=[["healthy","Trên định mức","#16a34a"],["at","Bằng định mức","#eab308"],["below","Dưới định mức","#f97316"],["zero","Hết hàng","#e11d48"],["unknown","Chưa định mức","#94a3b8"]];
-      const trend=series.map(x=>`<div class="exec-flow-col"><div class="exec-flow-bars"><i class="in" style="height:${100*(x.in||0)/max}%"></i><i class="out" style="height:${100*(x.out||0)/max}%"></i></div><small>${thoatHTML(x.label)}</small></div>`).join("");
-      const mix=status.map(([k,label,color])=>{const p=counts[k]/stockTotal*100;return `<div class="exec-mix-row"><span><i style="background:${color}"></i>${label}</span><div class="exec-mix-track"><b style="width:${p}%;background:${color}"></b></div><strong>${dinhDangSoLuong.format(counts[k])} · ${nf.format(p)}%</strong></div>`}).join("");
-      root.className="executive-ops-grid";root.innerHTML=`<section class="exec-ops-card"><div class="exec-ops-head"><strong>Cơ cấu nhập / xuất</strong><span>${nf.format(outPct)}% xuất</span></div><div class="exec-share"><i style="width:${inPct}%"></i><b style="width:${outPct}%"></b></div><div class="exec-share-label"><span>● Nhập: ${thoatHTML(dinhDangRutGonKho(cur.in))} ₫</span><span>● Xuất: ${thoatHTML(dinhDangRutGonKho(cur.out))} ₫</span></div><div class="exec-net"><span>Nhập − Xuất</span><strong>${thoatHTML(dinhDangRutGonKho(net))} ₫</strong></div><div class="exec-mini-trend">${trend}</div></section><section class="exec-ops-card"><div class="exec-ops-head"><strong>Sức khỏe tồn kho hiện tại</strong><span>${dinhDangSoLuong.format(stockTotal)} dòng</span></div><div class="exec-stock-score"><strong>${nf.format((counts.healthy+counts.at)/stockTotal*100)}%</strong><span>đạt / trên điểm đặt hàng</span></div>${mix}</section>`;
-      if(note)note.textContent=`History.js: ${range.from} – ${range.to} · data.js: trạng thái tồn hiện tại`;
-    }
-
     veBieuDoSuDungKho=function(){
       if(tabHienTai!=="dashboard")return;
       veMotBieuDoNhapXuat("insight-usage","dashboard-usage-period","dashboard-usage-summary");
-      veTongQuanDieuHanhCoChuThich();
+      if(typeof lapLichBieuDoXuatKho==="function")lapLichBieuDoXuatKho();
     };
-
-
-    setTimeout(veTongQuanDieuHanhCoChuThich,0);
+    veBieuDoTonKhoChiTiet();
 
     function capNhatCanhBaoKhoNangCap(){
       if(tabHienTai!=="dashboard")return;
@@ -12529,7 +12761,7 @@ const CHECKING_SPLIT_MODE="report";
 @media(max-width:600px){.checking-alert-header,.checking-alert-toolbar,.checking-alert-footer{padding:10px 12px}}
 </style>
 <dialog aria-labelledby="quality-details-title" class="warehouse-quality-dialog" id="quality-details-dialog">
-<div class="warehouse-dialog-head"><div><h2 id="quality-details-title">Chi tiết dữ liệu cần kiểm tra</h2><p class="insight-note" id="quality-details-info"></p></div><button aria-label="Đóng" class="btn btn-secondary" id="quality-details-close" type="button">✕</button></div>
+<div class="warehouse-dialog-head"><div><h2 id="quality-details-title" data-i18n="upgradeQualityDetail">Chi tiết dữ liệu cần kiểm tra</h2><p class="insight-note" id="quality-details-info"></p></div><button data-i18n-aria="close" class="btn btn-secondary" id="quality-details-close" type="button">✕</button></div>
 <div class="warehouse-quality-detail-scroll" tabindex="0"><table class="warehouse-risk-table"><thead><tr><th data-i18n="colSap">Mã SAP / Dòng</th><th data-i18n="upgradeQualityDetail">Thông tin kiểm tra</th></tr></thead><tbody id="quality-details-rows"></tbody></table></div>
 <div class="warehouse-risk-bottom"><span id="quality-details-count"></span><button class="btn btn-secondary" data-i18n="upgradeExportXlsx" id="quality-details-export" type="button">Xuất Excel</button></div>
 </dialog>
@@ -12543,9 +12775,11 @@ const CHECKING_SPLIT_MODE="report";
 
 
 const $upgrade = id => document.getElementById(id);
-const upgradeRiskState={page:1,filter:"urgent",size:25};
+const upgradeRiskState={page:1,tier:"",size:25};
+const upgradeRiskTiers=["zero","critical","warn","mismatch","unknown"];
+const upgradeRiskPeriodLabels={week:"riskWeek",month:"riskMonth",year:"riskYear"};
 let upgradeRiskCache=null,upgradeQualityCache=null,upgradeQualityChosen=null,upgradePaintScheduled=false;
-const upgradeLabels={zero:"upgradeRiskZero",critical:"upgradeRiskCritical",warn:"upgradeRiskWarn",safe:"upgradeRiskSafe",idle:"upgradeRiskIdle",mismatch:"upgradeRiskMismatch"};
+const upgradeLabels={zero:"upgradeRiskZero",critical:"upgradeRiskCritical",warn:"upgradeRiskWarn",safe:"upgradeRiskSafe",idle:"upgradeRiskIdle",mismatch:"upgradeRiskMismatch",unknown:"upgradeKpiUnknown"};
 
 // Memoized daily prefix sums replace repeated linear scans over every posting date.
 // Cache lifecycle follows the original row arrays: History reload creates new arrays.
@@ -12575,22 +12809,98 @@ tongNhapXuatTrongKhoang=function(range,amountCol){
   return result;
 };
 
-function upgradeRiskPeriod(){return $upgrade("risk-dashboard-period")?.value||$upgrade("risk-analytics-period")?.value||docTuyChon("warehouse-risk-period")||"year";}
-function upgradeRiskPeriodChanged(value){value=["week","month","year"].includes(value)?value:"year";ghiTuyChon("warehouse-risk-period",value);for(const id of ["risk-dashboard-period","risk-analytics-period"]){const el=$upgrade(id);if(el)el.value=value;}upgradeRiskCache=null;upgradeRiskState.page=1;upgradeSchedule();}
+function upgradeRiskPeriod(){return $upgrade("risk-analytics-period").value||"year";}
+function upgradeRiskPeriodChanged(value){
+  const period=Object.hasOwn(upgradeRiskPeriodLabels,value)?value:"year";
+  $upgrade("risk-analytics-period").value=period;
+  ghiTuyChon("warehouse-risk-period",period);
+  upgradeRiskState.page=1;
+  upgradeSchedule();
+}
 function upgradeRiskRows(){
-  if(hallDangLoc()==="hall2"||!analyticsReady||!historyLoaded)return null;
+  if(hallDangLoc()==="hall2"||!analyticsReady||!historyLoaded||!tonKhoHall1TonLau()||!lichSuTheoHall("hall1"))return null;
   const period=upgradeRiskPeriod(),days={week:7,month:30,year:365}[period]||365,today=ngayDiaPhuongISO(),from=congNgayKho(today,-days+1),cached=upgradeRiskCache;
   if(cached&&cached.stock===duLieuTimKiem&&cached.history===historyAll&&cached.day===today&&cached.period===period)return cached.data;
   const source=tinhDuLieuConsumption123(),rows=[],allRows=[],metrics={zero:0,critical:0,warn:0,mismatch:0,unknown:0,safe:0,idle:0},hist=lichSuTheoHall("hall1")||[],sapCol=cotMaSapLichSuKho(),qtyCol=cotSoLuongHistoryDungCot(),unitCol=cotHistoryTheoTen(historyColumns,["Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị"]);
   const use=new Map();if(sapCol>=0&&qtyCol>=0)for(const rec of hist){if(rec.type!=="out"||!ngayHistoryHopLe(rec.date)||rec.date<from||rec.date>today)continue;const sap=chuanHoaMaSap(rec.cells[sapCol]).toLowerCase(),q=chuyenThanhSo(rec.cells[qtyCol]),u=String(rec.cells[unitCol]||"").trim().toUpperCase();if(!sap)continue;const x=use.get(sap)||{qty:0,units:new Set(),bad:false};if(Number.isFinite(q))x.qty+=Math.abs(q);else x.bad=true;if(u)x.units.add(u);use.set(sap,x);}
-  for(const rec of source){const x=use.get(rec.sap.toLowerCase())||{qty:0,units:new Set(),bad:false},stock=rec.stock,unit=rec.stockUnit||rec.unit||"";let tier,cover,avgMonth;const mismatch=x.units.size>1||(x.qty>0&&(!unit||!x.units.has(unit)));if(mismatch){tier="mismatch";cover=null;avgMonth=null;}else if(x.bad||stock===null){tier="unknown";cover=null;avgMonth=null;}else{const avgDay=x.qty/days;avgMonth=avgDay*30;if(stock===0&&x.qty>0){tier="zero";cover=0;}else if(x.qty===0){tier="idle";cover=Infinity;}else{cover=stock/avgDay;tier=cover<30?"critical":cover<=90?"warn":"safe";}}metrics[tier]=(metrics[tier]||0)+1;const detail={...rec,name:rec.name||rec.description||"",description:rec.description||rec.name||"",stock:Number.isFinite(stock)?stock:null,rop:Number.isFinite(rec.rop)?rec.rop:0,cover,avgMonth,tier,hall:"Hall 1",historyUnits:[...x.units].join(", "),unitIssue:tier==="mismatch"?(x.units.size>1?"Nhiều ĐVT trong History":"ĐVT tồn không khớp History"):tier==="unknown"?(x.bad?"Số lượng xuất không hợp lệ":"Thiếu dữ liệu tồn"):""};allRows.push(detail);if(["unknown","mismatch","idle"].includes(tier))continue;rows.push(detail);}
+  for(const rec of source){const x=use.get(rec.sap.toLowerCase())||{qty:0,units:new Set(),bad:false},stock=rec.stock,unit=rec.stockUnit||rec.unit||"";let tier,cover,avgMonth;const mismatch=x.units.size>1||(x.qty>0&&(!unit||!x.units.has(unit)));if(mismatch){tier="mismatch";cover=null;avgMonth=null;}else if(x.bad||stock===null){tier="unknown";cover=null;avgMonth=null;}else{const avgDay=x.qty/days;avgMonth=avgDay*30;if(stock===0&&x.qty>0){tier="zero";cover=0;}else if(x.qty===0){tier="idle";cover=Infinity;}else{cover=stock/avgDay;tier=cover<30?"critical":cover<=90?"warn":"safe";}}metrics[tier]=(metrics[tier]||0)+1;const detail={...rec,name:rec.name||rec.description||"",description:rec.description||rec.name||"",stock:Number.isFinite(stock)?stock:null,rop:Number.isFinite(rec.rop)?rec.rop:null,cover,avgMonth,tier,hall:"Hall 1",historyUnits:[...x.units].join(", "),unitIssue:tier==="mismatch"?(x.units.size>1?"riskUnitMany":"riskUnitMismatch"):tier==="unknown"?(x.bad?"riskQuantityInvalid":"riskStockMissing"):""};allRows.push(detail);if(["unknown","mismatch","idle"].includes(tier))continue;rows.push(detail);}
   const order={zero:0,critical:1,warn:2,safe:3};rows.sort((a,b)=>order[a.tier]-order[b.tier]||a.cover-b.cover||a.sap.localeCompare(b.sap));const data={rows,allRows,metrics,period,days,from,to:today};upgradeRiskCache={stock:duLieuTimKiem,history:historyAll,day:today,period,data};return data;
 }
-function upgradeFilterRows(){
-  const raw=upgradeRiskRows();if(!raw)return [];
-  const filter=upgradeRiskState.filter;
-  const rows=filter==="all"?raw.rows:raw.rows.filter(r=>filter==="urgent"?["zero","critical"].includes(r.tier):["zero","critical","warn"].includes(r.tier));
-  return analyticsSearchQuery?rows.filter(r=>chuanHoaTimKiem(r.sap+" "+r.description).includes(analyticsSearchQuery)):rows;
+function upgradeFilterRows(tier=upgradeRiskState.tier, raw=upgradeRiskRows()){
+  if(!raw)return [];
+  const rows=tier?raw.allRows.filter(row=>row.tier===tier):raw.rows;
+  return analyticsSearchQuery ? rows.filter(row=>
+    chuanHoaTimKiem(row.sap+" "+row.description).includes(analyticsSearchQuery)) : rows;
+}
+function upgradeRiskWindow(raw){
+  return tuDien("riskWindow",{period:tuDien(upgradeRiskPeriodLabels[raw.period]),from:raw.from,to:raw.to});
+}
+function tongHopHangUuTien(rows){
+  const sum={stock:0,rop:0,avgMonth:0};
+  const available={stock:false,rop:false,avgMonth:false};
+  const units=new Set();
+  for(const row of rows){
+    if(row.unit)units.add(row.unit);
+    for(const key of Object.keys(sum))if(Number.isFinite(row[key])){
+      sum[key]+=row[key];
+      available[key]=true;
+    }
+  }
+  for(const key of Object.keys(sum))if(!available[key]||units.size>1)sum[key]=null;
+  return sum;
+}
+let warehouseRiskStatsRender;
+function veThongKeUuTien(raw){
+  const root=$upgrade("risk-stats-body");
+  const key=[analyticsSearchQuery,ngonNguHienTai,upgradeRiskState.tier].join("|");
+  if(warehouseRiskStatsRender?.key===key&&warehouseRiskStatsRender.raw===raw)return;
+  warehouseRiskStatsRender={key,raw};
+  if(!raw){
+    root.replaceChildren();
+    return;
+  }
+  const groups=Object.fromEntries(upgradeRiskTiers.map(tier=>[tier,[]]));
+  for(const row of raw.allRows)if(groups[row.tier]&&(!analyticsSearchQuery||
+    chuanHoaTimKiem(row.sap+" "+row.description).includes(analyticsSearchQuery)))groups[row.tier].push(row);
+  root.innerHTML=upgradeRiskTiers.map(tier=>{
+    const items=groups[tier],summary=tongHopHangUuTien(items);
+    const covers=items.filter(row=>Number.isFinite(row.cover));
+    const average=covers.length?covers.reduce((sum,row)=>sum+row.cover,0)/covers.length:null;
+    const active=tier===upgradeRiskState.tier;
+    return `<tr class="warehouse-risk-stats-row" data-active="${active}">
+      <td><button type="button" class="btn btn-soft" data-tier="${tier}" aria-pressed="${active}">
+        ${thoatHTML(tuDien(upgradeLabels[tier]))}</button></td>
+      <td>${dinhDangSoLuong.format(items.length)}</td><td>${dinhDangThapPhan(summary.stock)}</td>
+      <td>${dinhDangThapPhan(summary.rop)}</td><td>${dinhDangThapPhan(summary.avgMonth)}</td>
+      <td>${dinhDangThapPhan(average)}</td></tr>`;
+  }).join("");
+}
+function veCacChiSoUuTien(root,raw){
+  if(!raw){root.replaceChildren();return;}
+  const contentKey=[ngonNguHienTai,...upgradeRiskTiers.map(tier=>raw.metrics[tier])].join("|");
+  if(!root.children.length||root.dataset.renderKey!==contentKey){
+    root.dataset.renderKey=contentKey;
+    root.innerHTML=upgradeRiskTiers.map((tier,index)=>
+      `<button type="button" class="warehouse-risk-kpi" data-tone="${["zero","critical","warning","normal","normal"][index]}"
+        data-tier="${tier}"><strong>${dinhDangSoLuong.format(raw.metrics[tier])}</strong>
+        <span>${thoatHTML(tuDien(upgradeLabels[tier]))}</span></button>`).join("");
+  }
+  for(const button of root.children){
+    const active=button.dataset.tier===upgradeRiskState.tier;
+    button.dataset.active=String(active);
+    button.dataset.muted=String(!!upgradeRiskState.tier&&!active);
+    button.setAttribute("aria-pressed",String(active));
+    button.title=tuDien(active?"riskDetailsClear":"riskDetailsFilter");
+  }
+}
+function doiNhomUuTien(event){
+  const button=event.target.closest("button[data-tier]");
+  if(!button)return;
+  const tier=button.dataset.tier;
+  upgradeRiskState.tier=upgradeRiskState.tier===tier?"":tier;
+  upgradeRiskState.page=1;
+  upgradeRenderRisk("analytics");
+  if(!button.isConnected)event.currentTarget.querySelector(`button[data-tier="${tier}"]`)?.focus();
 }
 
 function moDanhSachUuTien(){
@@ -12599,25 +12909,22 @@ function moDanhSachUuTien(){
 }
 function upgradeRenderRisk(section){
   const root=$upgrade(`risk-${section}-table`),note=$upgrade(`risk-${section}-note`),metricsEl=$upgrade(`risk-${section}-metrics`);
-  if(!note||!metricsEl)return;
+  if(!root)return;
   const raw=upgradeRiskRows(),state=upgradeRiskState,noHall=hallDangLoc()==="hall2";
+  veCacChiSoUuTien(metricsEl,raw);
+  veThongKeUuTien(raw);
   if(!raw){
     const message=tuDien(noHall?"upgradeNoHall2":!analyticsReady?"dashboardStockMissing":"upgradeNeedsHistory");
     if(root){
       root.textContent=message;
-      for(const suffix of ["prev","next","export"])$upgrade(`risk-${section}-${suffix}`).disabled=true;
+      for(const suffix of ["prev","next","export","details"])$upgrade(`risk-${section}-${suffix}`).disabled=true;
       $upgrade(`risk-${section}-pages`).textContent="—";
     }
-    metricsEl.replaceChildren();note.textContent=root?"":message;return;
+    note.textContent="";return;
   }
-  const summary=[
-    ["zero",raw.metrics.zero,"upgradeKpiZero"],["critical",raw.metrics.critical,"upgradeKpiCritical"],
-    ["warning",raw.metrics.warn,"upgradeKpiWarn"],["normal",raw.metrics.mismatch,"upgradeKpiMismatch"],
-    ["normal",raw.metrics.unknown,"upgradeKpiUnknown"]];
-  metricsEl.innerHTML=summary.map(([tone,count,key],index)=>`<div class="warehouse-risk-kpi" data-tone="${tone}" data-tier="${["zero","critical","warn","mismatch","unknown"][index]}"><strong>${dinhDangSoLuong.format(count)}</strong><span>${thoatHTML(tuDien(key))}</span></div>`).join("");
-  const periodLabel=raw.period==="week"?"7 ngày":raw.period==="month"?"30 ngày":"12 tháng";if(!root){note.textContent="Kỳ đánh giá: "+periodLabel+" · "+raw.from+" – "+raw.to+" · "+ghiChuPhamViLichSu(lichSuTheoHall("hall1"));return;}
-  const rows=upgradeFilterRows(),pages=Math.max(1,Math.ceil(rows.length/state.size));
-  $upgrade(`risk-${section}-export`).disabled=!rows.length;
+  const rows=upgradeFilterRows(state.tier,raw),pages=Math.max(1,Math.ceil(rows.length/state.size));
+  $upgrade("risk-analytics-export").disabled=!rows.length;
+  $upgrade("risk-analytics-details").disabled=!rows.length;
   state.page=Math.max(1,Math.min(pages,state.page));
   const shown=rows.slice((state.page-1)*state.size,state.page*state.size);
   if(!shown.length)root.innerHTML=`<p class="warehouse-risk-empty">${thoatHTML(tuDien("upgradeRiskEmpty"))}</p>`;
@@ -12632,7 +12939,7 @@ function upgradeRenderRisk(section){
       tr.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();action();}});
     });
   }
-  note.textContent="Kỳ đánh giá: "+periodLabel+" · "+raw.from+" – "+raw.to+" · "+tuDien("upgradeRiskPage",{page:state.page,pages,shown:shown.length,count:rows.length});
+  note.textContent=upgradeRiskWindow(raw)+" · "+tuDien("upgradeRiskPage",{page:state.page,pages,shown:shown.length,count:rows.length});
   $upgrade(`risk-${section}-pages`).textContent=`${state.page} / ${pages}`;
   $upgrade(`risk-${section}-prev`).disabled=state.page===1;
   $upgrade(`risk-${section}-next`).disabled=state.page===pages;
@@ -12645,7 +12952,7 @@ function upgradeRiskPage(delta){
 function upgradeIssue(key,titleKey,detail,severity="warning"){return {key,titleKey,detail,severity,rows:[]};}
 function upgradeQualityData(){
   const today=ngayDiaPhuongISO(),hall=hallDangLoc(),cached=upgradeQualityCache;
-  if(cached&&cached.stock===duLieuTimKiem&&cached.history===historyAll&&cached.today===today&&cached.hall===hall&&cached.loaded===historyLoaded&&cached.ready===analyticsReady)return cached.data;
+  if(cached&&cached.stock===duLieuTimKiem&&cached.history===historyAll&&cached.today===today&&cached.hall===hall&&cached.loaded===historyLoaded&&cached.ready===analyticsReady&&cached.lang===ngonNguHienTai)return cached.data;
   const issues=[upgradeIssue("noSap","upgradeQualityNoSap","", "error"),upgradeIssue("badQty","upgradeQualityBadQty","","error"),upgradeIssue("negative","upgradeQualityNegative","","warning"),upgradeIssue("price","upgradeQualityMissingPrice","","warning"),upgradeIssue("duplicate","upgradeQualityDuplicate","upgradeQualityNoteDup","info"),upgradeIssue("badDate","upgradeQualityBadDate","","warning"),upgradeIssue("badAmount","upgradeQualityBadAmount","","warning"),upgradeIssue("unit","upgradeQualityUnit","upgradeQualityNoteUnit","warning")];
   const byKey=Object.fromEntries(issues.map(x=>[x.key,x]));
   const stockReady=analyticsReady&&hall!=="hall2",histRows=historyLoaded?lichSuTheoHall():null,histReady=Array.isArray(histRows);
@@ -12661,10 +12968,10 @@ function upgradeQualityData(){
       if(Number.isFinite(qty)&&qty>0){
         const raw=prices>=0?rec.dong[prices]:"";
         if(prices<0||raw===null||String(raw??"").trim()===""||!Number.isFinite(chuyenThanhSo(raw))||chuyenThanhSo(raw)<=0)
-          byKey.price.rows.push({sap:label,info:prices<0?"Không có cột giá / Missing Price column":String(raw??"")||"—"});
+          byKey.price.rows.push({sap:label,info:prices<0?tuDien("qualityMissingPriceColumn"):String(raw??"")||"—"});
       }
     }
-    for(const [key,count] of duplicates)if(count>1)byKey.duplicate.rows.push({sap:key,info:`${count} ${ngonNguHienTai==="en"?"rows":"dòng"}`});
+    for(const [key,count] of duplicates)if(count>1)byKey.duplicate.rows.push({sap:key,info:tuDien("qualityRowsCount",{count:dinhDangSoLuong.format(count)})});
   }
   if(histReady){
     const amountCol=cotGiaTriLichSuKho();const sapCol=cotMaSapLichSuKho();
@@ -12680,7 +12987,7 @@ function upgradeQualityData(){
       byKey.unit.rows.push({sap:r.sap,info:`${r.stockUnit||"—"} / ${r.histUnit||"—"}`});
   }
   const data={issues,stockReady,histReady,stockRows:stockReady?duLieuTimKiem.length:null,historyRows:histReady?histRows.length:null};
-  upgradeQualityCache={stock:duLieuTimKiem,history:historyAll,today,hall,loaded:historyLoaded,ready:analyticsReady,data};return data;
+  upgradeQualityCache={stock:duLieuTimKiem,history:historyAll,today,hall,loaded:historyLoaded,ready:analyticsReady,lang:ngonNguHienTai,data};return data;
 }
 function upgradeRenderQuality(){
   const root=$upgrade("quality-cards"),summary=$upgrade("quality-summary"),scope=$upgrade("quality-scope");if(!root)return;
@@ -12699,6 +13006,7 @@ function upgradeRenderQuality(){
 function upgradeOpenQuality(key){
   const issue=upgradeQualityData().issues.find(item=>item.key===key);if(!issue)return;
   upgradeQualityChosen=key;
+  delete $upgrade("quality-details-title").dataset.i18n;
   $upgrade("quality-details-title").textContent=tuDien(issue.titleKey);
   $upgrade("quality-details-info").textContent=tuDien("upgradeQualityInvestigate");
   $upgrade("quality-details-count").textContent=tuDien("upgradeQualityRows",{count:dinhDangSoLuong.format(issue.rows.length)});
@@ -12706,7 +13014,7 @@ function upgradeOpenQuality(key){
   const dialog=$upgrade("quality-details-dialog");if(!dialog.open)dialog.showModal();
 }
 function upgradeRender(){
-  if(tabHienTai==="dashboard")upgradeRenderRisk("dashboard");
+  if(tabHienTai==="dashboard")veBieuDoTonKhoChiTiet();
   if(tabHienTai==="analytics"){
     upgradeRenderRisk("analytics");
     upgradeRenderQuality();
@@ -12714,34 +13022,42 @@ function upgradeRender(){
 }
 function upgradeSchedule(){if(upgradePaintScheduled)return;upgradePaintScheduled=true;requestAnimationFrame(()=>{upgradePaintScheduled=false;try{upgradeRender();}catch(e){console.warn("Dashboard enhancement:",e);for(const id of ["risk-dashboard-table","risk-analytics-table","quality-scope"])if($upgrade(id))$upgrade(id).textContent=tuDien("upgradeQualityInvestigate");}});}
 
-// Native, offline XLSX export: two sheets and safe cell encoding.
-function upgradeExportWorkbook(kind){
-  const sheets=[];
-  if(kind!=="quality"){
-    const risk=upgradeFilterRows();
-    if(!risk.length)return;
-    const records=risk.map(r=>[r.sap,r.description,r.stock,r.unit,r.avgMonth,r.cover===Infinity?"∞":r.cover,tuDien(upgradeLabels[r.tier])]);
-    sheets.push({name:ngonNguHienTai==="vi"?"Ưu tiên bổ sung":"Priorities",
-      headers:["upgradeRiskCode","dashboardExportDescription","upgradeRiskStock","dashboardExportUnit",
-        "upgradeRiskMonth","upgradeRiskCover","upgradeRiskTier"].map(key=>tuDien(key)),rows:records});
-  }else{
+async function upgradeExportWorkbook(kind, selectedRows=null){
+  const report=(label,keys,rows)=>({sheet:tuDien(label).slice(0,31),title:tuDien(label),
+    columns:keys.map(key=>tuDien(key)),rows,meta:[],money:[]});
+  const reports=[];
+  if(kind==="quality"){
     const quality=upgradeQualityData();
-    sheets.push({name:"Review_summary",headers:["Check","Count","Scope"],rows:quality.issues.map(issue=>[tuDien(issue.titleKey),((issue.key==="unit")?quality.stockReady&&quality.histReady:["noSap","badQty","negative","price","duplicate"].includes(issue.key)?quality.stockReady:quality.histReady)?issue.rows.length:"N/A",tuDien(issue.detail||"upgradeQualityInvestigate")])});
-    sheets.push({name:"Review_details",headers:["Check","SAP / Row","Detail"],rows:quality.issues.flatMap(issue=>issue.rows.map(row=>[tuDien(issue.titleKey),row.sap,row.info]))});
+    const issues=upgradeQualityChosen&&$upgrade("quality-details-dialog").open?
+      quality.issues.filter(issue=>issue.key===upgradeQualityChosen):quality.issues;
+    reports.push(report("qualitySummarySheet",["qualityCheck","riskMaterialCount","qualityScope"],issues.map(issue=>{
+      const available=issue.key==="unit"?quality.stockReady&&quality.histReady:
+        ["noSap","badQty","negative","price","duplicate"].includes(issue.key)?quality.stockReady:quality.histReady;
+      return [tuDien(issue.titleKey),available?issue.rows.length:"—",tuDien(issue.detail||"upgradeQualityInvestigate")];
+    })));
+    reports.push(report("qualityDetailsSheet",["qualityCheck","colSap","upgradeQualityDetail"],
+      issues.flatMap(issue=>issue.rows.map(row=>[tuDien(issue.titleKey),row.sap,row.info]))));
+  }else{
+    const rows=selectedRows??upgradeFilterRows();
+    if(!rows.length)return;
+    reports.push(report("upgradeRiskAnalytics",["colSap","dashboardExportDescription","upgradeRiskStock",
+      "dashboardExportUnit","colReorder","upgradeRiskMonth","upgradeRiskCover","upgradeRiskTier"],
+      rows.map(row=>[row.sap,row.description,row.stock,row.unit,row.rop,row.avgMonth,
+        row.cover===Infinity?"∞":row.cover,tuDien(upgradeLabels[row.tier])])));
   }
-  const ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main",relsns="http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-  const parts=[{name:"[Content_Types].xml",data:`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`},{name:"_rels/.rels",data:`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},{name:"xl/styles.xml",data:taoKieuXlsx()},
-    {name:"xl/workbook.xml",data:`<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="${ns}" xmlns:r="${relsns}"><sheets>${sheets.map((sheet,i)=>`<sheet name="${xmlXlsx(sheet.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`},
-    {name:"xl/_rels/workbook.xml.rels",data:`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}</Relationships>`}];
-  for(const [i,sheet] of sheets.entries()){
-    const all=[sheet.headers,...sheet.rows],xmlRows=all.map((row,idx)=>hangXlsx(idx+1,row.map((value,col)=>typeof value==="number"&&Number.isFinite(value)&&idx?oSoXlsx(col,idx+1,value,idx%2===0?12:13):oChuXlsx(col,idx+1,value,idx?idx%2===0?8:9:7)),idx?22:30));
-    const end=tenCotXlsx(sheet.headers.length-1),last=all.length;
-    const worksheet=`<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="${ns}"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetData>${xmlRows.join("")}</sheetData><autoFilter ref="A1:${end}${last}"/></worksheet>`;
-    parts.push({name:`xl/worksheets/sheet${i+1}.xml`,data:worksheet});
+  try{
+    const blob=await taoBaoCaoThongKeXlsx(reports);
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;
+    link.download=`${tuDien(kind==="quality"?"upgradeQualityXlsx":"upgradeRiskXlsx")}_${ngayDiaPhuongISO()}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }catch(error){
+    console.warn("Analytics XLSX:",error);
+    alert(tuDien("exportFailed"));
   }
-  const blob=new Blob([dongGoiZipXlsx(parts)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
-  const url=URL.createObjectURL(blob),link=document.createElement("a");
-  link.href=url;link.download=`${tuDien(kind==="quality"?"upgradeQualityXlsx":"upgradeRiskXlsx")}_${ngayDiaPhuongISO()}.xlsx`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);
 }
 // Patch only the shared calculation and refresh pathways; do not duplicate the main data sources.
 const _upgradeOriginalSourceStatus=ghiNhanNguon;
@@ -12766,14 +13082,10 @@ locNhanhPhanTichKho=function(...args){
   upgradeSchedule();
 };
 function upgradeInit(){
-  const filter=$upgrade("risk-analytics-filter"),size=$upgrade("risk-analytics-size");
+  const size=$upgrade("risk-analytics-size");
   upgradeRiskPeriodChanged(docTuyChon("warehouse-risk-period")||"year");
-  const previous=docTuyChon("warehouse-risk-analytics");
-  if(["urgent","attention","all"].includes(previous)){upgradeRiskState.filter=previous;filter.value=previous;}
-  filter.addEventListener("change",()=>{
-    upgradeRiskState.filter=filter.value;upgradeRiskState.page=1;
-    ghiTuyChon("warehouse-risk-analytics",filter.value);upgradeRenderRisk("analytics");
-  });
+  $upgrade("risk-analytics-metrics").addEventListener("click",doiNhomUuTien);
+  $upgrade("risk-stats-body").addEventListener("click",doiNhomUuTien);
   size.addEventListener("change",()=>{
     upgradeRiskState.size=Number(size.value)||25;upgradeRiskState.page=1;upgradeRenderRisk("analytics");
   });
@@ -12840,7 +13152,11 @@ function upgradeComparePreset(mode){
 function upgradeApplyComparePreset(mode){
   const custom=mode==="custom",els=upgradeCompareIds.map(id=>$upgrade(id));els.forEach(el=>el.disabled=!custom);
   if(!custom){const v=upgradeComparePreset(mode);v.forEach((x,i)=>els[i].value=x);}
-  const msg={week:"7 ngày gần nhất so với 7 ngày liền trước.",month:"Tháng hiện tại đến hôm nay so với cùng số ngày tháng trước.",year:"Từ đầu năm đến hôm nay so với cùng kỳ năm trước.",custom:"Nhập độc lập ngày bắt đầu và kết thúc cho Kỳ A/B."};$upgrade("warehouse-compare-period-help").textContent=msg[mode];upgradeRenderCompare();
+  const key={week:"compareWeekHelp",month:"compareMonthHelp",year:"compareYearHelp",custom:"compareCustomHelp"}[mode];
+  const help=$upgrade("warehouse-compare-period-help");
+  help.dataset.i18n=key;
+  help.textContent=tuDien(key);
+  upgradeRenderCompare();
 }
 function upgradeInitCompare(){
   const period=$upgrade("warehouse-compare-period"),savedMode=docTuyChon("warehouse-compare-period-mode")||"month";period.value=["week","month","year","custom"].includes(savedMode)?savedMode:"month";
@@ -12977,7 +13293,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
       netQuickSyncAll: "Đồng bộ tất cả",
       copySapBtn: "Chép",
       copiedSapBtn: "Đã chép",
-      leadTimeOrderNow: "Đặt gấp (Cover ≤ Lead Time)"
+      leadTimeOrderNow: "Đặt gấp"
     });
     Object.assign(NGON_NGU.en, {
       netRibbonTitle: "SAP Sources:",
@@ -12987,7 +13303,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
       netQuickSyncAll: "Sync all",
       copySapBtn: "Copy",
       copiedSapBtn: "Copied",
-      leadTimeOrderNow: "Order now (Cover ≤ Lead Time)"
+      leadTimeOrderNow: "Order now"
     });
   }
 
@@ -13150,8 +13466,10 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
           if (Number.isFinite(cover) && cover > 0 && cover <= ltDays && sapSpan) {
             const tag = document.createElement("span");
             tag.className = "leadtime-alert-tag";
-            tag.textContent = `LT ${ltDays}d`;
-            tag.title = `${tuDien("leadTimeOrderNow")} (Cover: ${Math.round(cover)}d ≤ Lead Time: ${ltDays}d)`;
+            tag.textContent = tuDien("leadTimeOrderNow");
+            tag.title = tuDien("leadTimeComparison",{
+              cover:dinhDangSoLuong.format(Math.round(cover)),lead:dinhDangSoLuong.format(ltDays)
+            });
             sapSpan.parentElement.appendChild(tag);
           }
         }
@@ -13243,341 +13561,291 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install,{once:true});else install();
 })();
 </script>
-<script id="pareto-material-script">
-(()=>{
-  window.veParetoVatTuXuat=function(){
-    const root=document.getElementById('insight-usage-detail'),note=document.getElementById('dashboard-usage-detail-summary');
-    if(!root)return;
-    const period=document.getElementById('dashboard-usage-detail-period')?.value||'month';
-    const rows=typeof lichSuTheoHall==='function'?lichSuTheoHall():null;
-    // Pareto uses the current calendar period, independent from the dashboard's
-    // separate analysis-range controls. Cap the end at the newest History date.
-    const today=typeof ngayDiaPhuongISO==='function'?ngayDiaPhuongISO():new Date().toISOString().slice(0,10);
-    const validDates=Array.isArray(rows)?rows.map(r=>r?.date).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<=today):[];
-    const latestHistory=validDates.length?validDates.reduce((a,b)=>a>b?a:b):today;
-    const end=latestHistory<today?latestHistory:today;
-    const year=end.slice(0,4),month=end.slice(5,7);
-    let active=period==='week'?{from:congNgayKho(end,-6),to:end}:
-      period==='year'?{from:`${year}-01-01`,to:end}:{from:`${year}-${month}-01`,to:end};
-    const amountCol=typeof cotGiaTriLichSuKho==='function'?cotGiaTriLichSuKho():-1;
-    const sapCol=typeof cotMaSapLichSuKho==='function'?cotMaSapLichSuKho():-1;
-    if(!active||!rows||amountCol<0||sapCol<0){root.innerHTML='<div class="data-empty">Chưa đủ dữ liệu History.js để lập biểu đồ Pareto.</div>';if(note)note.textContent='Cần cột ngày, loại giao dịch, mã vật tư và giá trị xuất.';return}
-    const totals=new Map();
-    for(const rec of rows){
-      if(rec.type!=='out'||!rec.date||rec.date<active.from||rec.date>active.to)continue;
-      const code=String(rec.cells?.[sapCol]??'').trim();const value=Math.abs(chuyenThanhSo(rec.cells?.[amountCol]));
-      if(!code||!Number.isFinite(value)||value<=0)continue;totals.set(code,(totals.get(code)||0)+value);
+<script id="warehouse-outbound-charts">
+const warehouseDepartments = [
+  ["KS","5244041000"], ["VK","5244042000"], ["Log","5244033020"], ["Main","5244040090"],
+  ["QC","5244050020"], ["MM","5244043000"], ["QC Production","5244050160"], ["IE","5244040620"],
+  ["SI","5244091980"], ["Production","5244040001"], ["Trainer","5244040060"]
+];
+const warehouseDepartmentColors = ["#2563eb","#0891b2","#16a34a","#65a30d","#ca8a04","#ea580c",
+  "#dc2626","#db2777","#9333ea","#4f46e5","#64748b"];
+
+function tinhBieuDoXuatKho(rows, range, amountCol, sapCol, costCol) {
+  const bySap = new Map();
+  const byDepartment = new Map(warehouseDepartments.map(([name, code], index) =>
+    [code,{name,code,color:warehouseDepartmentColors[index],value:0,count:0}]));
+  let total = 0, mapped = 0, paretoTotal = 0;
+  for (const row of rows) {
+    if (row.type !== "out" || row.date < range.from || row.date > range.to || !row.date) continue;
+    const value = Math.abs(chuyenThanhSo(row.cells[amountCol]));
+    if (!Number.isFinite(value) || value <= 0) continue;
+    total++;
+    const sap = sapCol < 0 ? "" : chuanHoaMaSap(row.cells[sapCol]);
+    if (sap) {
+      bySap.set(sap, (bySap.get(sap) || 0) + value);
+      paretoTotal += value;
     }
-    const all=[...totals].map(([code,value])=>({code,value})).sort((a,b)=>b.value-a.value);
-    const grand=all.reduce((t,x)=>t+x.value,0);
-    if(!all.length||!grand){root.innerHTML='<div class="data-empty">Không có giao dịch xuất hợp lệ trong kỳ đã chọn.</div>';if(note)note.textContent=`Kỳ: ${active.from} – ${active.to}`;return}
-    let cumulative=0;all.forEach(x=>{cumulative+=x.value;x.cum=cumulative/grand*100;x.cls=x.cum<=80?'A':x.cum<=95?'B':'C'});
-    const top=all.slice(0,10),topShare=top.reduce((t,x)=>t+x.value,0)/grand*100,aCount=all.filter(x=>x.cls==='A').length,max=top[0].value;
-    root.innerHTML=`<div class="pareto-kpis"><div class="pareto-kpi"><strong>${dinhDangRutGonKho(grand)} ₫</strong><span>Tổng giá trị xuất trong kỳ</span></div><div class="pareto-kpi"><strong>${topShare.toLocaleString('vi-VN',{maximumFractionDigits:1})}%</strong><span>Tỷ trọng Top 10 mã</span></div><div class="pareto-kpi"><strong>${dinhDangSoLuong.format(aCount)} mã</strong><span>Nhóm A tạo khoảng 80% giá trị</span></div></div><div class="pareto-head"><span>STT</span><span>Mã vật tư</span><span>Giá trị tương đối</span><span>Giá trị xuất</span><span>Lũy kế</span></div>`+top.map((x,i)=>`<div class="pareto-row" data-class="${x.cls}" title="Nhóm ${x.cls} · Lũy kế ${x.cum.toFixed(1)}%"><span class="pareto-rank">${i+1}</span><span class="pareto-code">${thoatHTML(x.code)}</span><div class="pareto-track"><i class="pareto-bar" style="width:${Math.max(2,x.value/max*100)}%"></i></div><span class="pareto-value">${thoatHTML(dinhDangRutGonKho(x.value))}</span><span class="pareto-cum">${x.cum.toLocaleString('vi-VN',{maximumFractionDigits:1})}% <b>${x.cls}</b></span></div>`).join('');
-    if(note)note.textContent=`${period==='month'?'Tháng hiện tại':period==='year'?'Năm hiện tại':'7 ngày gần nhất'}: ${active.from} – ${active.to} · ${dinhDangSoLuong.format(all.length)} mã có phát sinh xuất · A ≤ 80%, B ≤ 95%, C > 95% giá trị lũy kế.`;
-  };
-  let paretoRetryTimer=0,paretoRetryCount=0;
-  function schedulePareto(){
-    clearTimeout(paretoRetryTimer);
-    paretoRetryTimer=setTimeout(()=>{
-      window.veParetoVatTuXuat();
-      const historyState=window.trangThaiNguon?.history?.status;
-      const historyBusy=['waiting','loading'].includes(historyState);
-      const hasRows=Array.isArray(window.historyAll)&&window.historyAll.length>0;
-      if((historyBusy||!hasRows)&&paretoRetryCount<20){paretoRetryCount++;schedulePareto()}else paretoRetryCount=0;
-    },historyStateDelay());
-  }
-  function historyStateDelay(){
-    const state=window.trangThaiNguon?.history?.status;
-    return ['waiting','loading'].includes(state)?250:30;
-  }
-  const oldUsage=window.veBieuDoSuDungKho;
-  window.veBieuDoSuDungKho=function(){
-    if(typeof oldUsage==='function')oldUsage.apply(this,arguments);
-    schedulePareto();
-  };
-  // The former executive renderer is called directly by the source-sync workflow.
-  // Redirect it so an interim completeness card cannot overwrite the Pareto chart.
-  window.veTongQuanDieuHanhCoChuThich=function(){schedulePareto()};
-  const oldHistoryStatus=window.capNhatTrangThaiHistory;
-  if(typeof oldHistoryStatus==='function')window.capNhatTrangThaiHistory=function(){
-    const result=oldHistoryStatus.apply(this,arguments);schedulePareto();return result;
-  };
-  function bindParetoPeriod(){
-    const select=document.getElementById('dashboard-usage-detail-period');
-    if(select&&!select.dataset.paretoBound){
-      select.dataset.paretoBound='1';
-      select.addEventListener('change',()=>{clearTimeout(paretoRetryTimer);window.veParetoVatTuXuat()});
-    }
-    schedulePareto();
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindParetoPeriod,{once:true});else bindParetoPeriod();
-})();
-</script>
-<script id="analysis-period-sync-script">
-(()=>{
-  function redrawSyncedWarehouseCharts(){
-    const target=document.getElementById('insight-stock-distribution');
-    if(!target)return;
-    try{if(typeof vePhanBoTrangThaiNangCap==='function')vePhanBoTrangThaiNangCap(window.duLieuTimKiem||[])}catch(e){console.error('Synced charts:',e)}
-  }
-  function bind(){
-    const select=document.getElementById('analytics-cons-horizon');
-    if(select&&!select.dataset.warehouseChartsSynced){
-      select.dataset.warehouseChartsSynced='1';
-      select.addEventListener('change',()=>setTimeout(redrawSyncedWarehouseCharts,0));
+    const center = costCol < 0 ? "" : String(row.cells[costCol] ?? "").trim().replace(/\.0+$/, "");
+    const department = byDepartment.get(center);
+    if (department) {
+      department.value += value;
+      department.count++;
+      mapped++;
     }
   }
-  const original=window.doiLocConsumption;
-  if(typeof original==='function')window.doiLocConsumption=function(){const r=original.apply(this,arguments);setTimeout(redrawSyncedWarehouseCharts,0);return r};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
-})();
+  const ranked = [...bySap].sort(([a, av], [b, bv]) => bv-av || a.localeCompare(b));
+  let cumulative = 0, groupACount = 0;
+  const top = [];
+  for (const [code,value] of ranked) {
+    const before = cumulative;
+    cumulative += value;
+    const share = cumulative / paretoTotal;
+    const group = before / paretoTotal < .8 ? "A" : before / paretoTotal < .95 ? "B" : "C";
+    if (group === "A") groupACount++;
+    if (top.length < 10) top.push({code,value,share,group});
+  }
+  const departments = [...byDepartment.values()].filter(row => row.count).sort((a,b) => b.value-a.value);
+  const topShare = top.reduce((sum, row) => sum + row.value, 0) / (paretoTotal || 1);
+  return {top,topShare,groupACount,paretoTotal,total,mapped,departments,
+    departmentTotal:departments.reduce((sum,row) => sum+row.value, 0)};
+}
+
+let warehouseOutboundCache, warehouseOutboundRendered, warehouseOutboundFrame = 0;
+function veBieuDoXuatTheoKy() {
+  if (tabHienTai !== "dashboard") return;
+  const pareto = document.getElementById("insight-usage-detail");
+  const department = document.getElementById("warehouse-department-chart");
+  const note = document.getElementById("dashboard-usage-detail-summary");
+  const range = layKyPhanTichKho();
+  const rows = historyLoaded ? lichSuTheoHall() : null;
+  const amountCol = cotGiaTriLichSuKho(), sapCol = cotMaSapLichSuKho();
+  const costCol = cotHistoryTheoTen(historyColumns, ["Cost Center", "CostCenter", "Trung tâm chi phí"]);
+  const key = range ? `${range.from}|${range.to}|${hallDangLoc()}` : "";
+  const message = !range ? "dashboardTimeInvalid" : !historyLoaded ?
+    (historyLoading ? "dashboardHistoryLoading" : "dashboardCompareNoHistory") :
+    !rows ? loiCotHall("history") : amountCol < 0 || historyTypeColumn < 0 ||
+      cotHistoryTheoTen(historyColumns, ["Posting Date","PostingDate","Ngày hạch toán","Date","Document Date","Transaction Date","Datetime","Created At","Ngay","Ngày","Ngày giao dịch"]) < 0 ?
+      "dashboardOutboundSourceMissing" : "";
+  const prev = warehouseOutboundRendered;
+  if (prev && prev.rows === rows && prev.headers === historyColumns && prev.key === key &&
+    prev.lang === ngonNguHienTai && prev.message === message) return;
+  warehouseOutboundRendered = {rows,headers:historyColumns,key,lang:ngonNguHienTai,message};
+  const empty = translated => `<p class="data-empty">${thoatHTML(tuDien(translated))}</p>`;
+  const coverage = rows ? phamViNgayLichSuKho(rows) : null;
+  note.textContent = range ? [
+    tuDien("dashboardRangeLabel",range),
+    coverage && coverage.to < range.to ? tuDien("dashboardHistoryEnds",{date:coverage.to}) : ""
+  ].filter(Boolean).join(" · ") : "";
+  if (message) {
+    pareto.innerHTML = department.innerHTML = empty(message);
+    return;
+  }
+  if (warehouseOutboundCache?.rows !== rows || warehouseOutboundCache.headers !== historyColumns ||
+    warehouseOutboundCache.key !== key) {
+    warehouseOutboundCache = {rows,headers:historyColumns,key,
+      data:tinhBieuDoXuatKho(rows,range,amountCol,sapCol,costCol)};
+  }
+  const data = warehouseOutboundCache.data;
+  if (sapCol < 0) pareto.innerHTML = empty("materialHistoryMissing");
+  else if (!data.top.length) pareto.innerHTML = empty(data.total ? "dashboardParetoNoCode" : "dashboardNoOutbound");
+  else {
+    const percent = new Intl.NumberFormat(ngonNguHienTai === "en" ? "en-US" : "vi-VN",
+      {style:"percent",maximumFractionDigits:1});
+    const kpis = [
+      [dinhDangRutGonKho(data.paretoTotal)+" ₫", "analyticsKpiOutTitle"],
+      [percent.format(data.topShare), "dashboardParetoTopShare"],
+      [tuDien("dashboardSkuCount",{count:dinhDangSoLuong.format(data.groupACount)}), "dashboardParetoGroupShare"]
+    ];
+    const headings = ["dashboardRank","dashTopMaterial","dashboardRelativeValue",
+      "dashboardTopOutValue","dashboardCumulative"];
+    pareto.innerHTML = `<div class="pareto-kpis">${kpis.map(([value,label]) =>
+      `<div class="pareto-kpi"><strong>${thoatHTML(value)}</strong><span>${thoatHTML(tuDien(label))}</span></div>`).join("")}</div>
+      <div class="pareto-head">${headings.map(key => `<span>${thoatHTML(tuDien(key))}</span>`).join("")}</div>
+      ${data.top.map((row,i) => `<div class="pareto-row" data-class="${row.group}"
+        title="${thoatHTML(tuDien("dashboardParetoClass",{group:row.group,percent:percent.format(row.share)}))}">
+        <span class="pareto-rank">${i+1}</span><span class="pareto-code">${thoatHTML(row.code)}</span>
+        <div class="pareto-track"><i class="pareto-bar" style="width:${row.value/data.top[0].value*100}%"></i></div>
+        <span class="pareto-value">${thoatHTML(dinhDangRutGonKho(row.value))}</span>
+        <span class="pareto-cum">${percent.format(row.share)} <b>${row.group}</b></span></div>`).join("")}`;
+  }
+  vePhanBoXuatTheoBoPhan(department,data,costCol);
+}
+
+function vePhanBoXuatTheoBoPhan(chart,data,costCol) {
+  if (costCol < 0 || !data.departments.length) {
+    chart.textContent = tuDien(costCol < 0 ? "dashboardDepartmentMissing" :
+      data.total ? "dashboardDepartmentNone" : "dashboardNoOutbound");
+    return;
+  }
+  const percent = new Intl.NumberFormat(ngonNguHienTai === "en" ? "en-US" : "vi-VN",
+    {style:"percent",maximumFractionDigits:1});
+  const circ = 2*Math.PI*68;
+  let offset = 0;
+  const segments = data.departments.map(row => {
+    const length = row.value/data.departmentTotal*circ;
+    const segment = `<circle class="department-donut-segment" cx="100" cy="100" r="68" fill="none"
+      stroke="${row.color}" stroke-width="24" stroke-dasharray="${length} ${circ-length}"
+      stroke-dashoffset="${-offset}" transform="rotate(-90 100 100)">
+      <title>${thoatHTML(row.name+" · "+dinhDangGiaTriKho(row.value))}</title></circle>`;
+    offset += length;
+    return segment;
+  }).join("");
+  chart.innerHTML = `<div class="department-donut-layout"><div class="department-donut-wrap">
+    <svg viewBox="0 0 200 200" role="img" aria-label="${thoatHTML(tuDien("dashboardDepartmentTitle"))}">${segments}</svg>
+    <div class="department-donut-center"><strong>${thoatHTML(dinhDangRutGonKho(data.departmentTotal))} ₫</strong>
+    <span>${thoatHTML(tuDien("dashboardDepartmentCount",{count:dinhDangSoLuong.format(data.departments.length)}))}</span></div>
+    </div><div class="department-donut-list">${data.departments.map(row =>
+      `<div class="department-donut-row" title="${thoatHTML(row.code+" · "+dinhDangGiaTriKho(row.value))}">
+        <i style="width:8px;height:8px;border-radius:50%;background:${row.color}"></i>
+        <span><b>${thoatHTML(row.name)}</b><small>${thoatHTML(dinhDangRutGonKho(row.value))} ₫</small></span>
+        <strong>${percent.format(row.value/data.departmentTotal)}</strong></div>`).join("")}</div></div>
+    <p class="department-outbound-foot">${thoatHTML(tuDien("dashboardDepartmentScope",{
+      mapped:dinhDangSoLuong.format(data.mapped),total:dinhDangSoLuong.format(data.total)}))}</p>`;
+}
+
+function lapLichBieuDoXuatKho() {
+  if (tabHienTai !== "dashboard" || warehouseOutboundFrame) return;
+  warehouseOutboundFrame = requestAnimationFrame(() => {
+    warehouseOutboundFrame = 0;
+    veBieuDoXuatTheoKy();
+  });
+}
+lapLichBieuDoXuatKho();
 </script>
 
 
-<script id="consumption-data-quality-fix">
-(()=>{
-  const clearConsumptionCache=()=>{try{if(typeof tinhDuLieuConsumption123==='function')delete tinhDuLieuConsumption123.cache}catch(e){}};
-  const originalHistoryStatus=window.capNhatTrangThaiHistory;
-  if(typeof originalHistoryStatus==='function')window.capNhatTrangThaiHistory=function(){clearConsumptionCache();return originalHistoryStatus.apply(this,arguments)};
-  document.addEventListener('dblclick',e=>{if(e.target.closest?.('.aging-value-group'))clearConsumptionCache()},true);
-})();
-</script>
+<dialog id="risk-details-dialog" class="priority-detail-modal" aria-labelledby="risk-details-title">
+  <header class="priority-detail-head">
+    <div><h2 id="risk-details-title"></h2><p id="risk-details-period"></p></div>
+    <form method="dialog"><button class="priority-detail-close" data-i18n-aria="close" type="submit">×</button></form>
+  </header>
+  <div class="priority-detail-summary" id="risk-details-summary"></div>
+  <div class="priority-detail-filters" id="risk-details-filters">
+    <input type="search" data-filter="q" data-i18n-aria="analyticsSearchPlaceholder" data-i18n-placeholder="analyticsSearchPlaceholder"/>
+    <input type="number" min="0" data-filter="min" data-i18n-aria="riskDaysFrom" data-i18n-placeholder="riskDaysFrom"/>
+    <input type="number" min="0" data-filter="max" data-i18n-aria="riskDaysTo" data-i18n-placeholder="riskDaysTo"/>
+    <select data-filter="unit" data-i18n-aria="riskAnyUnit">
+      <option value="" data-i18n="riskAnyUnit"></option><option value="ok" data-i18n="riskUnitValid"></option>
+      <option value="bad" data-i18n="upgradeKpiMismatch"></option>
+    </select>
+    <select data-filter="usage" data-i18n-aria="riskAnyUsage">
+      <option value="" data-i18n="riskAnyUsage"></option><option value="yes" data-i18n="riskHasUsage"></option>
+      <option value="no" data-i18n="riskNoUsage"></option>
+    </select>
+    <button type="button" class="btn btn-soft" id="risk-details-reset" data-i18n="riskReset"></button>
+    <button type="button" class="btn btn-secondary" id="risk-details-export" data-i18n="upgradeExportXlsx"></button>
+  </div>
+  <div class="priority-detail-table-wrap"><table class="priority-detail-table">
+    <thead><tr>
+      <th><button type="button" data-sort="sap" data-i18n="colSap"></button></th>
+      <th><button type="button" data-sort="stock" data-i18n="upgradeRiskStock"></button></th>
+      <th><button type="button" data-sort="rop" data-i18n="colReorder"></button></th>
+      <th><button type="button" data-sort="avgMonth" data-i18n="upgradeRiskMonth"></button></th>
+      <th><button type="button" data-sort="cover" data-i18n="upgradeRiskCover"></button></th>
+      <th><button type="button" data-sort="tier" data-i18n="upgradeRiskTier"></button></th>
+    </tr></thead><tbody id="risk-details-rows"></tbody>
+  </table></div>
+  <footer class="priority-detail-foot"><span id="risk-details-count"></span>
+    <div class="priority-detail-pages">
+      <button id="risk-details-prev" type="button" data-i18n-aria="prev">‹</button>
+      <button id="risk-details-next" type="button" data-i18n-aria="next">›</button>
+    </div>
+  </footer>
+</dialog>
+<script id="warehouse-risk-details">
+const riskDetailsState={tier:"",page:1,size:25,sort:"sap",dir:1,q:"",min:"",max:"",unit:"",usage:""};
 
-
-<script id="dashboard-analytics-single-source-v3">
-(()=>{
-  'use strict';
-  const nf=new Intl.NumberFormat('en-US',{maximumFractionDigits:3});
-  const horizon=()=>Math.max(12,Math.min(36,Number(document.getElementById('analytics-cons-horizon')?.value)||12));
-  const metric=(row,months)=>months===36?row.m36:months===24?row.m24:row.m12;
-  function clearSharedCaches(){
-    try{if(typeof tinhDuLieuConsumption123==='function')delete tinhDuLieuConsumption123.cache}catch(e){}
-    try{if(typeof upgradeRiskCache!=='undefined'&&upgradeRiskCache?.clear)upgradeRiskCache.clear()}catch(e){}
-    try{if(typeof upgradeQualityCache!=='undefined'&&upgradeQualityCache?.clear)upgradeQualityCache.clear()}catch(e){}
-  }
-  function sharedRows(){
-    try{return typeof tinhDuLieuConsumption123==='function'?tinhDuLieuConsumption123():[]}catch(e){console.error('Shared analytics data:',e);return[]}
-  }
-  function renderCoverage(){
-    const target=document.getElementById('insight-stock-distribution');
-    if(!target||typeof veBieuDoDoPhuTonKho!=='function')return;
-    // The renderer below reads the exact m12/m24/m36 objects used by the Analysis table.
-    const months=horizon(),rows=sharedRows(),groups={zero:0,critical:0,warn:0,safe:0,unknown:0};
-    for(const row of rows){const m=metric(row,months);if(!m||m.coverDays===null||m.tier==='unknown'||m.tier==='mismatch')groups.unknown++;else if(m.tier==='zero')groups.zero++;else if(m.tier==='critical')groups.critical++;else if(m.tier==='warn')groups.warn++;else if(m.tier==='safe'||m.tier==='idle')groups.safe++;else groups.unknown++}
-    let chart=target.parentElement?.querySelector('.stock-coverage-chart');
-    if(!chart){chart=document.createElement('section');chart.className='stock-coverage-chart';target.insertAdjacentElement('afterend',chart)}
-    const items=[['zero','Hết hàng','#e11d48'],['critical','Dưới 30 ngày','#f97316'],['warn','30–90 ngày','#eab308'],['safe','Trên 90 ngày','#16a34a']];
-    const max=Math.max(1,...items.map(x=>groups[x[0]])),evaluated=items.reduce((t,x)=>t+groups[x[0]],0);
-    chart.innerHTML=`<div class="stock-coverage-heading"><strong>Độ phủ tồn kho theo số ngày sử dụng</strong><span>Đồng bộ bảng Phân tích kho · TB ${months} tháng</span></div><div class="stock-coverage-bars">${items.map(x=>`<div class="stock-cover-col" title="${x[1]}: ${dinhDangSoLuong.format(groups[x[0]])} mã"><span class="stock-cover-value">${dinhDangSoLuong.format(groups[x[0]])}</span><i class="stock-cover-bar" style="height:${Math.max(4,groups[x[0]]/max*105)}px;background:${x[2]}"></i><span class="stock-cover-label">${x[1]}</span></div>`).join('')}</div><div class="stock-coverage-foot"><span><b>${dinhDangSoLuong.format(evaluated)} mã</b> dùng chung kết quả m${months}</span><span>${groups.unknown?`${dinhDangSoLuong.format(groups.unknown)} mã thiếu dữ liệu/quy đổi`: 'Không có mã thiếu dữ liệu'}</span></div>`;
-  }
-  function refreshAll(){
-    clearSharedCaches();
-    try{if(typeof veBangConsumption123==='function')veBangConsumption123()}catch(e){console.error(e)}
-    try{if(typeof vePhanBoTrangThaiNangCap==='function')vePhanBoTrangThaiNangCap(window.duLieuTimKiem||[])}catch(e){console.error(e)}
-    setTimeout(renderCoverage,0);
-  }
-  function bind(){
-    const sel=document.getElementById('analytics-cons-horizon');
-    if(sel&&!sel.dataset.singleSource){sel.dataset.singleSource='1';sel.addEventListener('change',refreshAll)}
-    setTimeout(renderCoverage,30);
-  }
-  const oldHistory=window.capNhatTrangThaiHistory;
-  if(typeof oldHistory==='function')window.capNhatTrangThaiHistory=function(){const r=oldHistory.apply(this,arguments);setTimeout(refreshAll,0);return r};
-  window.refreshDashboardFromAnalytics=refreshAll;
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
-
-  // Exported material quantities remain numeric and display grouping commas in Excel.
-  const oldReport=window.taoBaoCaoXlsx;
-  if(typeof oldReport==='function')window.taoBaoCaoXlsx=async function(){
-    const blob=await oldReport.apply(this,arguments);
-    return blob;
-  };
-})();
-</script>
-
-
-<script id="priority-card-popup-v1">
-(()=>{
-  'use strict';
-  const labels={zero:'Hết hàng và có tiêu thụ',critical:'Dưới 30 ngày',warn:'30–90 ngày',mismatch:'ĐVT thiếu/không khớp',unknown:'Chưa đủ dữ liệu'};
-  const state={kind:'zero',q:'',status:'all',hall:'all',min:'',max:'',unit:'all',usage:'all',sort:'sap',dir:1,page:1,size:25};
-  const esc=v=>typeof thoatHTML==='function'?thoatHTML(String(v??'')):String(v??'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
-  function allRows(){
-    const data=typeof upgradeRiskRows==='function'?upgradeRiskRows():null;
-    return data?.allRows||data?.rows||[];
-  }
-  function rowKind(r){return r.tier||'unknown'}
-  function matching(r){
-    if(rowKind(r)!==state.kind)return false;
-    const q=state.q.trim().toLowerCase();if(q&&!(`${r.sap} ${r.name||''}`.toLowerCase().includes(q)))return false;
-    if(state.status!=='all'&&rowKind(r)!==state.status)return false;
-    if(state.hall!=='all'&&String(r.hall||'hall1')!==state.hall)return false;
-    const c=Number.isFinite(r.cover)?r.cover:null;if(state.min!==''&&(c===null||c<Number(state.min)))return false;if(state.max!==''&&(c===null||c>Number(state.max)))return false;
-    if(state.unit==='ok'&&['mismatch','unknown'].includes(rowKind(r)))return false;if(state.unit==='bad'&&!['mismatch','unknown'].includes(rowKind(r)))return false;
-    if(state.usage==='yes'&&!(r.avgMonth>0))return false;if(state.usage==='no'&&r.avgMonth>0)return false;
+function riskDetailsRows(){
+  const {tier,q,min,max,unit,usage,sort,dir}=riskDetailsState;
+  const query=chuanHoaTimKiem(q);
+  return upgradeFilterRows(tier).filter(row=>{
+    if(query&&!chuanHoaTimKiem(row.sap+" "+row.description).includes(query))return false;
+    if(min!==""&&(!Number.isFinite(row.cover)||row.cover<Number(min)))return false;
+    if(max!==""&&(!Number.isFinite(row.cover)||row.cover>Number(max)))return false;
+    if(unit==="ok"&&row.tier==="mismatch"||unit==="bad"&&row.tier!=="mismatch")return false;
+    if(usage==="yes"&&!(row.avgMonth>0)||usage==="no"&&row.avgMonth!==0)return false;
     return true;
-  }
-  function sortedRows(){const rows=allRows().filter(matching);return rows.sort((a,b)=>{let x=a[state.sort],y=b[state.sort];if(state.sort==='cover'){x=Number.isFinite(a.cover)?a.cover:1e99;y=Number.isFinite(b.cover)?b.cover:1e99}if(typeof x==='string'||typeof y==='string')return String(x??'').localeCompare(String(y??''),'vi')*state.dir;return ((Number(x)||0)-(Number(y)||0))*state.dir})}
-  function num(v){return Number.isFinite(v)?v:0}
-  function quantity(v){return num(v).toLocaleString('en-US',{maximumFractionDigits:3})}
-  function render(){
-    const modal=document.querySelector('.priority-detail-modal');if(!modal)return;const rows=sortedRows(),pages=Math.max(1,Math.ceil(rows.length/state.size));state.page=Math.min(state.page,pages);const pageRows=rows.slice((state.page-1)*state.size,state.page*state.size);
-    const totals=rows.reduce((a,r)=>(a.stock+=num(r.stock),a.rop+=num(r.rop),a.avg+=num(r.avgMonth),a),{stock:0,rop:0,avg:0});const covers=rows.map(r=>r.cover).filter(Number.isFinite).sort((a,b)=>a-b),median=covers.length?covers[Math.floor(covers.length/2)]:null;
-    modal.querySelector('[data-title]').textContent=labels[state.kind];modal.querySelector('[data-condition]').textContent=`Điều kiện: ${labels[state.kind]} · Hall ${hallDangLoc()==='hall2'?'2':'1'} · kỳ ${upgradeRiskPeriod()}`;
-    modal.querySelector('[data-summary]').innerHTML=[[rows.length,'Tổng số mã'],[quantity(totals.stock),'Tổng tồn'],[quantity(totals.rop),'Tổng ROP'],[quantity(totals.avg),'Xuất TB/tháng'],[median===null?'—':quantity(median)+' ngày','Ngày đủ dùng trung vị']].map(x=>`<div><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join('');
-    modal.querySelector('tbody').innerHTML=pageRows.map(r=>`<tr><td><b>${esc(r.sap)}</b><br><small>${esc(r.name||'')}</small></td><td>${quantity(r.stock)} ${esc(r.unit||'')}</td><td>${quantity(r.rop)}</td><td>${quantity(r.avgMonth)}</td><td>${Number.isFinite(r.cover)?quantity(r.cover):'—'}</td><td>${esc(labels[rowKind(r)]||rowKind(r))}${r.unitIssue?`<br><small>${esc(r.unitIssue)}</small>`:''}</td><td>${esc(r.hall||'Hall 1')}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:22px">Không có dữ liệu phù hợp.</td></tr>';
-    modal.querySelector('[data-count]').textContent=`${rows.length.toLocaleString('vi-VN')} mã · Trang ${state.page}/${pages}`;modal.querySelector('[data-prev]').disabled=state.page<=1;modal.querySelector('[data-next]').disabled=state.page>=pages;
-  }
-  function open(kind){state.kind=kind;state.status='all';state.page=1;document.querySelector('.priority-detail-overlay')?.remove();const overlay=document.createElement('div');overlay.className='priority-detail-overlay';overlay.innerHTML=`<section class="priority-detail-modal" role="dialog" aria-modal="true"><header class="priority-detail-head"><div><h2 data-title></h2><p data-condition></p></div><button class="priority-detail-close" type="button" aria-label="Đóng">×</button></header><div class="priority-detail-summary" data-summary></div><div class="priority-detail-filters"><input data-f="q" placeholder="Tìm mã SAP hoặc tên vật tư"><select data-f="status"><option value="all">Tất cả trạng thái</option>${Object.entries(labels).map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('')}</select><select data-f="hall"><option value="all">Tất cả Hall</option><option value="hall1">Hall 1</option><option value="hall2">Hall 2</option></select><input data-f="min" type="number" min="0" placeholder="Ngày từ"><input data-f="max" type="number" min="0" placeholder="Ngày đến"><select data-f="unit"><option value="all">Tất cả ĐVT</option><option value="ok">ĐVT hợp lệ</option><option value="bad">ĐVT thiếu/không khớp</option></select><select data-f="usage"><option value="all">Có/không tiêu thụ</option><option value="yes">Có tiêu thụ</option><option value="no">Không tiêu thụ</option></select><button data-reset type="button">Đặt lại</button><button data-export type="button">Xuất Excel</button></div><div class="priority-detail-table-wrap"><table class="priority-detail-table"><thead><tr><th data-sort="sap">Mã SAP / Tên</th><th data-sort="stock">Tồn hiện tại</th><th data-sort="rop">ROP</th><th data-sort="avgMonth">Xuất TB/tháng</th><th data-sort="cover">Ngày đủ dùng</th><th data-sort="tier">Trạng thái</th><th>Hall</th></tr></thead><tbody></tbody></table></div><footer class="priority-detail-foot"><span data-count></span><div class="priority-detail-pages"><button data-prev type="button">‹</button><button data-next type="button">›</button></div></footer></section>`;document.body.appendChild(overlay);
-    overlay.addEventListener('click',e=>{if(e.target===overlay||e.target.closest('.priority-detail-close'))overlay.remove()});
-    overlay.querySelectorAll('[data-f]').forEach(el=>el.addEventListener(el.tagName==='INPUT'?'input':'change',()=>{state[el.dataset.f]=el.value;state.page=1;render()}));
-    overlay.querySelectorAll('[data-sort]').forEach(el=>el.addEventListener('click',()=>{const k=el.dataset.sort;if(state.sort===k)state.dir*=-1;else{state.sort=k;state.dir=1}render()}));
-    overlay.querySelector('[data-reset]').onclick=()=>{Object.assign(state,{q:'',status:'all',hall:'all',min:'',max:'',unit:'all',usage:'all',page:1});overlay.querySelectorAll('[data-f]').forEach(el=>el.value=state[el.dataset.f]);render()};
-    overlay.querySelector('[data-prev]').onclick=()=>{state.page--;render()};overlay.querySelector('[data-next]').onclick=()=>{state.page++;render()};
-    overlay.querySelector('[data-export]').onclick=()=>{const rows=sortedRows(),data=[['Mã SAP','Tên vật tư','Tồn hiện tại','ROP','Xuất TB/tháng','Ngày đủ dùng','Trạng thái','Hall'],...rows.map(r=>[r.sap,r.name||'',num(r.stock),num(r.rop),num(r.avgMonth),Number.isFinite(r.cover)?r.cover:'',labels[rowKind(r)]||rowKind(r),r.hall||'Hall 1'])];if(typeof taoBaoCaoXlsx==='function')taoBaoCaoXlsx([{name:'Uu tien vat tu',rows:data}]).then(b=>taiBlob(b,`Uu_tien_${state.kind}.xlsx`));else alert('Chức năng xuất Excel chưa sẵn sàng.')};
-    document.addEventListener('keydown',function escClose(e){if(e.key==='Escape'){overlay.remove();document.removeEventListener('keydown',escClose)}});render();
-  }
-  function bindCards(){const box=document.getElementById('risk-analytics-metrics');if(!box)return;box.querySelectorAll('.warehouse-risk-kpi').forEach((card,i)=>{const kinds=['zero','critical','warn','mismatch','unknown'];card.tabIndex=0;card.setAttribute('role','button');card.title='Bấm để xem danh sách chi tiết';card.onclick=()=>open(kinds[i]);card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(kinds[i])}}})}
-  const observer=new MutationObserver(bindCards);function init(){const box=document.getElementById('risk-analytics-metrics');if(box){observer.observe(box,{childList:true});bindCards()}}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();
-</script>
+  }).sort((a,b)=>{
+    const x=a[sort],y=b[sort];
+    if(x==null||y==null)return x==null?(y==null?0:1):-1;
+    return dir*(typeof x==="number"?x-y:String(x).localeCompare(String(y)));
+  });
+}
 
+function veChiTietUuTien(){
+  const rows=riskDetailsRows(),state=riskDetailsState;
+  const pages=Math.max(1,Math.ceil(rows.length/state.size));
+  state.page=Math.min(state.page,pages);
+  const start=(state.page-1)*state.size;
+  const summary=tongHopHangUuTien(rows);
+  const covers=rows.map(row=>row.cover).filter(Number.isFinite).sort((a,b)=>a-b);
+  const middle=Math.floor(covers.length/2);
+  const median=!covers.length?null:covers.length%2?covers[middle]:(covers[middle-1]+covers[middle])/2;
+  $upgrade("risk-details-title").textContent=tuDien(upgradeLabels[state.tier]||"upgradeRiskAnalytics");
+  const raw=upgradeRiskRows();
+  $upgrade("risk-details-period").textContent=raw?upgradeRiskWindow(raw):"";
+  $upgrade("risk-details-summary").innerHTML=[
+    [rows.length,"riskMaterialCount"],[summary.stock,"riskTotalStock"],
+    [summary.rop,"riskTotalReorder"],[summary.avgMonth,"upgradeRiskMonth"],[median,"riskMedianCoverage"]
+  ].map(([value,label])=>`<div><strong>${dinhDangThapPhan(value)}</strong>
+    <span>${thoatHTML(tuDien(label))}</span></div>`).join("");
+  $upgrade("risk-details-rows").innerHTML=rows.slice(start,start+state.size).map(row=>`<tr>
+    <td><b>${thoatHTML(row.sap)}</b><br><small>${thoatHTML(row.description)}</small></td>
+    <td>${dinhDangThapPhan(row.stock)} ${thoatHTML(row.unit||"")}</td><td>${dinhDangThapPhan(row.rop)}</td>
+    <td>${dinhDangThapPhan(row.avgMonth)}</td><td>${dinhDangThapPhan(row.cover)}</td>
+    <td>${thoatHTML(tuDien(upgradeLabels[row.tier]))}${row.unitIssue?`<br><small>${thoatHTML(tuDien(row.unitIssue))}</small>`:""}</td></tr>`).join("") ||
+    `<tr><td colspan="6">${thoatHTML(tuDien("upgradeRiskEmpty"))}</td></tr>`;
+  $upgrade("risk-details-count").textContent=tuDien("riskPage",{
+    count:dinhDangSoLuong.format(rows.length),page:dinhDangSoLuong.format(state.page),pages:dinhDangSoLuong.format(pages)});
+  $upgrade("risk-details-prev").disabled=state.page<=1;
+  $upgrade("risk-details-next").disabled=state.page>=pages;
+  $upgrade("risk-details-export").disabled=!rows.length;
+  for(const button of $upgrade("risk-details-dialog").querySelectorAll("[data-sort]"))
+    button.parentElement.setAttribute("aria-sort",button.dataset.sort===state.sort?
+      state.dir===1?"ascending":"descending":"none");
+}
 
-<script id="risk-card-filter-sync-script-v2">
-(()=>{
-  'use strict';
-  const tiers=['zero','critical','warn','mismatch','unknown'];
-  const baseFilter=window.upgradeFilterRows;
-  const baseRender=window.upgradeRenderRisk;
-  let cardTier='';
+function resetRiskDetailsFilters(){
+  Object.assign(riskDetailsState,{q:"",min:"",max:"",unit:"",usage:"",page:1});
+  for(const el of $upgrade("risk-details-filters").querySelectorAll("[data-filter]"))el.value="";
+  veChiTietUuTien();
+}
 
-  function rawAll(){const raw=typeof upgradeRiskRows==='function'?upgradeRiskRows():null;return raw?.allRows||raw?.rows||[]}
-  function selectorValue(){return document.getElementById('risk-analytics-filter')?.value||upgradeRiskState?.filter||'all'}
-  function allowedByMainFilter(row,filter){
-    if(filter==='urgent')return ['zero','critical'].includes(row.tier);
-    if(filter==='attention')return ['zero','critical','warn'].includes(row.tier);
-    return true;
-  }
-  function visibleRows(){
-    const filter=selectorValue();let rows=rawAll().filter(r=>allowedByMainFilter(r,filter));
-    if(cardTier)rows=rows.filter(r=>r.tier===cardTier);
-    if(typeof analyticsSearchQuery!=='undefined'&&analyticsSearchQuery)rows=rows.filter(r=>chuanHoaTimKiem(`${r.sap} ${r.description||r.name||''}`).includes(analyticsSearchQuery));
-    return rows;
-  }
-  window.upgradeFilterRows=function(){return visibleRows()};
+function moChiTietUuTien(tier=upgradeRiskState.tier){
+  riskDetailsState.tier=tier;
+  resetRiskDetailsFilters();
+  const dialog=$upgrade("risk-details-dialog");
+  if(!dialog.open)dialog.showModal();
+}
 
-  function syncCards(){
-    const box=document.getElementById('risk-analytics-metrics');if(!box)return;
-    const filter=selectorValue(),eligible=rawAll().filter(r=>allowedByMainFilter(r,filter));
-    const counts=Object.fromEntries(tiers.map(t=>[t,eligible.filter(r=>r.tier===t).length]));
-    box.querySelectorAll('.warehouse-risk-kpi').forEach((card,i)=>{
-      const tier=card.dataset.tier||tiers[i];card.dataset.tier=tier;
-      const strong=card.querySelector('strong');if(strong)strong.textContent=dinhDangSoLuong.format(counts[tier]||0);
-      card.dataset.active=String(cardTier===tier);card.dataset.muted=String(cardTier&&cardTier!==tier);
-      card.title=cardTier===tier?'Bấm lại để bỏ lọc card':'Bấm để lọc bảng; nhấp đúp để mở popup chi tiết';
-      card.onclick=e=>{e.preventDefault();cardTier=cardTier===tier?'':tier;upgradeRiskState.page=1;if(typeof baseRender==='function')baseRender('analytics');setTimeout(syncCards,0)};
-      card.ondblclick=e=>{e.preventDefault();e.stopPropagation();cardTier=tier;upgradeRiskState.page=1;if(typeof baseRender==='function')baseRender('analytics');setTimeout(syncCards,0);};
-      card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click()}};
+function initRiskDetails(){
+  const dialog=$upgrade("risk-details-dialog");
+  $upgrade("risk-analytics-details").addEventListener("click",()=>moChiTietUuTien());
+  $upgrade("risk-analytics-metrics").addEventListener("dblclick",event=>{
+    const button=event.target.closest("[data-tier]");
+    if(button)moChiTietUuTien(button.dataset.tier);
+  });
+  for(const el of $upgrade("risk-details-filters").querySelectorAll("[data-filter]")){
+    el.addEventListener(el.tagName==="INPUT"?"input":"change",()=>{
+      riskDetailsState[el.dataset.filter]=el.value;
+      riskDetailsState.page=1;
+      veChiTietUuTien();
     });
   }
-  window.upgradeRenderRisk=function(section){const r=baseRender.apply(this,arguments);if(section==='analytics')setTimeout(syncCards,0);return r};
-
-  function bindMainFilter(){
-    const select=document.getElementById('risk-analytics-filter');if(!select||select.dataset.syncedCards)return;
-    select.dataset.syncedCards='1';select.addEventListener('change',()=>{cardTier='';upgradeRiskState.page=1;setTimeout(()=>{if(typeof baseRender==='function')baseRender('analytics');syncCards()},0)});
-  }
-  const observer=new MutationObserver(()=>{bindMainFilter();syncCards()});
-  function init(){const box=document.getElementById('risk-analytics-metrics');if(box)observer.observe(box,{childList:true});bindMainFilter();syncCards()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();
-</script>
-
-
-<script id="priority-two-column-script-v1">
-(()=>{
-  'use strict';
-  const tiers=[
-    ['zero','Hết hàng và có tiêu thụ','#dc4055'],['critical','Dưới 30 ngày','#ef6c57'],['warn','30–90 ngày','#e59a22'],['mismatch','ĐVT thiếu/không khớp','#7c3aed'],['unknown','Chưa đủ dữ liệu','#64748b']
-  ];
-  let selectedTier='';
-  function data(){const d=typeof upgradeRiskRows==='function'?upgradeRiskRows():null;return d?.allRows||d?.rows||[]}
-  function num(v){return Number.isFinite(Number(v))?Number(v):0}
-  function fmt(v){return num(v).toLocaleString('en-US',{maximumFractionDigits:1})}
-  function buildLayout(){
-    const panel=document.getElementById('risk-upgrade-analytics'),scroll=panel?.querySelector('.warehouse-risk-scroll'),bottom=panel?.querySelector('.warehouse-risk-bottom');
-    if(!panel||!scroll||!bottom||panel.querySelector('.warehouse-risk-two-column'))return;
-    const grid=document.createElement('div');grid.className='warehouse-risk-two-column';
-    const left=document.createElement('div');left.className='warehouse-risk-list-pane';
-    const right=document.createElement('aside');right.className='warehouse-risk-stats-pane';right.setAttribute('aria-label','Thống kê nhu cầu bổ sung vật tư');right.innerHTML=`<div class="warehouse-risk-stats-head"><div><h3>Thống kê nhu cầu bổ sung</h3><p>Tổng hợp theo cùng kỳ đánh giá và dữ liệu của bảng bên trái</p></div><b id="risk-stats-total"></b></div><div class="warehouse-risk-stats-scroll"><table class="warehouse-risk-stats-table"><thead><tr><th>Trạng thái</th><th>Số mã</th><th>Tổng tồn</th><th>Tổng ROP</th><th>Xuất TB/tháng</th><th>Cover TB</th></tr></thead><tbody id="risk-stats-body"></tbody></table></div><div class="warehouse-risk-stats-foot">Bấm một dòng để lọc bảng vật tư bên trái. Bấm lại dòng đang chọn để xem toàn bộ năm trạng thái.</div>`;
-    scroll.before(grid);left.append(scroll,bottom);grid.append(left,right);
-  }
-  function filtered(){let rows=data();if(selectedTier)rows=rows.filter(r=>r.tier===selectedTier);return rows}
-  function renderStats(){
-    buildLayout();const body=document.getElementById('risk-stats-body'),total=document.getElementById('risk-stats-total');if(!body)return;
-    const rows=data();if(total)total.textContent=`${rows.length.toLocaleString('vi-VN')} mã`;
-    body.innerHTML=tiers.map(([key,label,color])=>{const group=rows.filter(r=>r.tier===key),sum=group.reduce((a,r)=>(a.stock+=num(r.stock),a.rop+=num(r.rop),a.avg+=num(r.avgMonth),a.cover+=Number.isFinite(r.cover)?r.cover:0,a.coverN+=Number.isFinite(r.cover)?1:0,a),{stock:0,rop:0,avg:0,cover:0,coverN:0});return `<tr class="warehouse-risk-stats-row" data-tier="${key}" data-active="${selectedTier===key}"><td><i class="warehouse-risk-stats-dot" style="background:${color}"></i>${label}</td><td>${group.length.toLocaleString('vi-VN')}</td><td>${fmt(sum.stock)}</td><td>${fmt(sum.rop)}</td><td>${fmt(sum.avg)}</td><td>${sum.coverN?fmt(sum.cover/sum.coverN)+' ngày':'—'}</td></tr>`}).join('');
-    body.querySelectorAll('tr').forEach(row=>row.addEventListener('click',()=>{selectedTier=selectedTier===row.dataset.tier?'':row.dataset.tier;if(typeof window.setRiskCardTier==='function')window.setRiskCardTier(selectedTier);else filterMainTable();renderStats()}));
-  }
-  function filterMainTable(){
-    const original=window.upgradeFilterRows;if(!original||original.__twoCol)return;
-    const wrapped=function(){const rows=(data());return selectedTier?rows.filter(r=>r.tier===selectedTier):rows.filter(r=>!['mismatch','unknown','idle'].includes(r.tier))};wrapped.__twoCol=true;window.upgradeFilterRows=wrapped;
-    upgradeRiskState.filter='all';upgradeRiskState.page=1;if(typeof upgradeRenderRisk==='function')upgradeRenderRisk('analytics');
-  }
-  function init(){buildLayout();upgradeRiskState.filter='all';filterMainTable();renderStats();const metrics=document.getElementById('risk-analytics-metrics');if(metrics)new MutationObserver(renderStats).observe(metrics,{childList:true,subtree:true,characterData:true});}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();
-</script>
-
-
-<script id="department-outbound-chart-script">
-(()=>{
-  'use strict';
-  const departments=[
-    ['KS','5244041000'],['VK','5244042000'],['Log','5244033020'],['Main','5244040090'],
-    ['QC','5244050020'],['MM','5244043000'],['QC Production','5244050160'],['IE','5244040620'],
-    ['SI','5244091980'],['Production','5244040001'],['Trainer','5244040060']
-  ];
-  function shortValue(v){const n=Math.abs(Number(v)||0);if(n>=1e9)return (n/1e9).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tỷ';if(n>=1e6)return (n/1e6).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tr';if(n>=1e3)return (n/1e3).toLocaleString('vi-VN',{maximumFractionDigits:1})+' nghìn';return n.toLocaleString('vi-VN',{maximumFractionDigits:0})}
-  function costCenterColumn(){
-    if(Array.isArray(window.historyColumns)){
-      const i=historyColumns.findIndex(h=>['cost center','costcenter','trung tâm chi phí'].includes(String(h||'').trim().toLowerCase()));
-      if(i>=0)return i;
-    }
-    return 9; // Column 10 in History.js (zero-based index 9).
-  }
-  function currentRange(rows){
-    const select=document.getElementById('dashboard-usage-detail-period'),period=select?.value||'month';
-    const today=typeof ngayDiaPhuongISO==='function'?ngayDiaPhuongISO():new Date().toISOString().slice(0,10);
-    const dates=Array.isArray(rows)?rows.map(r=>r?.date).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<=today):[];
-    const end=dates.length?dates.reduce((a,b)=>a>b?a:b):today,year=end.slice(0,4),month=end.slice(5,7);
-    return {period,end,from:period==='week'?congNgayKho(end,-6):period==='year'?`${year}-01-01`:`${year}-${month}-01`};
-  }
-  window.veBieuDoXuatTheoBoPhan=function(){
-    const root=document.getElementById('insight-usage-detail');if(!root)return;
-    let chart=root.parentElement?.querySelector('.department-outbound-chart');if(!chart){chart=document.createElement('section');chart.className='department-outbound-chart';root.before(chart)}
-    const rows=typeof lichSuTheoHall==='function'?lichSuTheoHall():null,amountCol=typeof cotGiaTriLichSuKho==='function'?cotGiaTriLichSuKho():-1,costCol=costCenterColumn();
-    if(!Array.isArray(rows)||amountCol<0||costCol<0){chart.innerHTML='<div class="department-outbound-empty">Chưa đủ cột Cost Center và giá trị xuất trong History.js.</div>';return}
-    const range=currentRange(rows),map=new Map(departments.map(([dept,cost])=>[cost,{dept,cost,value:0,count:0}]));
-    for(const rec of rows){if(rec.type!=='out'||!rec.date||rec.date<range.from||rec.date>range.end)continue;const cost=String(rec.cells?.[costCol]??'').trim().replace(/\.0+$/,'');const item=map.get(cost);if(!item)continue;const value=Math.abs(chuyenThanhSo(rec.cells?.[amountCol]));if(Number.isFinite(value)&&value>0){item.value+=value;item.count++}}
-    // Only show Cost Centers that have outbound value in the selected period.
-    const list=departments.map(([,cost])=>map.get(cost)).filter(x=>x.value>0&&x.count>0);
-    const total=list.reduce((t,x)=>t+x.value,0),mapped=list.reduce((t,x)=>t+x.count,0);
-    if(!list.length){chart.innerHTML=`<div class="department-outbound-head"><div><strong>Phân bố giá trị xuất theo bộ phận</strong><span>Cost Center ở cột 10 của History.js · cùng kỳ với Pareto</span></div></div><div class="department-outbound-empty">Không có Cost Center trong danh mục phát sinh xuất theo kỳ đang chọn.</div>`;return}
-    const colors=['#2563eb','#06b6d4','#16a34a','#84cc16','#eab308','#f97316','#dc2626','#db2777','#9333ea','#6366f1','#64748b'];
-    const r=68,cx=100,cy=100,circ=2*Math.PI*r;let offset=0;
-    const segments=list.map((x,i)=>{const share=x.value/total,len=share*circ,dash=`${len} ${circ-len}`,el=`<circle class="department-donut-segment" cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[i%colors.length]}" stroke-width="24" stroke-dasharray="${dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 100 100)"><title>${x.dept} · ${x.cost} · ${dinhDangGiaTriKho(x.value)} · ${(share*100).toLocaleString('vi-VN',{maximumFractionDigits:1})}% · ${x.count} giao dịch</title></circle>`;offset+=len;return el}).join('');
-    chart.innerHTML=`<div class="department-outbound-head"><div><strong>Phân bố giá trị xuất theo bộ phận</strong><span>Chỉ hiển thị Cost Center có phát sinh xuất · cùng kỳ với Pareto</span></div><div class="department-outbound-total"><b>${shortValue(total)}</b><small>${mapped.toLocaleString('vi-VN')} giao dịch khớp</small></div></div><div class="department-donut-layout"><div class="department-donut-wrap"><svg viewBox="0 0 200 200" role="img" aria-label="Phân bố giá trị xuất theo bộ phận"><circle cx="100" cy="100" r="68" fill="none" stroke="rgba(148,163,184,.16)" stroke-width="24"/>${segments}</svg><div class="department-donut-center"><strong>${list.length}</strong><b>Bộ phận có dữ liệu</b><span>${shortValue(total)}</span></div></div><div class="department-donut-list">${list.map((x,i)=>`<div class="department-donut-row" title="Cost Center ${x.cost}"><i class="department-donut-dot" style="background:${colors[i%colors.length]}"></i><b>${x.dept}</b><strong>${(x.value/total*100).toLocaleString('vi-VN',{maximumFractionDigits:1})}%</strong><small>${shortValue(x.value)} · ${x.count.toLocaleString('vi-VN')} giao dịch</small></div>`).join('')}</div></div><div class="department-outbound-foot"><span>${range.from} – ${range.end}</span><span>${list.length}/${departments.length} Cost Center có dữ liệu xuất</span></div>`;
-  };
-  function install(){
-    const old=window.veParetoVatTuXuat;
-    if(typeof old==='function'&&!old.__departmentWrapped){const wrapped=function(){const r=old.apply(this,arguments);queueMicrotask(window.veBieuDoXuatTheoBoPhan);return r};wrapped.__departmentWrapped=true;window.veParetoVatTuXuat=wrapped}
-    const select=document.getElementById('dashboard-usage-detail-period');if(select&&!select.dataset.departmentBound){select.dataset.departmentBound='1';select.addEventListener('change',()=>setTimeout(window.veBieuDoXuatTheoBoPhan,0))}
-    setTimeout(window.veBieuDoXuatTheoBoPhan,80);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
-})();
+  for(const button of dialog.querySelectorAll("[data-sort]"))button.addEventListener("click",()=>{
+    const column=button.dataset.sort;
+    riskDetailsState.dir=riskDetailsState.sort===column?-riskDetailsState.dir:1;
+    riskDetailsState.sort=column;
+    riskDetailsState.page=1;
+    veChiTietUuTien();
+  });
+  $upgrade("risk-details-prev").addEventListener("click",()=>{riskDetailsState.page--;veChiTietUuTien();});
+  $upgrade("risk-details-next").addEventListener("click",()=>{riskDetailsState.page++;veChiTietUuTien();});
+  $upgrade("risk-details-reset").addEventListener("click",resetRiskDetailsFilters);
+  $upgrade("risk-details-export").addEventListener("click",()=>upgradeExportWorkbook("analytics",riskDetailsRows()));
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initRiskDetails,{once:true});
+else initRiskDetails();
 </script>
 
 </body>
