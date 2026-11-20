@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<title>ReceiptScan — Quét phiếu nhập kho PDF sang Excel</title>
+<style>
+:root{--bg:#f4f7fb;--panel:#fff;--ink:#17253e;--muted:#697990;--line:#e3e9f2;--primary:#145ed6;--primary2:#0b4cae;--mint:#eaf7f1;--good:#15764e;--warn:#a45c08;--warnbg:#fff6e5;--bad:#b33235;--shadow:0 14px 44px rgba(29,54,102,.06);--radius:16px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.47;cursor:not-allowed}.shell{max-width:1600px;margin:auto;padding:25px 24px 40px}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:23px}.identity{display:flex;align-items:center;gap:13px}.logo{width:47px;height:47px;border-radius:14px;display:grid;place-items:center;color:white;font-size:23px;font-weight:900;background:linear-gradient(145deg,#1164e7,#063d9e);box-shadow:0 8px 16px rgba(21,94,214,.22)}h1{font-size:22px;letter-spacing:-.6px;margin:0;line-height:1.25}h2{font-size:16px;margin:0;letter-spacing:-.2px}.subtitle{color:var(--muted);font-size:12px;margin:3px 0 0}.topbadge{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 13px;color:#4d607d;font-size:12px}.dot{width:8px;height:8px;background:#1aaa74;border-radius:50%}.hero{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:21px 24px;margin-bottom:18px;border-radius:18px;background:linear-gradient(105deg,#132d57,#173d7b 65%,#1160c6);color:white}.hero h2{font-size:22px;margin-bottom:4px}.hero p{margin:0;color:#c5d7f2;max-width:760px}.hero .symbol{font-size:46px;opacity:.5}.layout{display:grid;grid-template-columns:318px minmax(0,1fr);gap:18px}.pane{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}.cardhead{padding:18px 19px 13px;display:flex;align-items:center;justify-content:space-between;gap:12px}.muted{color:var(--muted)}.asideinner{padding:0 18px 20px}.drop{border:2px dashed #a9c3ed;border-radius:14px;background:#f7faff;text-align:center;padding:26px 15px 24px;transition:.2s;outline:none}.drop.drag,.drop:focus{border-color:#1266e7;background:#eaf2ff}.dropicon{font-size:30px;margin:0 0 9px}.drop strong{display:block;font-size:14px}.drop p{margin:5px 0 15px;font-size:12px;color:var(--muted)}.btn{border:1px solid var(--line);border-radius:10px;padding:9px 13px;background:white;font-weight:650;color:var(--ink);transition:.12s}.btn:hover:not(:disabled){border-color:#9dbce9;background:#f6faff}.btn.primary{background:var(--primary);border-color:var(--primary);color:white}.btn.primary:hover:not(:disabled){background:var(--primary2)}.btn.soft{background:#edf4ff;border-color:#dae8ff;color:#1359bc}.btn.ghost{border-color:transparent;background:transparent;color:#4b6180}.btn.danger{color:#a13a3d}.btn.small{font-size:12px;padding:6px 9px;border-radius:8px}.wfull{width:100%}input[type=file]{display:none}.options{border-top:1px solid var(--line);margin-top:18px;padding-top:17px}.fieldname{display:block;color:#536680;font-size:12px;font-weight:650;margin:0 0 7px}.control{width:100%;border:1px solid #dce4ef;border-radius:10px;background:#fff;color:var(--ink);padding:9px 10px;outline:none}.control:focus,.cell:focus{border-color:#6a9fee;box-shadow:0 0 0 3px #e9f2ff}.checkrow{display:flex;align-items:center;gap:8px;color:#4b5d77;margin-top:12px;font-size:12px}.checkrow input{accent-color:var(--primary);width:15px;height:15px}.info{display:flex;gap:9px;padding:11px 12px;background:#f4f7fc;border:1px solid #e8eff8;border-radius:11px;color:#5b718b;font-size:12px;margin-top:16px}.loaded{border-top:1px solid var(--line);margin-top:19px;padding-top:16px}.loaded h3{font-size:12px;margin:0 0 11px;color:#59708c;letter-spacing:.3px}.filelist{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow:auto}.fileitem{font-size:12px;display:flex;gap:9px;align-items:center;background:#f7f9fc;border-radius:9px;padding:9px 10px;overflow:hidden}.fileitem .filetitle{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fileitem .filesize{font-size:11px;color:#8a9aad;flex-shrink:0}.working{margin-top:15px;background:#f0f6ff;padding:12px;border-radius:12px;border:1px solid #dceaff}.worklabel{display:flex;justify-content:space-between;gap:7px;font-size:12px;color:#2f5b95;margin-bottom:8px}.bar{height:7px;border-radius:9px;background:#d4e4fa;overflow:hidden}.bar span{display:block;height:100%;width:0%;background:#1966de;transition:width .2s}.maininner{padding:0 19px 18px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}.stat{border:1px solid var(--line);border-radius:13px;padding:14px 16px;background:#fff}.stat span{display:block;color:#708098;font-size:12px}.stat strong{display:block;font-size:25px;line-height:1.25;margin-top:5px;font-weight:760;letter-spacing:-.7px}.stat:nth-child(2) strong{color:#1266d5}.stat:nth-child(3) strong{color:#b57d24}.actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:13px}.actionsleft,.actionsright{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.search{height:38px;border:1px solid #dce5f0;border-radius:10px;padding:8px 12px;width:min(100%,270px);min-width:180px;outline:none}.search:focus{border-color:#8cb5f2}.tabbar{display:flex;gap:18px;border-bottom:1px solid var(--line);margin:14px 0}.tab{border:0;border-bottom:2px solid transparent;background:transparent;padding:12px 1px;color:#74849c;font-weight:700}.tab.active{color:#155bc2;border-bottom-color:#155bc2}.tablewrap{border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:490px}.datatable{width:100%;border-collapse:separate;border-spacing:0;table-layout:auto;min-width:1790px}.datatable thead th{position:sticky;top:0;background:#f5f8fd;color:#546783;font-size:11px;letter-spacing:.1px;font-weight:750;padding:12px 10px;text-align:left;white-space:nowrap;z-index:2;border-bottom:1px solid var(--line)}.datatable tbody td{padding:7px 7px;border-bottom:1px solid #edf1f6;background:#fff;vertical-align:middle}.datatable tbody tr:hover td{background:#f9fbff}.datatable tbody tr.active td{background:#eff6ff}.datatable th:first-child,.datatable td:first-child{position:sticky;left:0;min-width:64px;max-width:64px;z-index:3;background:#fff;text-align:center}.datatable thead th:first-child{background:#f5f8fd;z-index:5}.datatable tbody tr.active td:first-child{background:#eff6ff}.cell{font-size:12px;border:1px solid transparent;border-radius:6px;padding:7px;min-width:90px;width:100%;background:transparent;color:#21374f;outline:none}.datatable tbody td[data-col="receipt"] .cell,.datatable tbody td[data-col="po"] .cell,.datatable tbody td[data-col="material"] .cell{font-weight:700;color:#164eae}.datatable td[data-col="fileName"] .cell{min-width:160px}.datatable td[data-col="description"] .cell,.datatable td[data-col="vendorName"] .cell{min-width:160px}.status{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:11px;border-radius:99px;padding:5px 9px;background:var(--mint);color:var(--good);font-weight:700}.status.check{background:var(--warnbg);color:var(--warn)}.empty{padding:63px 15px;text-align:center;color:#8090a4}.empty .empticon{font-size:45px;margin-bottom:12px}.empty strong{font-size:15px;color:#415675;display:block}.empty p{max-width:500px;margin:5px auto 0}.foothelp{font-size:12px;color:#8593a6;margin-top:12px}.inspect{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:290px}.inspect>div{min-width:0}.previewbox{height:350px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:#f1f4fa;display:grid;place-items:center}.previewbox canvas,.previewbox img{max-width:100%;height:auto}.previewbox p{padding:14px;text-align:center;color:#8a98aa}.textarea{width:100%;height:350px;resize:vertical;border:1px solid var(--line);border-radius:10px;background:#fbfcff;color:#364b68;padding:12px;font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}.notice{display:none;margin:0 0 13px;padding:12px 14px;border:1px solid #f2dda8;border-radius:10px;color:#8d6008;background:#fff8e5;font-size:12px}.notice.show{display:block}.manual{display:flex;gap:9px;align-items:center;margin-top:9px;flex-wrap:wrap}.toast{position:fixed;bottom:23px;right:23px;max-width:440px;background:#163151;color:white;border-radius:11px;padding:13px 16px;box-shadow:0 14px 34px #142b4a33;z-index:20;font-size:13px;display:none}.toast.show{display:block}.faded{opacity:.7}.helpdetails{margin-top:13px;font-size:12px}.helpdetails summary{cursor:pointer;color:#3161a0;font-weight:700}.helpdetails p{color:#637995;margin:6px 0}.onlywide{display:none}.footer{margin-top:18px;text-align:center;color:#8b9bb0;font-size:11px}@media(max-width:1030px){.layout{grid-template-columns:1fr}.side{order:0}.main{order:1}.drop{padding:18px}.stats{gap:8px}.inspect{grid-template-columns:1fr}.previewbox{height:240px}.textarea{height:240px}}@media(max-width:550px){.shell{padding:13px 11px 32px}.top{align-items:start}.hero{padding:17px}.hero h2{font-size:18px}.hero .symbol{display:none}.topbadge{display:none}.stats .stat{padding:10px}.stat strong{font-size:20px}.cardhead,.maininner{padding-left:12px;padding-right:12px}.tabbar{gap:13px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top"><div class="identity"><div class="logo">R</div><div><h1>ReceiptScan <span style="font-size:12px;color:#8295ae;font-weight:500">/ SAP</span></h1><p class="subtitle">Công cụ đọc phiếu nhập kho PDF → Excel</p></div></div><div class="topbadge"><span class="dot"></span> Xử lý tại trình duyệt · Không cần Python</div></header>
+  <section class="hero"><div><h2>Quét phiếu nhận hàng, lấy mã trong vài bước</h2><p>Đọc PDF có chữ hoặc ảnh scan, nhận diện các trường SAP Goods Receipt Slip, chỉnh sửa trước khi xuất .xlsx.</p></div><div class="symbol">▤ → ▦</div></section>
+  <div class="layout">
+   <aside class="pane side">
+     <div class="cardhead"><h2>01 · Tải chứng từ</h2></div>
+     <div class="asideinner">
+      <div class="drop" id="dropZone" tabindex="0" role="button" aria-label="Chọn hoặc kéo thả file PDF, ảnh"><div class="dropicon">📄</div><strong>Kéo thả file PDF vào đây</strong><p>Hỗ trợ nhiều file PDF, JPG, PNG, WebP</p><button class="btn primary" id="pickBtn" type="button">＋ Chọn tệp</button></div>
+      <input id="fileInput" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple />
+      <div class="options">
+        <label class="fieldname" for="scanMode">Chế độ nhận diện</label>
+        <select class="control" id="scanMode"><option value="auto">Tự động (ưu tiên chữ trong PDF)</option><option value="text">Chỉ đọc chữ PDF (nhanh nhất)</option><option value="ocr">Luôn OCR ảnh / PDF scan</option></select>
+        <div style="height:12px"></div>
+        <label class="fieldname" for="pageMode">Số trang cần đọc trong mỗi PDF</label>
+        <select class="control" id="pageMode"><option value="all">Tất cả các trang</option><option value="first">Chỉ trang đầu tiên</option></select>
+        <label class="checkrow"><input id="combinePages" type="checkbox" /> Gộp các trang cùng số chứng từ</label>
+        <label class="checkrow"><input id="exportFiltered" type="checkbox" checked /> Chỉ xuất những hàng đang hiển thị</label>
+      </div>
+      <div class="loaded" id="fileSection" hidden><h3>DANH SÁCH TỆP ĐÃ CHỌN</h3><div id="fileList" class="filelist"></div><div style="display:flex;gap:7px;margin-top:12px"><button class="btn primary wfull" id="scanBtn" type="button">▶ Quét và trích xuất</button><button class="btn danger small" id="clearFilesBtn" type="button">Xóa</button></div></div>
+      <div class="working" id="progressArea" hidden><div class="worklabel"><span id="progressText">Đang quét...</span><strong id="progressPercent">0%</strong></div><div class="bar"><span id="progressBar"></span></div><button class="btn small ghost" id="cancelBtn" style="margin-top:7px;padding:2px 0" type="button">Dừng quét</button></div>
+      <div class="info"><span>🔒</span><span>File được xử lý trong máy của bạn, không tải lên máy chủ. <strong>Cần internet để tải thư viện đọc PDF/OCR lần đầu</strong> nếu chưa có sẵn trong bộ nhớ đệm trình duyệt.</span></div>
+      <details class="helpdetails"><summary>Nếu file không đọc được?</summary><p>PDF có chữ: chọn “Tự động” hoặc “Chỉ đọc chữ”. PDF là ảnh chụp/scan: chọn “Luôn OCR”. Với mạng công ty chặn CDN, cần cho phép tải thư viện PDF.js và Tesseract.js; vẫn có thể dán nội dung thủ công ở mục “Văn bản nhận diện”.</p></details>
+     </div>
+   </aside>
+   <main class="pane main">
+    <div class="cardhead"><h2>02 · Kết quả nhận diện</h2><span class="muted" style="font-size:12px">Có thể sửa trực tiếp trong bảng</span></div>
+    <div class="maininner">
+      <div class="stats"><div class="stat"><span>Số tệp đã chọn</span><strong id="filesCount">0</strong></div><div class="stat"><span>Dòng dữ liệu</span><strong id="rowsCount">0</strong></div><div class="stat"><span>Cần kiểm tra</span><strong id="reviewCount">0</strong></div></div>
+      <div class="notice" id="warningBox" role="status"></div>
+      <div class="actions"><div class="actionsleft"><input class="search" type="search" id="filterText" placeholder="🔎 Tìm số chứng từ, PO, mã vật tư..." aria-label="Tìm kiếm kết quả" /><select class="control" id="statusFilter" style="width:153px"><option value="all">Tất cả trạng thái</option><option value="review">Cần kiểm tra</option><option value="ok">Đã nhận diện</option></select></div><div class="actionsright"><button id="demoBtn" class="btn soft" type="button">Xem dữ liệu mẫu</button><button id="clearRowsBtn" class="btn" type="button">Xóa kết quả</button><button id="exportBtn" class="btn primary" type="button" disabled>⬇ Xuất Excel .xlsx</button></div></div>
+      <div class="tabbar"><button class="tab active" data-tab="table" type="button">Danh sách chứng từ</button><button class="tab" data-tab="inspect" type="button">Xem bản gốc & văn bản OCR</button></div>
+      <section id="tablePanel">
+        <div class="tablewrap" id="tableWrap"><table class="datatable"><thead><tr><th>STT</th><th>Trạng thái</th><th>Số chứng từ (No.)</th><th>Ngày chứng từ</th><th>Purchase Order</th><th>Plant</th><th>Vendor</th><th>Tên nhà cung cấp</th><th>Delivery Note</th><th>Ngày giao hàng</th><th>Nhóm mua</th><th>Dòng hàng</th><th>Mã vật tư</th><th>Mô tả vật tư</th><th>Số lượng (nguyên bản)</th><th>Đơn vị</th><th>Tên tệp</th><th>Trang</th><th>Ghi chú</th><th>Thao tác</th></tr></thead><tbody id="rowsBody"></tbody></table><div id="emptyMessage" class="empty"><div class="empticon">📋</div><strong>Chưa có kết quả</strong><p>Chọn một hoặc nhiều PDF ở bên trái, sau đó nhấn <b>Quét và trích xuất</b>. Bạn cũng có thể thử với dữ liệu ví dụ.</p></div></div>
+        <div class="foothelp">Kéo ngang để xem các cột. Nhấp vào một hàng để xem văn bản và bản gốc. Mã số được giữ dạng văn bản để không mất số 0 ở đầu.</div>
+      </section>
+      <section id="inspectPanel" hidden>
+         <div class="inspect"><div><label class="fieldname">Trang/ảnh gốc <span id="previewName" class="muted"></span></label><div class="previewbox" id="previewArea"><p>Chọn một dòng kết quả để xem trang gốc.</p></div></div><div><label class="fieldname">Văn bản nhận diện — có thể sửa, rồi trích xuất lại</label><textarea class="textarea" id="rawText" placeholder="Văn bản PDF hoặc kết quả OCR sẽ xuất hiện tại đây. Bạn cũng có thể dán văn bản đã copy từ PDF vào đây rồi nhấn “Trích xuất từ văn bản”."></textarea><div class="manual"><button class="btn primary small" id="reparseBtn" type="button">↻ Trích xuất từ văn bản</button><button class="btn small" id="copyTextBtn" type="button">Sao chép nội dung</button><span id="sourceHint" class="muted" style="font-size:11px">Chọn hàng để xem</span></div></div></div>
+      </section>
+    </div>
+   </main>
+  </div>
+  <footer class="footer">ReceiptScan · Công cụ kiểm tra dữ liệu chứng từ nội bộ · Hãy đối chiếu mã số trước khi sử dụng trong SAP</footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+'use strict';
+(function(){
+  const $ = id=>document.getElementById(id);
+  const fields = ['receipt','receiptDate','po','plant','vendor','vendorName','delivery','deliveryDate','purchaseGroup','item','material','description','quantity','unit','fileName','page','note'];
+  const fieldTitles = ['Số chứng từ','Ngày chứng từ','Purchase Order','Plant','Vendor','Tên nhà cung cấp','Delivery Note','Ngày giao hàng','Nhóm mua','Dòng hàng','Mã vật tư','Mô tả vật tư','Số lượng (nguyên bản)','Đơn vị','Tên tệp','Trang','Ghi chú'];
+  const state={files:[],rows:[],sources:new Map(),selected:null,active:'table',busy:false,abort:false,ocrWorker:null,nextId:1};
+  const escapeHtml=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),3600)}
+  function warning(msg){$('warningBox').textContent=msg;$('warningBox').classList.toggle('show',!!msg)}
+  function setProgress(a,b,label){$('progressArea').hidden=false;const pct=b?Math.min(100,Math.round(100*a/b)):0;$('progressBar').style.width=pct+'%';$('progressPercent').textContent=pct+'%';$('progressText').textContent=label||'Đang xử lý...'}
+  function refreshFiles(){ $('filesCount').textContent=state.files.length;$('fileSection').hidden=!state.files.length;$('fileList').innerHTML=state.files.map(f=>'<div class="fileitem"><span>📄</span><span class="filetitle" title="'+escapeHtml(f.name)+'">'+escapeHtml(f.name)+'</span><span class="filesize">'+formatSize(f.size)+'</span></div>').join('');}
+  function formatSize(n){return n>=1e6?(n/1e6).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB'}
+  function addFiles(list){const accept=Array.from(list||[]).filter(f=>/\.pdf$|\.(jpg|jpeg|png|webp)$/i.test(f.name)||/^image\/(jpeg|png|webp)$/.test(f.type));let count=0;for(const f of accept){if(!state.files.some(g=>g.name===f.name&&g.size===f.size&&g.lastModified===f.lastModified)){state.files.push(f);count++}}refreshFiles();if(count)toast('Đã thêm '+count+' tệp. Nhấn “Quét và trích xuất”.');else if(list.length)toast('Không có tệp hợp lệ hoặc đã được chọn trước đó.');}
+  $('pickBtn').onclick=e=>{e.stopPropagation();$('fileInput').click()};$('fileInput').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+  $('dropZone').onclick=e=>{if(e.target.tagName!=='BUTTON')$('fileInput').click()};$('dropZone').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('fileInput').click()}};
+  for(const evt of ['dragenter','dragover'])$('dropZone').addEventListener(evt,e=>{e.preventDefault();$('dropZone').classList.add('drag')});
+  for(const evt of ['dragleave','drop'])$('dropZone').addEventListener(evt,e=>{e.preventDefault();$('dropZone').classList.remove('drag')});
+  $('dropZone').addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+  $('clearFilesBtn').onclick=()=>{if(state.busy)return;state.files=[];refreshFiles()};
+  $('cancelBtn').onclick=()=>{state.abort=true;$('cancelBtn').disabled=true;toast('Đang dừng sau trang hiện tại...')};
+  function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.async=true;script.onload=resolve;script.onerror=()=>{script.remove();reject(new Error('Không tải được '+src))};document.head.appendChild(script)})}
+  async function loadAny(name,sources,check){if(check())return;let last=null;for(const src of sources){try{await loadScript(src);if(check())return}catch(e){last=e}}throw last||new Error('Không thể tải '+name+'. Hãy kiểm tra kết nối internet hoặc chính sách mạng công ty.')}
+  async function requirePdf(){await loadAny('PDF.js',['./libs/pdf.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js','https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js'],()=>!!window.pdfjsLib);if(!window.pdfjsLib.GlobalWorkerOptions.workerSrc){window.pdfjsLib.GlobalWorkerOptions.workerSrc=(document.querySelector('script[src*="pdf.min.js"]')?.src||'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js').replace('pdf.min.js','pdf.worker.min.js')}}
+  async function requireOcr(){await loadAny('Tesseract.js',['./libs/tesseract.min.js','https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js','https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js'],()=>!!window.Tesseract);if(!state.ocrWorker){state.ocrWorker=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text'&&state.busy){const p=Math.round((m.progress||0)*100);$('progressText').textContent='Đang OCR ảnh: '+p+'%'}}});}return state.ocrWorker;}
+  function normalize(v){return String(v||'').normalize('NFKC').replace(/[\u00a0\u2000-\u200b]/g,' ').replace(/[‐‑‒–—]/g,'-').replace(/\r\n?/g,'\n')}
+  function clean(v){return String(v||'').replace(/[ \t]+/g,' ').trim().replace(/^[.:\-\s]+|[.:\-\s]+$/g,'').trim()}
+  function grab(text,re){const m=text.match(re);return m?clean(m[1]||''):''}
+  function labeled(lines,pat,stop){for(let i=0;i<lines.length;i++){const line=lines[i],m=line.match(pat);if(m){let val=clean(line.slice(m.index+m[0].length));if(!val&&i+1<lines.length)val=clean(lines[i+1]);if(stop)val=clean(val.split(stop)[0]);return val}}return ''}
+  function cleanDate(d){return String(d||'').replace(/\//g,'.').replace(/\s/g,'')}
+  function parseData(input,meta){
+    const text=normalize(input),lines=text.split(/\n/).map(clean).filter(Boolean),flat=lines.join('  ');
+    const base={receipt:'',receiptDate:'',po:'',plant:'',vendor:'',vendorName:'',delivery:'',deliveryDate:'',purchaseGroup:'',item:'',material:'',description:'',quantity:'',unit:'',fileName:meta.fileName||'',page:String(meta.page||''),note:''};
+    // Search labeled values first: never treat dates as plain identifiers.
+    const headNo=flat.match(/\bNo\.?\s*[:#]?\s*([0-9OIl|]{8,13})\s*[/\s]+\s*(\d{2}[./]\d{2}[./]\d{4})/i);
+    if(headNo){base.receipt=headNo[1].replace(/[O]/g,'0').replace(/[Il|]/g,'1');base.receiptDate=cleanDate(headNo[2])}
+    if(!base.receipt)base.receipt=grab(flat,/\b(?:Goods\s*Receipt\s*(?:No\.?|Number)|Document\s*(?:No\.?|Number)|No\.)\s*[:#]?\s*([0-9OIl|]{8,13})/i).replace(/O/g,'0');
+    if(!base.receiptDate)base.receiptDate=cleanDate(grab(flat,/\bNo\.?\s*[:#]?\s*[\dOIl|]{8,13}\s*[/\s]+\s*(\d{2}[./]\d{2}[./]\d{4})/i));
+    base.plant=grab(flat,/\bPlant\s*[:.]?\s*(\d{3,5})\b/i);
+    base.vendor=grab(flat,/\bVendor\s*[:.]?\s*(\d{7,12})\b/i);
+    base.po=grab(flat,/\b(?:Purchase\s*order|Purch\.?\s*order|P\.?O\.?)\s*[:.]?\s*(\d{8,12}(?:\s*[-/]\s*\d{1,5})?)/i).replace(/\s+/g,'');
+    base.delivery=grab(flat,/\bDelivery\s*note\s*:?\s*([A-Z0-9\-/]{2,25})/i);
+    base.deliveryDate=cleanDate(grab(flat,/\bDelivery\s*note\s*date\s*:?\s*(\d{2}[./]\d{2}[./]\d{4})/i));
+    base.purchaseGroup=grab(flat,/\bPurch\.?\s*group\s*:?\s*(\d{2,5})\b/i);
+    let nm=labeled(lines,/\bName\s*:?/i,/\b(?:Header|Purchase|Vendor|Plant|Delivery)\b/i);
+    if(nm&&nm.length<95)base.vendorName=nm;
+    // The same document can contain multiple line items; restrict material extraction to item blocks.
+    const starts=[];
+    for(let i=0;i<lines.length;i++){
+      const m=lines[i].match(/^(\d{4})\b(?!\d)/);
+      if(!m)continue;
+      const nearby=lines.slice(i,Math.min(i+5,lines.length)).join(' ');
+      if(/\b(?:K\s+)?\d{8,12}\b/.test(nearby)||/\b(?:L|KG|PCS|EA|PC|ST|M|M2|M3)\b/i.test(nearby))starts.push({index:i,item:m[1]});
+    }
+    const parts=[];
+    for(let j=0;j<starts.length;j++){
+      const start=starts[j],end=starts[j+1]?.index??Math.min(lines.length,start.index+9);
+      const chunk=lines.slice(start.index,end),chunkText=chunk.join(' '),item={...base,item:start.item};
+      item.material=grab(chunkText,/(?:^|\s)(?:K\s+)?(\d{8,12})\b/);
+      const qt=chunkText.match(/\b(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?)\s*(L|KG|G|EA|PC|PCS|ST|M2|M3|M|SET|BOX)\b/i);
+      if(qt){item.quantity=qt[1];item.unit=qt[2].toUpperCase()}
+      const descriptions=[];
+      for(let k=0;k<Math.min(chunk.length,5);k++){
+        let cand=chunk[k].replace(/^\d{4}\s*/, '').replace(/\bK\s+\d{8,12}\b/,'').replace(/\b\d{8,12}\b/,'').replace(/\b\d{1,3}(?:[.,]\d{3})*\s*(?:L|KG|EA|PC|PCS|M)\b/ig,'');
+        cand=clean(cand);
+        if(cand&&/[a-zA-ZÀ-ỹ]/.test(cand)&&!/^Hao\s*[\/]?\s*/i.test(cand)&&!/^QUYEN VAN,/i.test(cand))descriptions.push(cand);
+      }
+      item.description=descriptions[0]||'';
+      parts.push(item);
+    }
+    if(!parts.length){
+      const contentStart=lines.findIndex(l=>/^0001\b/.test(l));
+      const sub=contentStart>=0?lines.slice(contentStart).join(' '):flat;
+      base.item=grab(sub,/(?:^|\s)(\d{4})\s+(?:K\s*)?\d{8,12}/);
+      base.material=grab(sub,/(?:^|\s)K\s*(\d{8,12})\b/i);
+      const qty=sub.match(/\b(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?)\s*(L|KG|G|EA|PC|PCS|ST|M2|M3|M|SET|BOX)\b/i);
+      if(qty){base.quantity=qty[1];base.unit=qty[2].toUpperCase()}
+      parts.push(base);
+    }
+    return parts.map(x=>({...x,needsReview:(!x.receipt||!x.po||!x.material||!x.quantity),rawText:text}));
+  }
+  function addParsed(raw,meta,preview){const data=parseData(raw,meta),key=meta.fileName+'::'+meta.page;state.sources.set(key,{rawText:raw,preview:preview||null,fileName:meta.fileName,page:meta.page});for(const row of data){const existing=state.rows.find(r=>r.fileName===row.fileName&&r.page===row.page&&r.item===row.item);if(existing){Object.assign(existing,row);existing.sourceKey=key}else{state.rows.push({...row,_id:state.nextId++,sourceKey:key})}}return data.length}
+  function renderText(items){const buckets=[];for(const item of items){if(!item.str||!item.str.trim())continue;const t=item.transform||[],x=Number(t[4])||0,y=Number(t[5])||0;let line=buckets.find(b=>Math.abs(b.y-y)<3.3);if(!line){line={y,parts:[]};buckets.push(line)}line.parts.push({x,str:item.str})}buckets.sort((a,b)=>b.y-a.y);return buckets.map(b=>b.parts.sort((a,c)=>a.x-c.x).map(p=>p.str).join(' ').replace(/\s{2,}/g,'  ')).join('\n')}
+  async function canvasOcr(canvas){const worker=await requireOcr();const data=await worker.recognize(canvas);return data.data?.text||''}
+  async function scanPdf(file,fi,totalRef){await requirePdf();const buf=new Uint8Array(await file.arrayBuffer());const doc=await pdfjsLib.getDocument({data:buf,useSystemFonts:true,isEvalSupported:false}).promise;const max=$('pageMode').value==='first'?1:doc.numPages;const mode=$('scanMode').value;let found=0;
+    for(let p=1;p<=max;p++){
+      if(state.abort)break;
+      setProgress(totalRef.done,totalRef.total,file.name+' · trang '+p+'/'+max);
+      const page=await doc.getPage(p);let text='';if(mode!=='ocr'){const tc=await page.getTextContent();text=renderText(tc.items)}
+      let canvas=null,preview=null;const needOCR=(mode==='ocr'||(mode==='auto'&&text.replace(/\W/g,'').length<55));
+      if(needOCR){const viewport=page.getViewport({scale:1}),scale=Math.min(2.7,Math.max(1.7,2350/Math.max(viewport.width,viewport.height)));canvas=document.createElement('canvas');const v=page.getViewport({scale});canvas.width=Math.round(v.width);canvas.height=Math.round(v.height);const ctx=canvas.getContext('2d',{alpha:false});await page.render({canvasContext:ctx,viewport:v}).promise;text=await canvasOcr(canvas)}
+      try{if(!canvas){const v=page.getViewport({scale:Math.min(1.15,1200/page.getViewport({scale:1}).width)});canvas=document.createElement('canvas');canvas.width=Math.round(v.width);canvas.height=Math.round(v.height);await page.render({canvasContext:canvas.getContext('2d',{alpha:false}),viewport:v}).promise}preview=canvas.toDataURL('image/jpeg',.68)}catch(e){console.warn('Không tạo được xem trước',e)}
+      found+=addParsed(text,{fileName:file.name,page:p},preview);totalRef.done++;setProgress(totalRef.done,totalRef.total,'Đã đọc '+file.name+' · '+p+'/'+max);
+      page.cleanup();await Promise.resolve();
+    }
+    await doc.destroy();return found;
+  }
+  async function scanImage(file,totalRef){await requireOcr();const src=URL.createObjectURL(file);try{const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src});const max=2500,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*scale);c.height=Math.round(img.naturalHeight*scale);const ctx=c.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);const txt=await canvasOcr(c);const preview=c.toDataURL('image/jpeg',.68);addParsed(txt,{fileName:file.name,page:1},preview);totalRef.done++;setProgress(totalRef.done,totalRef.total,'Đã đọc '+file.name)}finally{URL.revokeObjectURL(src)}}
+  async function scan(){if(state.busy||!state.files.length)return;state.busy=true;state.abort=false;$('scanBtn').disabled=true;$('cancelBtn').disabled=false;warning('');let failed=[];try{
+     let total=0;const fi=[];for(const f of state.files){if(/\.pdf$/i.test(f.name)){try{await requirePdf();const d=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;const np=$('pageMode').value==='first'?1:d.numPages;fi.push({f,n:np});total+=np;await d.destroy()}catch(e){fi.push({f,n:1,loadError:e});total++}}else{fi.push({f,n:1});total++}}
+     const ref={done:0,total};setProgress(0,total,'Chuẩn bị quét...');for(const obj of fi){if(state.abort)break;try{if(obj.loadError)throw obj.loadError;if(/\.pdf$/i.test(obj.f.name))await scanPdf(obj.f,0,ref);else await scanImage(obj.f,ref)}catch(e){failed.push(obj.f.name+': '+(e?.message||String(e)));ref.done+=obj.n-(ref.done%1);setProgress(Math.min(ref.done,total),total,'Lỗi khi xử lý '+obj.f.name)}renderTable()}
+     if($('combinePages').checked)combinePages();renderTable();if(state.rows.length){selectRow(state.rows[0]._id);toast('Đã trích xuất '+state.rows.length+' dòng. Hãy kiểm tra dữ liệu trước khi xuất Excel.')}else toast('Không tìm được dữ liệu. Thử chế độ “Luôn OCR”.');if(failed.length)warning('Một số tệp không đọc được: '+failed.slice(0,3).join(' | ')+(failed.length>3?' ...':''));
+   }catch(e){console.error(e);warning('Không thể quét: '+(e?.message||e)+'. Kiểm tra internet để tải thư viện PDF/OCR hoặc dán văn bản thủ công.')}finally{state.busy=false;$('scanBtn').disabled=false;$('progressArea').hidden=true}}
+  function combinePages(){const seen=new Map();const unique=[];for(const row of state.rows){const key=row.fileName+'\u0000'+row.receipt+'\u0000'+row.item+'\u0000'+row.material;if(row.receipt&&seen.has(key)){let prev=seen.get(key);if(!prev.quantity&&row.quantity)Object.assign(prev,row,{_id:prev._id});continue}unique.push(row);if(row.receipt)seen.set(key,row)}state.rows=unique;}
+  function filterRows(){const q=$('filterText').value.trim().toLocaleLowerCase('vi'),st=$('statusFilter').value;return state.rows.filter(r=>(st==='all'||(st==='review'&&r.needsReview)||(st==='ok'&&!r.needsReview))&&(!q||fields.some(k=>String(r[k]||'').toLocaleLowerCase('vi').includes(q))))}
+  function renderTable(){let review=state.rows.filter(r=>r.needsReview).length;$('rowsCount').textContent=state.rows.length;$('reviewCount').textContent=review;$('exportBtn').disabled=!filterRows().length;const rows=filterRows();$('emptyMessage').style.display=rows.length?'none':'block';$('rowsBody').innerHTML=rows.map((r,i)=>'<tr data-id="'+r._id+'" class="'+(r._id===state.selected?'active':'')+'"><td>'+(i+1)+'</td><td><span class="status '+(r.needsReview?'check':'')+'">'+(r.needsReview?'⚠ Cần kiểm tra':'✓ Đã nhận diện')+'</span></td>'+fields.map(f=>'<td data-col="'+f+'"><input class="cell" data-key="'+f+'" data-id="'+r._id+'" value="'+escapeHtml(r[f])+'" aria-label="'+escapeHtml(f)+'" spellcheck="false" /></td>').join('')+'<td><button class="btn small danger" data-delete="'+r._id+'" title="Xóa dòng">✕</button></td></tr>').join('')}
+  $('rowsBody').addEventListener('focusin',e=>{const tr=e.target.closest('tr[data-id]');if(tr)selectRow(Number(tr.dataset.id),false)});
+  $('rowsBody').addEventListener('input',e=>{if(!e.target.matches('.cell'))return;const r=state.rows.find(r=>r._id===Number(e.target.dataset.id));if(!r)return;r[e.target.dataset.key]=e.target.value;r.needsReview=!r.receipt||!r.po||!r.material||!r.quantity;$('reviewCount').textContent=state.rows.filter(x=>x.needsReview).length;const badge=e.target.closest('tr').querySelector('.status');if(badge){badge.textContent=r.needsReview?'⚠ Cần kiểm tra':'✓ Đã nhận diện';badge.className='status'+(r.needsReview?' check':'')}});
+  $('rowsBody').addEventListener('click',e=>{const del=e.target.closest('[data-delete]');if(del){const id=Number(del.dataset.delete);state.rows=state.rows.filter(r=>r._id!==id);if(state.selected===id)state.selected=null;renderTable();updateInspect();return}const tr=e.target.closest('tr[data-id]');if(tr)selectRow(Number(tr.dataset.id),false)});
+  function selectRow(id,rerender=true){state.selected=id;if(rerender)renderTable();else{for(const tr of $('rowsBody').querySelectorAll('tr[data-id]'))tr.classList.toggle('active',Number(tr.dataset.id)===id)}updateInspect()}
+  function updateInspect(){const row=state.rows.find(r=>r._id===state.selected);const source=row?state.sources.get(row.sourceKey):null;$('previewName').textContent=row?'· '+row.fileName+' / trang '+row.page:'';$('rawText').value=source?.rawText||row?.rawText||'';$('sourceHint').textContent=row?'Đang sửa dòng số '+row._id:'Dán văn bản để nhận diện';const area=$('previewArea');area.replaceChildren();if(source?.preview){const img=new Image();img.alt='Trang chứng từ gốc';img.src=source.preview;area.appendChild(img)}else{const p=document.createElement('p');p.textContent='Chưa có ảnh xem trước cho dòng này.';area.appendChild(p)}}
+  function setTab(tab){state.active=tab;$('tablePanel').hidden=tab!=='table';$('inspectPanel').hidden=tab!=='inspect';for(const b of document.querySelectorAll('.tab'))b.classList.toggle('active',b.dataset.tab===tab);if(tab==='inspect')updateInspect()}
+  for(const b of document.querySelectorAll('.tab'))b.onclick=()=>setTab(b.dataset.tab);
+  $('scanBtn').onclick=scan;$('filterText').oninput=renderTable;$('statusFilter').onchange=renderTable;$('clearRowsBtn').onclick=()=>{if(state.busy)return;state.rows=[];state.sources.clear();state.selected=null;renderTable();updateInspect();warning('')};
+  $('demoBtn').onclick=()=>{const sample=[
+      'GOODS RECEIPT SLIP',
+      'No. 5200171310 / 17.11.2026 Page 1',
+      'Plant: 5244   DAV Production TKY ES',
+      'Vendor: 0000582045',
+      'Name: CONG TY TNHH QUYEN VAN',
+      'Purchase order: 4500968705-369',
+      'Delivery note: 1082',
+      'Delivery note date: 04.11.2026',
+      'Purch. group: 369',
+      '0001 Alcohol 90 Deg',
+      'K 5244042000   Hao / TAM KY PLANT     2,000 L',
+      'QUYEN VAN, Alcohol 90 Deg'
+    ].join('\n');addParsed(sample,{fileName:'VI_DU_TU_ANH.jpg',page:1},null);renderTable();selectRow(state.rows[state.rows.length-1]._id);toast('Đã thêm dữ liệu minh họa từ ảnh bạn cung cấp. Không phải kết quả OCR thật.');};
+  $('reparseBtn').onclick=()=>{const txt=$('rawText').value.trim();if(!txt){toast('Hãy dán hoặc nhập nội dung trước.');return}const row=state.rows.find(r=>r._id===state.selected);const meta=row?{fileName:row.fileName,page:row.page}:{fileName:'DAN_THU_CONG',page:1};const source=row?state.sources.get(row.sourceKey):null;addParsed(txt,meta,source?.preview||null);renderTable();selectRow(state.rows[state.rows.length-1]._id);toast('Đã nhận diện lại văn bản. Kiểm tra các ô chưa đầy đủ.');};
+  $('copyTextBtn').onclick=async()=>{try{await navigator.clipboard.writeText($('rawText').value);toast('Đã sao chép văn bản')}catch(e){$('rawText').select();document.execCommand('copy');toast('Đã sao chép (nếu trình duyệt cho phép)')}};
+  // Pure-JS XLSX writer (OOXML + ZIP STORE) with no third-party library dependency.
+  // Identifiers and quantity strings are exported as text to prevent leading-zero loss and locale misinterpretation.
+  const encoder=new TextEncoder();
+  function xml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'')}
+  function col(n){let v='';for(n++;n;n=Math.floor((n-1)/26))v=String.fromCharCode(65+(n-1)%26)+v;return v}
+  function makeSheet(rows){const maxCol=rows[0].length, widths=[9,18,18,20,12,18,36,18,18,13,13,20,36,23,12,34,9,28,16];const cols='<cols>'+widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('')+'</cols>';
+    const body=rows.map((row,ri)=>'<row r="'+(ri+1)+'"'+(ri===0?' ht="29" customHeight="1"':'')+'>'+row.map((value,ci)=>{const x=xml(value),ref=col(ci)+(ri+1);return '<c r="'+ref+'" t="inlineStr" s="'+(ri===0?1:ri%2?0:2)+'"><is><t xml:space="preserve">'+x+'</t></is></c>'}).join('')+'</row>').join('');
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/>'+cols+'<sheetData>'+body+'</sheetData><autoFilter ref="A1:'+col(maxCol-1)+rows.length+'"/><pageMargins left="0.35" right="0.35" top="0.5" bottom="0.5" header="0.2" footer="0.2"/></worksheet>'}
+  function crc32(data){let crc=0xffffffff;for(let i=0;i<data.length;i++){crc^=data[i];for(let j=0;j<8;j++)crc=(crc>>>1)^((crc&1)?0xedb88320:0)}return (crc^0xffffffff)>>>0}
+  function U16(v){return [v&255,(v>>>8)&255]}function U32(v){return [v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255]}
+  function makeZip(named){const chunks=[],directory=[];let offset=0;const add=(arr)=>{chunks.push(Uint8Array.from(arr));offset+=arr.length};for(const [name,str] of Object.entries(named)){const nb=encoder.encode(name),data=encoder.encode(str),crc=crc32(data),start=offset;
+     add([0x50,0x4b,3,4,...U16(20),...U16(0x800),...U16(0),...U16(0),...U16(0),...U32(crc),...U32(data.length),...U32(data.length),...U16(nb.length),...U16(0)]);add(nb);add(data);
+     directory.push([0x50,0x4b,1,2,...U16(20),...U16(20),...U16(0x800),...U16(0),...U16(0),...U16(0),...U32(crc),...U32(data.length),...U32(data.length),...U16(nb.length),...U16(0),...U16(0),...U16(0),...U16(0),...U32(0),...U32(start),...nb]);
+   }const dirStart=offset;for(const part of directory)add(part);const dirSize=offset-dirStart;add([0x50,0x4b,5,6,...U16(0),...U16(0),...U16(directory.length),...U16(directory.length),...U32(dirSize),...U32(dirStart),...U16(0)]);return new Blob(chunks,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+  function exportXlsx(){const data=$('exportFiltered').checked?filterRows():state.rows;if(!data.length){toast('Chưa có dữ liệu để xuất.');return}
+     // Status is calculated at export time, including any edited fields.
+     const headers=['STT','Trạng thái',...fieldTitles];const grid=[headers,...data.map((r,i)=>[String(i+1),r.needsReview?'Cần kiểm tra':'Đã nhận diện',...fields.map(k=>String(r[k]??''))])];
+     const sheets=[{name:'Danh sách phiếu nhập',data:grid}];
+     const paths={
+       '[Content_Types].xml':'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>',
+       '_rels/.rels':'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
+       'xl/workbook.xml':'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Danh sách phiếu nhập" sheetId="1" r:id="rId1"/></sheets></workbook>',
+       'xl/_rels/workbook.xml.rels':'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',
+       'xl/styles.xml':'<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="10"/><color rgb="FF263B57"/><name val="Aptos"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Aptos"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF174F9D"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3F7FC"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="3" borderId="0" xfId="0" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>',
+       'xl/worksheets/sheet1.xml':makeSheet(grid)
+     };const blob=makeZip(paths);const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='SAP_Goods_Receipt_'+new Date().toISOString().slice(0,10)+'.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('Đã tạo Excel '+data.length+' dòng. Mã số giữ nguyên dạng văn bản.');
+  }
+  $('exportBtn').onclick=exportXlsx;
+  renderTable();
+  // Expose parsers in a namespaced, read-only fashion for local validation and automated tests.
+  window.ReceiptScanTest=Object.freeze({parseData,makeSheet,makeZip});
+})();
+</script>
+</body>
+</html>
