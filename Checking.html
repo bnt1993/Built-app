@@ -1967,8 +1967,9 @@
 
 
     /* REQUEST WORKFLOW */
-    .request-dialog{width:min(460px,calc(100vw - 28px));border:1px solid var(--line);border-radius:16px;background:var(--app-panel);color:var(--ink);padding:0;box-shadow:0 22px 60px rgba(15,23,42,.26)}.request-dialog::backdrop{background:rgba(15,23,42,.38)}.request-dialog-form{display:flex;flex-direction:column;gap:14px;padding:18px}.request-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.request-dialog-head h3{margin:0;font-size:16px}.request-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.request-field{display:flex;flex-direction:column;gap:4px;min-width:0}.request-field.request-wide{grid-column:1/-1}.request-field span{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase}.request-field strong{min-height:36px;display:flex;align-items:center;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);overflow-wrap:anywhere}.request-field input{height:36px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);color:var(--ink);padding:6px 9px}.request-dialog-actions{display:flex;justify-content:flex-end;gap:8px}.request-count{font-size:11px;color:var(--muted);font-weight:700}@media(max-width:620px){.request-grid{grid-template-columns:1fr}.request-field.request-wide{grid-column:auto}.request-dialog-actions .btn{flex:1}}
+    .request-dialog{width:min(460px,calc(100vw - 28px));border:1px solid var(--line);border-radius:16px;background:var(--app-panel);color:var(--ink);padding:0;box-shadow:0 22px 60px rgba(15,23,42,.26)}.request-dialog::backdrop{background:rgba(15,23,42,.38)}.request-dialog-form{display:flex;flex-direction:column;gap:14px;padding:18px}.request-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.request-dialog-head h3{margin:0;font-size:16px}.request-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.request-field{display:flex;flex-direction:column;gap:4px;min-width:0}.request-field.request-wide{grid-column:1/-1}.request-field span{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase}.request-field strong{min-height:36px;display:flex;align-items:center;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);overflow-wrap:anywhere}.request-field input,.request-field select{height:36px;border:1px solid var(--line);border-radius:8px;background:var(--app-field);color:var(--ink);padding:6px 9px}.request-done{padding:9px 12px;border-radius:10px;background:#dcfce7;color:#166534;font-weight:800;text-align:center;border:1px solid #bbf7d0}.request-dialog-actions{display:flex;justify-content:flex-end;align-items:flex-end;gap:8px}.request-requester{display:flex;flex-direction:column;gap:4px;flex:1;min-width:170px;margin-right:auto}.request-requester span{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase}.request-requester input{height:40px;border:1px solid var(--line);border-radius:10px;background:var(--app-field);color:var(--ink);padding:6px 10px;min-width:0;width:100%}.request-count{font-size:11px;color:var(--muted);font-weight:700}@media(max-width:620px){.request-grid{grid-template-columns:1fr}.request-field.request-wide{grid-column:auto}.request-dialog-actions{flex-wrap:wrap}.request-requester{flex:1 1 100%;margin-right:0}.request-dialog-actions .btn{flex:1}}
 
+    .request-edit-actions{display:flex;justify-content:flex-end;gap:8px}.request-sap-jump{cursor:pointer}.request-sap-jump:hover{text-decoration:underline}.request-sap-jump:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
     /* FINAL STOCK + REQUEST FILTER UPGRADE */
     #view-stock .toolbar-primary{align-items:center}
     #view-stock .search-box-group{min-width:min(100%,420px)}
@@ -2848,7 +2849,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 @media(max-width:900px){#catalog-detail-dialog .detail-section{grid-template-areas:"title" "image" "thumbs" "kpis" "details" "bm"!important}}
 @media(max-width:620px){#catalog-detail-dialog .detail-kpi-grid{grid-template-columns:1fr!important}#catalog-detail-dialog .detail-kpi-card{min-height:82px!important}}
 </style>
-</head>
+<style>[data-support-pane="true"]{display:none!important}</style></head>
 <body>
 <div class="app-shell">
 <header class="app-header">
@@ -2867,12 +2868,11 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <div class="breadcrumbs"><span data-i18n="workspaceName">Không gian làm việc</span><span>/</span><span class="active" data-i18n="breadcrumb">Tổng quan vật tư</span></div>
 <nav aria-label="Các màn hình quản lý kho" class="view-tabs" data-i18n-aria="tabsAria" role="tablist">
 <button aria-controls="view-stock" aria-selected="true" class="view-tab active" id="tab-stock" onclick="chuyenTab('stock')" role="tab" tabindex="0" type="button"><span aria-hidden="true">▤</span><span data-i18n="tabStock">Tra cứu tồn kho</span></button>
-<button aria-controls="view-analytics" aria-selected="false" class="view-tab" id="tab-analytics" onclick="chuyenTab('analytics')" role="tab" tabindex="-1" type="button"><span aria-hidden="true">◫</span><span data-i18n="tabAnalytics">Phân tích kho</span></button>
-<button aria-controls="view-dashboard" aria-selected="false" class="view-tab" id="tab-dashboard" onclick="chuyenTab('dashboard')" role="tab" tabindex="-1" type="button"><span aria-hidden="true">◫</span><span data-i18n="tabDashboard">Dashboard</span></button>
+
+
 <button aria-controls="view-catalog" aria-selected="false" class="view-tab" id="tab-catalog" onclick="chuyenTab('catalog')" role="tab" tabindex="-1" type="button"><span aria-hidden="true">▦</span><span data-i18n="catalogTab">Danh mục vật tư</span></button>
 <button aria-controls="view-search-history" aria-selected="false" class="view-tab" id="tab-search-history" onclick="chuyenTab('search-history')" role="tab" tabindex="-1" type="button"><span aria-hidden="true">◷</span><span data-i18n="searchHistoryTab">Lịch sử tìm kiếm</span></button>
-<button aria-controls="view-requests" aria-selected="false" class="view-tab" id="tab-requests" onclick="chuyenTab('requests')" role="tab" tabindex="-1" type="button"><span aria-hidden="true">＋</span><span data-i18n="requestTab">Yêu cầu</span></button>
-</nav>
+<button aria-controls="view-requests" aria-selected="false" class="view-tab" id="tab-requests" onclick="chuyenTab('requests')" role="tab" tabindex="-1" type="button"><span aria-hidden="true">＋</span><span data-i18n="requestTab">Yêu cầu</span></button></nav>
 <section aria-labelledby="tab-search-history" class="view-pane activity-pane" hidden="" id="view-search-history" role="tabpanel">
 <div class="pane-heading activity-heading"><div><h1 data-i18n="searchHistoryTab">Lịch sử tìm kiếm</h1><p data-i18n="searchHistoryNote"></p></div><span class="record-count" id="search-history-count" role="status"></span></div>
 <div class="activity-filterbar">
@@ -2927,7 +2927,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <button class="btn btn-secondary" data-i18n="activityUnselect" id="request-unselect" onclick="boChonHoatDong('requests')" type="button"></button>
 <button class="btn activity-delete" data-i18n="activityDeleteSelected" id="request-delete-selected" onclick="xoaDongDaChonHoatDong('requests')" type="button"></button>
 </div>
-<div class="activity-feedback" hidden="" id="request-feedback" role="status"><span></span><button class="btn btn-soft" data-i18n="activityUndo" id="request-undo" onclick="hoanTacHoatDong('requests')" type="button"></button></div><div class="table-wrapper activity-scroll" tabindex="0"><table class="activity-table" data-i18n-aria="requestTab" id="request-table"><colgroup><col style="width:40px"/><col style="width:142px"/><col style="width:100px"/><col style="width:226px"/><col style="width:76px"/><col style="width:100px"/><col style="width:58px"/><col style="width:116px"/><col style="width:80px"/></colgroup><thead><tr>
+<div class="activity-feedback" hidden="" id="request-feedback" role="status"><span></span><button class="btn btn-soft" data-i18n="activityUndo" id="request-undo" onclick="hoanTacHoatDong('requests')" type="button"></button></div><div class="table-wrapper activity-scroll" tabindex="0"><table class="activity-table" data-i18n-aria="requestTab" id="request-table"><colgroup><col style="width:40px"/><col style="width:142px"/><col style="width:100px"/><col style="width:226px"/><col style="width:76px"/><col style="width:100px"/><col style="width:58px"/><col style="width:116px"/><col style="width:150px"/><col style="width:130px"/></colgroup><thead><tr>
 <th class="activity-check-cell" scope="col"><label><input class="activity-check" data-i18n-aria="activitySelectPage" id="request-select-page" onchange="chonTrangHoatDong('requests',this.checked)" type="checkbox"/></label></th>
 <th aria-sort="descending" data-activity-sort="time" scope="col"><button onclick="doiSapXepHoatDong('requests','time')" type="button"><span data-i18n="requestTime"></span><span aria-hidden="true" data-sort-arrow="">↓</span></button></th>
 <th aria-sort="none" data-activity-sort="sap" scope="col"><button onclick="doiSapXepHoatDong('requests','sap')" type="button"><span data-i18n="colSap"></span><span aria-hidden="true" data-sort-arrow="">↕</span></button></th>
@@ -2936,6 +2936,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <th aria-sort="none" data-activity-sort="bin" scope="col"><button onclick="doiSapXepHoatDong('requests','bin')" type="button"><span data-i18n="requestBin"></span><span aria-hidden="true" data-sort-arrow="">↕</span></button></th>
 <th aria-sort="none" data-activity-sort="unit" scope="col"><button onclick="doiSapXepHoatDong('requests','unit')" type="button"><span data-i18n="requestUnit"></span><span aria-hidden="true" data-sort-arrow="">↕</span></button></th>
 <th aria-sort="none" data-activity-sort="qty" scope="col"><button onclick="doiSapXepHoatDong('requests','qty')" type="button"><span data-i18n="requestQty"></span><span aria-hidden="true" data-sort-arrow="">↕</span></button></th>
+<th aria-sort="none" data-activity-sort="requester" scope="col"><button onclick="doiSapXepHoatDong('requests','requester')" type="button"><span data-i18n="requestRequester">Người yêu cầu</span><span aria-hidden="true" data-sort-arrow="">↕</span></button></th>
 <th scope="col"><span data-i18n="searchHistoryAction"></span></th>
 </tr></thead><tbody id="request-rows"></tbody></table></div>
 <div class="activity-pagination" data-i18n-aria="activityPagination" role="group">
@@ -3048,7 +3049,6 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <div class="img-counter" id="dem-anh">0/0 ảnh</div>
 </div>
 <div aria-label="Image thumbnails" class="image-thumbs" id="image-thumbnails"></div>
-
 <div class="detail-placeholder" data-i18n="emptyDetails" id="chi-tiet-trong">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
 <div aria-label="Thông tin tổng quan vật tư" class="detail-kpi-grid" data-i18n-aria="detailKpiAria">
 <div class="detail-kpi-card value"><span data-i18n="detailStockValue">Giá trị tồn kho</span>
@@ -3066,457 +3066,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 </aside>
 </div>
 </section>
-<section aria-labelledby="tab-dashboard" class="view-pane" hidden="" id="view-dashboard" role="tabpanel">
-<div class="pane-heading">
-<div>
-<h1 data-i18n="warehouseDashboardHeading">Dashboard kho</h1>
-<p data-i18n="warehouseDashboardDesc">Theo dõi tổng quan giá trị xuất, nhập, tồn kho và cảnh báo vận hành theo thời gian thực.</p>
-</div>
-<span class="record-count" id="warehouse-summary-note" role="status"></span>
-</div>
-<section aria-label="Khoảng thời gian phân tích" class="dashboard-period-strip" data-i18n-aria="dashboardTimeTitle" id="warehouse-filters">
-<div class="dashboard-period-intro">
-<strong data-i18n="dashboardTimeTitle">Khoảng thời gian phân tích</strong>
-<span class="insight-note" id="dashboard-range-summary"></span>
-</div>
-<label class="dashboard-hall-control"><span data-i18n="dashboardHallFilter">Khu vực kho</span>
-<select id="dashboard-hall" onchange="doiLocHallPhanTich()">
-<option data-i18n="dashboardHallAll" value="all">Tất cả khu vực</option>
-<option data-i18n="dashboardHall1" value="hall1">Hall 1</option>
-<option data-i18n="dashboardHall2" value="hall2">Hall 2</option>
-</select>
-</label>
-<label><span data-i18n="dashboardTimeMode">Chọn kỳ</span>
-<select id="dashboard-range-mode" onchange="doiKyPhanTichKho()">
-<option data-i18n="dashboardTimeWeek" value="week">7 ngày gần đây</option>
-<option data-i18n="dashboardTimeMonth" selected="" value="month">Tháng hiện tại</option>
-<option data-i18n="dashboardTimeSelectMonth" value="selected-month">Theo tháng</option>
-<option data-i18n="dashboardTimeYear" value="year">Theo năm</option>
-<option data-i18n="dashboardTimeCustom" value="custom">Tùy chọn ngày</option>
-</select>
-</label>
-<label hidden="" id="dashboard-range-month-field"><span data-i18n="dashboardTimeMonthLabel">Tháng</span>
-<input id="dashboard-range-month" min="2000-01" onchange="doiKyPhanTichKho()" type="month"/>
-</label>
-<label hidden="" id="dashboard-range-year-field"><span data-i18n="dashboardTimeYearFrom">Từ năm</span>
-<input id="dashboard-range-year-from" inputmode="numeric" max="2100" min="2000" onchange="doiKyPhanTichKho()" step="1" type="number"/>
-</label>
-<label hidden="" id="dashboard-range-year-end-field"><span data-i18n="dashboardTimeYearTo">Đến năm</span>
-<input id="dashboard-range-year-to" inputmode="numeric" max="2100" min="2000" onchange="doiKyPhanTichKho()" step="1" type="number"/>
-</label>
-<label hidden="" id="dashboard-range-from-field"><span data-i18n="dashboardTimeFrom">Từ ngày</span>
-<input id="dashboard-range-from" onchange="doiKyPhanTichKho()" type="date"/>
-</label>
-<label hidden="" id="dashboard-range-to-field"><span data-i18n="dashboardTimeTo">Đến ngày</span>
-<input id="dashboard-range-to" onchange="doiKyPhanTichKho()" type="date"/>
-</label>
-<p aria-live="polite" class="dashboard-hall-status insight-note" id="dashboard-hall-status" role="status"></p>
-</section>
-<section class="warehouse-kpi-grid" data-i18n-aria="warehouseOverview">
-<div class="warehouse-kpi-group">
-<div class="warehouse-group-heading">
-<h2 data-i18n="warehouseSelectedPeriod">Tổng giá trị trong kỳ đã chọn</h2>
-<span id="warehouse-period-label"></span>
-</div>
-<div class="warehouse-kpi-cards">
-<article class="warehouse-kpi" data-tone="ratio">
-<h3>Tỷ lệ xuất / nhập trong kỳ</h3>
-<strong id="warehouse-period-inventory">—</strong>
-<small id="warehouse-period-inventory-date"></small>
-</article>
-<article class="warehouse-kpi" data-tone="in">
-<h3 data-i18n="dashboardCompareIn">Giá trị nhập</h3>
-<strong id="dashboard-compare-in-current">—</strong>
-<span class="dashboard-compare-delta" id="dashboard-compare-in-change">—</span>
-<small id="dashboard-compare-in-prior"></small>
-</article>
-<article class="warehouse-kpi" data-tone="out">
-<h3 data-i18n="dashboardCompareOut">Giá trị xuất</h3>
-<strong id="dashboard-compare-out-current">—</strong>
-<span class="dashboard-compare-delta" id="dashboard-compare-out-change">—</span>
-<small id="dashboard-compare-out-prior"></small>
-</article>
-<article class="warehouse-kpi" data-tone="net">
-<h3 data-i18n="warehouseNet">Biến động nhập − xuất</h3>
-<strong id="warehouse-period-net">—</strong>
-<small id="dashboard-compare-periods"></small>
-</article>
-</div>
-</div>
-<div class="warehouse-kpi-group">
-<div class="warehouse-group-heading">
-<h2 data-i18n="warehouseLastWeek">Tuần cuối trong kỳ đã chọn</h2>
-<span id="warehouse-week-label"></span>
-</div>
-<div class="warehouse-kpi-cards">
-<article class="warehouse-kpi" data-tone="ratio">
-<h3>Tỷ lệ xuất / nhập tuần cuối</h3>
-<strong id="warehouse-week-inventory">—</strong>
-<small id="warehouse-week-inventory-date"></small>
-</article>
-<article class="warehouse-kpi" data-tone="in">
-<h3 data-i18n="dashboardCompareIn">Giá trị nhập</h3>
-<strong id="warehouse-week-in">—</strong>
-<small data-i18n="warehouseCurrency">Đơn vị: VNĐ</small>
-</article>
-<article class="warehouse-kpi" data-tone="out">
-<h3 data-i18n="dashboardCompareOut">Giá trị xuất</h3>
-<strong id="warehouse-week-out">—</strong>
-<small data-i18n="warehouseCurrency">Đơn vị: VNĐ</small>
-</article>
-<article class="warehouse-kpi" data-tone="net">
-<h3 data-i18n="warehouseNet">Biến động nhập − xuất</h3>
-<strong id="warehouse-week-net">—</strong>
-<small id="dashboard-compare-note"></small>
-</article>
-</div>
-</div>
-</section>
-<section class="warehouse-stock-summary">
-<h2 class="dashboard-charts-title" data-i18n="warehouseCurrentStock">Tổng quan tồn kho hiện tại</h2>
-<section aria-label="Thống kê tồn kho" class="metric-grid" data-i18n-aria="metricsAria">
-<div class="metric-card">
-<div class="metric-text"><div class="metric-label" data-i18n="dashTotalRows">Tổng dòng vật tư</div><strong class="metric-value" id="metric-total">—</strong><span class="metric-note" data-i18n="dashKpiNote">Toàn bộ dữ liệu kho</span></div>
-<div aria-hidden="true" class="metric-icon">▦</div>
-</div>
-<div class="metric-card">
-<div class="metric-text"><div class="metric-label" data-i18n="inStock">Còn hàng</div><strong class="metric-value" id="metric-instock">—</strong><span class="metric-note" data-i18n="stockNote" id="metric-instock-rate">Số dòng có tồn kho &gt; 0</span></div>
-<div aria-hidden="true" class="metric-icon">✓</div>
-</div>
-<div class="metric-card">
-<div class="metric-text"><div class="metric-label" data-i18n="attentionTitle">Vật tư cần chú ý</div><strong class="metric-value" id="metric-attention">—</strong><span class="metric-note" data-i18n="attentionNote">Hết hàng, dưới hoặc bằng điểm đặt hàng lại</span></div>
-<div aria-hidden="true" class="metric-icon">!</div>
-</div>
-<div class="metric-card metric-card-value">
-<div class="metric-text">
-<div class="metric-label" data-i18n="dashFilteredValue">Tổng giá trị tồn kho</div>
-<strong aria-live="polite" class="metric-value metric-money" id="metric-inventory-value">—</strong>
-<span aria-live="polite" class="dashboard-value-change" id="metric-value-change">—</span>
-<span class="metric-note" data-i18n="dashValueTrendEmpty" id="metric-value-note">Chưa có dữ liệu giá trị kho hợp lệ trong Amount.js.</span>
-</div>
-<div aria-hidden="true" class="metric-icon">₫</div>
-</div>
-</section>
-</section>
-<section aria-labelledby="dashboard-charts-heading" class="insights-panel" id="insights-panel">
-<div class="insight-grid warehouse-charts">
-<div class="insight-box dashboard-chart dashboard-time-chart">
-<div class="dashboard-chart-heading">
-<h3 data-i18n="dashValueTrendTitle">Tổng giá trị kho theo thời gian</h3>
-<div class="dashboard-chart-filters">
-<label><span data-i18n="dashValueTrendPeriod">Xem theo</span>
-<select id="dashboard-value-period" onchange="veBieuDoGiaTriKho()">
-<option data-i18n="dashDay" value="day">Ngày</option>
-<option data-i18n="dashWeek" value="week">Hằng tuần</option>
-<option data-i18n="dashMonth" selected="" value="month">Tháng</option>
-<option data-i18n="dashYear" value="year">Năm</option>
-</select>
-</label>
-<button class="btn btn-soft" data-i18n="dashAmountRefresh" onclick="taiLaiAmount()" type="button">Làm mới Amount</button>
-</div>
-</div>
-<p class="insight-note" data-i18n="dashValueTrendNote">Biểu đồ đường diện tích từ Amount.js (di chuột lên điểm dữ liệu để xem chi tiết).</p>
-<div class="dashboard-chart-body" data-i18n-aria="dashValueTrendTitle" id="insight-value-trend" role="region" tabindex="0"></div>
-<p class="insight-note" id="dashboard-value-trend-summary" role="status"></p>
-<p aria-live="polite" class="insight-note" id="dashboard-amount-status" role="status"></p>
-</div>
-<div class="insight-box dashboard-chart dashboard-time-chart">
-<div class="dashboard-chart-heading">
-<h3 data-i18n="dashUsageTitle">Giá trị nhập / xuất &amp; Dòng tiền thuần</h3>
-<div class="dashboard-chart-filters">
-<label><span data-i18n="dashUsagePeriod">Chu kỳ</span>
-<select id="dashboard-usage-period" onchange="veBieuDoSuDungKho()">
-<option data-i18n="dashWeek" value="week">Hằng tuần</option>
-<option data-i18n="dashMonth" selected="" value="month">Hằng tháng</option>
-<option data-i18n="dashYear" value="year">Hằng năm</option>
-</select>
-</label>
-<button class="btn btn-soft" data-i18n-title="historyRefresh" onclick="taiHistory(true)" title="Tải lại lịch sử" type="button">↻</button>
-</div>
-</div>
-<p class="insight-note" data-i18n="dashUsageNote">Nhấn vào cột kỳ bất kỳ để xem danh sách giao dịch chi tiết của kỳ đó.</p>
-<div class="dashboard-chart-body" data-i18n-aria="dashUsageTitle" id="insight-usage" role="region" tabindex="0"></div>
-<p class="insight-note" id="dashboard-usage-summary" role="status"></p>
-</div>
-<div class="insight-box dashboard-chart">
-<div class="dashboard-chart-heading">
-<h3 data-i18n="stockDistribution">Phân bố trạng thái định mức tồn kho</h3>
-</div>
-<p class="insight-note" data-i18n="dashCoverageNote">Đối chiếu tồn kho thực tế với Reorder Point trong SAP.</p>
-<div class="stock-distribution dashboard-chart-body" id="insight-stock-distribution"></div>
-</div>
-<div class="insight-box dashboard-chart dashboard-executive-card">
-<div class="dashboard-chart-heading">
-<h3>Tổng quan điều hành</h3>
-<label><span>Phạm vi</span>
-<select id="dashboard-usage-detail-period" onchange="veBieuDoSuDungKho()">
-<option value="week">Tuần</option>
-<option selected="" value="month">Tháng</option>
-<option value="year">Năm</option>
-</select>
-</label>
-</div>
-<div aria-label="Tổng quan điều hành" class="executive-stat-grid" id="insight-usage-detail" role="region" tabindex="0"></div>
-<p class="insight-note" id="dashboard-usage-detail-summary" role="status"></p>
-</div>
-</div>
-<div hidden="">
-<select id="dashboard-value-detail-period"><option selected="" value="week">week</option></select>
-<div id="insight-value-detail"></div>
-<p id="dashboard-value-detail-summary"></p>
-</div>
-</section>
-<div class="warehouse-support-grid">
-<section aria-label="Cảnh báo kho" class="dashboard-alert-panel" data-i18n-aria="dashAlertHeading">
-<div class="dashboard-alert-header">
-<h2 data-i18n="dashAlertHeading">Cảnh báo kho thông minh</h2>
-<small data-i18n="dashAlertRule">Giá trị ±10% · xuất tăng &gt;100% · chạm định mức ROP</small>
-</div>
-<div aria-live="polite" class="dashboard-alert-list" id="dashboard-alert-list" role="status"></div>
-</section>
-<div class="insight-box">
-<h3 data-i18n="inventoryHistory" style="margin:0 0 4px;font-size:14px">Lịch sử định giá kho (Amount.js)</h3>
-<p class="insight-note" data-i18n="dashSnapshotNote" style="margin:0 0 8px">Các bản ghi gần nhất từ Amount.js.</p>
-<div class="history-grid" id="insight-history"></div>
-</div>
-</div>
-<div class="dashboard-utilities">
-<section aria-label="Trạng thái nguồn dữ liệu" class="dashboard-source-panel" data-i18n-aria="dashSourceHeading">
-<div class="dashboard-source-heading">
-<h3 data-i18n="dashSourceHeading">Trạng thái nguồn dữ liệu</h3>
-<button class="btn btn-soft" data-i18n="dashSourceRefresh" onclick="lamMoiToanBoNguon()" type="button">Kiểm tra cập nhật</button>
-</div>
-<div class="dashboard-source-grid">
-<div class="dashboard-source-item" id="dashboard-source-stock">data.js</div>
-<div class="dashboard-source-item" id="dashboard-source-history">History.js</div>
-<div class="dashboard-source-item" id="dashboard-source-amount">Amount.js</div>
-<div class="dashboard-source-item" id="dashboard-source-images">Material</div>
-</div>
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-<p class="insight-note" data-i18n="dashSourcePrivacy" style="margin:0">Bộ nhớ đệm lịch sử trên thiết bị này có thể chứa dữ liệu SAP nội bộ.</p>
-<button class="btn btn-soft" data-i18n="dashSourceClear" onclick="xoaCacheHistory()" type="button">Xóa bộ nhớ đệm lịch sử</button>
-</div>
-</section>
-<section class="warehouse-reminder insight-box">
-<h3 data-i18n="scheduleTitle" style="margin:0 0 8px">Nhắc xuất báo cáo khi ứng dụng đang mở</h3>
-<div class="advanced-controls dashboard-export-controls" style="padding-top:0">
-<select data-i18n-aria="scheduleTitle" id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()">
-<option data-i18n="scheduleOff" value="off">Tắt</option>
-<option data-i18n="scheduleDaily" value="daily">Mỗi ngày sau 9:00</option>
-<option data-i18n="scheduleWeekly" value="weekly">Thứ Hai sau 9:00</option>
-</select>
-</div>
-<div class="insight-note" id="bao-cao-nhac-tin" role="status" style="margin-top:8px"></div>
-</section>
-</div>
-</section>
-<section aria-labelledby="tab-analytics" class="view-pane" hidden="" id="view-analytics" role="tabpanel">
-<div class="pane-heading">
-<div>
-<h1 data-i18n="dashboardHeading">Phân tích kho chuyên sâu</h1>
-<p data-i18n="warehouseAnalyticsDesc">Phân loại Pareto ABC, thống kê tiêu thụ 1–2–3 năm &amp; số ngày Cover, xếp hạng xuất nhiều và tồn lâu.</p>
-</div>
-<button class="btn btn-primary" onclick="xuatNhanhBaoCaoKho('all')" type="button">↓ <span data-i18n="dashboardExportAll">Xuất tất cả báo cáo (.xlsx)</span></button>
-</div>
-<section aria-label="Chỉ số phân tích kho" class="analytics-kpi-strip">
-<article class="analytics-kpi-card" data-accent="amber">
-<span data-i18n="analyticsKpiDormantTitle">Giá trị vật tư tồn lâu</span>
-<strong id="analytics-kpi-dormant-value">—</strong>
-<small id="analytics-kpi-dormant-note">Theo ngưỡng ngày đang chọn</small>
-</article>
-<article class="analytics-kpi-card" data-accent="red">
-<span data-i18n="analyticsKpiOutTitle">Tổng giá trị xuất trong kỳ</span>
-<strong id="analytics-kpi-out-value">—</strong>
-<small id="analytics-kpi-out-note">Theo bộ lọc vật tư xuất</small>
-</article>
-<article class="analytics-kpi-card" data-accent="green">
-<span data-i18n="analyticsKpiSlowRateTitle">Tỷ lệ mã chậm luân chuyển</span>
-<strong id="analytics-kpi-slow-rate">—</strong>
-<small id="analytics-kpi-slow-note">Mã tồn lâu / Tổng mã có tồn</small>
-</article>
-</section>
-<div class="analytics-quickbar analytics-quickbar-search-only">
-<div class="analytics-quick-search">
-<input autocomplete="off" data-i18n-placeholder="analyticsSearchPlaceholder" id="analytics-search" oninput="locNhanhPhanTichKho()" placeholder="Lọc nhanh mã SAP hoặc mô tả vật tư trong tất cả bảng..." type="search"/>
-<button class="btn btn-secondary" data-i18n="clear" onclick="xoaLocNhanhPhanTich()" type="button">Xóa</button>
-</div>
-</div>
-<section class="analytics-tables" data-i18n-aria="warehouseTables">
-<div class="insight-box dashboard-chart dashboard-top-card analytics-table-card">
-<div class="dashboard-chart-heading">
-<h3 data-i18n="dashTopValue">Phân tích ABC &amp; Vật tư có giá trị tồn cao nhất</h3>
-<div class="dashboard-chart-filters">
-<label class="dashboard-top-filter"><span data-i18n="dashRankLimit">Hiển thị</span>
-<select id="dashboard-limit" onchange="capNhatThongKeNangCao()">
-<option data-i18n="rankTop10" value="10">Top 10</option>
-<option data-i18n="rankTop20" selected="" value="20">Top 20</option>
-<option data-i18n="rankTop50" value="50">Top 50</option>
-<option data-i18n="searchAll" value="5000">Tất cả</option>
-</select>
-</label>
-<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('value')" type="button">↓ Excel</button>
-</div>
-</div>
-<p class="insight-note" data-i18n="dashValueNote">Phân loại Pareto ABC dựa trên giá trị tồn kho tích lũy (Nhóm A ≤ 80%, Nhóm B ≤ 95%, Nhóm C &gt; 95%).</p>
-<div class="dashboard-chart-body" data-i18n-aria="dashTopValue" id="insight-top" role="region" tabindex="0"></div>
-</div>
-<div class="insight-box dashboard-chart dashboard-table-chart analytics-table-card">
-<div class="dashboard-chart-heading">
-<h3 data-i18n="dashboardTopOutTitle">Vật tư xuất nhiều nhất theo giá trị</h3>
-<div class="dashboard-chart-filters">
-<label><span data-i18n="dashboardTimeMode">Kỳ</span>
-<select id="dashboard-out-period" onchange="doiLocTopXuatKho()">
-<option data-i18n="dashboardTimeSelected" selected="" value="selected">Theo khoảng đã chọn</option>
-<option data-i18n="dashWeek" value="week">Hằng tuần</option>
-<option data-i18n="dashMonth" value="month">Hằng tháng</option>
-<option data-i18n="dashYear" value="year">Hằng năm</option>
-</select>
-</label>
-<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('out')" type="button">↓ Excel</button>
-</div>
-</div>
-<p class="insight-note" data-i18n="dashboardTopOutNote">Nhấn đúp dòng vật tư để mở lịch sử nhập/xuất chi tiết.</p>
-<div class="dashboard-out-range">
-<label data-i18n="dashboardOutMinLabel" for="dashboard-out-min">Giá trị xuất tối thiểu</label>
-<input data-i18n-aria="dashboardOutMinLabel" disabled="" id="dashboard-out-min" max="0" min="0" oninput="doiNguongXuatKho()" step="1" type="range" value="0"/>
-<output for="dashboard-out-min" id="dashboard-out-min-value">0 ₫</output>
-</div>
-<p aria-live="polite" class="dashboard-report-count" data-i18n="dashboardReportCountUnavailable" id="dashboard-out-matches" role="status">Số mã phù hợp: —</p>
-<div class="dashboard-chart-body" data-i18n-aria="dashboardTopOutTitle" id="dashboard-top-out" role="region" tabindex="0"></div>
-<div class="dashboard-mini-pager" id="dashboard-out-pager">
-<div class="dashboard-mini-size">
-<label data-i18n="rowsPerPage" for="dashboard-out-size">Số dòng/trang</label>
-<select id="dashboard-out-size" onchange="chonSoDongBangKho('out',this.value)">
-<option selected="" value="25">25</option><option value="50">50</option><option value="75">75</option>
-<option value="100">100</option><option value="200">200</option>
-<option value="500">500</option><option data-i18n="customAmount" value="custom">Tùy chọn</option>
-</select>
-<input id="dashboard-out-custom" inputmode="numeric" max="5000" min="1" onchange="datSoDongBangKho('out',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongBangKho('out',this.value);}" step="1" type="number" value="25"/>
-</div>
-<div class="dashboard-mini-page">
-<button id="dashboard-out-first" onclick="denTrangBangKho('out',1)" type="button">«</button>
-<button id="dashboard-out-prev" onclick="denTrangBangKho('out','prev')" type="button">‹</button>
-<input id="dashboard-out-page" inputmode="numeric" min="1" onchange="denTrangBangKho('out',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangBangKho('out',this.value);}" step="1" type="number" value="1"/>
-<span id="dashboard-out-pages">/ 1</span>
-<button id="dashboard-out-next" onclick="denTrangBangKho('out','next')" type="button">›</button>
-<button id="dashboard-out-last" onclick="denTrangBangKho('out','last')" type="button">»</button>
-</div>
-</div>
-<p class="insight-note" id="dashboard-top-out-note" role="status"></p>
-</div>
-<div class="insight-box dashboard-chart dashboard-table-chart analytics-table-card">
-<div class="dashboard-chart-heading">
-<h3 data-i18n="dashboardDormantTitle">Vật tư tồn lâu chưa xuất (Dead-Stock)</h3>
-<div class="dashboard-chart-filters">
-<label><span data-i18n="dashboardDormantDays">Không xuất trong</span>
-<select id="dashboard-dormant-days" onchange="doiLocTonLauKho()">
-<option data-i18n="dashboardDormant90" selected="" value="90">90 ngày</option>
-<option data-i18n="dashboardDormant180" value="180">180 ngày</option>
-<option data-i18n="dashboardDormant365" value="365">365 ngày</option>
-<option data-i18n="dashboardDormant730" value="730">2 năm</option>
-<option data-i18n="dashboardDormant1095" value="1095">3 năm</option>
-</select>
-</label>
-<button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('dormant')" type="button">↓ Excel</button>
-</div>
-</div>
-<p class="insight-note" data-i18n="dashboardDormantNote">Chỉ Hall 1: vật tư còn tồn nhưng chưa phát sinh xuất trong khoảng chọn.</p>
-<p aria-live="polite" class="dashboard-report-count" data-i18n="dashboardReportCountUnavailable" id="dashboard-dormant-matches" role="status">Số mã phù hợp: —</p>
-<div class="dashboard-chart-body" data-i18n-aria="dashboardDormantTitle" id="dashboard-dormant" role="region" tabindex="0"></div>
-<div class="dashboard-mini-pager" id="dashboard-dormant-pager">
-<div class="dashboard-mini-size">
-<label data-i18n="rowsPerPage" for="dashboard-dormant-size">Số dòng/trang</label>
-<select id="dashboard-dormant-size" onchange="chonSoDongBangKho('dormant',this.value)">
-<option selected="" value="25">25</option><option value="50">50</option><option value="75">75</option>
-<option value="100">100</option><option value="200">200</option>
-<option value="500">500</option><option data-i18n="customAmount" value="custom">Tùy chọn</option>
-</select>
-<input id="dashboard-dormant-custom" inputmode="numeric" max="5000" min="1" onchange="datSoDongBangKho('dormant',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongBangKho('dormant',this.value);}" step="1" type="number" value="25"/>
-</div>
-<div class="dashboard-mini-page">
-<button id="dashboard-dormant-first" onclick="denTrangBangKho('dormant',1)" type="button">«</button>
-<button id="dashboard-dormant-prev" onclick="denTrangBangKho('dormant','prev')" type="button">‹</button>
-<input id="dashboard-dormant-page" inputmode="numeric" min="1" onchange="denTrangBangKho('dormant',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangBangKho('dormant',this.value);}" step="1" type="number" value="1"/>
-<span id="dashboard-dormant-pages">/ 1</span>
-<button id="dashboard-dormant-next" onclick="denTrangBangKho('dormant','next')" type="button">›</button>
-<button id="dashboard-dormant-last" onclick="denTrangBangKho('dormant','last')" type="button">»</button>
-</div>
-</div>
-<p class="insight-note" id="dashboard-dormant-note" role="status"></p>
-</div>
-<div class="insight-box dashboard-chart dashboard-table-chart analytics-table-card" id="analytics-consumption-card">
-<div class="dashboard-chart-heading">
-<h3 data-i18n="consCardTitle">Thống kê tiêu thụ (Consumption) 1–2–3 năm &amp; Số ngày Cover tồn kho</h3>
-<div class="dashboard-chart-filters">
-<label><span data-i18n="consHorizonLabel">Mốc tính TB &amp; Cover</span>
-<select id="analytics-cons-horizon" onchange="doiLocConsumption()">
-<option data-i18n="consHorizon1Y" selected="" value="12">1 năm (12 tháng)</option>
-<option data-i18n="consHorizon2Y" value="24">2 năm (24 tháng)</option>
-<option data-i18n="consHorizon3Y" value="36">3 năm (36 tháng)</option>
-</select>
-</label>
-<label><span data-i18n="consStatusLabel">Thời gian sử dụng</span>
-<select id="analytics-cons-status" onchange="doiLocConsumption()">
-<option data-i18n="consStatusAll" selected="" value="all">Tất cả mức</option>
-<option data-i18n="consStatusCritical" value="critical">Nguy cấp (&lt; 30 ngày)</option>
-<option data-i18n="consStatusWarn" value="warn">Cảnh báo (30–90 ngày)</option>
-<option data-i18n="consStatusSafe" value="safe">An toàn (&gt; 90 ngày)</option>
-<option data-i18n="consStatusZero" value="zero">Hết hàng (= 0 ngày)</option>
-<option data-i18n="consStatusIdle" value="idle">Không phát sinh xuất (∞)</option>
-</select>
-</label>
-<button class="btn btn-soft card-export-btn" onclick="xuatExcelConsumption()" type="button">↓ Excel</button>
-</div>
-</div>
-<p class="insight-note" data-i18n="consCardNote">Chỉ Hall 1 · 12/24/36 tháng gần nhất tính đến hôm nay, độc lập với bộ chọn kỳ chung. TB sử dụng/tháng = Tổng xuất mốc chọn ÷ Số tháng (12/24/36). Số ngày sử dụng dự kiến = (Tồn hiện tại ÷ TB/tháng) × 30 ngày. Nhấn đúp dòng để xem lịch sử.</p>
-<div aria-live="polite" class="cons-summary-strip" id="analytics-cons-summary" role="status"></div>
-<div class="dashboard-chart-body" data-i18n-aria="consCardTitle" id="analytics-cons-body" role="region" tabindex="0"></div>
-<div class="dashboard-mini-pager" id="analytics-cons-pager">
-<div class="dashboard-mini-size">
-<label data-i18n="rowsPerPage" for="analytics-cons-size">Số dòng/trang</label>
-<select id="analytics-cons-size" onchange="chonSoDongConsumption(this.value)">
-<option selected="" value="25">25</option><option value="50">50</option><option value="75">75</option>
-<option value="100">100</option><option value="200">200</option>
-<option value="500">500</option><option data-i18n="customAmount" value="custom">Tùy chọn</option>
-</select>
-<input id="analytics-cons-custom" inputmode="numeric" max="5000" min="1" onchange="datSoDongConsumption(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongConsumption(this.value);}" step="1" type="number" value="25"/>
-</div>
-<div class="dashboard-mini-page">
-<button id="analytics-cons-first" onclick="denTrangConsumption(1)" type="button">«</button>
-<button id="analytics-cons-prev" onclick="denTrangConsumption('prev')" type="button">‹</button>
-<input id="analytics-cons-page" inputmode="numeric" min="1" onchange="denTrangConsumption(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangConsumption(this.value);}" step="1" type="number" value="1"/>
-<span id="analytics-cons-pages">/ 1</span>
-<button id="analytics-cons-next" onclick="denTrangConsumption('next')" type="button">›</button>
-<button id="analytics-cons-last" onclick="denTrangConsumption('last')" type="button">»</button>
-</div>
-</div>
-<p class="insight-note" id="analytics-cons-note" role="status"></p>
-</div>
-</section>
-<section class="analytics-export">
-<div class="insight-box">
-<h3 data-i18n="dashboardExportAction">Xuất báo cáo Excel tổng hợp</h3>
-<div class="advanced-controls dashboard-export-controls" style="padding-top:0">
-<div class="dashboard-export-row">
-<label data-i18n="dashboardExportSelect" for="dashboard-export-kind" id="dashboard-export-label">Chọn báo cáo xuất</label>
-<select aria-label="Chọn báo cáo xuất" data-i18n-aria="dashboardExportSelect" id="dashboard-export-kind">
-<option data-i18n="dashboardExportStock" value="stock">Tra cứu tồn kho (bộ lọc Tra cứu)</option>
-<option data-i18n="dashboardExportTopValue" value="value">Phân tích ABC &amp; Vật tư giá trị tồn cao</option>
-<option data-i18n="dashboardExportTopOut" value="out">Vật tư xuất nhiều nhất</option>
-<option data-i18n="dashboardExportDormant" value="dormant">Vật tư tồn lâu (Dead-stock)</option>
-<option data-i18n="consCardTitle" value="consumption">Thống kê tiêu thụ 1–2–3 năm &amp; Số ngày Cover</option>
-<option data-i18n="dashboardExportDistribution" value="distribution">Phân bố trạng thái tồn kho</option>
-<option data-i18n="dashboardExportValueTrend" value="valueTrend">Giá trị kho theo thời gian</option>
-<option data-i18n="dashboardExportMovement" value="movement">Giá trị nhập / xuất theo thời gian</option>
-<option data-i18n="dashboardExportCompare" value="compare">So sánh nhập / xuất với kỳ trước</option>
-<option data-i18n="dashboardExportAll" value="all">Tất cả báo cáo khả dụng</option>
-</select>
-<button class="btn btn-soft" data-i18n="dashboardExportAction" id="dashboard-export-button" onclick="xuatBaoCaoThongKe()" type="button">Xuất báo cáo Excel</button>
-</div>
-</div>
-</div>
-</section>
-</section>
+<section aria-hidden="true" aria-labelledby="tab-dashboard" class="view-pane" data-support-pane="true" hidden="" id="view-dashboard" inert="" role="tabpanel"><div class="pane-heading"><span class="record-count" id="warehouse-summary-note" role="status"></span></div><section aria-label="Khoảng thời gian phân tích" class="dashboard-period-strip" data-i18n-aria="dashboardTimeTitle" id="warehouse-filters"><div class="dashboard-period-intro"><span class="insight-note" id="dashboard-range-summary"></span></div><label class="dashboard-hall-control"><span data-i18n="dashboardHallFilter"></span><select id="dashboard-hall" onchange="doiLocHallPhanTich()"><option data-i18n="dashboardHallAll" value="all">Tất cả khu vực</option><option data-i18n="dashboardHall1" value="hall1">Hall 1</option><option data-i18n="dashboardHall2" value="hall2">Hall 2</option></select></label><label><span data-i18n="dashboardTimeMode"></span><select id="dashboard-range-mode" onchange="doiKyPhanTichKho()"><option data-i18n="dashboardTimeWeek" value="week">7 ngày gần đây</option><option data-i18n="dashboardTimeMonth" selected="" value="month">Tháng hiện tại</option><option data-i18n="dashboardTimeSelectMonth" value="selected-month">Theo tháng</option><option data-i18n="dashboardTimeYear" value="year">Theo năm</option><option data-i18n="dashboardTimeCustom" value="custom">Tùy chọn ngày</option></select></label><label hidden="" id="dashboard-range-month-field"><span data-i18n="dashboardTimeMonthLabel"></span><input id="dashboard-range-month" min="2000-01" onchange="doiKyPhanTichKho()" type="month"/></label><label hidden="" id="dashboard-range-year-field"><span data-i18n="dashboardTimeYearFrom"></span><input id="dashboard-range-year-from" inputmode="numeric" max="2100" min="2000" onchange="doiKyPhanTichKho()" step="1" type="number"/></label><label hidden="" id="dashboard-range-year-end-field"><span data-i18n="dashboardTimeYearTo"></span><input id="dashboard-range-year-to" inputmode="numeric" max="2100" min="2000" onchange="doiKyPhanTichKho()" step="1" type="number"/></label><label hidden="" id="dashboard-range-from-field"><span data-i18n="dashboardTimeFrom"></span><input id="dashboard-range-from" onchange="doiKyPhanTichKho()" type="date"/></label><label hidden="" id="dashboard-range-to-field"><span data-i18n="dashboardTimeTo"></span><input id="dashboard-range-to" onchange="doiKyPhanTichKho()" type="date"/></label><p aria-live="polite" class="dashboard-hall-status insight-note" id="dashboard-hall-status" role="status"></p></section><section class="warehouse-kpi-grid" data-i18n-aria="warehouseOverview"><div class="warehouse-kpi-group"><div class="warehouse-group-heading"><span id="warehouse-period-label"></span></div><div class="warehouse-kpi-cards"><article class="warehouse-kpi" data-tone="ratio"><strong id="warehouse-period-inventory"></strong><small id="warehouse-period-inventory-date"></small></article><article class="warehouse-kpi" data-tone="in"><strong id="dashboard-compare-in-current"></strong><span class="dashboard-compare-delta" id="dashboard-compare-in-change"></span><small id="dashboard-compare-in-prior"></small></article><article class="warehouse-kpi" data-tone="out"><strong id="dashboard-compare-out-current"></strong><span class="dashboard-compare-delta" id="dashboard-compare-out-change"></span><small id="dashboard-compare-out-prior"></small></article><article class="warehouse-kpi" data-tone="net"><strong id="warehouse-period-net"></strong><small id="dashboard-compare-periods"></small></article></div></div><div class="warehouse-kpi-group"><div class="warehouse-group-heading"><span id="warehouse-week-label"></span></div><div class="warehouse-kpi-cards"><article class="warehouse-kpi" data-tone="ratio"><strong id="warehouse-week-inventory"></strong><small id="warehouse-week-inventory-date"></small></article><article class="warehouse-kpi" data-tone="in"><strong id="warehouse-week-in"></strong></article><article class="warehouse-kpi" data-tone="out"><strong id="warehouse-week-out"></strong></article><article class="warehouse-kpi" data-tone="net"><strong id="warehouse-week-net"></strong><small id="dashboard-compare-note"></small></article></div></div></section><section class="warehouse-stock-summary"><section aria-label="Thống kê tồn kho" class="metric-grid" data-i18n-aria="metricsAria"><div class="metric-card"><div class="metric-text"><strong class="metric-value" id="metric-total"></strong><span class="metric-note" data-i18n="dashKpiNote"></span></div></div><div class="metric-card"><div class="metric-text"><strong class="metric-value" id="metric-instock"></strong><span class="metric-note" data-i18n="stockNote" id="metric-instock-rate"></span></div></div><div class="metric-card"><div class="metric-text"><strong class="metric-value" id="metric-attention"></strong><span class="metric-note" data-i18n="attentionNote"></span></div></div><div class="metric-card metric-card-value"><div class="metric-text"><strong aria-live="polite" class="metric-value metric-money" id="metric-inventory-value"></strong><span aria-live="polite" class="dashboard-value-change" id="metric-value-change"></span><span class="metric-note" data-i18n="dashValueTrendEmpty" id="metric-value-note"></span></div></div></section></section><section aria-labelledby="dashboard-charts-heading" class="insights-panel" id="insights-panel"><div class="insight-grid warehouse-charts"><div class="insight-box dashboard-chart dashboard-time-chart"><div class="dashboard-chart-heading"><div class="dashboard-chart-filters"><label><span data-i18n="dashValueTrendPeriod"></span><select id="dashboard-value-period" onchange="veBieuDoGiaTriKho()"><option data-i18n="dashDay" value="day">Ngày</option><option data-i18n="dashWeek" value="week">Hằng tuần</option><option data-i18n="dashMonth" selected="" value="month">Tháng</option><option data-i18n="dashYear" value="year">Năm</option></select></label><button class="btn btn-soft" data-i18n="dashAmountRefresh" onclick="taiLaiAmount()" type="button"></button></div></div><div class="dashboard-chart-body" data-i18n-aria="dashValueTrendTitle" id="insight-value-trend" role="region" tabindex="0"></div><p class="insight-note" id="dashboard-value-trend-summary" role="status"></p><p aria-live="polite" class="insight-note" id="dashboard-amount-status" role="status"></p></div><div class="insight-box dashboard-chart dashboard-time-chart"><div class="dashboard-chart-heading"><div class="dashboard-chart-filters"><label><span data-i18n="dashUsagePeriod"></span><select id="dashboard-usage-period" onchange="veBieuDoSuDungKho()"><option data-i18n="dashWeek" value="week">Hằng tuần</option><option data-i18n="dashMonth" selected="" value="month">Hằng tháng</option><option data-i18n="dashYear" value="year">Hằng năm</option></select></label><button class="btn btn-soft" data-i18n-title="historyRefresh" onclick="taiHistory(true)" title="Tải lại lịch sử" type="button"></button></div></div><div class="dashboard-chart-body" data-i18n-aria="dashUsageTitle" id="insight-usage" role="region" tabindex="0"></div><p class="insight-note" id="dashboard-usage-summary" role="status"></p></div><div class="insight-box dashboard-chart"><div class="stock-distribution dashboard-chart-body" id="insight-stock-distribution"></div></div><div class="insight-box dashboard-chart dashboard-executive-card"><div class="dashboard-chart-heading"><label><span></span><select id="dashboard-usage-detail-period" onchange="veBieuDoSuDungKho()"><option value="week">Tuần</option><option selected="" value="month">Tháng</option><option value="year">Năm</option></select></label></div><div aria-label="Tổng quan điều hành" class="executive-stat-grid" id="insight-usage-detail" role="region" tabindex="0"></div><p class="insight-note" id="dashboard-usage-detail-summary" role="status"></p></div></div><div hidden=""><select id="dashboard-value-detail-period"><option selected="" value="week">week</option></select><div id="insight-value-detail"></div><p id="dashboard-value-detail-summary"></p></div></section><div class="warehouse-support-grid"><section aria-label="Cảnh báo kho" class="dashboard-alert-panel" data-i18n-aria="dashAlertHeading"><div aria-live="polite" class="dashboard-alert-list" id="dashboard-alert-list" role="status"></div></section><div class="insight-box"><div class="history-grid" id="insight-history"></div></div></div><div class="dashboard-utilities"><section aria-label="Trạng thái nguồn dữ liệu" class="dashboard-source-panel" data-i18n-aria="dashSourceHeading"><div class="dashboard-source-heading"><button class="btn btn-soft" data-i18n="dashSourceRefresh" onclick="lamMoiToanBoNguon()" type="button"></button></div><div class="dashboard-source-grid"><div class="dashboard-source-item" id="dashboard-source-stock"></div><div class="dashboard-source-item" id="dashboard-source-history"></div><div class="dashboard-source-item" id="dashboard-source-amount"></div><div class="dashboard-source-item" id="dashboard-source-images"></div></div><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><button class="btn btn-soft" data-i18n="dashSourceClear" onclick="xoaCacheHistory()" type="button"></button></div></section><section class="warehouse-reminder insight-box"><div class="advanced-controls dashboard-export-controls" style="padding-top:0"><select data-i18n-aria="scheduleTitle" id="bao-cao-nhac-lich" onchange="caiDatNhacBaoCao()"><option data-i18n="scheduleOff" value="off">Tắt</option><option data-i18n="scheduleDaily" value="daily">Mỗi ngày sau 9:00</option><option data-i18n="scheduleWeekly" value="weekly">Thứ Hai sau 9:00</option></select></div><div class="insight-note" id="bao-cao-nhac-tin" role="status" style="margin-top:8px"></div></section></div></section>
+<section aria-hidden="true" aria-labelledby="tab-analytics" class="view-pane" data-support-pane="true" hidden="" id="view-analytics" inert="" role="tabpanel"><div class="pane-heading"><button class="btn btn-primary" onclick="xuatNhanhBaoCaoKho('all')" type="button"><span data-i18n="dashboardExportAll"></span></button></div><section aria-label="Chỉ số phân tích kho" class="analytics-kpi-strip"><article class="analytics-kpi-card" data-accent="amber"><span data-i18n="analyticsKpiDormantTitle"></span><strong id="analytics-kpi-dormant-value"></strong><small id="analytics-kpi-dormant-note"></small></article><article class="analytics-kpi-card" data-accent="red"><span data-i18n="analyticsKpiOutTitle"></span><strong id="analytics-kpi-out-value"></strong><small id="analytics-kpi-out-note"></small></article><article class="analytics-kpi-card" data-accent="green"><span data-i18n="analyticsKpiSlowRateTitle"></span><strong id="analytics-kpi-slow-rate"></strong><small id="analytics-kpi-slow-note"></small></article></section><div class="analytics-quickbar analytics-quickbar-search-only"><div class="analytics-quick-search"><input autocomplete="off" data-i18n-placeholder="analyticsSearchPlaceholder" id="analytics-search" oninput="locNhanhPhanTichKho()" placeholder="Lọc nhanh mã SAP hoặc mô tả vật tư trong tất cả bảng..." type="search"/><button class="btn btn-secondary" data-i18n="clear" onclick="xoaLocNhanhPhanTich()" type="button"></button></div></div><section class="analytics-tables" data-i18n-aria="warehouseTables"><div class="insight-box dashboard-chart dashboard-top-card analytics-table-card"><div class="dashboard-chart-heading"><div class="dashboard-chart-filters"><label class="dashboard-top-filter"><span data-i18n="dashRankLimit"></span><select id="dashboard-limit" onchange="capNhatThongKeNangCao()"><option data-i18n="rankTop10" value="10">Top 10</option><option data-i18n="rankTop20" selected="" value="20">Top 20</option><option data-i18n="rankTop50" value="50">Top 50</option><option data-i18n="searchAll" value="5000">Tất cả</option></select></label><button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('value')" type="button"></button></div></div><div class="dashboard-chart-body" data-i18n-aria="dashTopValue" id="insight-top" role="region" tabindex="0"></div></div><div class="insight-box dashboard-chart dashboard-table-chart analytics-table-card"><div class="dashboard-chart-heading"><div class="dashboard-chart-filters"><label><span data-i18n="dashboardTimeMode"></span><select id="dashboard-out-period" onchange="doiLocTopXuatKho()"><option data-i18n="dashboardTimeSelected" selected="" value="selected">Theo khoảng đã chọn</option><option data-i18n="dashWeek" value="week">Hằng tuần</option><option data-i18n="dashMonth" value="month">Hằng tháng</option><option data-i18n="dashYear" value="year">Hằng năm</option></select></label><button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('out')" type="button"></button></div></div><div class="dashboard-out-range"><label data-i18n="dashboardOutMinLabel" for="dashboard-out-min"></label><input data-i18n-aria="dashboardOutMinLabel" disabled="" id="dashboard-out-min" max="0" min="0" oninput="doiNguongXuatKho()" step="1" type="range" value="0"/><output for="dashboard-out-min" id="dashboard-out-min-value"></output></div><p aria-live="polite" class="dashboard-report-count" data-i18n="dashboardReportCountUnavailable" id="dashboard-out-matches" role="status"></p><div class="dashboard-chart-body" data-i18n-aria="dashboardTopOutTitle" id="dashboard-top-out" role="region" tabindex="0"></div><div class="dashboard-mini-pager" id="dashboard-out-pager"><div class="dashboard-mini-size"><label data-i18n="rowsPerPage" for="dashboard-out-size"></label><select id="dashboard-out-size" onchange="chonSoDongBangKho('out',this.value)"><option selected="" value="25">25</option><option value="50">50</option><option value="75">75</option><option value="100">100</option><option value="200">200</option><option value="500">500</option><option data-i18n="customAmount" value="custom">Tùy chọn</option></select><input id="dashboard-out-custom" inputmode="numeric" max="5000" min="1" onchange="datSoDongBangKho('out',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongBangKho('out',this.value);}" step="1" type="number" value="25"/></div><div class="dashboard-mini-page"><button id="dashboard-out-first" onclick="denTrangBangKho('out',1)" type="button"></button><button id="dashboard-out-prev" onclick="denTrangBangKho('out','prev')" type="button"></button><input id="dashboard-out-page" inputmode="numeric" min="1" onchange="denTrangBangKho('out',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangBangKho('out',this.value);}" step="1" type="number" value="1"/><span id="dashboard-out-pages"></span><button id="dashboard-out-next" onclick="denTrangBangKho('out','next')" type="button"></button><button id="dashboard-out-last" onclick="denTrangBangKho('out','last')" type="button"></button></div></div><p class="insight-note" id="dashboard-top-out-note" role="status"></p></div><div class="insight-box dashboard-chart dashboard-table-chart analytics-table-card"><div class="dashboard-chart-heading"><div class="dashboard-chart-filters"><label><span data-i18n="dashboardDormantDays"></span><select id="dashboard-dormant-days" onchange="doiLocTonLauKho()"><option data-i18n="dashboardDormant90" selected="" value="90">90 ngày</option><option data-i18n="dashboardDormant180" value="180">180 ngày</option><option data-i18n="dashboardDormant365" value="365">365 ngày</option><option data-i18n="dashboardDormant730" value="730">2 năm</option><option data-i18n="dashboardDormant1095" value="1095">3 năm</option></select></label><button class="btn btn-soft card-export-btn" onclick="xuatNhanhBaoCaoKho('dormant')" type="button"></button></div></div><p aria-live="polite" class="dashboard-report-count" data-i18n="dashboardReportCountUnavailable" id="dashboard-dormant-matches" role="status"></p><div class="dashboard-chart-body" data-i18n-aria="dashboardDormantTitle" id="dashboard-dormant" role="region" tabindex="0"></div><div class="dashboard-mini-pager" id="dashboard-dormant-pager"><div class="dashboard-mini-size"><label data-i18n="rowsPerPage" for="dashboard-dormant-size"></label><select id="dashboard-dormant-size" onchange="chonSoDongBangKho('dormant',this.value)"><option selected="" value="25">25</option><option value="50">50</option><option value="75">75</option><option value="100">100</option><option value="200">200</option><option value="500">500</option><option data-i18n="customAmount" value="custom">Tùy chọn</option></select><input id="dashboard-dormant-custom" inputmode="numeric" max="5000" min="1" onchange="datSoDongBangKho('dormant',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongBangKho('dormant',this.value);}" step="1" type="number" value="25"/></div><div class="dashboard-mini-page"><button id="dashboard-dormant-first" onclick="denTrangBangKho('dormant',1)" type="button"></button><button id="dashboard-dormant-prev" onclick="denTrangBangKho('dormant','prev')" type="button"></button><input id="dashboard-dormant-page" inputmode="numeric" min="1" onchange="denTrangBangKho('dormant',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangBangKho('dormant',this.value);}" step="1" type="number" value="1"/><span id="dashboard-dormant-pages"></span><button id="dashboard-dormant-next" onclick="denTrangBangKho('dormant','next')" type="button"></button><button id="dashboard-dormant-last" onclick="denTrangBangKho('dormant','last')" type="button"></button></div></div><p class="insight-note" id="dashboard-dormant-note" role="status"></p></div><div class="insight-box dashboard-chart dashboard-table-chart analytics-table-card" id="analytics-consumption-card"><div class="dashboard-chart-heading"><div class="dashboard-chart-filters"><label><span data-i18n="consHorizonLabel"></span><select id="analytics-cons-horizon" onchange="doiLocConsumption()"><option data-i18n="consHorizon1Y" selected="" value="12">1 năm (12 tháng)</option><option data-i18n="consHorizon2Y" value="24">2 năm (24 tháng)</option><option data-i18n="consHorizon3Y" value="36">3 năm (36 tháng)</option></select></label><label><span data-i18n="consStatusLabel"></span><select id="analytics-cons-status" onchange="doiLocConsumption()"><option data-i18n="consStatusAll" selected="" value="all">Tất cả mức</option><option data-i18n="consStatusCritical" value="critical">Nguy cấp (&lt; 30 ngày)</option><option data-i18n="consStatusWarn" value="warn">Cảnh báo (30–90 ngày)</option><option data-i18n="consStatusSafe" value="safe">An toàn (&gt; 90 ngày)</option><option data-i18n="consStatusZero" value="zero">Hết hàng (= 0 ngày)</option><option data-i18n="consStatusIdle" value="idle">Không phát sinh xuất (∞)</option></select></label><button class="btn btn-soft card-export-btn" onclick="xuatExcelConsumption()" type="button"></button></div></div><div aria-live="polite" class="cons-summary-strip" id="analytics-cons-summary" role="status"></div><div class="dashboard-chart-body" data-i18n-aria="consCardTitle" id="analytics-cons-body" role="region" tabindex="0"></div><div class="dashboard-mini-pager" id="analytics-cons-pager"><div class="dashboard-mini-size"><label data-i18n="rowsPerPage" for="analytics-cons-size"></label><select id="analytics-cons-size" onchange="chonSoDongConsumption(this.value)"><option selected="" value="25">25</option><option value="50">50</option><option value="75">75</option><option value="100">100</option><option value="200">200</option><option value="500">500</option><option data-i18n="customAmount" value="custom">Tùy chọn</option></select><input id="analytics-cons-custom" inputmode="numeric" max="5000" min="1" onchange="datSoDongConsumption(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();datSoDongConsumption(this.value);}" step="1" type="number" value="25"/></div><div class="dashboard-mini-page"><button id="analytics-cons-first" onclick="denTrangConsumption(1)" type="button"></button><button id="analytics-cons-prev" onclick="denTrangConsumption('prev')" type="button"></button><input id="analytics-cons-page" inputmode="numeric" min="1" onchange="denTrangConsumption(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();denTrangConsumption(this.value);}" step="1" type="number" value="1"/><span id="analytics-cons-pages"></span><button id="analytics-cons-next" onclick="denTrangConsumption('next')" type="button"></button><button id="analytics-cons-last" onclick="denTrangConsumption('last')" type="button"></button></div></div><p class="insight-note" id="analytics-cons-note" role="status"></p></div></section><section class="analytics-export"><div class="insight-box"><div class="advanced-controls dashboard-export-controls" style="padding-top:0"><div class="dashboard-export-row"><label data-i18n="dashboardExportSelect" for="dashboard-export-kind" id="dashboard-export-label"></label><select aria-label="Chọn báo cáo xuất" data-i18n-aria="dashboardExportSelect" id="dashboard-export-kind"><option data-i18n="dashboardExportStock" value="stock">Tra cứu tồn kho (bộ lọc Tra cứu)</option><option data-i18n="dashboardExportTopValue" value="value">Phân tích ABC &amp; Vật tư giá trị tồn cao</option><option data-i18n="dashboardExportTopOut" value="out">Vật tư xuất nhiều nhất</option><option data-i18n="dashboardExportDormant" value="dormant">Vật tư tồn lâu (Dead-stock)</option><option data-i18n="consCardTitle" value="consumption">Thống kê tiêu thụ 1–2–3 năm &amp; Số ngày Cover</option><option data-i18n="dashboardExportDistribution" value="distribution">Phân bố trạng thái tồn kho</option><option data-i18n="dashboardExportValueTrend" value="valueTrend">Giá trị kho theo thời gian</option><option data-i18n="dashboardExportMovement" value="movement">Giá trị nhập / xuất theo thời gian</option><option data-i18n="dashboardExportCompare" value="compare">So sánh nhập / xuất với kỳ trước</option><option data-i18n="dashboardExportAll" value="all">Tất cả báo cáo khả dụng</option></select><button class="btn btn-soft" data-i18n="dashboardExportAction" id="dashboard-export-button" onclick="xuatBaoCaoThongKe()" type="button"></button></div></div></div></section></section>
 <section aria-labelledby="tab-catalog" class="view-pane catalog-pane" hidden="" id="view-catalog" role="tabpanel">
 <div class="pane-heading catalog-heading">
 <div><h1 data-i18n="catalogHeading">Tra cứu danh mục vật tư SAP</h1>
@@ -3535,7 +3086,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <section aria-label="Bộ lọc danh mục" class="catalog-filters" data-i18n-aria="catalogFiltersAria">
 <label class="catalog-field catalog-search">
 <span data-i18n="catalogSearch">Tìm mã SAP, tên, MPN, kích thước...</span>
-<input autocomplete="off" data-i18n-placeholder="catalogSearchPlaceholder" id="catalog-search" placeholder="Nhập mã SAP, tên hoặc nhiều mã cách nhau bởi dấu phẩy" type="search"/>
+<input autocomplete="off" data-i18n-placeholder="catalogSearchPlaceholder" id="catalog-search" onpaste="xuLyDanTimKiemDanhMuc(event)" placeholder="Nhập mã SAP, tên hoặc nhiều mã cách nhau bởi dấu phẩy" type="search"/>
 </label>
 <label class="catalog-field"><span data-i18n="catalogSearchIn">Tìm trong</span>
 <select id="catalog-scope">
@@ -3640,7 +3191,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <button class="btn btn-soft" data-i18n="next" onclick="chuyenTrangChiTietKy(1)" type="button">Sau</button>
 </div>
 </dialog>
-<dialog class="request-dialog" id="request-dialog"><form class="request-dialog-form" method="dialog" onsubmit="return false"><div class="request-dialog-head"><h3 data-i18n="requestDialogTitle">Tạo yêu cầu vật tư</h3><button aria-label="Đóng" class="btn btn-soft" data-i18n-aria="close" onclick="dongYeuCauVatTu()" type="button">×</button></div><div class="request-grid"><div class="request-field"><span data-i18n="colSap">Mã SAP</span><strong id="request-sap">—</strong></div><div class="request-field"><span data-i18n="requestStock">Tồn kho</span><strong id="request-stock">—</strong></div><div class="request-field request-wide"><span data-i18n="requestName">Tên vật tư</span><strong id="request-name">—</strong></div><div class="request-field"><span data-i18n="requestUnit">Đơn vị</span><strong id="request-unit">—</strong></div><label class="request-field"><span data-i18n="requestQty">Số lượng yêu cầu</span><input id="request-qty" min="1" required="" step="1" type="number" value="1"/></label></div><div class="request-dialog-actions"><button class="btn btn-secondary" data-i18n="requestCancel" onclick="dongYeuCauVatTu()" type="button">Hủy</button><button class="btn btn-primary" data-i18n="requestSubmit" onclick="xacNhanYeuCauVatTu()" type="button">Yêu cầu</button></div></form></dialog>
+<dialog class="request-dialog" id="request-dialog"><form class="request-dialog-form" method="dialog" onkeydown="xuLyEnterYeuCauVatTu(event)" onsubmit="return false"><div class="request-dialog-head"><h3 data-i18n="requestDialogTitle">Tạo yêu cầu vật tư</h3><button aria-label="Đóng" class="btn btn-soft" data-i18n-aria="close" onclick="dongYeuCauVatTu()" type="button">×</button></div><div class="request-grid"><div class="request-field"><span data-i18n="colSap">Mã SAP</span><strong id="request-sap">—</strong></div><div class="request-field"><span data-i18n="requestStock">Tồn kho</span><strong id="request-stock">—</strong></div><div class="request-field request-wide"><span data-i18n="requestName">Tên vật tư</span><strong id="request-name">—</strong></div><label class="request-field"><span data-i18n="requestUnit">Đơn vị</span><select id="request-unit"><option value="PC">PC</option><option value="CAR">CAR</option><option value="ROL">ROL</option><option value="M">M</option></select></label><label class="request-field"><span data-i18n="requestQty">Số lượng yêu cầu</span><input id="request-qty" min="1" required="" step="1" type="number" value="1"/></label></div><div class="request-done" id="request-done" role="status" aria-live="polite" hidden>Xong</div><div class="request-dialog-actions"><label class="request-requester"><span data-i18n="requestRequester">Người yêu cầu</span><input autocomplete="name" data-i18n-placeholder="requestRequesterPlaceholder" id="request-requester" maxlength="80" placeholder="Nhập tên người yêu cầu" type="text"/></label><button class="btn btn-secondary" data-i18n="requestCancel" onclick="dongYeuCauVatTu()" type="button">Hủy</button><button class="btn btn-primary" data-i18n="requestSubmit" onclick="xacNhanYeuCauVatTu()" type="button">Yêu cầu</button></div></form></dialog>
+<dialog class="request-dialog" id="request-edit-dialog"><form class="request-dialog-form" method="dialog" onsubmit="return false"><div class="request-dialog-head"><h3 data-i18n="requestEditTitle">Sửa yêu cầu vật tư</h3><button aria-label="Đóng" class="btn btn-soft" onclick="dongSuaYeuCauVatTu()" type="button">×</button></div><div class="request-grid"><div class="request-field"><span data-i18n="colSap">Mã SAP</span><strong id="request-edit-sap">—</strong></div><div class="request-field"><span data-i18n="requestStock">Tồn kho</span><strong id="request-edit-stock">—</strong></div><div class="request-field request-wide"><span data-i18n="requestName">Tên vật tư</span><strong id="request-edit-name">—</strong></div><label class="request-field"><span data-i18n="requestUnit">Đơn vị</span><select id="request-edit-unit"><option value="PC">PC</option><option value="CAR">CAR</option><option value="ROL">ROL</option><option value="M">M</option></select></label><label class="request-field"><span data-i18n="requestQty">Số lượng yêu cầu</span><input id="request-edit-qty" min="0.01" step="any" type="number"/></label><label class="request-field request-wide"><span data-i18n="requestRequester">Người yêu cầu</span><input id="request-edit-requester" maxlength="80" type="text"/></label></div><div class="request-edit-actions"><button class="btn btn-secondary" data-i18n="requestCancel" onclick="dongSuaYeuCauVatTu()" type="button">Hủy</button><button class="btn btn-primary" data-i18n="requestSave" onclick="luuSuaYeuCauVatTu()" type="button">Lưu</button></div></form></dialog>
 <div aria-label="Thao tác vật tư" class="stock-row-menu" data-i18n-aria="stockRowMenuAria" hidden="" id="stock-row-menu" role="menu" tabindex="-1">
 <button data-stock-menu-action="request" onclick="thaoTacMenuVatTu('request')" role="menuitem" type="button"><span aria-hidden="true" class="row-menu-icon">＋</span><span data-i18n="stockMenuRequest">Yêu cầu</span></button>
 <div class="row-menu-divider" role="separator"></div>
@@ -3685,6 +3237,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <div class="material-history-stat coverage"><span data-i18n="materialHistoryCoverage">Thời gian sử dụng ước tính</span><strong id="material-history-coverage">—</strong><small id="material-history-coverage-note"></small></div>
 </div>
 <div aria-label="Thống kê tiêu thụ 1 năm, 2 năm, 3 năm" class="history-cons-strip" id="material-history-consumption-strip"></div>
+<div class="material-history-conversion" style="display:flex;gap:8px;align-items:end;padding:4px 16px 6px;flex-wrap:wrap"><label style="font-size:11px;color:var(--muted)">Quy đổi ĐVT<input id="material-conv-factor" type="number" min="0" step="any" placeholder="VD: 1 ROL = ? PC" style="display:block;margin-top:3px;width:145px"/></label><button class="btn btn-soft" type="button" onclick="luuQuyDoiVatTu()">Lưu quy đổi</button><span id="material-conv-note" style="font-size:11px;color:var(--muted)"></span></div>
 <div class="material-history-controls">
 <label class="history-filter-field"><span data-i18n="historyType">Loại giao dịch</span><select id="material-history-kind" onchange="locLichSuVatTu()">
 <option data-i18n="historyAny" value="all">Tất cả</option>
@@ -3716,6 +3269,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 </dialog>
 <script src="Amount.js"></script>
 <script>
+const CHECKING_SPLIT_MODE="main";
+
 
     // Text labels are translated without reloading data.js or the image gallery.
     const NGON_NGU = {
@@ -4491,13 +4046,13 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     Object.assign(NGON_NGU.vi,{requestTab:"Yêu cầu",requestSubtitle:"Danh sách vật tư đã tạo yêu cầu trên thiết bị này.",stockMenuRequest:"Yêu cầu",requestDialogTitle:"Tạo yêu cầu vật tư",requestName:"Tên vật tư",requestStock:"Tồn kho",requestUnit:"Đơn vị",requestQty:"Số lượng yêu cầu",requestSubmit:"Yêu cầu",requestTime:"Thời gian",requestBin:"Vị trí vật tư",requestEmpty:"Chưa có yêu cầu nào.",requestSaved:"Đã thêm yêu cầu {code}.",requestInvalidQty:"Số lượng yêu cầu phải lớn hơn 0.",requestSearch:"Tìm kiếm",requestSearchPlaceholder:"Mã SAP, tên, vị trí, đơn vị...",requestFrom:"Từ ngày",requestTo:"Đến ngày",requestUnitFilter:"Đơn vị",requestAll:"Tất cả",requestClear:"Xóa lọc",requestExport:"Xuất Excel (.xlsx)",requestExportEmpty:"Không có yêu cầu phù hợp để xuất."});
     Object.assign(NGON_NGU.en,{requestTab:"Requests",requestSubtitle:"Material requests created on this device.",stockMenuRequest:"Request",requestDialogTitle:"Create material request",requestName:"Material name",requestStock:"Stock",requestUnit:"Unit",requestQty:"Request quantity",requestSubmit:"Request",requestTime:"Time",requestBin:"Storage bin",requestEmpty:"No requests yet.",requestSaved:"Request added for {code}.",requestInvalidQty:"Request quantity must be greater than 0.",requestSearch:"Search",requestSearchPlaceholder:"SAP code, material, bin, unit...",requestFrom:"From date",requestTo:"To date",requestUnitFilter:"Unit",requestAll:"All",requestClear:"Clear filters",requestExport:"Export Excel (.xlsx)",requestExportEmpty:"No matching requests to export."});
     Object.assign(NGON_NGU.vi,{favoriteColumn:"Yêu thích",favoriteFilter:"Yêu thích",
-      searchHistoryTab:"Lịch sử tìm kiếm",searchHistoryNote:"Lưu trên trình duyệt này, tối đa 100 lượt tìm kiếm gần nhất.",
+      searchHistoryTab:"Lịch sử tìm kiếm",searchHistoryNote:"Lưu trên trình duyệt này, tối đa 500 lượt tìm kiếm gần nhất.",
       searchHistoryFilter:"Lọc lịch sử",searchHistoryClear:"Xóa lịch sử",searchHistoryTime:"Thời gian",
       searchHistoryQuery:"Từ khóa",searchHistoryScope:"Tìm trong",searchHistoryAction:"Thao tác",
       searchHistoryRepeat:"Tìm lại",searchHistoryEmpty:"Chưa có lịch sử tìm kiếm.",
       searchHistoryConfirm:"Bạn muốn xóa toàn bộ lịch sử tìm kiếm trên thiết bị này?"});
     Object.assign(NGON_NGU.en,{favoriteColumn:"Favorites",favoriteFilter:"Favorites",
-      searchHistoryTab:"Search history",searchHistoryNote:"Stored in this browser, up to 100 recent searches.",
+      searchHistoryTab:"Search history",searchHistoryNote:"Stored in this browser, up to 500 recent searches.",
       searchHistoryFilter:"Filter history",searchHistoryClear:"Clear history",searchHistoryTime:"Time",
       searchHistoryQuery:"Query",searchHistoryScope:"Search in",searchHistoryAction:"Action",
       searchHistoryRepeat:"Search again",searchHistoryEmpty:"No search history yet.",
@@ -4506,7 +4061,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       searchHistoryPlaceholder:"Nhập từ khóa đã tìm...",activityCount:"{found} / {total} bản ghi",
       activityPagination:"Phân trang bảng",activityInvalidDates:"Từ ngày phải trước hoặc bằng Đến ngày.",
       activityNoResults:"Không có bản ghi phù hợp với bộ lọc.",activityMissingBin:"Chưa có vị trí",
-      requestCancel:"Hủy",activitySelectionActions:"Chọn và xóa dòng",
+      requestCancel:"Hủy",requestEdit:"Sửa",requestEditTitle:"Sửa yêu cầu vật tư",requestSave:"Lưu",requestDone:"Xong",requestRequester:"Người yêu cầu",requestRequesterPlaceholder:"Nhập tên người yêu cầu",requestRequesterRequired:"Vui lòng nhập tên người yêu cầu.",activitySelectionActions:"Chọn và xóa dòng",
       activitySelectPage:"Chọn tất cả dòng trên trang này",activitySelectRow:"Chọn {name}",
       activitySelectAll:"Chọn tất cả {count} kết quả",activitySelected:"Đã chọn {count} / {total} dòng",
       activityUnselect:"Bỏ chọn",activityDeleteSelected:"Xóa dòng đã chọn",activityDelete:"Xóa",
@@ -4519,7 +4074,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       searchHistoryPlaceholder:"Find a previous query...",activityCount:"{found} / {total} records",
       activityPagination:"Table pagination",activityInvalidDates:"From date must be on or before To date.",
       activityNoResults:"No records match the filters.",activityMissingBin:"No storage bin",
-      requestCancel:"Cancel",activitySelectionActions:"Select and delete rows",
+      requestCancel:"Cancel",requestEdit:"Edit",requestEditTitle:"Edit material request",requestSave:"Save",requestDone:"Done",requestRequester:"Requester",requestRequesterPlaceholder:"Enter requester name",requestRequesterRequired:"Please enter requester name.",activitySelectionActions:"Select and delete rows",
       activitySelectPage:"Select all rows on this page",activitySelectRow:"Select {name}",
       activitySelectAll:"Select all {count} results",activitySelected:"{count} / {total} rows selected",
       activityUnselect:"Clear selection",activityDeleteSelected:"Delete selected",activityDelete:"Delete",
@@ -4580,7 +4135,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 
     function apDungNgonNgu() {
       document.documentElement.lang = ngonNguHienTai;
-      document.title=tuDien("pageTitle");
+      document.title=CHECKING_SPLIT_MODE==="report" ? (ngonNguHienTai==="en" ? "SAP Warehouse · Dashboard & Inventory Analytics" : "Quản lý kho SAP · Dashboard & Phân tích kho") : tuDien("pageTitle");
       document.querySelectorAll("[data-i18n]").forEach(el => {
         el.textContent = tuDien(el.dataset.i18n);
       });
@@ -4643,7 +4198,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 
     // Tabs switch views without reloading or losing stock search/gallery state.
     let tabHienTai="stock";
-    const CAC_TAB=["stock","analytics","dashboard","catalog","search-history","requests"];
+    const CAC_TAB=["stock", "catalog", "search-history", "requests"];
     function chuyenTab(tab, opts={}) {
       if(!CAC_TAB.includes(tab))return;
       if(tab!=="catalog"&&typeof dongChiTietDanhMuc==="function")dongChiTietDanhMuc();
@@ -4659,6 +4214,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         const pane=document.getElementById("view-"+name);
         const button=document.getElementById("tab-"+name);
         const selected=name===tab;
+        if(!pane||!button)continue;
         pane.hidden=!selected;
         button.setAttribute("aria-selected",String(selected));
         button.setAttribute("tabindex",selected?"0":"-1");
@@ -4666,7 +4222,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       }
       document.querySelector(".breadcrumbs .active").textContent=tuDien(
         tab==="stock"?"tabStock":tab==="analytics"?"tabAnalytics":tab==="dashboard"?"tabDashboard":tab==="catalog"?"catalogTab":tab==="search-history"?"searchHistoryTab":"requestTab");
-      if(opts.persist!==false)ghiTuyChon("checking-active-tab",tab);
+      if(opts.persist!==false)ghiTuyChon("checking-active-tab-main",tab);
       if(typeof restoreScroll==="function")requestAnimationFrame(()=>restoreScroll(tab));
       if(typeof showDataScope==="function")showDataScope(tab);
       if(tab==="catalog"&&!danhMucTrangThai.loaded&&!danhMucTrangThai.loading)taiDanhMuc();
@@ -4900,6 +4456,17 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         parsed.push(record);
       }
       return {records:parsed,missing};
+    }
+    function xuLyDanTimKiemDanhMuc(e){
+      const text=e.clipboardData?.getData("text/plain") || "";
+      if(!/[\r\n\t]/.test(text))return;
+      e.preventDefault();
+      const value=text.split(/[\r\n\t]+/).map(x=>x.trim()).filter(Boolean).join(", ");
+      const field=e.target;
+      const start=field.selectionStart ?? field.value.length;
+      const end=field.selectionEnd ?? field.value.length;
+      field.setRangeText(value,start,end,"end");
+      field.dispatchEvent(new Event("input",{bubbles:true}));
     }
     function locDanhMuc(records,query){
       const terms=String(query.search||"").trim().split(/[,;\n|]+/)
@@ -7766,56 +7333,39 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     let materialHistoryExporting=false;
     const MATERIAL_HISTORY_PAGE_SIZE=50;
 
+    const MATERIAL_CONVERSION_KEY="sp_material_unit_conversions_v1";
+    function docQuyDoiVatTu(){try{return JSON.parse(localStorage.getItem(MATERIAL_CONVERSION_KEY)||"{}")||{}}catch(e){return {}}}
+    function quyDoiVatTu(sap){const x=docQuyDoiVatTu()[chuanHoaMaSap(sap)];return x&&Number(x.factor)>0?x:null}
+    function luuQuyDoiVatTu(){
+      const el=document.getElementById("material-conv-factor"),factor=Number(el?.value),sap=materialHistorySap;
+      const all=docQuyDoiVatTu();if(Number.isFinite(factor)&&factor>0)all[chuanHoaMaSap(sap)]={factor};else delete all[chuanHoaMaSap(sap)];
+      localStorage.setItem(MATERIAL_CONVERSION_KEY,JSON.stringify(all));capNhatQuyDoiVatTuUI();locLichSuVatTu();if(typeof taoDanhSachConsumptionKho==="function"){try{taoDanhSachConsumptionKho(true)}catch(e){}}if(materialHistorySap&&typeof capNhatStripConsumptionTrongModal==="function")capNhatStripConsumptionTrongModal(materialHistorySap);
+    }
+    function capNhatQuyDoiVatTuUI(){
+      const el=document.getElementById("material-conv-factor"),note=document.getElementById("material-conv-note");if(!el||!note)return;
+      const cv=quyDoiVatTu(materialHistorySap),row=dongStockLichSuVatTu(),uc=cotHistoryTheoTen(tieuDeCot,["Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]),stockUnit=row&&uc>=0?String(row[uc]??"").trim().toUpperCase():"PC";
+      if(document.activeElement!==el)el.value=cv?cv.factor:"";note.textContent=cv?"1 ĐVT xuất = "+cv.factor+" "+stockUnit:"Nhập hệ số khi ĐVT xuất khác ĐVT tồn";
+    }
+
     // Use calendar months that have fully ended, not the unfinished current month.
     // Consumption sums all OUTPUT quantities; the monthly average uses 12 full months.
     function thongKeConsumptionVatTu(sapRows,stockRow) {
       const qtyColumn=cotSoLuongHistoryDungCot();
-      const unitColumn=cotHistoryTheoTen(historyColumns,[
-        "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
-      const stockUnitColumn=cotHistoryTheoTen(tieuDeCot,[
-        "Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
-      const stockUnit=stockRow&&stockUnitColumn>=0?
-        String(stockRow[stockUnitColumn]??"").trim().toUpperCase():"";
-      const stock=stockRow?chuyenThanhSo(stockRow[chiSoSoLuong]):NaN;
-      const output=sapRows.filter(rec=>rec.type==="out");
-      const units=unitColumn>=0?Array.from(new Set(output.map(rec=>
-        String(rec.cells[unitColumn]??"").trim().toUpperCase()).filter(Boolean))):[];
-      const mixed=units.length>1;
-      const unit=mixed?(stockUnit&&units.includes(stockUnit)?stockUnit:""):units[0]||"";
-      const hasQuantity=qtyColumn>=0;
-      const summable=hasQuantity&&(!mixed||!!unit)&&!(output.length>0&&unitColumn>=0&&!unit);
-      const today=new Date();
-      const start=new Date(today.getFullYear(),today.getMonth()-12,1);
-      const end=new Date(today.getFullYear(),today.getMonth(),1);
-      const monthKey=date=>date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0");
-      const period=String(start.getMonth()+1).padStart(2,"0")+"/"+start.getFullYear()+
-        " – "+String(today.getMonth()||12).padStart(2,"0")+"/"+
-        (today.getMonth()?today.getFullYear():today.getFullYear()-1);
-      const beginning=monthKey(start),ending=monthKey(end);
-      let consumption=0,recent=0,invalid=0;
-      const hasDates=sapRows.some(rec=>/^(?:19|20)\d{2}-\d{2}-\d{2}$/.test(rec.date));
-      if(summable)for(const rec of output) {
-        if(unitColumn>=0&&unit&&String(rec.cells[unitColumn]??"").trim().toUpperCase()!==unit) {
-          invalid++;
-          continue;
-        }
-        const raw=rec.cells[qtyColumn];
-        const quantity=chuyenThanhSo(raw);
-        if(!Number.isFinite(quantity)){invalid++;continue;}
-        const used=Math.abs(quantity);
-        consumption+=used;
-        if(rec.date&&rec.date.slice(0,7)>=beginning&&rec.date.slice(0,7)<ending)
-          recent+=used;
-      }
-      const average=summable&&hasDates?recent/12:NaN;
-      // Do not predict with mixed/unknown units or partially invalid output.
-      const compatible=unitColumn>=0&&!!unit&&!!stockUnit&&unit===stockUnit&&!mixed&&invalid===0;
-      const coverage=summable&&compatible&&Number.isFinite(stock)&&stock>=0&&
-        Number.isFinite(average)&&average>0?stock/average:NaN;
-      return {consumption:summable?consumption:NaN,average,coverage,
-        unit,stock,stockUnit,mixed,invalid,
-        hasQuantity,hasDates,period,compatible,outputCount:output.length,
-        summable};
+      const unitColumn=cotHistoryTheoTen(historyColumns,["Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
+      const stockUnitColumn=cotHistoryTheoTen(tieuDeCot,["Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]);
+      const stockUnit=stockRow&&stockUnitColumn>=0?String(stockRow[stockUnitColumn]??"").trim().toUpperCase():"";
+      const stock=stockRow?chuyenThanhSo(stockRow[chiSoSoLuong]):NaN,output=sapRows.filter(r=>r.type==="out");
+      const unitCounts={};for(const r of output){const u=unitColumn>=0?String(r.cells[unitColumn]??"").trim().toUpperCase():"";if(u)unitCounts[u]=(unitCounts[u]||0)+1}
+      const unit=Object.keys(unitCounts).sort((a,b)=>unitCounts[b]-unitCounts[a])[0]||stockUnit||"";
+      let consumption=0,recent=0,invalid=0,otherUnit=0;const today=new Date(),start=new Date(today.getFullYear(),today.getMonth()-12,1),end=new Date(today.getFullYear(),today.getMonth(),1);
+      const beginning=start.getFullYear()+"-"+String(start.getMonth()+1).padStart(2,"0"),ending=end.getFullYear()+"-"+String(end.getMonth()+1).padStart(2,"0");
+      const cv=quyDoiVatTu(materialHistorySap);
+      for(const r of output){const q=chuyenThanhSo(r.cells[qtyColumn]),u=unitColumn>=0?String(r.cells[unitColumn]??"").trim().toUpperCase():unit;if(!Number.isFinite(q)){invalid++;continue}let used=Math.abs(q);if(u&&unit&&u!==unit){otherUnit++;continue}consumption+=used;if(r.date&&r.date.slice(0,7)>=beginning&&r.date.slice(0,7)<ending)recent+=used}
+      const hasDates=output.some(r=>/^(?:19|20)\d{2}-\d{2}-\d{2}$/.test(r.date)),average=hasDates?recent/12:NaN;
+      let stockInUsageUnit=stock,compatible=!!unit&&!!stockUnit&&unit===stockUnit;
+      if(!compatible&&cv&&Number.isFinite(stock)&&cv.factor>0){stockInUsageUnit=stock/cv.factor;compatible=true}
+      const coverage=compatible&&Number.isFinite(stockInUsageUnit)&&stockInUsageUnit>=0&&Number.isFinite(average)&&average>0?stockInUsageUnit/average:NaN;
+      return {consumption,average,coverage,unit,stock,stockUnit,mixed:false,invalid:invalid+otherUnit,hasQuantity:qtyColumn>=0,hasDates,period:beginning+" – "+ending,compatible,outputCount:output.length,summable:true,conversion:cv};
     }
 
     function dongStockLichSuVatTu() {
@@ -7837,26 +7387,12 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     // Each direction is summed separately by quantity, not number of movements.
     // Never sum different units or silently ignore invalid records.
     function tongSoLuongHistory(rows) {
-      const qtyCol=cotSoLuongHistoryDungCot();
-      const unitCol=cotHistoryTheoTen(historyColumns,[
-        "Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
-      if(qtyCol<0)return {value:NaN,unit:"",reason:"materialHistoryQuantityMissing"};
-      let total=0,unit="",invalid=false,mixed=false,missing=false;
-      for(const rec of rows) {
-        const raw=rec.cells[qtyCol],qty=chuyenThanhSo(raw);
-        if(!Number.isFinite(qty)){invalid=true;continue;}
-        total+=Math.abs(qty);
-        if(unitCol>=0) {
-          const entry=String(rec.cells[unitCol]??"").trim().toUpperCase();
-          if(!entry){missing=true;continue;}
-          if(unit&&unit!==entry)mixed=true;
-          if(!unit)unit=entry;
-        }
-      }
-      if(invalid)return {value:NaN,unit:"",reason:"materialHistoryQuantityInvalid"};
-      if(mixed)return {value:NaN,unit:"",reason:"materialHistoryQuantityMixed"};
-      if(missing)return {value:NaN,unit:"",reason:"materialHistoryQuantityUnit"};
-      return {value:total,unit,reason:unitCol<0?"materialHistoryQuantityUnit":""};
+      const qtyCol=cotSoLuongHistoryDungCot(),unitCol=cotHistoryTheoTen(historyColumns,["Unit of Entry","Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
+      if(qtyCol<0)return {value:NaN,unit:"",reason:"materialHistoryQuantityInvalid"};
+      const counts={};for(const r of rows){const u=unitCol>=0?String(r.cells[unitCol]??"").trim().toUpperCase():"";if(u)counts[u]=(counts[u]||0)+1}
+      const unit=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0]||"";let total=0,invalid=0,skipped=0;
+      for(const r of rows){const q=chuyenThanhSo(r.cells[qtyCol]),u=unitCol>=0?String(r.cells[unitCol]??"").trim().toUpperCase():unit;if(!Number.isFinite(q)){invalid++;continue}if(unit&&u&&u!==unit){skipped++;continue}total+=Math.abs(q)}
+      return {value:total,unit,reason:(invalid||skipped)?"consumptionPartial":""};
     }
 
     function hienThiSoLuongVatTu(rowsForQuantity,allSapRows,scopeAvailable=true) {
@@ -7923,6 +7459,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       materialHistoryHall=hall;
       materialHistoryFromDormant=fromDormant&&hall==="hall1";
       materialHistoryStockIndex=index;
+      setTimeout(capNhatQuyDoiVatTuUI,0);
       materialHistoryPage=1;
       materialHistorySortColumn=-2;
       materialHistorySortDirection=-1;
@@ -9053,7 +8590,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       ];
       const borders = [
         '<border><left/><right/><top/><bottom/><diagonal/></border>',
-        '<border><left/><right/><top/><bottom style="thin"><color rgb="FFDFE6EF"/></bottom/><diagonal/></border>'
+        '<border><left/><right/><top/><bottom style="thin"><color rgb="FFDFE6EF"/></bottom><diagonal/></border>'
       ];
       const xfs = [
         xf(0, 4),             // 0 default
@@ -9114,7 +8651,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       };
       const entries = files.map(file => ({
         name: encoder.encode(file.name),
-        bytes: encoder.encode(file.data)
+        bytes: file.data instanceof Uint8Array ? file.data : encoder.encode(file.data)
       }));
       if (entries.length > 65535) throw new Error("ZIP file-count limit");
       let size = 22;
@@ -9239,7 +8776,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
             cells.push(oSoXlsx(n+1,row,num,even?12:13));
           else cells.push(oChuXlsx(n+1,row,raw,even?8:9));
         }
-        rows.push(hangXlsx(row,cells,23));
+        rows.push(hangXlsx(row,cells,58));
       }
       const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
       const widthsXml=widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+
@@ -9327,10 +8864,44 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       }
     }
 
+    async function taiAnhVatTuXlsx(src){
+      if(!src)return null;
+      // http/https: fetch the original bytes directly.
+      if(location.protocol!=="file:"){
+        try{
+          const response=await fetch(src,{cache:"force-cache"});
+          if(response.ok){
+            const blob=await response.blob();
+            let ext="jpg",type=String(blob.type||"").toLowerCase();
+            if(type.includes("png"))ext="png";else if(type.includes("gif"))ext="gif";else if(type.includes("webp"))ext="webp";
+            return {bytes:new Uint8Array(await blob.arrayBuffer()),ext};
+          }
+        }catch(e){}
+      }
+      // file://: browsers block fetch(local-file), but the app can already display Material images.
+      // Load the same image through <img>, draw it to canvas and export PNG bytes for XLSX.
+      try{
+        const img=await new Promise((resolve,reject)=>{
+          const el=new Image();
+          el.onload=()=>resolve(el);el.onerror=reject;el.src=src;
+        });
+        const max=640,scale=Math.min(1,max/Math.max(img.naturalWidth||1,img.naturalHeight||1));
+        const w=Math.max(1,Math.round((img.naturalWidth||1)*scale));
+        const h=Math.max(1,Math.round((img.naturalHeight||1)*scale));
+        const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext("2d");ctx.drawImage(img,0,0,w,h);
+        const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png",0.92));
+        if(!blob)return null;
+        return {bytes:new Uint8Array(await blob.arrayBuffer()),ext:"png"};
+      }catch(e){console.warn("Material image export:",src,e);return null;}
+    }
+
     async function taoBaoCaoXlsx(danhSach, option = {}) {
       const src = danhSach;
       const locale = ngonNguHienTai === "en" ? "en-US" : "vi-VN";
       const soCotNguon = tieuDeCot.length;
+      const themCotHinhAnh = true;
+      const anhXlsx=[];
       const timChiSo = aliases => tieuDeCot.findIndex(text =>
         aliases.includes(String(text ?? "").trim().toLowerCase()));
       const aliasesQty=["quantity","qty","số lượng","stock","stock qty","on hand","tồn kho"];
@@ -9339,7 +8910,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       const colPrice = timChiSo(["price","unit price","đơn giá","giá"]);
       const colReorder = cotReorderPoint();
       const themThanhTien = colPrice >= 0;
-      const cotCuoi = soCotNguon + (themThanhTien ? 1 : 0);
+      const cotCuoi = soCotNguon + (themThanhTien ? 1 : 0) + (themCotHinhAnh ? 1 : 0);
       const dongCuoi = 6 + src.length + (themThanhTien ? 2 : 0);
       if (dongCuoi > 1048576 || cotCuoi > 16384 || cotCuoi < 1) throw new Error("XLSX_EXCEL_LIMIT");
       const tenSheetTongQuan = ngonNguHienTai === "en" ? "Overview" : "Tong quan";
@@ -9369,6 +8940,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       // Detail sheet: complete original SAP columns plus calculated line value.
       const header = tieuDeCot.map(tenCotDaDich);
       if (themThanhTien) header.push(tuDien("reportLineValue"));
+      if (themCotHinhAnh) header.push(ngonNguHienTai === "en" ? "Material image" : "Ảnh vật tư");
       const widths = header.map((h,i) =>
         Math.min(45,Math.max(i === 1 ? 27 : 14, Math.min(35,String(h).length + 3))));
       const sample = Math.min(src.length, 250);
@@ -9378,7 +8950,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
           widths[col] = Math.min(col === 1 ? 46 : 34, Math.max(widths[col], Math.min(len+2,34)));
         }
       }
-      if (themThanhTien) widths[cotCuoi-1] = 23;
+      if (themThanhTien) widths[soCotNguon] = 23;
+      if (themCotHinhAnh) widths[cotCuoi-1] = 36;
 
       const rows = [];
       const merges = [];
@@ -9439,15 +9012,22 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
             cells.push(oChuXlsx(soCotNguon,row,"",stockStyle));
           }
         }
+        if (themCotHinhAnh) {
+          const sapAnh=chuanHoaMaSap(rec[0]),manifestAnh=hinhAnhTuManifest(window.MaterialImageManifest,sapAnh);
+          const srcAnh=Array.isArray(manifestAnh)&&manifestAnh.length?manifestAnh[0]:(sapAnh?THU_MUC_HINH+encodeURIComponent(sapAnh)+"_01.jpg":"");
+          cells.push(oChuXlsx(cotCuoi-1,row,"",stockStyle));
+          if(srcAnh)anhXlsx.push({row,src:srcAnh});
+        }
         rows.push(hangXlsx(row,cells,23));
       }
       const lastDataRow = Math.max(6,6+src.length);
       if (themThanhTien) {
         const sumRow = lastDataRow + 2;
-        const formula = 'SUM(' + tenCotCuoi + '7:' + tenCotCuoi + lastDataRow + ')';
+        const cotThanhTien=tenCotXlsx(soCotNguon);
+        const formula='SUM('+cotThanhTien+'7:'+cotThanhTien+lastDataRow+')';
         rows.push(hangXlsx(sumRow,[
           oChuXlsx(0,sumRow,tuDien("reportValuation"),18),
-          oSoXlsx(cotCuoi-1,sumRow,giaTri,19,formula)
+          oSoXlsx(soCotNguon,sumRow,giaTri,19,formula)
         ],29));
         if (cotCuoi > 2) merges.push("A"+sumRow+":"+tenCotXlsx(cotCuoi-2)+sumRow);
       }
@@ -9467,7 +9047,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         merges.map(x=>'<mergeCell ref="'+x+'"/>').join("") +
         '</mergeCells>' +
          '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>' +
-         '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+         '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/>' +
+         (anhXlsx.length?'<drawing xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId1"/>':'') + '</worksheet>';
 
       // Overview sheet with large title, 6 key metrics and report audit details.
       const s = [], mergeSummary = [];
@@ -9519,6 +9100,22 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
          '<pageMargins left="0.35" right="0.35" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>' +
          '<pageSetup orientation="portrait" fitToWidth="1" fitToHeight="1"/></worksheet>';
       const packType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const anhNhung=[];
+      for(let i=0;i<anhXlsx.length;i++){
+        if(i>0&&i%40===0)await new Promise(resolve=>setTimeout(resolve,0));
+        const loaded=await taiAnhVatTuXlsx(anhXlsx[i].src);
+        if(loaded)anhNhung.push({...anhXlsx[i],...loaded,index:anhNhung.length+1});
+      }
+      let drawingXml="",drawingRels="",sheet2Rels="";
+      if(anhNhung.length){
+        const anchors=anhNhung.map((img,i)=>{
+          const col=cotCuoi-1,row=img.row-1,id=i+1;
+          return '<xdr:twoCellAnchor editAs="oneCell"><xdr:from><xdr:col>'+col+'</xdr:col><xdr:colOff>95250</xdr:colOff><xdr:row>'+row+'</xdr:row><xdr:rowOff>47625</xdr:rowOff></xdr:from><xdr:to><xdr:col>'+(col+1)+'</xdr:col><xdr:colOff>-95250</xdr:colOff><xdr:row>'+(row+1)+'</xdr:row><xdr:rowOff>-47625</xdr:rowOff></xdr:to><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="'+id+'" name="Material image '+id+'"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId'+id+'"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:twoCellAnchor>';
+        }).join("");
+        drawingXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+anchors+'</xdr:wsDr>';
+        drawingRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+anhNhung.map((img,i)=>'<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image'+(i+1)+'.'+img.ext+'"/>').join("")+'</Relationships>';
+        sheet2Rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>';
+      }
       const files = [
         {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
           '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
@@ -9549,6 +9146,15 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         {name:"xl/worksheets/sheet1.xml",data:sheetOverview},
         {name:"xl/worksheets/sheet2.xml",data:sheetDetails}
       ];
+      if(anhNhung.length){
+        files.push({name:"xl/worksheets/_rels/sheet2.xml.rels",data:sheet2Rels});
+        files.push({name:"xl/drawings/drawing1.xml",data:drawingXml});
+        files.push({name:"xl/drawings/_rels/drawing1.xml.rels",data:drawingRels});
+        anhNhung.forEach((img,i)=>files.push({name:"xl/media/image"+(i+1)+"."+img.ext,data:img.bytes}));
+        const types=files.find(f=>f.name==="[Content_Types].xml");
+        const defaults=[...new Set(anhNhung.map(x=>x.ext))].map(ext=>'<Default Extension="'+ext+'" ContentType="image/'+(ext==="jpg"?"jpeg":ext)+'"/>').join("");
+        types.data=types.data.replace('</Types>',defaults+'<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>');
+      }
       return new Blob([dongGoiZipXlsx(files)],{type:packType});
     }
 
@@ -9580,6 +9186,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       nhanXuat.textContent = tuDien("exportGenerating");
       try {
         await new Promise(resolve => setTimeout(resolve, 0));
+        if(!window.MaterialImageManifest){try{await taiManifestHinhAnh(true)}catch(e){}}
         const blob = await taoBaoCaoXlsx(ketQuaLoc,options);
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -10033,7 +9640,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       } catch {return []}
     }
     const SEARCH_HISTORY_KEY="checking-search-history-v1";
-    let lichSuTimKiem=docBanGhiHoatDong(SEARCH_HISTORY_KEY,100,row=>{
+    let lichSuTimKiem=docBanGhiHoatDong(SEARCH_HISTORY_KEY,500,row=>{
       if(typeof row.query!=="string"||!row.query.trim())return null;
       return {id:row.id,time:row.time,query:row.query.trim().slice(0,250),
         scope:Object.hasOwn(PHAM_VI_LICH_SU,row.scope)?row.scope:"all"};
@@ -10042,7 +9649,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     let materialRequests=docBanGhiHoatDong(REQUESTS_KEY,500,row=>{
       if(typeof row.sap!=="string"||!row.sap.trim()||!Number.isFinite(Number(row.qty))||Number(row.qty)<=0)return null;
       return {id:row.id,time:row.time,sap:row.sap.trim(),name:String(row.name??""),stock:String(row.stock??""),
-        unit:String(row.unit??"").trim(),bin:String(row.bin??"").trim(),qty:Number(row.qty)};
+        unit:["PC","CAR","ROL","M"].includes(String(row.unit??"").trim().toUpperCase())?String(row.unit).trim().toUpperCase():"PC",bin:String(row.bin??"").trim(),qty:Number(row.qty),requester:String(row.requester??"").trim()};
     });
     let demDinhDanhHoatDong=0;
     function taoMaBanGhiHoatDong() {
@@ -10121,6 +9728,14 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       input.addEventListener("change",()=>doiChonHoatDong(view,row.id,input.checked));
       label.appendChild(input);td.appendChild(label);
     }
+    let requestEditId="";
+    function chinhSuaYeuCauVatTu(row){const item=materialRequests.find(x=>x.id===row.id);if(!item)return;requestEditId=item.id;document.getElementById("request-edit-sap").textContent=item.sap||"—";document.getElementById("request-edit-name").textContent=item.name||"—";document.getElementById("request-edit-stock").textContent=item.stock||"—";document.getElementById("request-edit-unit").value=["PC","CAR","ROL","M"].includes(item.unit)?item.unit:"PC";document.getElementById("request-edit-qty").value=String(item.qty??1);document.getElementById("request-edit-requester").value=item.requester||"";const dlg=document.getElementById("request-edit-dialog");if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");setTimeout(()=>{const q=document.getElementById("request-edit-qty");q.focus();q.select()},0)}
+    function dongSuaYeuCauVatTu(){const d=document.getElementById("request-edit-dialog");if(d.open&&typeof d.close==="function")d.close();else d.removeAttribute("open");requestEditId=""}
+    function luuSuaYeuCauVatTu(){const item=materialRequests.find(x=>x.id===requestEditId);if(!item){dongSuaYeuCauVatTu();return}const qty=Number(document.getElementById("request-edit-qty").value);if(!Number.isFinite(qty)||qty<=0){thongBaoMenuVatTu("requestInvalidQty");return}item.qty=qty;item.unit=document.getElementById("request-edit-unit").value||"PC";item.requester=document.getElementById("request-edit-requester").value.trim();ghiTuyChon(REQUESTS_KEY,JSON.stringify(materialRequests));veYeuCauVatTu();dongSuaYeuCauVatTu()}
+    function nutSuaYeuCau(row){
+      const b=document.createElement("button");b.type="button";b.className="btn btn-soft";b.textContent=tuDien("requestEdit");
+      b.addEventListener("click",()=>chinhSuaYeuCauVatTu(row));return b;
+    }
     function nutXoaHoatDong(view,row) {
       const button=document.createElement("button");button.type="button";button.className="btn activity-delete";
       button.textContent=tuDien("activityDelete");
@@ -10157,7 +9772,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       const queryKey=row=>row.scope+"\0"+chuanHoaTimKiem(row.query);
       const queries=view==="search-history"?new Set(current.map(queryKey)):null;
       const restore=state.undo.filter(row=>!ids.has(row.id)&&(!queries||!queries.has(queryKey(row))));
-      if(current.length+restore.length>(view==="requests"?500:100)){
+      if(current.length+restore.length>500){
         state.notice={key:"activityUndoLimit",error:true};veBangHoatDong(view);return;
       }
       if(!luuBanGhiHoatDong(view,[...current,...restore].sort((a,b)=>b.time-a.time)))return;
@@ -10249,9 +9864,14 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
     function dongTrongHoatDong(body,columns,key) {
       const td=body.insertRow().insertCell();td.colSpan=columns;td.className="empty-table";td.textContent=tuDien(key);
     }
-    function moYeuCauVatTu(index){const row=tatCaDuLieu[index];if(!row)return;requestRowIndex=index;const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotDonViYeuCau();document.getElementById("request-sap").textContent=chuanHoaMaSap(row[0])||"—";document.getElementById("request-name").textContent=String(row[dc]??"").trim()||"—";document.getElementById("request-stock").textContent=String(row[chiSoSoLuong]??"").trim()||"—";document.getElementById("request-unit").textContent=uc>=0?(String(row[uc]??"").trim()||"—"):"—";const q=document.getElementById("request-qty");q.value="1";const dlg=document.getElementById("request-dialog");if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");setTimeout(()=>{q.focus();q.select()},0)}
+    function moYeuCauVatTu(index){const row=tatCaDuLieu[index];if(!row)return;requestRowIndex=index;const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotDonViYeuCau();document.getElementById("request-sap").textContent=chuanHoaMaSap(row[0])||"—";document.getElementById("request-name").textContent=String(row[dc]??"").trim()||"—";document.getElementById("request-stock").textContent=String(row[chiSoSoLuong]??"").trim()||"—";document.getElementById("request-unit").value="PC";const q=document.getElementById("request-qty");q.value="1";document.getElementById("request-requester").value="";const done=document.getElementById("request-done");if(done){done.hidden=true;done.textContent=tuDien("requestDone");}const dlg=document.getElementById("request-dialog");if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");setTimeout(()=>{q.focus();q.select()},0)}
     function dongYeuCauVatTu(){const d=document.getElementById("request-dialog");if(d.open&&typeof d.close==="function")d.close();else d.removeAttribute("open");requestRowIndex=-1}
-    function xacNhanYeuCauVatTu(){if(requestRowIndex<0)return;const row=tatCaDuLieu[requestRowIndex],qty=Number(document.getElementById("request-qty").value);if(!Number.isFinite(qty)||qty<=0){thongBaoMenuVatTu("requestInvalidQty");document.getElementById("request-qty").focus();return}const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),uc=cotDonViYeuCau(),sap=chuanHoaMaSap(row[0]);materialRequests.unshift({id:taoMaBanGhiHoatDong(),time:Date.now(),sap,name:String(row[dc]??"").trim(),stock:String(row[chiSoSoLuong]??"").trim(),unit:uc>=0?String(row[uc]??"").trim():"",bin:viTriYeuCau(row),qty});materialRequests=materialRequests.slice(0,500);ghiTuyChon(REQUESTS_KEY,JSON.stringify(materialRequests));dongYeuCauVatTu();veYeuCauVatTu();thongBaoMenuVatTu("requestSaved",{code:sap})}
+    function xuLyEnterYeuCauVatTu(event){
+      if(event.key!=="Enter"||event.isComposing)return;
+      const target=event.target;if(target&&target.tagName==="BUTTON")return;
+      event.preventDefault();xacNhanYeuCauVatTu();
+    }
+    function xacNhanYeuCauVatTu(){if(requestRowIndex<0)return;const requester=document.getElementById("request-requester").value.trim();const row=tatCaDuLieu[requestRowIndex],qty=Number(document.getElementById("request-qty").value);if(!Number.isFinite(qty)||qty<=0){thongBaoMenuVatTu("requestInvalidQty");document.getElementById("request-qty").focus();return}const dc=cotYeuCau(["Material Description","Description","Mô tả","Mô tả vật tư"],1),sap=chuanHoaMaSap(row[0]),unit=document.getElementById("request-unit").value||"PC";materialRequests.unshift({id:taoMaBanGhiHoatDong(),time:Date.now(),requester,sap,name:String(row[dc]??"").trim(),stock:String(row[chiSoSoLuong]??"").trim(),unit,bin:viTriYeuCau(row),qty});materialRequests=materialRequests.slice(0,500);ghiTuyChon(REQUESTS_KEY,JSON.stringify(materialRequests));veYeuCauVatTu();const done=document.getElementById("request-done");if(done){done.textContent=tuDien("requestDone");done.hidden=false;}setTimeout(()=>dongYeuCauVatTu(),650);thongBaoMenuVatTu("requestSaved",{code:sap})}
     function ngayYeuCau(time) {
       return ngayDiaPhuongISO(new Date(time));
     }
@@ -10287,19 +9907,19 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       capNhatDonViYeuCau();
       const rows=yeuCauDangLoc(),page=capNhatBangHoatDong("requests",rows,materialRequests.length);
       body.replaceChildren();
-      if(!page.length){dongTrongHoatDong(body,9,materialRequests.length?"activityNoResults":"requestEmpty");return}
+      if(!page.length){dongTrongHoatDong(body,10,materialRequests.length?"activityNoResults":"requestEmpty");return}
       const fragment=document.createDocumentFragment();
       for(const r of page){
         const tr=document.createElement("tr");taoOChonHoatDong(tr,"requests",r);
-        const keys=["time","sap","name","stock","bin","unit","qty"];
-        const values=[new Date(r.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US"),r.sap,r.name,r.stock||"—",r.bin||"—",r.unit||"—",dinhDangSoLuong.format(r.qty)];
+        const keys=["time","sap","name","stock","bin","unit","qty","requester"];
+        const values=[new Date(r.time).toLocaleString(ngonNguHienTai==="vi"?"vi-VN":"en-US"),r.sap,r.name,r.stock||"—",r.bin||"—",r.unit||"—",dinhDangSoLuong.format(r.qty),r.requester||"—"];
         values.forEach((value,i)=>{
           const td=tr.insertCell();td.dataset.activityField=keys[i];td.textContent=value;td.title=String(value);
           if(i===3||i===6)td.className="activity-number";
-          if(i===0)td.className="activity-time";if(i===1)td.className="activity-material";
+          if(i===0)td.className="activity-time";if(i===1){td.className="activity-material request-sap-jump";td.tabIndex=0;td.title=ngonNguHienTai==="en"?"Double-click to open Stock lookup":"Nhấn đúp để mở Tra cứu tồn kho";td.addEventListener("dblclick",()=>traTonKhoTuDanhMuc(r.sap));td.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();traTonKhoTuDanhMuc(r.sap)}})}
         });
         const actions=tr.insertCell(),group=document.createElement("div");group.className="activity-row-actions";
-        group.appendChild(nutXoaHoatDong("requests",r));actions.appendChild(group);
+        group.appendChild(nutSuaYeuCau(r));group.appendChild(nutXoaHoatDong("requests",r));actions.appendChild(group);
         fragment.appendChild(tr);
       }
       body.appendChild(fragment);
@@ -10423,7 +10043,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       const previous=lichSuTimKiem.find(item=>item.scope===scope&&chuanHoaTimKiem(item.query)===normalized);
       lichSuTimKiem=lichSuTimKiem.filter(item=>!(item.scope===scope&&chuanHoaTimKiem(item.query)===normalized));
       lichSuTimKiem.unshift({id:previous?.id||taoMaBanGhiHoatDong(),query,scope,time:Date.now()});
-      lichSuTimKiem.length=Math.min(lichSuTimKiem.length,100);
+      lichSuTimKiem.length=Math.min(lichSuTimKiem.length,500);
       ghiTuyChon(SEARCH_HISTORY_KEY,JSON.stringify(lichSuTimKiem));
     }
     function lichSuTimKiemDangLoc() {
@@ -10502,7 +10122,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
         SO_DONG_MOI_TRANG=Math.min(storedPageSize,SO_DONG_TRANG_TOI_DA);
       capNhatDieuKhienPhanTrang();
     document.querySelector(".view-tabs").addEventListener("keydown",xuLyPhimTab);
-    const tabDuocLuu=docTuyChon("checking-active-tab");
+    const tabDuocLuu=docTuyChon("checking-active-tab-main");
     chuyenTab(CAC_TAB.includes(tabDuocLuu)?tabDuocLuu:"stock",{persist:false});
     khoiTaoLichNhacBaoCao();
     const dashboardNow=new Date();
@@ -11302,20 +10922,19 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
       }
 
       const calcHorizon = (rec, months) => {
+        // Usage KPIs always follow the OUTPUT unit (History.js), not the stock/base unit.
         const totalQty = months === 12 ? rec.qty1Y : months === 24 ? rec.qty2Y : rec.qty3Y;
-        const unitMismatch = rec.stockUnitMixed || rec.histUnitMixed ||
-          (rec.stockUnit && rec.histUnit && rec.stockUnit !== rec.histUnit);
-        if (unitMismatch) {
-          return { totalQty, avgMonth: null, coverDays: null, tier: "mismatch" };
-        }
+        const outputUnit = rec.histUnit || rec.stockUnit || "";
         const avgMonth = totalQty / months;
-        if (rec.stock <= 0) {
-          return { totalQty, avgMonth, coverDays: 0, tier: "zero" };
+        if (rec.stock <= 0) return { totalQty, avgMonth, coverDays: 0, tier: "zero", unit: outputUnit };
+        if (avgMonth <= 0) return { totalQty, avgMonth: 0, coverDays: Infinity, tier: "idle", unit: outputUnit };
+        let stockForUsage = rec.stock;
+        if (rec.stockUnit && outputUnit && rec.stockUnit !== outputUnit) {
+          const cv=quyDoiVatTu(rec.sap);
+          if (cv && cv.factor > 0) stockForUsage = rec.stock / cv.factor;
+          else return { totalQty, avgMonth, coverDays: null, tier: "mismatch", unit: outputUnit };
         }
-        if (avgMonth <= 0) {
-          return { totalQty, avgMonth: 0, coverDays: Infinity, tier: "idle" };
-        }
-        const coverDays = (rec.stock / avgMonth) * 30;
+        const coverDays = (stockForUsage / avgMonth) * 30;
         const tier = coverDays < 30 ? "critical" : coverDays <= 90 ? "warn" : "safe";
         return { totalQty, avgMonth, coverDays, tier };
       };
@@ -11516,7 +11135,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
           <td>${dinhDangSoLuong.format(r.qty1Y)}</td>
           <td>${dinhDangSoLuong.format(r.qty2Y)}</td>
           <td>${dinhDangSoLuong.format(r.qty3Y)}</td>
-          <td><strong>${dinhDangThapPhan(m.avgMonth)}</strong> <small style="color:var(--muted)">${thoatHTML(r.unit)}/th</small></td>
+          <td><strong>${dinhDangThapPhan(m.avgMonth)}</strong> <small style="color:var(--muted)">${thoatHTML(m.unit||r.histUnit||r.unit)}/th</small></td>
           <td><span class="cover-badge ${badgeCls}">${thoatHTML(coverText)}</span></td>
         </tr>`;
       }).join("");
@@ -12040,9 +11659,9 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <div class="catalog-detail-host" id="catalog-detail-host"></div>
 </div>
 </dialog>
-<dialog id="checking-columns-dialog" aria-label="Tùy chỉnh cột" class="checking-columns-dialog">
-<header><strong>Tùy chỉnh cột</strong><button type="button" class="btn btn-secondary" onclick="document.getElementById('checking-columns-dialog').close()">✕</button></header>
-<div id="checking-columns-options" class="checking-columns-options"></div></dialog>
+<dialog aria-label="Tùy chỉnh cột" class="checking-columns-dialog" id="checking-columns-dialog">
+<header><strong>Tùy chỉnh cột</strong><button class="btn btn-secondary" onclick="document.getElementById('checking-columns-dialog').close()" type="button">✕</button></header>
+<div class="checking-columns-options" id="checking-columns-options"></div></dialog>
 <style>
 .checking-scope-note{margin:8px 12px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;background:var(--surface-subtle)}
 .checking-columns-dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);width:min(440px,94vw);max-height:80vh;padding:20px}
@@ -12053,4 +11672,3 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 </style>
 </body>
 </html>
-
