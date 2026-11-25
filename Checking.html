@@ -159,6 +159,8 @@
     .image-viewer-box img { width: auto; height: auto; max-width: 96%; max-height: 96%;
       object-fit: contain; cursor: zoom-in; transition: opacity .16s ease; }
     .image-viewer-box img:not([src]) { display: none; }
+    #anh-chinh[data-failed="true"]{visibility:hidden}
+    .image-thumb img[data-failed="true"]{visibility:hidden}
     .image-empty { position: absolute; display: grid; place-items: center; gap: 6px;
       text-align: center; color: #95a5bb; padding: 10px; font-size: 11px; pointer-events: none; }
     .image-empty .empty-icon { height: 57px; width: 57px; display: grid; place-items: center;
@@ -2859,8 +2861,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 </div>
 <div class="header-actions">
 <div aria-label="Giao diện" class="preference-group" data-i18n-aria="themeSettings" role="group"><button aria-label="Chuyển sang giao diện tối" aria-pressed="false" id="theme-toggle" onclick="doiGiaoDien()" title="Chuyển sang giao diện tối" type="button">☾</button></div>
-<div aria-label="Language / Ngôn ngữ" class="preference-group" role="group"><button aria-pressed="true" id="lang-vi" onclick="doiNgonNgu('vi')" type="button">VI</button><button aria-pressed="false" id="lang-en" onclick="doiNgonNgu('en')" type="button">EN</button></div>
-<span class="online-pill loading" data-status="connecting" id="tinh-trang-du-lieu" role="status">Đang kết nối</span>
+<div aria-label="Ngôn ngữ" data-i18n-aria="languageAria" class="preference-group" role="group"><button aria-pressed="true" id="lang-vi" onclick="doiNgonNgu('vi')" type="button">VI</button><button aria-pressed="false" id="lang-en" onclick="doiNgonNgu('en')" type="button">EN</button></div>
+<span class="online-pill loading" data-status="statusConnecting" id="tinh-trang-du-lieu" role="status">Đang kết nối</span>
 <button class="btn btn-secondary" data-i18n-title="refreshTitle" onclick="lamMoiToanBoNguon()" title="Đồng bộ dữ liệu từ nguồn" type="button">↻ <span data-i18n="refresh">Đồng bộ</span></button>
 </div>
 </header>
@@ -2960,7 +2962,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <div class="search-input">
 <input aria-label="Tìm mã SAP, mô tả, mã phụ tùng" autocomplete="off" data-i18n-aria="searchAria" data-i18n-placeholder="searchPlaceholder" id="o-tim-kiem" oninput="yeuCauLocDuLieu()" onpaste="xuLyDanTimKiem(event)" placeholder="Tìm SAP001, SAP002 hoặc mô tả, mã phụ tùng..." type="search"/>
 <span aria-hidden="true" class="search-hint">/</span>
-<div aria-label="Gợi ý vật tư" class="smart-suggest" hidden="" id="smart-suggest" role="listbox"></div>
+<div aria-label="Gợi ý vật tư" data-i18n-aria="suggestionsAria" class="smart-suggest" hidden="" id="smart-suggest" role="listbox"></div>
 </div>
 <button class="btn btn-primary" data-i18n="search" onclick="locDuLieu()" type="button">Tìm kiếm</button>
 <button class="btn btn-secondary" data-i18n="clear" onclick="lamMoi()" type="button">Xóa</button>
@@ -3048,7 +3050,7 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <button aria-label="Ảnh sau" class="img-nav-btn btn-next" data-i18n-aria="nextImage" id="btn-anh-sau" onclick="doiAnhChiTiet(1, event)" type="button">›</button>
 <div class="img-counter" id="dem-anh">0/0 ảnh</div>
 </div>
-<div aria-label="Image thumbnails" class="image-thumbs" id="image-thumbnails"></div>
+<div aria-label="Ảnh thu nhỏ của vật tư" data-i18n-aria="imageThumbsAria" class="image-thumbs" id="image-thumbnails"></div>
 <div class="detail-placeholder" data-i18n="emptyDetails" id="chi-tiet-trong">Thông tin chi tiết sẽ xuất hiện khi bạn chọn một dòng vật tư.</div>
 <div aria-label="Thông tin tổng quan vật tư" class="detail-kpi-grid" data-i18n-aria="detailKpiAria">
 <div class="detail-kpi-card value"><span data-i18n="detailStockValue">Giá trị tồn kho</span>
@@ -3236,8 +3238,8 @@ html[data-theme="dark"] #catalog-detail-dialog .detail-kpi-card>small{color:#a8b
 <div class="material-history-stat monthly"><span data-i18n="materialHistoryMonthly">TB sử dụng/tháng</span><strong id="material-history-monthly">—</strong><small id="material-history-monthly-note"></small></div>
 <div class="material-history-stat coverage"><span data-i18n="materialHistoryCoverage">Thời gian sử dụng ước tính</span><strong id="material-history-coverage">—</strong><small id="material-history-coverage-note"></small></div>
 </div>
-<div aria-label="Thống kê tiêu thụ 1 năm, 2 năm, 3 năm" class="history-cons-strip" id="material-history-consumption-strip"></div>
-<div class="material-history-conversion" style="display:flex;gap:8px;align-items:end;padding:4px 16px 6px;flex-wrap:wrap"><label style="font-size:11px;color:var(--muted)">Quy đổi ĐVT<input id="material-conv-factor" type="number" min="0" step="any" placeholder="VD: 1 ROL = ? PC" style="display:block;margin-top:3px;width:145px"/></label><button class="btn btn-soft" type="button" onclick="luuQuyDoiVatTu()">Lưu quy đổi</button><span id="material-conv-note" style="font-size:11px;color:var(--muted)"></span></div>
+<div aria-label="Thống kê sử dụng 1, 2 và 3 năm" data-i18n-aria="historyConsumptionAria" class="history-cons-strip" id="material-history-consumption-strip"></div>
+<div class="material-history-conversion" style="display:flex;gap:8px;align-items:end;padding:4px 16px 6px;flex-wrap:wrap"><label style="font-size:11px;color:var(--muted)"><span data-i18n="conversionLabel">Quy đổi đơn vị tính</span><input id="material-conv-factor" type="number" min="0" step="any" placeholder="Nhập hệ số quy đổi" data-i18n-placeholder="conversionPlaceholder" style="display:block;margin-top:3px;width:145px"/></label><button class="btn btn-soft" type="button" onclick="luuQuyDoiVatTu()" data-i18n="conversionSave">Lưu quy đổi</button><span id="material-conv-note" style="font-size:11px;color:var(--muted)"></span></div>
 <div class="material-history-controls">
 <label class="history-filter-field"><span data-i18n="historyType">Loại giao dịch</span><select id="material-history-kind" onchange="locLichSuVatTu()">
 <option data-i18n="historyAny" value="all">Tất cả</option>
@@ -4091,6 +4093,53 @@ const CHECKING_SPLIT_MODE="main";
     Object.assign(NGON_NGU.en,{batchSapSummary:"Present in source: {found}/{total} SAP codes · Missing: {missing}",
       batchSapNone:"none",catalogOpenStock:"Look up stock and images for {sap}"});
 
+    // UI wording only: original SAP data, codes, filenames and units stay intact.
+    Object.assign(NGON_NGU.vi,{
+      languageAria:"Ngôn ngữ",imageThumbsAria:"Ảnh thu nhỏ của vật tư",suggestionsAria:"Gợi ý vật tư",
+      imageLoadError:"Không tải được ảnh. Chuyển ảnh khác hoặc đồng bộ lại.",
+      catalogDesc:"Tra cứu thông tin từ tệp danh mục vật tư Database.js.",
+      catalogFormatError:"Tệp danh mục thiếu tiêu đề cột hoặc dữ liệu hợp lệ.",
+      catalogIncomplete:"Tệp danh mục chưa đầy đủ. Hãy chọn lại tệp gốc.",
+      catalogMissingRequired:"Thiếu cột mã vật tư hoặc mô tả vật tư trong nguồn dữ liệu.",
+      catalogSearch:"Tìm mã SAP, tên, mã nhà sản xuất, kích thước...",
+      catalogColMpn:"Mã nhà sản xuất (MPN)",catalogUpload:"Chọn tệp danh mục",
+      catalogDetailHeading:"Danh mục vật tư",catalogDetailTitle:"Thông tin vật tư",
+      columnsTitle:"Tùy chỉnh cột",closeLabel:"Đóng",conversionLabel:"Quy đổi đơn vị tính",
+      conversionPlaceholder:"Nhập hệ số quy đổi",conversionSave:"Lưu quy đổi",
+      conversionNote:"Nhập hệ số khi đơn vị xuất khác đơn vị tồn",
+      conversionResult:"1 đơn vị xuất = {factor} {unit}",historyConsumptionAria:"Thống kê sử dụng 1, 2 và 3 năm",
+      historyTotalIssued:"Tổng xuất",historyAverageMonth:"Trung bình/tháng",
+      favoriteOn:"Đã yêu thích",favoriteOff:"Yêu thích",
+      tabDashboard:"Tổng quan kho",warehouseDashboardHeading:"Tổng quan kho",
+      warehouseAnalyticsDesc:"Tra cứu vật tư giá trị cao, xuất nhiều và tồn lâu. Dùng chung bộ lọc khu vực và thời gian với tổng quan kho.",
+      dashboardHall1:"Khu vực kho 1",dashboardHall2:"Khu vực kho 2",
+      colName1:"Tên nhà cung cấp",colDimensions:"Kích thước",colMpn:"Mã nhà sản xuất (MPN)",
+      colManufacturer:"Nhà sản xuất",colPurchasingGroup:"Nhóm mua hàng",colPlant:"Nhà máy",
+      colCurrency:"Đơn vị tiền tệ",colSafetyStock:"Tồn kho an toàn",colPriceUnit:"Đơn vị giá",
+      colMaterialStatus:"Trạng thái vật tư",colCreatedOn:"Ngày tạo",colChangedOn:"Ngày cập nhật",
+      colMrpType:"Loại hoạch định nhu cầu",colMrpController:"Người phụ trách hoạch định",
+      colPurchasingValueKey:"Mã điều kiện mua hàng",colProcurementType:"Loại cung ứng"
+    });
+    Object.assign(NGON_NGU.en,{
+      languageAria:"Language",imageThumbsAria:"Material image thumbnails",suggestionsAria:"Material suggestions",
+      imageLoadError:"Unable to load image. Choose another image or refresh.",
+      catalogDetailHeading:"Material catalog",catalogDetailTitle:"Material details",columnsTitle:"Customize columns",closeLabel:"Close",
+      conversionLabel:"Unit conversion",conversionPlaceholder:"Enter conversion factor",conversionSave:"Save conversion",
+      conversionNote:"Enter a factor when issue and stock units differ",conversionResult:"1 issue unit = {factor} {unit}",
+      historyConsumptionAria:"1, 2 and 3 year usage",historyTotalIssued:"Total issued",historyAverageMonth:"Monthly average",
+      favoriteOn:"Favorited",favoriteOff:"Favorite",
+      colName1:"Supplier name",colDimensions:"Dimensions",colMpn:"Manufacturer part number (MPN)",
+      colManufacturer:"Manufacturer",colPurchasingGroup:"Purchasing group",colPlant:"Plant",
+      colCurrency:"Currency",colSafetyStock:"Safety stock",colPriceUnit:"Price unit",colMaterialStatus:"Material status",
+      colCreatedOn:"Created on",colChangedOn:"Changed on",colMrpType:"MRP type",colMrpController:"MRP controller",
+      colPurchasingValueKey:"Purchasing value key",colProcurementType:"Procurement type"
+    });
+    for(const key of Object.keys(NGON_NGU.vi)){
+      if(typeof NGON_NGU.vi[key]!=="string")continue;
+      NGON_NGU.vi[key]=NGON_NGU.vi[key].replace(/\bHall 1\b/g,"Khu vực kho 1").replace(/\bHall 2\b/g,"Khu vực kho 2")
+        .replace(/\bHall\b/g,"khu vực kho").replace(/\bStorage Location\b/g,"kho lưu trữ")
+        .replace(/\bDashboard\b/g,"Tổng quan kho").replace(/\bROP\b/g,"điểm đặt hàng lại");
+    }
     function tuDien(key, values = {}) {
       const text = NGON_NGU[ngonNguHienTai][key] ?? NGON_NGU.vi[key] ?? key;
       return String(text).replace(/\{([a-zA-Z]+)\}/g, (_, variable) =>
@@ -4106,7 +4155,7 @@ const CHECKING_SPLIT_MODE="main";
 
     function tenCotDaDich(tenCot) {
       const ten = String(tenCot ?? "");
-      const k = ten.trim().toLowerCase();
+      const k = ten.trim().toLowerCase().replace(/[._-]+/g," ").replace(/\s+/g," ").trim();
       const key = {
         "sap":"colSap", "sap code":"colSap", "mã sap":"colSap",
         "material":"colSap","material number":"colSap","material code":"colSap",
@@ -4128,7 +4177,18 @@ const CHECKING_SPLIT_MODE="main";
         "minimum lot":"colMinLot","minimum lot size":"colMinLot",
         "lead time":"colLeadTime","delivery time":"colLeadTime",
         "supplier":"colSupplier","vendor":"colSupplier",
-        "max stock":"colMaxStock","maximum stock":"colMaxStock"
+        "max stock":"colMaxStock","maximum stock":"colMaxStock",
+        "name 1":"colName1","name1":"colName1","supplier name":"colName1","vendor name":"colName1",
+        "typ":"colMaterialType","type":"colMaterialType","bun":"colUnit","b un":"colUnit",
+        "stor bin":"colStorageBin","storagebin":"colStorageBin","stor loc":"colStorageLoc","sloc":"colStorageLoc",
+        "minimum order quantity":"colMinLot","moq":"colMinLot",
+        "part nr":"colPart","part #":"colPart","part code":"colPart","bm number":"colBm","bm":"colBm",
+        "mpn":"colMpn","manufacturer part number":"colMpn","size":"colDimensions","dimensions":"colDimensions",
+        "size/dimensions":"colDimensions","manufacturer":"colManufacturer","purchasing group":"colPurchasingGroup",
+        "plant":"colPlant","currency":"colCurrency","safety stock":"colSafetyStock","price unit":"colPriceUnit",
+        "material status":"colMaterialStatus","created on":"colCreatedOn","changed on":"colChangedOn",
+        "mrp type":"colMrpType","mrp controller":"colMrpController","purchasing value key":"colPurchasingValueKey",
+        "procurement type":"colProcurementType","stock":"colStockQty","stock unit":"colUnit","unit of measure":"colUnit"
       }[k];
       return key ? tuDien(key) : ten;
     }
@@ -4149,6 +4209,7 @@ const CHECKING_SPLIT_MODE="main";
           el.setAttribute(attribute, tuDien(el.dataset[key]))
         );
       }
+      document.querySelectorAll(".checking-columns-button").forEach(el=>el.textContent=tuDien("columnsTitle"));
       document.getElementById("lang-vi").setAttribute("aria-pressed", String(ngonNguHienTai === "vi"));
       document.getElementById("lang-en").setAttribute("aria-pressed", String(ngonNguHienTai === "en"));
       document.getElementById("theme-toggle").setAttribute("aria-label",
@@ -4191,6 +4252,8 @@ const CHECKING_SPLIT_MODE="main";
       chuyenTab(tabHienTai,{persist:false,skipHistory:true});
       veTrangThaiNguon();capNhatCanhBaoKho();
       capNhatNgonNguHistory();
+      if(typeof veRecentFavorite==="function"&&document.readyState!=="loading")veRecentFavorite();
+      if(document.getElementById("material-history-dialog")?.open)capNhatQuyDoiVatTuUI();
       kiemTraNhacBaoCao();
       if (!tatCaDuLieu.length) document.getElementById("trang-thai-cap-nhat").textContent = tuDien("loadingSource");
     }
@@ -5560,6 +5623,8 @@ const CHECKING_SPLIT_MODE="main";
     }
 
     function tinhPhanTichDashboard(rows,headers) {
+      const cached=tinhPhanTichDashboard.cache;
+      if(cached?.rows===rows&&cached.headers===headers)return cached.result;
       const priceCol=cotHistoryTheoTen(headers,["Price","Unit Price","Đơn giá","Giá"]);
       const unitCol=cotHistoryTheoTen(headers,["Base Unit of Measure","Unit","UOM","Đơn vị","Đơn vị tính"]);
       const descCol=cotHistoryTheoTen(headers,["Material Description","Description","Mô tả","Mô tả vật tư"]);
@@ -5598,8 +5663,9 @@ const CHECKING_SPLIT_MODE="main";
       const rank=map=>[...map].map(([name,value])=>({name,value})).sort(
         (a,b)=>b.value-a.value||a.name.localeCompare(b.name));
       const values=rank(valueBySap).map(x=>({...x,...detailsBySap.get(x.name)}));
-      return {count:rows.length,inStock,attention,total:priceCol<0?null:total,missingPrice,
-        values};
+      const result={count:rows.length,inStock,attention,total:priceCol<0?null:total,missingPrice,values};
+      tinhPhanTichDashboard.cache={rows,headers,result};
+      return result;
     }
 
     const dashboardSortState={
@@ -5715,6 +5781,7 @@ const CHECKING_SPLIT_MODE="main";
         veBangTopGiaTriVatTu(stockStats.values,limit);
       }
       capNhatTrangThaiHall();
+      if(CHECKING_SPLIT_MODE==="main"){kiemTraNhacBaoCao();return;}
       veBieuDoSuDungKho();
       veBieuDoGiaTriKho();
       veSoSanhNhapXuatKho();
@@ -6211,6 +6278,8 @@ const CHECKING_SPLIT_MODE="main";
       }
     }
     function veSoSanhNhapXuatKho(){
+      // These report panes are intentionally hidden in the stock-only split.
+      if(CHECKING_SPLIT_MODE==="main")return;
       veTongQuanDashboard();
       // Clear figures when a source or date scope becomes unavailable.
       for(const type of ["in","out"]){
@@ -6441,6 +6510,8 @@ const CHECKING_SPLIT_MODE="main";
     }
 
     function veTopVatTuXuatKho(){
+      // These report panes are intentionally hidden in the stock-only split.
+      if(CHECKING_SPLIT_MODE==="main")return;
       const root=document.getElementById("dashboard-top-out");
       capNhatSoMaBaoCaoKho("out");
       const note=document.getElementById("dashboard-top-out-note");
@@ -6581,6 +6652,8 @@ const CHECKING_SPLIT_MODE="main";
     }
 
     function veVatTuTonLau(){
+      // These report panes are intentionally hidden in the stock-only split.
+      if(CHECKING_SPLIT_MODE==="main")return;
       const root=document.getElementById("dashboard-dormant");
       capNhatSoMaBaoCaoKho("dormant");
       const note=document.getElementById("dashboard-dormant-note");
@@ -6784,6 +6857,8 @@ const CHECKING_SPLIT_MODE="main";
     }
 
     function veBieuDoGiaTriKho(){
+      // These report panes are intentionally hidden in the stock-only split.
+      if(CHECKING_SPLIT_MODE==="main")return;
       hienThiTongGiaTriKho();
       veTongQuanDashboard();
       veTonKhoTheoChuKy("insight-value-trend","dashboard-value-trend-summary",
@@ -7344,7 +7419,7 @@ const CHECKING_SPLIT_MODE="main";
     function capNhatQuyDoiVatTuUI(){
       const el=document.getElementById("material-conv-factor"),note=document.getElementById("material-conv-note");if(!el||!note)return;
       const cv=quyDoiVatTu(materialHistorySap),row=dongStockLichSuVatTu(),uc=cotHistoryTheoTen(tieuDeCot,["Unit","Stock Unit","Base Unit of Measure","UOM","Đơn vị","Đơn vị tính"]),stockUnit=row&&uc>=0?String(row[uc]??"").trim().toUpperCase():"PC";
-      if(document.activeElement!==el)el.value=cv?cv.factor:"";note.textContent=cv?"1 ĐVT xuất = "+cv.factor+" "+stockUnit:"Nhập hệ số khi ĐVT xuất khác ĐVT tồn";
+      if(document.activeElement!==el)el.value=cv?cv.factor:"";note.textContent=cv?tuDien("conversionResult",{factor:cv.factor,unit:stockUnit}):tuDien("conversionNote");
     }
 
     // Use calendar months that have fully ended, not the unfinished current month.
@@ -7794,8 +7869,10 @@ const CHECKING_SPLIT_MODE="main";
       return new Promise(resolve=>{
       function xuLyNhom() {
         if (lanHienTai !== lanLapChiMuc){resolve(false);return;}
-        const gioiHan = Math.min(viTri + 1000, tatCaDuLieu.length);
+        const gioiHan = Math.min(viTri + 2000, tatCaDuLieu.length);
+        const deadline=performance.now()+8;
         for (; viTri < gioiHan; viTri++) {
+          if(viTri%32===0&&performance.now()>=deadline)break;
           const dong = tatCaDuLieu[viTri];
           if (!Array.isArray(dong)) continue;
           const giaTri = dong.map(ten=>chuanHoaTimKiem(ten));
@@ -7892,13 +7969,16 @@ const CHECKING_SPLIT_MODE="main";
       let viTri = 0;
       const candidates=danhSachSap?[...danhSachSap].flatMap(sap=>chiMucSap.get(sap)||[])
         .sort((a,b)=>a.chiSo-b.chiSo):duLieuTimKiem;
+      const unfiltered=!tuKhoa&&cheDoTim!=="favorites"&&!chiTonKho&&locCanhBao==="all"&&!window.checkingAttentionFilter;
       const tong = candidates.length;
       document.getElementById("trang-thai-ban-ghi").textContent = tuDien("searching");
 
       function xuLyNhom() {
         if (lanLocHienTai !== soLanLocDuLieu) return;
-        const gioiHan = Math.min(viTri + 2500, tong);
+        const gioiHan = Math.min(viTri + 4000, tong);
+        const deadline=performance.now()+8;
         for (; viTri < gioiHan; viTri++) {
+          if(viTri%64===0&&performance.now()>=deadline)break;
           const muc = candidates[viTri];
           const hopTuKhoa=danhSachSap
             ? true
@@ -7908,7 +7988,7 @@ const CHECKING_SPLIT_MODE="main";
               (locCanhBao==="all" || muc.trangThaiTon===locCanhBao) && (!window.checkingAttentionFilter||["zero","at","below"].includes(muc.trangThaiTon))) moi.push(muc);
         }
         if (viTri < tong) {
-          requestAnimationFrame(xuLyNhom);
+          setTimeout(xuLyNhom,0);
           return;
         }
         ketQuaLoc = moi;
@@ -7921,7 +8001,15 @@ const CHECKING_SPLIT_MODE="main";
         capNhatTomTatDanhSachSap(danhSachSap);
 
       }
-      xuLyNhom();
+      if(unfiltered){
+        // Copy because sorting must never mutate the source index.
+        viTri=tong;
+        ketQuaLoc=candidates.slice();
+        sapXepKetQua();dangLocDuLieu=false;hienThiTrangHienTai();
+        document.querySelector("#view-stock .table-wrapper").scrollTop=0;
+        document.getElementById("trang-thai-ban-ghi").textContent=tuDien("records",{found:dinhDangSoLuong.format(ketQuaLoc.length),total:dinhDangSoLuong.format(duLieuTimKiem.length)});
+        capNhatTomTatDanhSachSap(danhSachSap);
+      }else xuLyNhom();
     }
 
     function sapXepTheoCot(chiSoCot) {
@@ -8268,8 +8356,9 @@ const CHECKING_SPLIT_MODE="main";
     async function lamMoiAnh(){
       boDieuKhienAnh?.abort();++lanTaiAnh;
       const sap=maSapDangXem;
+      boNhoAnh.clear();boNhoBoSuuTap.clear();
       await taiManifestAnh(true);
-      if(sap&&sap===maSapDangXem)await taiBoSuuTapAnh(sap);
+      if(sap&&sap===maSapDangXem)await taiBoSuuTapAnh(sap,true);
     }
 
     function hinhAnhTuManifest(manifest,sap) {
@@ -8301,36 +8390,55 @@ const CHECKING_SPLIT_MODE="main";
       const token=src+"|"+srcset;
       if(img.dataset.requested===token)return;
       img.dataset.requested=token;
+      delete img.dataset.failed;
       img.decoding="async";img.fetchPriority=priority;
       if(srcset){img.srcset=srcset;img.sizes="(max-width: 760px) calc(100vw - 48px), 480px";}
       else{img.removeAttribute("srcset");img.removeAttribute("sizes");}
-      img.onerror=()=>{if(img.dataset.requested===token&&img.getAttribute("src")!==original){
-        img.removeAttribute("srcset");img.src=original;}};
+      const main=img.id==="anh-chinh";
+      img.onload=()=>{if(img.dataset.requested!==token)return;delete img.dataset.failed;
+        if(main)document.getElementById("anh-trong").style.display="none";};
+      img.onerror=()=>{
+        if(img.dataset.requested!==token)return;
+        if(img.getAttribute("src")!==original||img.hasAttribute("srcset")){
+          img.removeAttribute("srcset");img.removeAttribute("sizes");img.src=original;return;
+        }
+        img.dataset.failed="true";
+        if(main){
+          const placeholder=document.getElementById("anh-trong");
+          placeholder.querySelector("span:last-child").textContent=tuDien("imageLoadError");
+          placeholder.style.display="grid";
+        }
+      };
       img.src=src;
     }
 
     // Manifest có tối đa 120ms đi trước; mạng chậm không chặn việc tìm ảnh đầu.
     // Chỉ 4 tác vụ dò đồng thời, giữ dữ liệu từ SAP đã xem gần đây.
-    async function taiBoSuuTapAnh(maSap) {
+    async function taiBoSuuTapAnh(maSap,force=false) {
+      const requested=chuanHoaMaSap(maSap);
+      const cached=boNhoBoSuuTap.get(requested);
+      // Re-selecting a row, opening its catalog detail or syncing unchanged stock must not restart the gallery.
+      if(!force&&requested===maSapDangXem&&(!requested||
+        (dangQuetAnh&&!boDieuKhienAnh?.signal.aborted)||cached?.hetHan>Date.now()))return;
       boDieuKhienAnh?.abort();
       boDieuKhienAnh=new AbortController();
       const signal=boDieuKhienAnh.signal;
       const lanHienTai = ++lanTaiAnh;
-      maSapDangXem = chuanHoaMaSap(maSap);
+      maSapDangXem = requested;
       danhSachAnhDangXem = [];
       viTriAnhDangXem = 0;
       dangQuetAnh = Boolean(maSapDangXem);
-      capNhatGiaoDienAnh();
-      if (!maSapDangXem) return;
+      if (!maSapDangXem){capNhatGiaoDienAnh();return;}
       const sap=maSapDangXem;
 
-      const boDaCo = boNhoBoSuuTap.get(sap);
+      const boDaCo = force?null:boNhoBoSuuTap.get(sap);
       if (boDaCo && boDaCo.hetHan > Date.now()) {
         danhSachAnhDangXem = boDaCo.urls.slice();
         dangQuetAnh = false;
         capNhatGiaoDienAnh();
         return;
       }
+      capNhatGiaoDienAnh();
 
       const boDo=new AbortController();
       const dungDo=()=>boDo.abort();
@@ -8391,13 +8499,19 @@ const CHECKING_SPLIT_MODE="main";
     }
 
     // Chuẩn bị ảnh tiếp theo sau khi chuyển ảnh để thao tác mượt hơn.
+    const preloadedImageUrls=new Map();
     function napTruocAnhKeTiep() {
       if (danhSachAnhDangXem.length < 2) return;
       const url = danhSachAnhDangXem[(viTriAnhDangXem + 1) % danhSachAnhDangXem.length];
+      const preview=duongDanAnh(url,"preview");
+      if(preloadedImageUrls.get(preview)>Date.now())return;
+      preloadedImageUrls.set(preview,Date.now()+300000);
+      if(preloadedImageUrls.size>40)preloadedImageUrls.delete(preloadedImageUrls.keys().next().value);
       const anh = new Image();
       anh.decoding = "async";
       anh.fetchPriority="low";
-      anh.src = duongDanAnh(url,"preview");
+      anh.onerror=()=>preloadedImageUrls.delete(preview);
+      anh.src = preview;
     }
 
     function capNhatAnhThuNho() {
@@ -8441,6 +8555,7 @@ const CHECKING_SPLIT_MODE="main";
         const preview=duongDanAnh(src,"preview");
         const small=bienTheAnh.get(src)?.previewSmall;
         ganAnh(imgEl,preview,src,"high",small?small+" 480w, "+preview+" 960w":"");
+        if(imgEl.dataset.failed==="true"){khuVucTrong.style.display="grid";thongBaoAnh.textContent=tuDien("imageLoadError");}
         const lightboxImg = document.getElementById("lightbox-img");
         if (document.getElementById("lightbox").style.display === "flex" &&
             lightboxImg.getAttribute("src") !== src) {
@@ -8454,7 +8569,7 @@ const CHECKING_SPLIT_MODE="main";
       } else {
         imgEl.removeAttribute("src");
         imgEl.removeAttribute("srcset");imgEl.removeAttribute("sizes");
-        delete imgEl.dataset.requested;imgEl.onerror=null;
+        delete imgEl.dataset.requested;delete imgEl.dataset.failed;imgEl.onerror=null;imgEl.onload=null;
         document.getElementById("lightbox-img").removeAttribute("src");
         thongBaoAnh.textContent = dangQuetAnh ? tuDien("imagesSearching") :
           (maSapDangXem ? tuDien("imagesNone") : tuDien("selectSapImage"));
@@ -10090,10 +10205,25 @@ const CHECKING_SPLIT_MODE="main";
     const RECENT_KEY="checking-recent-materials-v2",FAVORITE_KEY="checking-favorite-materials-v2";
     let recentMaterials=docTuyChon(RECENT_KEY);try{recentMaterials=JSON.parse(recentMaterials||"[]")}catch{recentMaterials=[]}
     let favoriteMaterials=docTuyChon(FAVORITE_KEY);try{favoriteMaterials=new Set(JSON.parse(favoriteMaterials||"[]"))}catch{favoriteMaterials=new Set()}
-    function lapSmartIndex(){smartIndex.tokens.clear();for(const rec of duLieuTimKiem){
-      const words=(rec.sap+" "+rec.desc+" "+rec.part+" "+rec.bmno).split(/[^a-z0-9]+/).filter(x=>x.length>=2);
-      for(const word of new Set(words)){const key=word.slice(0,6);if(!smartIndex.tokens.has(key))smartIndex.tokens.set(key,[]);const a=smartIndex.tokens.get(key);if(a.length<60)a.push(rec)}
-    }smartIndex.ready=true}
+    let smartIndexGeneration=0;
+    function lapSmartIndex(){
+      const generation=++smartIndexGeneration,rows=duLieuTimKiem,tokens=new Map();
+      smartIndex.ready=false;smartIndex.tokens.clear();
+      let i=0;
+      function batch(){
+        if(generation!==smartIndexGeneration||rows!==duLieuTimKiem)return;
+        const deadline=performance.now()+7,end=Math.min(i+800,rows.length);
+        for(;i<end;i++){
+          if(i%32===0&&performance.now()>=deadline)break;
+          const rec=rows[i];
+          const words=(rec.sap+" "+rec.desc+" "+rec.part+" "+rec.bmno).split(/[^a-z0-9]+/).filter(x=>x.length>=2);
+          for(const word of new Set(words)){const key=word.slice(0,6);if(!tokens.has(key))tokens.set(key,[]);const a=tokens.get(key);if(a.length<60)a.push(rec)}
+        }
+        if(i<rows.length){setTimeout(batch,0);return;}
+        smartIndex.tokens=tokens;smartIndex.ready=true;
+      }
+      setTimeout(batch,0);
+    }
     function goiYVatTu(query){const q=chuanHoaTimKiem(query).trim();if(q.length<2)return[];const exact=chiMucSap.get(chuanHoaMaSap(q).toLowerCase());if(exact?.length)return exact.slice(0,8);
       const pool=smartIndex.tokens.get(q.slice(0,6))||duLieuTimKiem;const out=[];for(const r of pool){if(r.sap.includes(q)||r.desc.includes(q)||r.part.includes(q)||r.bmno.includes(q)){out.push(r);if(out.length>=8)break}}return out}
     function veGoiYVatTu(){const box=document.getElementById("smart-suggest"),input=document.getElementById("o-tim-kiem");if(!box||!smartIndex.ready)return;const rows=goiYVatTu(input.value);box.hidden=!rows.length;box.innerHTML=rows.map((r,i)=>'<button type="button" role="option" data-index="'+r.chiSo+'" aria-selected="false"><b>'+thoatHTML(chuanHoaMaSap(r.dong[0]))+'</b><span>'+thoatHTML(String(r.dong[1]||""))+'</span></button>').join("")}
@@ -10108,11 +10238,12 @@ const CHECKING_SPLIT_MODE="main";
     }
     function doiYeuThichVatTu(){const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";doiYeuThichTheoMa(sap)}
     function moSapNhanh(sap){document.getElementById("o-tim-kiem").value=sap;document.querySelector('input[name="truongTim"][value="sap"]').checked=true;locDuLieu();setTimeout(()=>{const r=chiMucSap.get(sap.toLowerCase())?.[0];const el=r&&document.querySelector('#than-bang tr[data-row-index="'+r.chiSo+'"]');if(r&&el)chonDong(r.chiSo,el)},0)}
-    function veRecentFavorite(){const strip=document.getElementById("recent-strip"),button=document.getElementById("favorite-toggle");if(strip)strip.innerHTML=recentMaterials.slice(0,6).map(s=>'<button type="button" class="recent-chip" onclick="moSapNhanh(\''+s.replace(/'/g,"\\'")+'\')">'+(favoriteMaterials.has(s)?'★ ':'')+thoatHTML(s)+'</button>').join("");const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";if(button){const on=sap&&favoriteMaterials.has(sap);button.classList.toggle("fav-on",!!on);button.textContent=on?"★ Đã yêu thích":"☆ Yêu thích";button.disabled=!sap}}
-    const _taoChiMucTimKiem=taoChiMucTimKiem;taoChiMucTimKiem=async function(){const ok=await _taoChiMucTimKiem();if(ok){lapSmartIndex();if(tabHienTai==="requests")veYeuCauVatTu()}return ok};
+    function veRecentFavorite(){const strip=document.getElementById("recent-strip"),button=document.getElementById("favorite-toggle");if(strip)strip.innerHTML=recentMaterials.slice(0,6).map(s=>'<button type="button" class="recent-chip" onclick="moSapNhanh(\''+s.replace(/'/g,"\\'")+'\')">'+(favoriteMaterials.has(s)?'★ ':'')+thoatHTML(s)+'</button>').join("");const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";if(button){const on=sap&&favoriteMaterials.has(sap);button.classList.toggle("fav-on",!!on);button.textContent=(on?"★ ":"☆ ")+tuDien(on?"favoriteOn":"favoriteOff");button.disabled=!sap}}
+    const _taoChiMucTimKiem=taoChiMucTimKiem;taoChiMucTimKiem=async function(){++smartIndexGeneration;smartIndex.ready=false;const ok=await _taoChiMucTimKiem();if(ok){lapSmartIndex();if(tabHienTai==="requests")veYeuCauVatTu()}return ok};
     const _chonDong=chonDong;chonDong=function(index,element){_chonDong(index,element);ghiDaXem(index)};
-    document.getElementById("o-tim-kiem").addEventListener("input",()=>requestAnimationFrame(veGoiYVatTu));
-    document.getElementById("o-tim-kiem").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();document.getElementById("smart-suggest").hidden=true;locDuLieu()}});
+    let suggestionTimer;
+    document.getElementById("o-tim-kiem").addEventListener("input",()=>{clearTimeout(suggestionTimer);suggestionTimer=setTimeout(veGoiYVatTu,100);});
+    document.getElementById("o-tim-kiem").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();clearTimeout(suggestionTimer);document.getElementById("smart-suggest").hidden=true;locDuLieu()}});
     document.getElementById("smart-suggest").addEventListener("click",e=>{const b=e.target.closest("button[data-index]");if(b)chonGoiY(Number(b.dataset.index))});
     document.addEventListener("pointerdown",e=>{const b=document.getElementById("smart-suggest");if(b&&!e.target.closest(".search-input"))b.hidden=true});
     veRecentFavorite();
@@ -11177,8 +11308,8 @@ const CHECKING_SPLIT_MODE="main";
             <span class="cover-badge ${badgeCls}" style="min-width:auto;padding:1px 6px;font-size:10px">${thoatHTML(dinhDangSoNgayCover(data.coverDays))}</span>
           </div>
           <div class="history-cons-card-body">
-            <span>Tổng xuất: <strong>${dinhDangSoLuong.format(data.totalQty)}</strong> ${thoatHTML(found.unit)}</span>
-            <span>TB/tháng: <strong>${dinhDangThapPhan(data.avgMonth)}</strong></span>
+            <span>${thoatHTML(tuDien("historyTotalIssued"))}: <strong>${dinhDangSoLuong.format(data.totalQty)}</strong> ${thoatHTML(found.unit)}</span>
+            <span>${thoatHTML(tuDien("historyAverageMonth"))}: <strong>${dinhDangThapPhan(data.avgMonth)}</strong></span>
           </div>
         </div>`;
       }).join("");
@@ -11405,6 +11536,7 @@ const CHECKING_SPLIT_MODE="main";
       if(note)note.textContent=tuDien("executiveScope",{from:range.from,to:range.to,count:v.length})+" · "+tuDien("executiveCompare",{from:range.prevFrom,to:range.prevTo});
     }
     veBieuDoSuDungKho=function(){
+      if(CHECKING_SPLIT_MODE==="main")return;
       if(tabHienTai!=="dashboard")return;
       veMotBieuDoNhapXuat("insight-usage","dashboard-usage-period","dashboard-usage-summary");
       veTongQuanDieuHanhCoChuThich();
@@ -11416,6 +11548,7 @@ const CHECKING_SPLIT_MODE="main";
 
 
     function capNhatCanhBaoKhoNangCap(){
+      if(CHECKING_SPLIT_MODE==="main")return;
       const node=document.getElementById("dashboard-alert-list");if(!node)return;
       const panel=node.closest(".dashboard-alert-panel"),hall=hallDangLoc(),value=tinhBienDongAmount(),range=layKyPhanTichKho();
       let attention=0,growth=null,spikes=[];const alerts=[];
@@ -11559,7 +11692,7 @@ const CHECKING_SPLIT_MODE="main";
       for(const [table,selector] of [["bang-du-lieu","#view-stock .section-header"],["catalog-table","#view-catalog .catalog-actions"]]){
         const anchor=document.querySelector(selector);if(!anchor)continue;
         const button=document.createElement("button");button.type="button";button.className="btn btn-secondary checking-columns-button";
-        button.textContent=ngonNguHienTai==="en"?"Columns":"Tùy chỉnh cột";
+        button.textContent=tuDien("columnsTitle");
         button.addEventListener("click",()=>openColumns(table));anchor.appendChild(button);
       }
       applyColumns();restoreWorkspaces();showDataScope(tabHienTai);
@@ -11653,14 +11786,14 @@ const CHECKING_SPLIT_MODE="main";
 <dialog aria-labelledby="catalog-detail-title" class="catalog-detail-dialog" id="catalog-detail-dialog">
 <div class="catalog-detail-shell">
 <header class="catalog-detail-header">
-<div><small>Danh mục vật tư</small><h2 id="catalog-detail-title">Thông tin vật tư</h2></div>
-<button aria-label="Đóng" class="btn btn-soft catalog-detail-close" onclick="dongChiTietDanhMuc()" type="button">✕</button>
+<div><small data-i18n="catalogDetailHeading">Danh mục vật tư</small><h2 id="catalog-detail-title">Thông tin vật tư</h2></div>
+<button aria-label="Đóng" data-i18n-aria="closeLabel" class="btn btn-soft catalog-detail-close" onclick="dongChiTietDanhMuc()" type="button">✕</button>
 </header>
 <div class="catalog-detail-host" id="catalog-detail-host"></div>
 </div>
 </dialog>
-<dialog aria-label="Tùy chỉnh cột" class="checking-columns-dialog" id="checking-columns-dialog">
-<header><strong>Tùy chỉnh cột</strong><button class="btn btn-secondary" onclick="document.getElementById('checking-columns-dialog').close()" type="button">✕</button></header>
+<dialog aria-label="Tùy chỉnh cột" data-i18n-aria="columnsTitle" class="checking-columns-dialog" id="checking-columns-dialog">
+<header><strong data-i18n="columnsTitle">Tùy chỉnh cột</strong><button class="btn btn-secondary" onclick="document.getElementById('checking-columns-dialog').close()" type="button">✕</button></header>
 <div class="checking-columns-options" id="checking-columns-options"></div></dialog>
 <style>
 .checking-scope-note{margin:8px 12px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;background:var(--surface-subtle)}
