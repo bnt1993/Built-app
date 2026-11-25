@@ -4112,7 +4112,7 @@ const CHECKING_SPLIT_MODE="main";
       favoriteOn:"Đã yêu thích",favoriteOff:"Yêu thích",
       tabDashboard:"Tổng quan kho",warehouseDashboardHeading:"Tổng quan kho",
       warehouseAnalyticsDesc:"Tra cứu vật tư giá trị cao, xuất nhiều và tồn lâu. Dùng chung bộ lọc khu vực và thời gian với tổng quan kho.",
-      dashboardHall1:"Khu vực kho 1",dashboardHall2:"Khu vực kho 2",
+      dashboardHall1:"Khu vực kho 1",dashboardHall2:"Khu vực kho 2",dashboardExportTopN:"Số vật tư đứng đầu",
       colName1:"Tên nhà cung cấp",colDimensions:"Kích thước",colMpn:"Mã nhà sản xuất (MPN)",
       colManufacturer:"Nhà sản xuất",colPurchasingGroup:"Nhóm mua hàng",colPlant:"Nhà máy",
       colCurrency:"Đơn vị tiền tệ",colSafetyStock:"Tồn kho an toàn",colPriceUnit:"Đơn vị giá",
@@ -10239,13 +10239,13 @@ const CHECKING_SPLIT_MODE="main";
     function doiYeuThichVatTu(){const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";doiYeuThichTheoMa(sap)}
     function moSapNhanh(sap){document.getElementById("o-tim-kiem").value=sap;document.querySelector('input[name="truongTim"][value="sap"]').checked=true;locDuLieu();setTimeout(()=>{const r=chiMucSap.get(sap.toLowerCase())?.[0];const el=r&&document.querySelector('#than-bang tr[data-row-index="'+r.chiSo+'"]');if(r&&el)chonDong(r.chiSo,el)},0)}
     function veRecentFavorite(){const strip=document.getElementById("recent-strip"),button=document.getElementById("favorite-toggle");if(strip)strip.innerHTML=recentMaterials.slice(0,6).map(s=>'<button type="button" class="recent-chip" onclick="moSapNhanh(\''+s.replace(/'/g,"\\'")+'\')">'+(favoriteMaterials.has(s)?'★ ':'')+thoatHTML(s)+'</button>').join("");const row=tatCaDuLieu[dongDangChonIndex],sap=row?chuanHoaMaSap(row[0]):"";if(button){const on=sap&&favoriteMaterials.has(sap);button.classList.toggle("fav-on",!!on);button.textContent=(on?"★ ":"☆ ")+tuDien(on?"favoriteOn":"favoriteOff");button.disabled=!sap}}
-    const _taoChiMucTimKiem=taoChiMucTimKiem;taoChiMucTimKiem=async function(){++smartIndexGeneration;smartIndex.ready=false;const ok=await _taoChiMucTimKiem();if(ok){lapSmartIndex();if(tabHienTai==="requests")veYeuCauVatTu()}return ok};
+    const _taoChiMucTimKiem=taoChiMucTimKiem;taoChiMucTimKiem=async function(){++smartIndexGeneration;smartIndex.ready=false;document.getElementById("smart-suggest").hidden=true;const ok=await _taoChiMucTimKiem();if(ok){lapSmartIndex();if(tabHienTai==="requests")veYeuCauVatTu()}return ok};
     const _chonDong=chonDong;chonDong=function(index,element){_chonDong(index,element);ghiDaXem(index)};
     let suggestionTimer;
     document.getElementById("o-tim-kiem").addEventListener("input",()=>{clearTimeout(suggestionTimer);suggestionTimer=setTimeout(veGoiYVatTu,100);});
     document.getElementById("o-tim-kiem").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();clearTimeout(suggestionTimer);document.getElementById("smart-suggest").hidden=true;locDuLieu()}});
-    document.getElementById("smart-suggest").addEventListener("click",e=>{const b=e.target.closest("button[data-index]");if(b)chonGoiY(Number(b.dataset.index))});
-    document.addEventListener("pointerdown",e=>{const b=document.getElementById("smart-suggest");if(b&&!e.target.closest(".search-input"))b.hidden=true});
+    document.getElementById("smart-suggest").addEventListener("click",e=>{const b=e.target.closest("button[data-index]");if(b){clearTimeout(suggestionTimer);chonGoiY(Number(b.dataset.index))}});
+    document.addEventListener("pointerdown",e=>{const b=document.getElementById("smart-suggest");if(b&&!e.target.closest(".search-input")){clearTimeout(suggestionTimer);b.hidden=true}});
     veRecentFavorite();
 
       const storedPageSize=Number(docTuyChon("checking-rows-per-page"));
@@ -11647,7 +11647,7 @@ const CHECKING_SPLIT_MODE="main";
       if(!node){node=document.createElement("p");node.className="checking-scope-note";pane.querySelector(".pane-heading,.section-header,.hero-section")?.after(node);}
       if(!node)return;
       const en=ngonNguHienTai==="en",hall=typeof hallDangLoc==="function"?hallDangLoc():"all";
-      node.textContent=(en?"Data scope: ":"Phạm vi dữ liệu: ")+(hall==="hall2"?(en?"Hall 2: stock valuation unavailable; movements only":"Hall 2: không có giá trị tồn kho, chỉ có lịch sử xuất nhập"):hall==="hall1"?(en?"Hall 1 stock and movements":"Tồn kho và xuất nhập Hall 1"):(en?"All: stock valuation from Hall 1; movements by filter":"Tất cả: giá trị tồn kho theo nguồn Hall 1; xuất nhập theo bộ lọc"));
+      node.textContent=(en?"Data scope: ":"Phạm vi dữ liệu: ")+(hall==="hall2"?(en?"Hall 2: stock valuation unavailable; movements only":"Khu vực kho 2: không có giá trị tồn kho, chỉ có lịch sử xuất nhập"):hall==="hall1"?(en?"Hall 1 stock and movements":"Tồn kho và xuất nhập khu vực kho 1"):(en?"All: stock valuation from Hall 1; movements by filter":"Tất cả: giá trị tồn kho theo nguồn khu vực kho 1; xuất nhập theo bộ lọc"));
     }
     function drillAlert(a){
       chuyenTab("stock");
@@ -11696,6 +11696,11 @@ const CHECKING_SPLIT_MODE="main";
         button.addEventListener("click",()=>openColumns(table));anchor.appendChild(button);
       }
       applyColumns();restoreWorkspaces();showDataScope(tabHienTai);
+      // The dialogs are parsed after the main script; translate their static labels on startup.
+      for(const dialog of document.querySelectorAll("#catalog-detail-dialog,#checking-columns-dialog")){
+        dialog.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=tuDien(el.dataset.i18n));
+        for(const el of [dialog,...dialog.querySelectorAll("[data-i18n-aria]")])if(el.dataset.i18nAria)el.setAttribute("aria-label",tuDien(el.dataset.i18nAria));
+      }
     }
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initWorkspace,{once:true});
     else initWorkspace();
