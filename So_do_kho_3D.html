@@ -385,6 +385,40 @@ body.map-expanded { overflow: hidden; }
   .elevation-bays { gap: 7px; }
   .elevation-slot { min-height: 18px; padding-inline: 7px; }
 }
+
+/* Drawing surfaces and steel fixtures share the same finish in both views. */
+.scene {
+  background-color: #edf2f4;
+  background-image: radial-gradient(#bac9d0 0.7px, transparent 0.8px);
+  background-size: 12px 12px;
+}
+.dark .scene { background-color: #172833; background-image: radial-gradient(#334957 .7px, transparent .8px); }
+.elevation { padding-block: 16px; }
+.elevation-heading { border-bottom: 2px solid #5b8891; padding: 0 0 6px; margin-bottom: 8px; }
+.elevation-heading h3 { font-size: 16px; }
+.elevation-bay { border: 2px solid #425b69; border-radius: 4px; background: #c2d1d6; }
+.bay-name { background: #284555; color: #fff; padding-block: 5px; letter-spacing: .03em; }
+.elevation-stock { background: linear-gradient(90deg,#91a6b0,#e1e9eb 4%,#dce6e9 96%,#91a6b0); }
+.elevation-slot:not(.cab-level):not(.hit) {
+  border: 0; border-bottom: 3px solid #70868e;
+  background: linear-gradient(#bed0d7,#edf3f4); color: #243f4e;
+}
+.cabinet-name { background: #304d5c; color: white; padding-block: 3px; }
+.elevation-cabinet { border: 1px solid #476477; background: #405968; }
+.elevation-slot.cab-level:not(.hit) {
+  color: white; border: 1px solid #587e8e;
+  background: linear-gradient(#437085,#345c70); border-radius: 2px;
+}
+.elevation-slot.cab-level::before {
+  content: ''; order: 1; margin-inline: auto; width: 29%; height: 3px;
+  border-radius: 2px; background: #bed1d8; box-shadow: 0 1px 1px #173445;
+}
+.elevation-slot.hit { background: #ffd16b; color: #432800; }
+.elevation-slot:focus-visible { outline-offset: -2px; }
+.elevation-aisle { background: var(--panel); }
+.map-marker rect { fill: #213f50; stroke: #eff7fa; }
+.map-marker text { fill: white; }
+
 @media print {
   .topbar button, .data-panel, .notice, .scene-search, .map-toolbar, .map-footer, .results-panel,
   .search-navigation, .actions, .drawerlist { display: none !important; }
@@ -905,8 +939,8 @@ function drawWarehouse() {
   const project = (x, y, z) => {
     const across = x * cosine - z * sine;
     const distance = x * sine + z * cosine;
-    const perspective = 1 / (1 + distance / 1550);
-    return [across * .9 * perspective, (85 - y * .77 - distance * .57) * perspective];
+    const perspective = 1 / (1 + distance / 940);
+    return [across * 1.12 * perspective, (85 - y * .77 - distance * .57) * perspective];
   };
   const shapes = [];
   const points = [];
@@ -949,6 +983,13 @@ function drawWarehouse() {
 
   poly([[-329,0,-100],[329,0,-100],[329,0,913],[-329,0,913]], '#ccdbe3', '#9eb2c0');
   poly([[-148,1,-86],[148,1,-86],[148,1,901],[-148,1,901]], '#e1edf0', '#a9c0cb');
+  for (const side of [-1, 1]) {
+    const edge = side * 141;
+    poly([[edge,2,-80],[edge+side*4,2,-80],[edge+side*4,2,900],[edge,2,900]], '#d2a44e', 'none');
+  }
+  for (let z = 180; z < 850; z += 160) {
+    poly([[-12,2,z],[0,2,z+24],[12,2,z],[0,2,z+13]], '#839da6', 'none');
+  }
   label(0, 2, -65, 'Lối vào', 18);
   label(0, 2, 115, 'Lối đi giữa', 16);
   label(-231, 2, -65, 'Dãy trái', 17);
@@ -966,11 +1007,11 @@ function drawWarehouse() {
     const id = 'K' + bay.rack;
     const levels = byId.get(id)?.drawers || rackLevels[bay.rack];
     const pitch = (top - bottom - 20) / levels;
-    for (let drawer = 1; drawer <= levels; drawer++) {
+    for (let drawer = levels; drawer >= 1; drawer--) {
       const y = top - 28 - (drawer - 1) * pitch;
       const hit = hits(id, drawer);
       box(x0, x1, y - 6, y, z0, z1, bay.side,
-        ['#b8cbd3', '#597889', hit ? '#f5bb54' : '#527184'], range(id, drawer));
+        ['#aabcc5', '#ac7040', hit ? '#f5bb54' : '#b7814d'], range(id, drawer));
       if (getWarehouseIndex().occupiedDrawers.has(positionKey(id, drawer))) {
         for (const offset of [22, 144]) {
           box(x0 + 18, x1 - 15, y, y + Math.max(5, Math.min(20, pitch - 7)), z0 + offset, z0 + offset + 79,
@@ -978,12 +1019,12 @@ function drawWarehouse() {
         }
       }
     }
-    for (const [index, number] of bay.cabs.entries()) {
+    for (const [index, number] of [...bay.cabs.entries()].reverse()) {
       const cabinetId = 'T' + number;
       const start = z0 + 6 + index * 133;
       const end = start + 129;
       const drawers = byId.get(cabinetId)?.drawers || drawerCount(cabinetId);
-      box(x0 + 5, x1 - 5, 0, 142, start, end, bay.side, ['#d8e2e7', '#90a4b0', '#b8c8d1']);
+      box(x0 + 5, x1 - 5, 0, 142, start, end, bay.side, ['#c2d1d6', '#53717e', '#839da9']);
       for (let drawer = 1; drawer <= drawers; drawer++) {
         const [offset, height] = drawerGeometry(cabinetId, drawer, drawers, 129);
         const y = 137 - offset;
@@ -994,7 +1035,7 @@ function drawWarehouse() {
       label(front - bay.side * 22, 149, (start + end) / 2, 'Tủ ' + number, 13, cabinetId);
     }
     for (const z of [z0, z1]) {
-      for (const x of [x0, x1]) box(x - 3, x + 3, 0, top, z - 3, z + 3, bay.side, ['#678c9d', '#436275', '#567688']);
+      for (const x of [x0, x1]) box(x - 3, x + 3, 0, top, z - 3, z + 3, bay.side, ['#688595', '#314d5a', '#426474']);
     }
     const outside = bay.side < 0 ? x0 - 10 : x1 + 10;
     label(outside, top + 16, (z0 + z1) / 2, 'Kệ ' + bay.rack, 15, id);
