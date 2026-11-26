@@ -415,7 +415,7 @@ body.map-expanded { overflow: hidden; }
   <details id="dataMenu" class="data-panel">
     <summary>
       <span>Nguồn dữ liệu</span>
-      <span id="lxStatus" class="muted" role="status">Đang tải LX02…</span>
+      <span id="lxStatus" class="muted" role="status">Đang tải data.js…</span>
     </summary>
     <div class="data-content">
       <div class="actions">
@@ -437,7 +437,7 @@ body.map-expanded { overflow: hidden; }
       <form id="searchForm" class="scene-search" role="search">
         <label for="sceneQ">Tìm vật tư trên sơ đồ</label>
         <div class="search-controls">
-          <input id="sceneQ" type="search" autocomplete="off" title="Ngăn cách nhiều mã bằng dấu phẩy" placeholder="Mã SAP, tên hoặc mã vị trí (Bin)">
+          <input id="sceneQ" type="search" autocomplete="off" title="Ngăn cách nhiều mã bằng dấu phẩy" placeholder="Mã SAP, tên, mã phụ tùng hoặc Bin">
           <button id="sceneClear" type="button" hidden>Xóa</button>
         </div>
       </form>
@@ -528,16 +528,129 @@ body.map-expanded { overflow: hidden; }
   </form>
 </dialog>
 <div class="toast" id="toast" role="status"></div>
-<script src="LX02.js"></script>
+<script src="data.js"></script>
 <script>
 'use strict';const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),pad=n=>String(n).padStart(2,'0'),KEY='warehouse3d.vn.v1',uid=()=>globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2),norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
-const makeCab=(id,name,drawers=14,rows=[6,6,6,6,6])=>({id,name,drawers,rows,overrides:{}});const demo=()=>({demo:true,cabinets:[makeCab('T03','LAGER 03'),makeCab('T04','LAGER 04',14,[5,6,6,5,5]),makeCab('T05','LAGER 05')],items:[['100001','Vòng bi 6205',24,'Cái','T03',3,2,4],['100002','Bu lông M8 × 30',120,'Cái','T03',3,4,2],['100003','Cảm biến tiệm cận',8,'Cái','T04',7,1,3],['100001','Vòng bi 6205',12,'Cái','T05',5,3,1],['100004','Phớt dầu 35 × 52',16,'Cái','T03',3,5,6],['100005','Đầu nối khí nén',0,'Cái','T04',2,5,2],['100006','Cầu chì 10A',30,'Cái','T05',12,2,5]].map(a=>({id:uid(),code:a[0],name:a[1],qty:a[2],unit:a[3],cab:a[4],drawer:a[5],row:a[6],cell:a[7]}))});function sortLXRows(){const groups=new Map(),cmp=new Intl.Collator('vi',{numeric:true,sensitivity:'base'});for(const i of db.items){const k=JSON.stringify([i.cab,i.drawer,i.row]);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(i)}for(const a of groups.values()){a.sort((x,y)=>cmp.compare(x.code,y.code)||x.code.localeCompare(y.code)||String(x.unit).localeCompare(String(y.unit)));a.forEach((i,n)=>i.cell=n+1);const i=a[0],c=db.cabinets.find(c=>c.id===i.cab);if(c){const rr=[...(c.overrides[i.drawer]||c.rows)];rr[i.row-1]=Math.max(rr[i.row-1]||1,a.length);c.overrides[i.drawer]=rr}}const selected=db.items.find(i=>i.id===selectedItem);if(selected)selectedCell=[selected.row,selected.cell]}
+const makeCab=(id,name,drawers=14,rows=[6,6,6,6,6])=>({id,name,drawers,rows,overrides:{}});const demo=()=>({demo:true,cabinets:[makeCab('T03','LAGER 03'),makeCab('T04','LAGER 04',14,[5,6,6,5,5]),makeCab('T05','LAGER 05')],items:[['100001','Vòng bi 6205',24,'Cái','T03',3,2,4],['100002','Bu lông M8 × 30',120,'Cái','T03',3,4,2],['100003','Cảm biến tiệm cận',8,'Cái','T04',7,1,3],['100001','Vòng bi 6205',12,'Cái','T05',5,3,1],['100004','Phớt dầu 35 × 52',16,'Cái','T03',3,5,6],['100005','Đầu nối khí nén',0,'Cái','T04',2,5,2],['100006','Cầu chì 10A',30,'Cái','T05',12,2,5]].map(a=>({id:uid(),code:a[0],name:a[1],qty:a[2],unit:a[3],cab:a[4],drawer:a[5],row:a[6],cell:a[7]}))});function sortStockRows(){const groups=new Map(),cmp=new Intl.Collator('vi',{numeric:true,sensitivity:'base'});for(const i of db.items){const k=JSON.stringify([i.cab,i.drawer,i.row]);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(i)}for(const a of groups.values()){a.sort((x,y)=>cmp.compare(x.code,y.code)||x.code.localeCompare(y.code)||String(x.unit).localeCompare(String(y.unit)));a.forEach((i,n)=>i.cell=n+1);const i=a[0],c=db.cabinets.find(c=>c.id===i.cab);if(c){const rr=[...(c.overrides[i.drawer]||c.rows)];rr[i.row-1]=Math.max(rr[i.row-1]||1,a.length);c.overrides[i.drawer]=rr}}const selected=db.items.find(i=>i.id===selectedItem);if(selected)selectedCell=[selected.row,selected.cell]}
 const drawerCounts={'01':10,'06':12,'07':12,'08':12};const drawerCount=id=>drawerCounts[id.slice(1)]||14;const drawerWeight=(id,d)=>id==='T01'&&d>=7||['T06','T07','T08'].includes(id)&&d>=11?2:1;function drawerGeometry(id,d,n,total){let sum=0,offset=0;for(let j=1;j<=n;j++){const w=drawerWeight(id,j);sum+=w;if(j<d)offset+=w}return [total*offset/sum,total*drawerWeight(id,d)/sum]}
 const rackLevels={'09':5,'10':5,'11':5,'12':5,'13':8,'16':7};
 const warehouseBays=[{rack:'09',cabs:['03','04'],side:-1,bay:0},{rack:'10',cabs:['05','06'],side:-1,bay:1},{rack:'11',cabs:['07','08'],side:-1,bay:2},{rack:'16',cabs:[],side:1,bay:0},{rack:'13',cabs:[],side:1,bay:1},{rack:'12',cabs:['01','02'],side:1,bay:2}];
-function fromLX02(data){if(!Array.isArray(data)||!data.length)throw Error('LX02 không có dữ liệu');const cabinets=new Map(),items=new Map(),counts=new Map();for(const a of data){const bin=String(a['Storage Bin']??'').trim(),code=String(a.Material??'').trim(),unit=String(a['Base Unit of Measure']??''),qty=Number(a['Available stock']);if(!code||!Number.isFinite(qty))continue;const t=/^\d{6}$/.test(bin)&&+bin.slice(2,4)>=1&&+bin.slice(4)>=1, k=/^\d{4}$/.test(bin)&&+bin.slice(2)>=1&&+bin.slice(2)<=(rackLevels[bin.slice(0,2)]||5);const id=t?'T'+bin.slice(0,2):k?'K'+bin.slice(0,2):'X-'+bin,drawer=t?+bin.slice(2,4):k?+bin.slice(2):1,row=t?+bin.slice(4):1;let c=cabinets.get(id);if(!c){c=makeCab(id,t?'Tủ '+bin.slice(0,2):k?'Kệ '+bin.slice(0,2):'Vị trí '+bin,t?drawerCount(id):k?(rackLevels[bin.slice(0,2)]||5):1,t?[1,1,1,1,1]:[1]);c.kind=t?'cab':k?'rack':'other';cabinets.set(id,c)}c.drawers=Math.max(c.drawers,drawer);while(c.rows.length<row)c.rows.push(1);const key=JSON.stringify([bin,code,unit]);if(items.has(key)){items.get(key).qty+=qty;continue}const rk=JSON.stringify([id,drawer,row]),cell=(counts.get(rk)||0)+1;counts.set(rk,cell);items.set(key,{id:uid(),code,name:String(a['Material Description']??code),qty,unit,cab:id,drawer,row,cell,bin,note:'Bin SAP: '+bin})}for(const b of warehouseBays){const id='K'+b.rack;if(!cabinets.has(id)){const c=makeCab(id,'Kệ '+b.rack,rackLevels[b.rack],[1]);c.kind='rack';cabinets.set(id,c)}for(const n of b.cabs){const id='T'+n;if(!cabinets.has(id)){const c=makeCab(id,'Tủ '+n,drawerCount(id),[1,1,1,1,1]);c.kind='cab';cabinets.set(id,c)}}}for(const c of cabinets.values())for(let d=1;d<=c.drawers;d++)c.overrides[d]=c.rows.map((_,r)=>Math.max(1,counts.get(JSON.stringify([c.id,d,r+1]))||0));return {demo:false,cabinets:[...cabinets.values()].sort((a,b)=>a.id.localeCompare(b.id)),items:[...items.values()]}}
+const stockFields = {
+  code: 'Material',
+  name: 'Material Description',
+  bin: 'Storage Bin',
+  qty: 'Available stock',
+  unit: 'Base Unit of Measure'
+};
 
-let db;const source=globalThis.LX02;try{db=Array.isArray(source)?fromLX02(source):{demo:false,cabinets:[],items:[]}}catch{db={demo:false,cabinets:[],items:[]}};const sourceKey='warehouse3d.lx02.manual.v1';function restoreManual(){try{for(const a of JSON.parse(localStorage.getItem(sourceKey)||'[]')){const c=db.cabinets.find(c=>c.id===a.cab);if(!c||!c.overrides[a.drawer]||!c.overrides[a.drawer][a.row-1]||db.items.some(i=>i.cab===a.cab&&i.drawer===a.drawer&&i.row===a.row&&i.code===a.code))continue;a.cell=++c.overrides[a.drawer][a.row-1];db.items.push(a)}}catch{}}restoreManual();let selectedCab=db.cabinets[0]?.id||'',selectedDrawer=1,selectedCell=null,selectedItem=null,query='',overview=true,matches=[],saveHandler=null,deleteHandler=null;function persist(){invalidateWarehouseIndex();updateDataStats();try{localStorage.setItem(KEY,JSON.stringify(db))}catch{toast('Không lưu được trên thiết bị. Hãy sao lưu JSON.')}}function toast(s){$('toast').textContent=s;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),3500)}
+function stockColumnIndexes(header) {
+  if (!Array.isArray(header)) return null;
+  const labels = header.map(label => norm(label).trim().replace(/\s+/g, ' '));
+  const columns = Object.fromEntries(Object.entries(stockFields)
+    .map(([field, label]) => [field, labels.indexOf(norm(label))]));
+  if (Object.values(columns).includes(-1)) return null;
+  columns.part = labels.findIndex(label => label === 'part no' || label === 'part no.');
+  columns.reference = labels.indexOf('sap code');
+  return columns;
+}
+
+// Match the decimal separators used by the stock list in Checking.html.
+function parseStockQuantity(value) {
+  if (typeof value === 'number') return value;
+  const text = typeof value === 'string' ? value.replace(/\s/g, '') : '';
+  if (!text) return NaN;
+  if (text.includes('.') && text.includes(',')) {
+    return Number(text.lastIndexOf(',') > text.lastIndexOf('.')
+      ? text.replace(/\./g, '').replace(',', '.')
+      : text.replace(/,/g, ''));
+  }
+  if (/^-?\d{1,3}(?:\.\d{3}){2,}$/.test(text)) return Number(text.replace(/\./g, ''));
+  return Number(text.replace(',', '.'));
+}
+
+function buildStock(table, columns, formattedTable = table) {
+  const cabinets = new Map();
+  const items = new Map();
+  const counts = new Map();
+  const stockText = value => String(value ?? '').trim();
+
+  for (let index = 1; index < table.length; index++) {
+    const row = table[index];
+    if (!Array.isArray(row)) continue;
+    const labels = formattedTable[index] ?? row;
+    const code = stockText(labels[columns.code] ?? row[columns.code]);
+    const bin = stockText(labels[columns.bin] ?? row[columns.bin]);
+    const qty = parseStockQuantity(row[columns.qty]);
+    if (!bin || !code || !Number.isFinite(qty)) continue;
+
+    const unit = stockText(row[columns.unit]);
+    const part = stockText(labels[columns.part] ?? row[columns.part]);
+    const reference = stockText(labels[columns.reference] ?? row[columns.reference]);
+    const itemKey = JSON.stringify([bin, code, unit]);
+    const existing = items.get(itemKey);
+    if (existing) {
+      existing.qty += qty;
+      existing.part ||= part;
+      existing.reference ||= reference;
+      continue;
+    }
+
+    const number = bin.slice(0, 2);
+    const levels = rackLevels[number] || 5;
+    const isCabinet = /^\d{6}$/.test(bin) && Number(bin.slice(2, 4)) >= 1 && Number(bin.slice(4)) >= 1;
+    const isRack = /^\d{4}$/.test(bin) && Number(bin.slice(2)) >= 1 && Number(bin.slice(2)) <= levels;
+    const id = isCabinet ? 'T' + number : isRack ? 'K' + number : 'X-' + bin;
+    const drawer = isCabinet ? Number(bin.slice(2, 4)) : isRack ? Number(bin.slice(2)) : 1;
+    const rowNumber = isCabinet ? Number(bin.slice(4)) : 1;
+    let cabinet = cabinets.get(id);
+    if (!cabinet) {
+      const name = isCabinet ? 'Tủ ' + number : isRack ? 'Kệ ' + number : 'Vị trí ' + bin;
+      cabinet = makeCab(id, name, isCabinet ? drawerCount(id) : isRack ? levels : 1,
+        isCabinet ? [1, 1, 1, 1, 1] : [1]);
+      cabinet.kind = isCabinet ? 'cab' : isRack ? 'rack' : 'other';
+      cabinets.set(id, cabinet);
+    }
+    cabinet.drawers = Math.max(cabinet.drawers, drawer);
+    while (cabinet.rows.length < rowNumber) cabinet.rows.push(1);
+
+    const rowKey = JSON.stringify([id, drawer, rowNumber]);
+    const cell = (counts.get(rowKey) || 0) + 1;
+    counts.set(rowKey, cell);
+    items.set(itemKey, {
+      id: uid(), code, name: stockText(row[columns.name]) || code, qty, unit, part, reference,
+      cab: id, drawer, row: rowNumber, cell, bin, note: 'Bin SAP: ' + bin
+    });
+  }
+
+  for (const bay of warehouseBays) {
+    const rackId = 'K' + bay.rack;
+    if (!cabinets.has(rackId)) {
+      cabinets.set(rackId, { ...makeCab(rackId, 'Kệ ' + bay.rack, rackLevels[bay.rack], [1]), kind: 'rack' });
+    }
+    for (const number of bay.cabs) {
+      const id = 'T' + number;
+      if (!cabinets.has(id)) {
+        cabinets.set(id, { ...makeCab(id, 'Tủ ' + number, drawerCount(id), [1, 1, 1, 1, 1]), kind: 'cab' });
+      }
+    }
+  }
+
+  for (const cabinet of cabinets.values()) {
+    for (let drawer = 1; drawer <= cabinet.drawers; drawer++) {
+      cabinet.overrides[drawer] = cabinet.rows.map((_, index) =>
+        counts.get(JSON.stringify([cabinet.id, drawer, index + 1])) || 1);
+    }
+  }
+  return {
+    demo: false,
+    cabinets: [...cabinets.values()].sort((a, b) => a.id.localeCompare(b.id)),
+    items: [...items.values()]
+  };
+}
+
+let db = { demo: false, cabinets: [], items: [] };
+const sourceKey='warehouse3d.lx02.manual.v1';function restoreManual(){try{for(const a of JSON.parse(localStorage.getItem(sourceKey)||'[]')){const c=db.cabinets.find(c=>c.id===a.cab);if(!c||!c.overrides[a.drawer]||!c.overrides[a.drawer][a.row-1]||db.items.some(i=>i.cab===a.cab&&i.drawer===a.drawer&&i.row===a.row&&i.code===a.code))continue;a.cell=++c.overrides[a.drawer][a.row-1];db.items.push(a)}}catch{}}
+let selectedCab='',selectedDrawer=1,selectedCell=null,selectedItem=null,query='',overview=true,matches=[],saveHandler=null,deleteHandler=null;function persist(){invalidateWarehouseIndex();updateDataStats();try{localStorage.setItem(KEY,JSON.stringify(db))}catch{toast('Không lưu được trên thiết bị. Hãy sao lưu JSON.')}}function toast(s){$('toast').textContent=s;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),3500)}
 const cab = () => getWarehouseIndex().cabinets.get(selectedCab);
 const rows = (cabinet, drawer) => cabinet?.overrides?.[drawer] || cabinet?.rows || [];
 const loc = item => item.bin || `${item.cab}-${pad(item.drawer)}-H${pad(item.row)}-O${pad(item.cell)}`;
@@ -574,7 +687,7 @@ function getWarehouseIndex() {
     cells.get(key).push(item);
     occupiedDrawers.add(positionKey(cab, drawer));
     const code = norm(item.code);
-    const text = norm([item.code, item.name, item.part, loc(item), cabinets.get(cab)?.name].join(' '));
+    const text = norm([item.code, item.name, item.part, item.reference, loc(item), cabinets.get(cab)?.name].join(' '));
     return { item, code, text };
   });
   warehouseIndex = { cabinets, cells, occupiedDrawers, searchable };
@@ -1296,15 +1409,45 @@ $('theme').onclick = () => {
 try { applyTheme(localStorage.getItem(KEY + '.theme') === 'dark'); } catch {}
 
 
-function renderDetail(){let d=$('detail');if(!cab()||!selectedCell){d.innerHTML='<h3>Thông tin vật tư</h3><div class="empty">Chọn một ô hoặc tìm kiếm mã vật tư để xem chi tiết.</div>';return}let [r,o]=selectedCell,a=at(r,o),i=a.find(i=>i.id===selectedItem)||a[0];d.innerHTML=`<h3>Thông tin ô ${pad(o)} · Hàng ${pad(r)}</h3>${a.length>1?`<div class="actions">${a.map(j=>`<button class="${j.id===i.id?'primary':''}" data-item="${esc(j.id)}">${esc(j.code)}</button>`).join('')}</div>`:''}${i?`<div class="info"><div><span class="muted">Mã SAP</span><b>${esc(i.code)}</b></div><div><span class="muted">Số lượng</span><b class="${i.qty===0?'zero-stock':''}">${esc(quantity(i))}</b></div><div class="wide"><span class="muted">Tên vật tư</span><b>${esc(i.name||'—')}</b></div><div><span class="muted">Mã phụ tùng</span><b>${esc(i.part||'—')}</b></div><div><span class="muted">Mã vị trí</span><b>${esc(loc(i))}</b></div>${i.note?`<div class="wide"><span class="muted">Ghi chú</span><b>${esc(i.note)}</b></div>`:''}</div>`:'<div class="empty">Ô này chưa khai báo vật tư.</div>'}<div class="actions"><button class="primary" id="addItem">+ Khai báo vật tư</button>${i?'<button id="editItem">Sửa thông tin</button><button id="copyLoc">Sao chép vị trí</button>':''}</div>`;d.querySelectorAll('[data-item]').forEach(b=>b.onclick=()=>{selectedItem=b.dataset.item;renderDetail()});$('addItem').onclick=()=>itemDialog();if(i){$('editItem').onclick=()=>itemDialog(i);$('copyLoc').onclick=async()=>{try{await navigator.clipboard.writeText(loc(i));toast('Đã sao chép '+loc(i))}catch{prompt('Sao chép vị trí:',loc(i))}}}}
+function renderDetail(){let d=$('detail');if(!cab()||!selectedCell){d.innerHTML='<h3>Thông tin vật tư</h3><div class="empty">Chọn một ô hoặc tìm kiếm mã vật tư để xem chi tiết.</div>';return}let [r,o]=selectedCell,a=at(r,o),i=a.find(i=>i.id===selectedItem)||a[0];d.innerHTML=`<h3>Thông tin ô ${pad(o)} · Hàng ${pad(r)}</h3>${a.length>1?`<div class="actions">${a.map(j=>`<button class="${j.id===i.id?'primary':''}" data-item="${esc(j.id)}">${esc(j.code)}</button>`).join('')}</div>`:''}${i?`<div class="info"><div><span class="muted">Mã SAP</span><b>${esc(i.code)}</b></div><div><span class="muted">Số lượng</span><b class="${i.qty===0?'zero-stock':''}">${esc(quantity(i))}</b></div><div class="wide"><span class="muted">Tên vật tư</span><b>${esc(i.name||'—')}</b></div><div><span class="muted">Mã phụ tùng</span><b>${esc(i.part||'—')}</b></div><div><span class="muted">Mã vị trí</span><b>${esc(loc(i))}</b></div>${i.reference?`<div class="wide"><span class="muted">Mã tham chiếu (SAP Code)</span><b>${esc(i.reference)}</b></div>`:''}${i.note?`<div class="wide"><span class="muted">Ghi chú</span><b>${esc(i.note)}</b></div>`:''}</div>`:'<div class="empty">Ô này chưa khai báo vật tư.</div>'}<div class="actions"><button class="primary" id="addItem">+ Khai báo vật tư</button>${i?'<button id="editItem">Sửa thông tin</button><button id="copyLoc">Sao chép vị trí</button>':''}</div>`;d.querySelectorAll('[data-item]').forEach(b=>b.onclick=()=>{selectedItem=b.dataset.item;renderDetail()});$('addItem').onclick=()=>itemDialog();if(i){$('editItem').onclick=()=>itemDialog(i);$('copyLoc').onclick=async()=>{try{await navigator.clipboard.writeText(loc(i));toast('Đã sao chép '+loc(i))}catch{prompt('Sao chép vị trí:',loc(i))}}}}
 
 const field=(label,name,value='',type='text',extra='')=>`<label>${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;function dialog(title,body,save,del){$('dlgTitle').textContent=title;$('dlgBody').innerHTML=body;saveHandler=save;deleteHandler=del;$('deleteDlg').hidden=!del;$('dlg').showModal()}$('closeDlg').onclick=()=>$('dlg').close();$('dlgForm').onsubmit=e=>{e.preventDefault();try{saveHandler(new FormData(e.target));$('dlg').close();persist();render();toast('Đã lưu thay đổi')}catch(err){toast(err.message)}};$('deleteDlg').onclick=()=>{if(!confirm('Xác nhận xóa?'))return;try{deleteHandler();$('dlg').close();persist();render();toast('Đã xóa')}catch(err){toast(err.message)}};function parseRows(v){let a=String(v).split(/[,;\s]+/).filter(Boolean).map(Number);if(a.length!==5||a.some(n=>!Number.isInteger(n)||n<1||n>40))throw Error('Nhập đúng 5 số nguyên từ 1–40, theo hàng 1 đến 5.');return a}function validPosition(i,c){return c&&Number.isInteger(i.drawer)&&i.drawer>=1&&i.drawer<=c.drawers&&Number.isInteger(i.row)&&i.row>=1&&i.row<=rows(c,i.drawer).length&&Number.isInteger(i.cell)&&i.cell>=1&&i.cell<=rows(c,i.drawer)[i.row-1]}
-function cabinetDialog(c){dialog(c?'Cấu hình tủ':'Thêm tủ',`<div class="formgrid">${field('Mã tủ','id',c?.id||'', 'text','required maxlength="40" pattern="[A-Za-z0-9_-]+" '+(c?'readonly':''))}${field('Tên hiển thị','name',c?.name||'','text','required')}${field('Số ngăn kéo','drawers',c?.drawers||14,'number','required min="1" max="60"')}${field('Số ô từng hàng (1 → 5)','rows',(c?.rows||[6,6,6,6,6]).join(','),'text','required')}</div><p class="muted">Hàng 1 gần tay kéo. Có thể cấu hình riêng cho mỗi ngăn.</p>`,f=>{let id=String(f.get('id')).trim(),n=+f.get('drawers'),cc={id,name:String(f.get('name')).trim(),drawers:n,kind:c?.kind,rows:parseRows(f.get('rows')),overrides:{...(c?.overrides||{})}};if(!c&&db.cabinets.some(x=>x.id===id))throw Error('Mã tủ đã tồn tại.');for(let d in cc.overrides)if(+d>n)delete cc.overrides[d];if(db.items.some(i=>i.cab===id&&!validPosition(i,cc)))throw Error('Cấu hình mới làm mất vị trí đang có vật tư. Hãy di chuyển/xóa vật tư trước.');if(c)db.cabinets[db.cabinets.indexOf(c)]=cc;else db.cabinets.push(cc);selectedCab=id;selectedDrawer=1;selectedCell=null;overview=false},c?()=>{if(db.items.some(i=>i.cab===c.id))throw Error('Tủ còn vật tư, không thể xóa.');db.cabinets=db.cabinets.filter(x=>x!==c);selectedCab=db.cabinets[0]?.id||'';selectedDrawer=1;selectedCell=null}:null)}$('addCab').onclick=()=>cabinetDialog();$('editCab').onclick=()=>cabinetDialog(cab());$('editDrawer').onclick=()=>{let c=cab(),d=selectedDrawer;dialog(`Cấu hình ${c.name} / Ngăn ${pad(d)}`,`<div class="formgrid">${field('Số ô mỗi hàng (1 → 5)','rows',rows(c,d).join(','),'text','required')}</div><p class="muted">Ví dụ: 4,6,8,5,3. Hàng 1 gần tay kéo.</p>`,f=>{let rr=parseRows(f.get('rows')),cc={...c,overrides:{...c.overrides,[d]:rr}};if(db.items.some(i=>i.cab===c.id&&i.drawer===d&&!validPosition(i,cc)))throw Error('Có vật tư nằm ngoài cấu hình mới.');c.overrides=cc.overrides;selectedCell=null;selectedItem=null})};function itemDialog(i){let [r,o]=selectedCell;dialog(i?'Sửa vật tư':'Khai báo vật tư',`<p class="muted">${esc(cab().name)} / Ngăn ${pad(selectedDrawer)} / Hàng ${r} / Ô ${o}</p><div class="formgrid">${field('Mã SAP','code',i?.code||'','text','required')}${field('Mã phụ tùng','part',i?.part||'')}${field('Tên vật tư','name',i?.name||'','text','required')}${field('Số lượng','qty',i?.qty??0,'number','required min="0" step="any"')}${field('Đơn vị','unit',i?.unit||'Cái','text','required')}${field('Ghi chú','note',i?.note||'')}</div>`,f=>{let item={id:i?.id||uid(),code:String(f.get('code')).trim(),part:String(f.get('part')).trim(),name:String(f.get('name')).trim(),qty:+f.get('qty'),unit:String(f.get('unit')).trim(),note:String(f.get('note')).trim(),cab:selectedCab,drawer:selectedDrawer,row:r,cell:o};if(!item.code||!item.name||!item.unit||!Number.isFinite(item.qty)||item.qty<0)throw Error('Thông tin vật tư không hợp lệ.');if(db.items.some(j=>j.id!==item.id&&same(j,item.cab,item.drawer,item.row,item.cell)&&j.code===item.code))throw Error('Mã này đã có trong ô. Hãy sửa số lượng hiện có.');if(i)db.items[db.items.indexOf(i)]=item;else db.items.push(item);selectedItem=item.id},i?()=>{db.items=db.items.filter(j=>j.id!==i.id);selectedItem=null}:null)}
-const headers=['ma_vat_tu','ten_vat_tu','so_luong','don_vi','ma_tu','ngan','hang','o','ma_phu_tung','ghi_chu'];function download(name,content,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)}$('exportBtn').onclick=()=>download('Kho3D_sao_luu.json',JSON.stringify(db,null,2),'application/json');$('templateBtn').onclick=()=>download('Kho3D_mau.csv','\uFEFF'+headers.join(',')+'\r\n100001,Vong bi 6205,24,Cai,T03,3,2,4,,\r\n100002,Bu long M8,120,Cai,T03,3,4,2,,\r\n','text/csv;charset=utf-8');$('resetBtn').onclick=()=>{if(!confirm('Xóa toàn bộ dữ liệu hiện tại (kể cả tủ và vật tư)? Hãy sao lưu JSON trước nếu cần.'))return;db={demo:false,cabinets:[],items:[]};selectedCab='';selectedDrawer=1;selectedCell=null;selectedItem=null;resetSearch();overview=true;lxLoadToken++;setSource('Kho trống');persist();render();toast('Đã khởi tạo kho trống. Hãy thêm tủ hoặc nhập CSV.')};function csvParse(t){t=t.replace(/^\uFEFF/,'');const first=t.split(/\r?\n/)[0],sep=first.includes(';')?';':first.includes('\t')?'\t':',';let result=[],r=[],v='',quoted=false;for(let n=0;n<t.length;n++){let c=t[n];if(c==='"'){if(quoted&&t[n+1]==='"'){v+='"';n++}else quoted=!quoted}else if(c===sep&&!quoted){r.push(v);v=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&t[n+1]==='\n')n++;r.push(v);if(r.some(x=>x.trim()))result.push(r);r=[];v=''}else v+=c}if(quoted)throw Error('CSV có dấu ngoặc kép chưa đóng.');r.push(v);if(r.some(x=>x.trim()))result.push(r);return result}function fromCSV(t){let a=csvParse(t);if(a.length<2)throw Error('CSV chưa có dữ liệu.');let h=a.shift().map(s=>s.trim().toLowerCase());if(headers.slice(0,8).some(s=>!h.includes(s)))throw Error('Thiếu cột bắt buộc. Hãy dùng CSV mẫu trong ứng dụng.');const base=db.demo?{demo:false,cabinets:[],items:[]}:JSON.parse(JSON.stringify(db));let seen=new Set();for(let j=0;j<a.length;j++){let g=k=>(a[j][h.indexOf(k)]??'').trim(),i={id:uid(),code:g('ma_vat_tu'),name:g('ten_vat_tu'),qty:Number(g('so_luong').replace(',','.')),unit:g('don_vi'),cab:g('ma_tu'),drawer:Number(g('ngan')),row:Number(g('hang')),cell:Number(g('o')),part:g('ma_phu_tung'),note:g('ghi_chu')};if(!i.code||!i.name||!i.unit||!g('so_luong')||!Number.isFinite(i.qty)||i.qty<0||!/^[A-Za-z0-9_-]+$/.test(i.cab)||!Number.isInteger(i.drawer)||i.drawer<1||i.drawer>60||!Number.isInteger(i.row)||i.row<1||i.row>5||!Number.isInteger(i.cell)||i.cell<1||i.cell>40)throw Error('Dòng '+(j+2)+' không hợp lệ. Kiểm tra mã tủ, ngăn, hàng, ô và số lượng.');let c=base.cabinets.find(x=>x.id===i.cab);if(!c){c=makeCab(i.cab,i.cab,Math.max(14,i.drawer));base.cabinets.push(c)}if(!validPosition(i,c)){if(db.cabinets.some(x=>x.id===i.cab)&&!db.demo)throw Error('Dòng '+(j+2)+': vị trí ngoài cấu hình tủ hiện có. Hãy sửa cấu hình trước.');c.drawers=Math.max(c.drawers,i.drawer);c.rows[i.row-1]=Math.max(c.rows[i.row-1],i.cell)}let key=i.code+'|'+loc(i);if(seen.has(key))throw Error('Dòng '+(j+2)+': trùng mã và vị trí trong CSV.');seen.add(key);let old=base.items.findIndex(x=>x.code===i.code&&loc(x)===loc(i));if(old>=0){i.id=base.items[old].id;base.items[old]=i}else base.items.push(i)}return base}function fromJSON(t){let b=JSON.parse(t);if(!b||!Array.isArray(b.cabinets)||!Array.isArray(b.items))throw Error('JSON không đúng định dạng sao lưu.');let ids=new Set();for(let c of b.cabinets){if(!c||typeof c.id!=='string'||!c.id||ids.has(c.id)||typeof c.name!=='string'||!Number.isInteger(c.drawers)||c.drawers<1||c.drawers>60)throw Error('Cấu hình tủ không hợp lệ.');ids.add(c.id);c.rows=parseRows(c.rows.join(','));c.overrides=c.overrides||{};for(let [d,r] of Object.entries(c.overrides)){if(!Number.isInteger(+d)||+d<1||+d>c.drawers)throw Error('Ngăn cấu hình không hợp lệ.');c.overrides[d]=parseRows(r.join(','))}}let itemids=new Set(),keys=new Set();for(let i of b.items){if(!i||typeof i.code!=='string'||!i.code||typeof i.name!=='string'||typeof i.unit!=='string'||typeof i.id!=='string'||itemids.has(i.id)||!Number.isFinite(i.qty)||i.qty<0||!validPosition(i,b.cabinets.find(c=>c.id===i.cab))||keys.has(i.code+'|'+loc(i)))throw Error('Danh mục vật tư không hợp lệ hoặc trùng lặp.');itemids.add(i.id);keys.add(i.code+'|'+loc(i))}return {demo:!!b.demo,cabinets:b.cabinets,items:b.items}}$('importBtn').onclick=()=>$('file').click();$('file').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let isJSON=f.name.toLowerCase().endsWith('.json'),t=await f.text(),next=isJSON?fromJSON(t):fromCSV(t);if(!confirm((isJSON?'Thay thế kho bằng bản sao lưu JSON?':db.demo?'Thay dữ liệu mẫu bằng danh mục CSV?':'Nhập CSV: cập nhật mã + vị trí trùng, giữ các vị trí khác?')+'\nKết quả: '+next.cabinets.length+' tủ, '+next.items.length+' bản ghi.'))return;db=next;selectedCab=db.cabinets[0]?.id||'';selectedDrawer=1;selectedCell=null;selectedItem=null;overview=true;resetSearch();lxLoadToken++;setSource(f.name);persist();render();toast('Đã nhập danh mục thành công')}catch(err){toast('Lỗi nhập: '+err.message)}finally{e.target.value=''}};$('appendLX').onclick=()=>{const c=cab();if(!c)return;const d=selectedDrawer;dialog('Chèn vật tư vào hàng', '<div class="formgrid">'+field('Hàng','row',selectedCell?.[0]||1,'number','required min="1" max="'+rows(c,d).length+'"')+field('Mã SAP','code','','text','required')+field('Mô tả','name','','text','required')+field('Đơn vị','unit','PC')+'</div><p class="muted">Khai báo vị trí bổ sung trên thiết bị, không thay đổi tồn SAP.</p>',f=>{const r=Number(f.get('row')),code=String(f.get('code')).trim();if(!Number.isInteger(r)||r<1||r>rows(c,d).length||!code)throw Error('Hàng hoặc mã không hợp lệ');if(db.items.some(i=>i.cab===c.id&&i.drawer===d&&i.row===r&&i.code===code))throw Error('Mã đã có trong hàng');const rr=[...rows(c,d)],cell=rr[r-1]+1,bin=c.kind==='cab'?c.id.slice(1)+pad(d)+pad(r):c.kind==='rack'?c.id.slice(1)+pad(d):c.name;const a={id:uid(),code,name:String(f.get('name')),unit:String(f.get('unit')),qty:0,cab:c.id,drawer:d,row:r,cell,bin,note:'Khai báo bổ sung; chưa có tồn SAP'};const saved=JSON.parse(localStorage.getItem(sourceKey)||'[]');localStorage.setItem(sourceKey,JSON.stringify([...saved,a]));rr[r-1]=cell;c.overrides[d]=rr;db.items.push(a);selectedCell=[r,cell];selectedItem=a.id;sortLXRows()})};
+function cabinetDialog(c){dialog(c?'Cấu hình tủ':'Thêm tủ',`<div class="formgrid">${field('Mã tủ','id',c?.id||'', 'text','required maxlength="40" pattern="[A-Za-z0-9_-]+" '+(c?'readonly':''))}${field('Tên hiển thị','name',c?.name||'','text','required')}${field('Số ngăn kéo','drawers',c?.drawers||14,'number','required min="1" max="60"')}${field('Số ô từng hàng (1 → 5)','rows',(c?.rows||[6,6,6,6,6]).join(','),'text','required')}</div><p class="muted">Hàng 1 gần tay kéo. Có thể cấu hình riêng cho mỗi ngăn.</p>`,f=>{let id=String(f.get('id')).trim(),n=+f.get('drawers'),cc={id,name:String(f.get('name')).trim(),drawers:n,kind:c?.kind,rows:parseRows(f.get('rows')),overrides:{...(c?.overrides||{})}};if(!c&&db.cabinets.some(x=>x.id===id))throw Error('Mã tủ đã tồn tại.');for(let d in cc.overrides)if(+d>n)delete cc.overrides[d];if(db.items.some(i=>i.cab===id&&!validPosition(i,cc)))throw Error('Cấu hình mới làm mất vị trí đang có vật tư. Hãy di chuyển/xóa vật tư trước.');if(c)db.cabinets[db.cabinets.indexOf(c)]=cc;else db.cabinets.push(cc);selectedCab=id;selectedDrawer=1;selectedCell=null;overview=false},c?()=>{if(db.items.some(i=>i.cab===c.id))throw Error('Tủ còn vật tư, không thể xóa.');db.cabinets=db.cabinets.filter(x=>x!==c);selectedCab=db.cabinets[0]?.id||'';selectedDrawer=1;selectedCell=null}:null)}$('addCab').onclick=()=>cabinetDialog();$('editCab').onclick=()=>cabinetDialog(cab());$('editDrawer').onclick=()=>{let c=cab(),d=selectedDrawer;dialog(`Cấu hình ${c.name} / Ngăn ${pad(d)}`,`<div class="formgrid">${field('Số ô mỗi hàng (1 → 5)','rows',rows(c,d).join(','),'text','required')}</div><p class="muted">Ví dụ: 4,6,8,5,3. Hàng 1 gần tay kéo.</p>`,f=>{let rr=parseRows(f.get('rows')),cc={...c,overrides:{...c.overrides,[d]:rr}};if(db.items.some(i=>i.cab===c.id&&i.drawer===d&&!validPosition(i,cc)))throw Error('Có vật tư nằm ngoài cấu hình mới.');c.overrides=cc.overrides;selectedCell=null;selectedItem=null})};function itemDialog(i){let [r,o]=selectedCell;dialog(i?'Sửa vật tư':'Khai báo vật tư',`<p class="muted">${esc(cab().name)} / Ngăn ${pad(selectedDrawer)} / Hàng ${r} / Ô ${o}</p><div class="formgrid">${field('Mã SAP','code',i?.code||'','text','required')}${field('Mã phụ tùng','part',i?.part||'')}${field('Tên vật tư','name',i?.name||'','text','required')}${field('Số lượng','qty',i?.qty??0,'number','required min="0" step="any"')}${field('Đơn vị','unit',i?.unit||'Cái','text','required')}${field('Ghi chú','note',i?.note||'')}</div>`,f=>{let item={...i,id:i?.id||uid(),code:String(f.get('code')).trim(),part:String(f.get('part')).trim(),name:String(f.get('name')).trim(),qty:+f.get('qty'),unit:String(f.get('unit')).trim(),note:String(f.get('note')).trim(),cab:selectedCab,drawer:selectedDrawer,row:r,cell:o};if(!item.code||!item.name||!item.unit||!Number.isFinite(item.qty)||item.qty<0)throw Error('Thông tin vật tư không hợp lệ.');if(db.items.some(j=>j.id!==item.id&&same(j,item.cab,item.drawer,item.row,item.cell)&&j.code===item.code))throw Error('Mã này đã có trong ô. Hãy sửa số lượng hiện có.');if(i)db.items[db.items.indexOf(i)]=item;else db.items.push(item);selectedItem=item.id},i?()=>{db.items=db.items.filter(j=>j.id!==i.id);selectedItem=null}:null)}
+const headers=['ma_vat_tu','ten_vat_tu','so_luong','don_vi','ma_tu','ngan','hang','o','ma_phu_tung','ghi_chu'];function download(name,content,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)}$('exportBtn').onclick=()=>download('Kho3D_sao_luu.json',JSON.stringify(db,null,2),'application/json');$('templateBtn').onclick=()=>download('Kho3D_mau.csv','\uFEFF'+headers.join(',')+'\r\n100001,Vong bi 6205,24,Cai,T03,3,2,4,,\r\n100002,Bu long M8,120,Cai,T03,3,4,2,,\r\n','text/csv;charset=utf-8');$('resetBtn').onclick=()=>{if(!confirm('Xóa toàn bộ dữ liệu hiện tại (kể cả tủ và vật tư)? Hãy sao lưu JSON trước nếu cần.'))return;db={demo:false,cabinets:[],items:[]};selectedCab='';selectedDrawer=1;selectedCell=null;selectedItem=null;resetSearch();overview=true;lxLoadToken++;setSource('Kho trống');persist();render();toast('Đã khởi tạo kho trống. Hãy thêm tủ hoặc nhập CSV.')};function csvParse(t){t=t.replace(/^\uFEFF/,'');const first=t.split(/\r?\n/)[0],sep=first.includes(';')?';':first.includes('\t')?'\t':',';let result=[],r=[],v='',quoted=false;for(let n=0;n<t.length;n++){let c=t[n];if(c==='"'){if(quoted&&t[n+1]==='"'){v+='"';n++}else quoted=!quoted}else if(c===sep&&!quoted){r.push(v);v=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&t[n+1]==='\n')n++;r.push(v);if(r.some(x=>x.trim()))result.push(r);r=[];v=''}else v+=c}if(quoted)throw Error('CSV có dấu ngoặc kép chưa đóng.');r.push(v);if(r.some(x=>x.trim()))result.push(r);return result}function fromCSV(t){let a=csvParse(t);if(a.length<2)throw Error('CSV chưa có dữ liệu.');let h=a.shift().map(s=>s.trim().toLowerCase());if(headers.slice(0,8).some(s=>!h.includes(s)))throw Error('Thiếu cột bắt buộc. Hãy dùng CSV mẫu trong ứng dụng.');const base=db.demo?{demo:false,cabinets:[],items:[]}:JSON.parse(JSON.stringify(db));let seen=new Set();for(let j=0;j<a.length;j++){let g=k=>(a[j][h.indexOf(k)]??'').trim(),i={id:uid(),code:g('ma_vat_tu'),name:g('ten_vat_tu'),qty:Number(g('so_luong').replace(',','.')),unit:g('don_vi'),cab:g('ma_tu'),drawer:Number(g('ngan')),row:Number(g('hang')),cell:Number(g('o')),part:g('ma_phu_tung'),note:g('ghi_chu')};if(!i.code||!i.name||!i.unit||!g('so_luong')||!Number.isFinite(i.qty)||i.qty<0||!/^[A-Za-z0-9_-]+$/.test(i.cab)||!Number.isInteger(i.drawer)||i.drawer<1||i.drawer>60||!Number.isInteger(i.row)||i.row<1||i.row>5||!Number.isInteger(i.cell)||i.cell<1||i.cell>40)throw Error('Dòng '+(j+2)+' không hợp lệ. Kiểm tra mã tủ, ngăn, hàng, ô và số lượng.');let c=base.cabinets.find(x=>x.id===i.cab);if(!c){c=makeCab(i.cab,i.cab,Math.max(14,i.drawer));base.cabinets.push(c)}if(!validPosition(i,c)){if(db.cabinets.some(x=>x.id===i.cab)&&!db.demo)throw Error('Dòng '+(j+2)+': vị trí ngoài cấu hình tủ hiện có. Hãy sửa cấu hình trước.');c.drawers=Math.max(c.drawers,i.drawer);c.rows[i.row-1]=Math.max(c.rows[i.row-1],i.cell)}let key=i.code+'|'+loc(i);if(seen.has(key))throw Error('Dòng '+(j+2)+': trùng mã và vị trí trong CSV.');seen.add(key);let old=base.items.findIndex(x=>x.code===i.code&&loc(x)===loc(i));if(old>=0){i.id=base.items[old].id;base.items[old]=i}else base.items.push(i)}return base}function fromJSON(t){let b=JSON.parse(t);if(!b||!Array.isArray(b.cabinets)||!Array.isArray(b.items))throw Error('JSON không đúng định dạng sao lưu.');let ids=new Set();for(let c of b.cabinets){if(!c||typeof c.id!=='string'||!c.id||ids.has(c.id)||typeof c.name!=='string'||!Number.isInteger(c.drawers)||c.drawers<1||c.drawers>60)throw Error('Cấu hình tủ không hợp lệ.');ids.add(c.id);c.rows=parseRows(c.rows.join(','));c.overrides=c.overrides||{};for(let [d,r] of Object.entries(c.overrides)){if(!Number.isInteger(+d)||+d<1||+d>c.drawers)throw Error('Ngăn cấu hình không hợp lệ.');c.overrides[d]=parseRows(r.join(','))}}let itemids=new Set(),keys=new Set();for(let i of b.items){if(!i||typeof i.code!=='string'||!i.code||typeof i.name!=='string'||typeof i.unit!=='string'||typeof i.id!=='string'||itemids.has(i.id)||!Number.isFinite(i.qty)||i.qty<0||!validPosition(i,b.cabinets.find(c=>c.id===i.cab))||keys.has(i.code+'|'+loc(i)))throw Error('Danh mục vật tư không hợp lệ hoặc trùng lặp.');itemids.add(i.id);keys.add(i.code+'|'+loc(i))}return {demo:!!b.demo,cabinets:b.cabinets,items:b.items}}$('importBtn').onclick=()=>$('file').click();$('file').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let isJSON=f.name.toLowerCase().endsWith('.json'),t=await f.text(),next=isJSON?fromJSON(t):fromCSV(t);if(!confirm((isJSON?'Thay thế kho bằng bản sao lưu JSON?':db.demo?'Thay dữ liệu mẫu bằng danh mục CSV?':'Nhập CSV: cập nhật mã + vị trí trùng, giữ các vị trí khác?')+'\nKết quả: '+next.cabinets.length+' tủ, '+next.items.length+' bản ghi.'))return;db=next;selectedCab=db.cabinets[0]?.id||'';selectedDrawer=1;selectedCell=null;selectedItem=null;overview=true;resetSearch();lxLoadToken++;setSource(f.name);persist();render();toast('Đã nhập danh mục thành công')}catch(err){toast('Lỗi nhập: '+err.message)}finally{e.target.value=''}};$('appendLX').onclick=()=>{const c=cab();if(!c)return;const d=selectedDrawer;dialog('Chèn vật tư vào hàng', '<div class="formgrid">'+field('Hàng','row',selectedCell?.[0]||1,'number','required min="1" max="'+rows(c,d).length+'"')+field('Mã SAP','code','','text','required')+field('Mô tả','name','','text','required')+field('Đơn vị','unit','PC')+'</div><p class="muted">Khai báo vị trí bổ sung trên thiết bị, không thay đổi tồn SAP.</p>',f=>{const r=Number(f.get('row')),code=String(f.get('code')).trim();if(!Number.isInteger(r)||r<1||r>rows(c,d).length||!code)throw Error('Hàng hoặc mã không hợp lệ');if(db.items.some(i=>i.cab===c.id&&i.drawer===d&&i.row===r&&i.code===code))throw Error('Mã đã có trong hàng');const rr=[...rows(c,d)],cell=rr[r-1]+1,bin=c.kind==='cab'?c.id.slice(1)+pad(d)+pad(r):c.kind==='rack'?c.id.slice(1)+pad(d):c.name;const a={id:uid(),code,name:String(f.get('name')),unit:String(f.get('unit')),qty:0,cab:c.id,drawer:d,row:r,cell,bin,note:'Khai báo bổ sung; chưa có tồn SAP'};const saved=JSON.parse(localStorage.getItem(sourceKey)||'[]');localStorage.setItem(sourceKey,JSON.stringify([...saved,a]));rr[r-1]=cell;c.overrides[d]=rr;db.items.push(a);selectedCell=[r,cell];selectedItem=a.id;sortStockRows()})};
 
-function loadLXLib(){if(globalThis.XLSX)return Promise.resolve();if(!lxLib)lxLib=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=resolve;s.onerror=()=>{lxLib=null;s.remove();reject(Error('Không tải được thư viện Excel. Cần kết nối mạng hoặc dùng LX02.js.'))};document.head.append(s)});return lxLib}
-async function readLX(buffer){await loadLXLib();const w=XLSX.read(buffer,{type:'array'});const required=['Material','Material Description','Storage Bin','Available stock','Base Unit of Measure'];for(const name of w.SheetNames){const sheet=w.Sheets[name],head=XLSX.utils.sheet_to_json(sheet,{header:1,raw:false})[0]||[];if(!required.every(k=>head.includes(k)))continue;const data=XLSX.utils.sheet_to_json(sheet,{raw:true});const formatted=XLSX.utils.sheet_to_json(sheet,{raw:false});data.forEach((r,i)=>{r['Storage Bin']=formatted[i]?.['Storage Bin']??r['Storage Bin'];r.Material=formatted[i]?.Material??r.Material});const next=fromLX02(data);if(!next.items.length)throw Error('Không có vật tư hợp lệ');return next}throw Error('Không tìm thấy bảng LX02 có đủ cột bắt buộc')}
+function loadLXLib() {
+  if (globalThis.XLSX) return Promise.resolve();
+  if (!lxLib) {
+    lxLib = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      script.onload = resolve;
+      script.onerror = () => {
+        lxLib = null;
+        script.remove();
+        reject(Error('Không tải được thư viện Excel. Kết nối mạng để nhập Excel hoặc dùng data.js.'));
+      };
+      document.head.append(script);
+    });
+  }
+  return lxLib;
+}
 
+async function readLX(buffer) {
+  await loadLXLib();
+  const workbook = XLSX.read(buffer, { type: 'array' });
+  for (const name of workbook.SheetNames) {
+    const sheet = workbook.Sheets[name];
+    const raw = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+    const columns = stockColumnIndexes(raw[0]);
+    if (!columns) continue;
+    const formatted = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+    const stock = buildStock(raw, columns, formatted);
+    if (stock.items.length) return stock;
+    throw Error('Không có vật tư hợp lệ trong bảng LX02.');
+  }
+  throw Error('Không tìm thấy bảng LX02 có đủ cột bắt buộc.');
+}
 
 let lxLoadToken = 0;
 let lxLib;
@@ -1321,7 +1464,7 @@ function setSource(name) {
   $('notice').hidden = true;
 }
 
-function applyLX(next, name) {
+function applyStock(next, name, updatedAt = '') {
   const keepOverview = overview;
   db = next;
   restoreManual();
@@ -1330,7 +1473,7 @@ function applyLX(next, name) {
   selectedCell = null;
   selectedItem = null;
   overview = true;
-  sortLXRows();
+  sortStockRows();
   invalidateWarehouseIndex();
   updateDataStats();
   findMatches();
@@ -1338,7 +1481,8 @@ function applyLX(next, name) {
     selectItem(matches[0]);
     overview = keepOverview;
   }
-  setSource(name + ' · ' + db.items.length.toLocaleString('vi-VN') + ' bản ghi');
+  const count = db.items.length.toLocaleString('vi-VN') + ' bản ghi';
+  setSource([name, count, updatedAt && ('Cập nhật ' + updatedAt)].filter(Boolean).join(' · '));
   render();
 }
 
@@ -1352,7 +1496,7 @@ $('lxFile').onchange = async event => {
   try {
     const next = await readLX(await file.arrayBuffer());
     if (token !== lxLoadToken) return;
-    applyLX(next, file.name);
+    applyStock(next, file.name);
     toast('Đã đọc Excel LX02');
   } catch (error) {
     if (token === lxLoadToken) {
@@ -1364,28 +1508,26 @@ $('lxFile').onchange = async event => {
   }
 };
 
-sortLXRows();
-updateDataStats();
-render();
-if (db.cabinets.length && Array.isArray(source)) {
-  setSource('LX02.js · ' + db.items.length.toLocaleString('vi-VN') + ' bản ghi');
-} else {
-  (async () => {
-    const token = ++lxLoadToken;
-    const name = 'lx02_20261125.XLSX';
-    try {
-      const response = await fetch(name);
-      if (!response.ok) throw Error('Không đọc được Excel');
-      const next = await readLX(await response.arrayBuffer());
-      if (token === lxLoadToken) applyLX(next, name);
-    } catch {
-      if (token === lxLoadToken) {
-        $('lxStatus').textContent = 'Chưa có dữ liệu LX02';
-        $('notice').hidden = false;
-        $('notice').textContent = 'Mở Nguồn dữ liệu để chọn Excel LX02, hoặc đặt LX02.js cùng thư mục để dùng ngoại tuyến.';
-      }
-    }
-  })();
+try {
+  const table = window.duLieuCongTy;
+  if (!Array.isArray(table)) {
+    throw Error('Đặt data.js cùng thư mục với So_do_kho_3D.html. File cần khai báo window.duLieuCongTy.');
+  }
+  const columns = stockColumnIndexes(table[0]);
+  if (!columns) {
+    throw Error('Dòng tiêu đề trong data.js cần có Material, Material Description, Storage Bin, Available stock và Base Unit of Measure.');
+  }
+  const stock = buildStock(table, columns);
+  if (table.length > 1 && !stock.items.length) {
+    throw Error('data.js không có dòng vật tư hợp lệ với mã vật tư, Storage Bin và tồn kho.');
+  }
+  applyStock(stock, 'data.js', String(window.thoiGianCapNhat ?? '').trim());
+} catch (error) {
+  $('lxStatus').textContent = 'Chưa đọc được data.js';
+  $('notice').textContent = error.message;
+  $('notice').hidden = false;
+  updateDataStats();
+  render();
 }
 </script>
 </body>
