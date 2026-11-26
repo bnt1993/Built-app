@@ -419,6 +419,8 @@ body.map-expanded { overflow: hidden; }
 .map-marker rect { fill: #213f50; stroke: #eff7fa; }
 .map-marker text { fill: white; }
 
+.scene { user-select: none; cursor: grab; }
+.scene.dragging, .scene.dragging * { cursor: grabbing; }
 @media print {
   .topbar button, .data-panel, .notice, .scene-search, .map-toolbar, .map-footer, .results-panel,
   .search-navigation, .actions, .drawerlist { display: none !important; }
@@ -702,6 +704,8 @@ let warehouseIndex;
 let lastQuery;
 let matchPositions = new Set();
 let sceneZoom = 1;
+let panX = 0;
+let panY = 0;
 let sceneMode = '';
 const positionKey = (...parts) => JSON.stringify(parts);
 const mappedCabinets = new Set(warehouseBays.flatMap(bay => ['K' + bay.rack, ...bay.cabs.map(id => 'T' + id)]));
@@ -1168,8 +1172,12 @@ function drawScene() {
   if (sceneMode !== mode) {
     sceneMode = mode;
     sceneZoom = 1;
+    panX = panY = 0;
     scene.scrollTop = scene.scrollLeft = 0;
   }
+  if (mode === 'front' && query.trim()) panX = panY = 0;
+  scene.title = mode === 'front' ? 'Kéo chuột trái để di chuyển mặt đứng' :
+    'Kéo chuột trái để xoay · Shift + kéo để di chuyển';
   if (mode === 'front') drawFrontWarehouse();
   else if (mode === '3d') drawWarehouse();
   else if (mode === 'cabinet') drawCabinet();
@@ -1339,7 +1347,8 @@ function applySceneZoom() {
   }
   const tools = $('sceneTools');
   tools.querySelector('[data-zoom="reset"]').textContent = percent;
-  tools.querySelector('[data-zoom="reset"]').disabled = sceneZoom === 1;
+  if (content) content.style.translate = panX + 'px ' + panY + 'px';
+  tools.querySelector('[data-zoom="reset"]').disabled = sceneZoom === 1 && !panX && !panY;
   tools.querySelector('[data-zoom="out"]').disabled = sceneZoom === 1;
   tools.querySelector('[data-zoom="in"]').disabled = sceneZoom === 3 || sceneMode === 'empty';
 }
@@ -1384,17 +1393,75 @@ $('viewFront').onclick = () => showWarehouse('front');
 $('angle').oninput = drawScene;
 $('frontReset').onclick = () => {
   $('angle').value = 0;
+  panX = panY = 0;
   drawScene();
 };
 $('sceneTools').onclick = event => {
   const action = event.target.dataset.zoom;
   if (!action) return;
-  if (action === 'reset') sceneZoom = 1;
+  if (action === 'reset') {
+    sceneZoom = 1;
+    panX = panY = 0;
+  }
   else sceneZoom = Math.max(1, Math.min(3, sceneZoom + (action === 'in' ? .25 : -.25)));
   applySceneZoom();
   if (action === 'reset') $('scene').scrollTop = $('scene').scrollLeft = 0;
   scrollToReveal($('scene'), $('scene').querySelector('.current'));
 };
+
+const mapSurface = $('scene');
+let mouseDrag = null;
+let suppressMapClick = false;
+mapSurface.addEventListener('pointerdown', event => {
+  if (event.pointerType !== 'mouse' || event.button !== 0) return;
+  suppressMapClick = false;
+  if (sceneMode === 'empty') return;
+  mouseDrag = {
+    id: event.pointerId, x: event.clientX, y: event.clientY, angle: Number($('angle').value),
+    pan: event.shiftKey || sceneMode === 'front', initialX: panX, initialY: panY, moved: false
+  };
+});
+mapSurface.addEventListener('pointermove', event => {
+  if (!mouseDrag || event.pointerId !== mouseDrag.id) return;
+  if (!(event.buttons & 1)) { mouseDrag = null; return; }
+  const dx = event.clientX - mouseDrag.x;
+  const dy = event.clientY - mouseDrag.y;
+  if (!mouseDrag.moved) {
+    if (Math.hypot(dx, dy) < 5) return;
+    mouseDrag.moved = true;
+    mapSurface.setPointerCapture(event.pointerId);
+    mapSurface.classList.add('dragging');
+    suppressMapClick = true;
+  }
+  if (mouseDrag.pan) {
+    const limitX = mapSurface.clientWidth * .8;
+    const limitY = mapSurface.clientHeight * .8;
+    panX = Math.max(-limitX, Math.min(limitX, mouseDrag.initialX + dx));
+    panY = Math.max(-limitY, Math.min(limitY, mouseDrag.initialY + dy));
+    mapSurface.firstElementChild.style.translate = panX + 'px ' + panY + 'px';
+    $('sceneTools').querySelector('[data-zoom="reset"]').disabled = false;
+  } else {
+    const angle = $('angle');
+    const previous = angle.value;
+    angle.value = mouseDrag.angle + dx / Math.max(120, mapSurface.clientWidth / 3);
+    if (angle.value !== previous) drawScene();
+  }
+});
+function endMouseDrag(event) {
+  if (mouseDrag?.id !== event.pointerId) return;
+  mouseDrag = null;
+  mapSurface.classList.remove('dragging');
+}
+mapSurface.addEventListener('pointerup', endMouseDrag);
+mapSurface.addEventListener('pointercancel', endMouseDrag);
+mapSurface.addEventListener('lostpointercapture', endMouseDrag);
+mapSurface.addEventListener('click', event => {
+  if (suppressMapClick && event.detail && event.pointerType !== 'touch') {
+    event.stopImmediatePropagation();
+    event.preventDefault();
+  }
+  suppressMapClick = false;
+}, true);
 
 $('scene').onclick = event => {
   const target = event.target.closest('[data-cab], [data-row]');
